@@ -1,19 +1,18 @@
 package main
 
 import (
-	"log"
+	"metrograma/db"
+	"metrograma/env"
 	"net/http"
 
-	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	echoMiddleware "github.com/labstack/echo/v4/middleware"
 )
 
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
+	env.LoadDotEnv()
+	db.InitNeo4j()
+
 	e := echo.New()
 
 	// CORS

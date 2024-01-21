@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"metrograma/db"
 	"metrograma/env"
 	"net/http"
@@ -24,7 +25,26 @@ func main() {
 	))
 
 	e.GET("/hola", func(c echo.Context) error {
-		return c.String(http.StatusOK, "Hello, World!")
+		// ctx := context.Background()
+
+		// greeting, err := db.HelloWorld(ctx)
+		// if err != nil {
+		// 	print(greeting)
+		// }
+		return c.String(http.StatusOK, "Hola")
+	})
+
+	e.GET("/subjects/:career", func(c echo.Context) error {
+		career := c.Param("career")
+		println(fmt.Sprintf("Career: %s", career))
+
+		subjects, err := db.GetSubjectByCareer(c.Request().Context(), career)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, err)
+		}
+		println(fmt.Sprintf("Subjects: %v", subjects))
+
+		return c.JSON(http.StatusOK, subjects)
 	})
 
 	// Servir el frontend ya compilado en todas las rutas no tomadas
@@ -32,4 +52,5 @@ func main() {
 	e.Static("/*", "build")
 
 	e.Logger.Fatal(e.Start(":6969"))
+
 }

@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"metrograma/env"
 
@@ -18,27 +19,103 @@ func InitNeo4j() {
 	Neo4j = driver
 }
 
-func helloWorld(ctx context.Context, uri, username, password string) (string, error) {
+func HelloWorld(ctx context.Context) (neo4j.Node, error) {
 	session := Neo4j.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	defer session.Close(ctx)
+	// RETURN a.message + ', from node ' + id(a)
 
-	greeting, err := session.ExecuteWrite(ctx, func(transaction neo4j.ManagedTransaction) (any, error) {
-		result, err := transaction.Run(ctx,
-			"CREATE (a:Greeting) SET a.message = $message RETURN a.message + ', from node ' + id(a)",
-			map[string]any{"message": "hello, world"})
-		if err != nil {
-			return nil, err
-		}
+	greeting, err := neo4j.ExecuteWrite[neo4j.Node](
+		ctx,     // (1)
+		session, // (2)
+		func(transaction neo4j.ManagedTransaction) (neo4j.Node, error) {
+			result, err := transaction.Run(ctx,
+				"Create (sub: Subject {code: 'FBTMM01', name: 'Matemática Básica'}) RETURN sub.code",
+				nil)
+			if err != nil {
+				return *new(neo4j.Node), err
+			}
 
-		if result.Next(ctx) {
-			return result.Record().Values[0], nil
-		}
+			return neo4j.SingleTWithContext(ctx, result, func(record *neo4j.Record) (neo4j.Node, error) {
+				node, _, err := neo4j.GetRecordValue[neo4j.Node](record, "code")
+				return node, err
+			},
+			)
 
-		return nil, result.Err()
-	})
+		},
+	)
+
 	if err != nil {
-		return "", err
+		return *new(neo4j.Node), err
 	}
 
-	return greeting.(string), nil
+	return greeting, nil
+}
+
+func GetAllGreetings(ctx context.Context) ([]string, error) {
+	session := Neo4j.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	defer session.Close(ctx)
+
+	greetings, err := session.ExecuteRead(
+		ctx, func(tx neo4j.ManagedTransaction) (interface{}, error) {
+			result, err := tx.Run(ctx, "MATCH (g:Greeting) RETURN g.message AS greeting", nil)
+			if err != nil {
+				return nil, err
+			}
+
+			var greetings []string
+			for result.Next(ctx) {
+				greetings = append(greetings, result.Record().Values[0].(string))
+			}
+
+			return greetings, result.Err()
+		})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return greetings.([]string), nil
+}
+
+type Subject struct {
+	Code string
+	Name string
+}
+
+func GetSubjectByCareer(ctx context.Context, career string) ([]Subject, error) {
+	session := Neo4j.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	defer session.Close(ctx)
+
+	subjects, err := session.ExecuteRead(
+		ctx, func(tx neo4j.ManagedTransaction) (interface{}, error) {
+			result, err := tx.Run(ctx, "MATCH (s:Subject)-[:BELONGS_TO]->(c:Career {name: $career}) RETURN s", map[string]interface{}{
+				"career": career,
+			})
+			if err != nil {
+				return nil, err
+			}
+
+			var subjects []Subject
+			for result.Next(ctx) {
+				record := result.Record()
+				node, found := record.Get("s")
+				if !found {
+					return nil, fmt.Errorf("node not found")
+				}
+				properties := node.(neo4j.Node).GetProperties()
+				subject := Subject{
+					Code: properties["code"].(string),
+					Name: properties["name"].(string),
+				}
+				subjects = append(subjects, subject)
+			}
+
+			return subjects, result.Err()
+		})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return subjects.([]Subject), nil
 }

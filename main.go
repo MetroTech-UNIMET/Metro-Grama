@@ -48,18 +48,20 @@ func main() {
 		return c.JSON(http.StatusOK, subjects)
 	})
 
-	e.POST("/subject", func(c echo.Context) error {
+	e.POST("/subjects", func(c echo.Context) error {
 		subjectName := c.FormValue("subjectName")
 		subjectCode := c.FormValue("subjectCode")
 		careerName := c.FormValue("careerName")
-		trimesterStr := c.FormValue("trimster")
+		trimesterStr := c.FormValue("trimester")
 		precedesCode := c.FormValue("precedesCode")
 
+		fmt.Println(subjectName, subjectCode, careerName, trimesterStr, precedesCode)
 		trimester, err := strconv.Atoi(trimesterStr)
 		if err != nil {
 			return c.JSON(http.StatusBadRequest, map[string]string{"message": "Invalid trimester"})
 		}
 
+		fmt.Println(trimester)
 		_, err = db.CreateSubject(c.Request().Context(), subjectName, subjectCode, careerName, trimester, precedesCode)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, map[string]string{"message": err.Error()})

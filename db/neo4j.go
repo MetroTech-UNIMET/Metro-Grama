@@ -132,6 +132,7 @@ func CreateSubject(ctx context.Context, subjectName string, subjectCode string, 
 				"subjectName": subjectName,
 				"subjectCode": subjectCode,
 				"careerName":  careerName,
+				"trimester":   trimester,
 			}
 
 			if precedesCode != "" {

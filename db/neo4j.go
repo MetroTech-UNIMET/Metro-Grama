@@ -120,14 +120,14 @@ func GetSubjectByCareer(ctx context.Context, career string) ([]Subject, error) {
 	return subjects.([]Subject), nil
 }
 
-func CreateSubject(ctx context.Context, subjectName string, subjectCode string, careerName string, precedesCode string) (neo4j.ResultSummary, error) {
+func CreateSubject(ctx context.Context, subjectName string, subjectCode string, careerName string, trimester int, precedesCode string) (neo4j.ResultSummary, error) {
 	session := Neo4j.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	defer session.Close(ctx)
 
 	summary, err := session.ExecuteWrite(
 		ctx, func(tx neo4j.ManagedTransaction) (interface{}, error) {
 			cypher := `MATCH (c:Career {name: $careerName})
-                       CREATE (s:Subject {name: $subjectName, code: $subjectCode})-[:BELONGS_TO]->(c)`
+                       CREATE (s:Subject {name: $subjectName, code: $subjectCode})-[:BELONGS_TO {trimester: $trimester}]->(c)`
 			params := map[string]interface{}{
 				"subjectName": subjectName,
 				"subjectCode": subjectCode,

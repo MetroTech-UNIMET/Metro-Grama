@@ -5,6 +5,7 @@ import (
 	"metrograma/db"
 	"metrograma/env"
 	"net/http"
+	"strconv"
 
 	"github.com/labstack/echo/v4"
 	echoMiddleware "github.com/labstack/echo/v4/middleware"
@@ -51,9 +52,15 @@ func main() {
 		subjectName := c.FormValue("subjectName")
 		subjectCode := c.FormValue("subjectCode")
 		careerName := c.FormValue("careerName")
+		trimesterStr := c.FormValue("trimster")
 		precedesCode := c.FormValue("precedesCode")
 
-		_, err := db.CreateSubject(c.Request().Context(), subjectName, subjectCode, careerName, precedesCode)
+		trimester, err := strconv.Atoi(trimesterStr)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, map[string]string{"message": "Invalid trimester"})
+		}
+
+		_, err = db.CreateSubject(c.Request().Context(), subjectName, subjectCode, careerName, trimester, precedesCode)
 		if err != nil {
 			return c.JSON(http.StatusInternalServerError, map[string]string{"message": err.Error()})
 		}

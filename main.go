@@ -47,6 +47,20 @@ func main() {
 		return c.JSON(http.StatusOK, subjects)
 	})
 
+	e.POST("/subject", func(c echo.Context) error {
+		subjectName := c.FormValue("subjectName")
+		subjectCode := c.FormValue("subjectCode")
+		careerName := c.FormValue("careerName")
+		precedesCode := c.FormValue("precedesCode")
+
+		_, err := db.CreateSubject(c.Request().Context(), subjectName, subjectCode, careerName, precedesCode)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, map[string]string{"message": err.Error()})
+		}
+
+		return c.JSON(http.StatusOK, map[string]string{"message": "Subject created successfully"})
+	})
+
 	// Servir el frontend ya compilado en todas las rutas no tomadas
 	// Ya el frontend se encargara de manejarlas con react router
 	e.Static("/*", "build")

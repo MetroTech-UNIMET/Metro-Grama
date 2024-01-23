@@ -12,6 +12,21 @@ import (
 
 var Neo4j neo4j.DriverWithContext
 
+type Node[T any] struct {
+	Id   string
+	Data T
+}
+
+type Edge struct {
+	From string
+	To   string
+}
+
+type Graph[T any] struct {
+	Nodes []Node[T]
+	Edges []Edge
+}
+
 func InitNeo4j() {
 	driver, err := neo4j.NewDriverWithContext(env.GetDotEnv("NEO4J_URI"), neo4j.BasicAuth(env.GetDotEnv("NEO4J_USERNAME"), env.GetDotEnv("NEO4J_PASSWORD"), ""))
 	if err != nil {
@@ -78,42 +93,69 @@ func GetAllGreetings(ctx context.Context) ([]string, error) {
 	return greetings.([]string), nil
 }
 
-func GetSubjectByCareer(ctx context.Context, career string) ([]models.Subject, error) {
+func GetSubjectByCareer(ctx context.Context, career string) (Graph[models.Subject], error) {
 	session := Neo4j.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	defer session.Close(ctx)
 
-	subjects, err := session.ExecuteRead(
-		ctx, func(tx neo4j.ManagedTransaction) (interface{}, error) {
-			result, err := tx.Run(ctx, "MATCH (s:Subject)-[:BELONGS_TO]->(c:Career {name: $career}) RETURN s", map[string]interface{}{
+	graph, err := session.ExecuteRead(
+		ctx,
+		func(tx neo4j.ManagedTransaction) (interface{}, error) {
+			cypher := `
+			MATCH (s:Subject)-[:BELONGS_TO]->(c:Career {name: $career})
+			OPTIONAL MATCH (s)-[p:PRECEDES]->(s2:Subject)
+			RETURN s, p, s2`
+
+			result, err := tx.Run(ctx, cypher, map[string]interface{}{
 				"career": career,
 			})
 			if err != nil {
 				return nil, err
 			}
 
-			var subjects []models.Subject
+			var graph Graph[models.Subject]
+			// fmt.Println(result)
+			nodeMap := make(map[string]Node[models.Subject])
+
 			for result.Next(ctx) {
 				record := result.Record()
-				node, found := record.Get("s")
+				node_subject1, found := record.Get("s")
 				if !found {
 					return nil, fmt.Errorf("node not found")
 				}
-				properties := node.(neo4j.Node).GetProperties()
+				properties := node_subject1.(neo4j.Node).GetProperties()
 				subject := models.Subject{
 					Code: properties["code"].(string),
 					Name: properties["name"].(string),
 				}
-				subjects = append(subjects, subject)
-			}
 
-			return subjects, result.Err()
+				subject1_Id := node_subject1.(neo4j.Node).ElementId
+
+				if _, exists := nodeMap[subject1_Id]; !exists {
+					node := Node[models.Subject]{
+						Id:   subject1_Id,
+						Data: subject,
+					}
+
+					graph.Nodes = append(graph.Nodes, node)
+					nodeMap[subject1_Id] = node
+				}
+
+				node_subject2, found := record.Get("s2")
+				if found && node_subject2 != nil {
+					subject2_Id := node_subject2.(neo4j.Node).ElementId
+
+					edge := Edge{From: subject1_Id, To: subject2_Id}
+					graph.Edges = append(graph.Edges, edge)
+				}
+			}
+			return graph, result.Err()
 		})
 
 	if err != nil {
-		return nil, err
+		return Graph[models.Subject]{}, err
 	}
 
-	return subjects.([]models.Subject), nil
+	return graph.(Graph[models.Subject]), nil
 }
 
 func CreateSubject(ctx context.Context, subjectName string, subjectCode string, careerName string, trimester int, precedesCode string) (neo4j.ResultSummary, error) {

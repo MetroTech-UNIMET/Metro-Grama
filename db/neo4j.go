@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"metrograma/env"
+	"metrograma/models"
 
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
@@ -77,12 +78,7 @@ func GetAllGreetings(ctx context.Context) ([]string, error) {
 	return greetings.([]string), nil
 }
 
-type Subject struct {
-	Code string
-	Name string
-}
-
-func GetSubjectByCareer(ctx context.Context, career string) ([]Subject, error) {
+func GetSubjectByCareer(ctx context.Context, career string) ([]models.Subject, error) {
 	session := Neo4j.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	defer session.Close(ctx)
 
@@ -95,7 +91,7 @@ func GetSubjectByCareer(ctx context.Context, career string) ([]Subject, error) {
 				return nil, err
 			}
 
-			var subjects []Subject
+			var subjects []models.Subject
 			for result.Next(ctx) {
 				record := result.Record()
 				node, found := record.Get("s")
@@ -103,7 +99,7 @@ func GetSubjectByCareer(ctx context.Context, career string) ([]Subject, error) {
 					return nil, fmt.Errorf("node not found")
 				}
 				properties := node.(neo4j.Node).GetProperties()
-				subject := Subject{
+				subject := models.Subject{
 					Code: properties["code"].(string),
 					Name: properties["name"].(string),
 				}
@@ -117,7 +113,7 @@ func GetSubjectByCareer(ctx context.Context, career string) ([]Subject, error) {
 		return nil, err
 	}
 
-	return subjects.([]Subject), nil
+	return subjects.([]models.Subject), nil
 }
 
 func CreateSubject(ctx context.Context, subjectName string, subjectCode string, careerName string, trimester int, precedesCode string) (neo4j.ResultSummary, error) {

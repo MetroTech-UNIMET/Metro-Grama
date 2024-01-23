@@ -48,7 +48,7 @@ func main() {
 		return c.JSON(http.StatusOK, subjects)
 	})
 
-	e.POST("/subjects", func(c echo.Context) error {
+	e.POST("/subject", func(c echo.Context) error {
 		subjectName := c.FormValue("subjectName")
 		subjectCode := c.FormValue("subjectCode")
 		careerName := c.FormValue("careerName")

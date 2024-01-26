@@ -113,7 +113,6 @@ func GetSubjectByCareer(ctx context.Context, career string) (Graph[models.Subjec
 			}
 
 			var graph Graph[models.Subject]
-			// fmt.Println(result)
 			nodeMap := make(map[string]Node[models.Subject])
 
 			for result.Next(ctx) {

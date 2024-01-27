@@ -1,4 +1,4 @@
 interface Subject {
-  code: string;
-  name: string;
+  Code: string;
+  Name: string;
 }

@@ -20,7 +20,7 @@ func main() {
 	// CORS
 	e.Use(echoMiddleware.CORSWithConfig(
 		echoMiddleware.CORSConfig{
-			AllowOrigins: []string{"url al localhost de react"},
+			AllowOrigins: []string{"http://localhost:1403"},
 			AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
 		},
 	))

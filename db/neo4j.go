@@ -158,7 +158,7 @@ func GetSubjectByCareer(ctx context.Context, career string) (Graph[models.Subjec
 	return graph.(Graph[models.Subject]), nil
 }
 
-func CreateSubject(ctx context.Context, subjectName string, subjectCode string, careerName string, trimester int, precedesCode string) (neo4j.ResultSummary, error) {
+func CreateSubject(ctx context.Context, subjectName string, subjectCode string, careerName string, trimester uint, precedesCode string) (neo4j.ResultSummary, error) {
 	session := Neo4j.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	defer session.Close(ctx)
 

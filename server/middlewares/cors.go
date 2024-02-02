@@ -10,7 +10,7 @@ import (
 func Cors() echo.MiddlewareFunc {
 	return echoMiddleware.CORSWithConfig(
 		echoMiddleware.CORSConfig{
-			AllowOrigins: []string{"http://localhost:5173"},
+			AllowOrigins: []string{"http://localhost:1403"},
 			AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, http.MethodGet, http.MethodPost},
 		},
 	)

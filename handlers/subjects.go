@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"fmt"
-	"metrograma/db"
+	"metrograma/storage"
 	"metrograma/tools"
 	"net/http"
 
@@ -19,7 +19,7 @@ func getSubjectsByCareer(c echo.Context) error {
 	career := c.Param("career")
 	println(fmt.Sprintf("Career: %s", career))
 
-	subjects, err := db.GetSubjectByCareer(c.Request().Context(), career)
+	subjects, err := storage.GetSubjectByCareer(c.Request().Context(), career)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err)
 	}
@@ -42,7 +42,7 @@ func createSubject(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, tools.CreateMsg("Invalid trimester"))
 	}
 	fmt.Println(subjectForm)
-	_, err := db.CreateSubject(c.Request().Context(), subjectForm.SubjectName, subjectForm.SubjectCode, subjectForm.CareerName, subjectForm.Trimester, subjectForm.PrecedesCode)
+	_, err := storage.CreateSubject(c.Request().Context(), subjectForm.SubjectName, subjectForm.SubjectCode, subjectForm.CareerName, subjectForm.Trimester, subjectForm.PrecedesCode)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, tools.CreateMsg(err.Error()))
 	}

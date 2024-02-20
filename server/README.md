@@ -4,4 +4,4 @@
 Descargar las dependencias
 `go mod download`
 
-`go run main.go`
+`air run`

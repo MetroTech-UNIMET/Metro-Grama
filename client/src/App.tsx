@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "react-query";
-import Graph from "@components/Graph";
+import Graph from "@/components/graph/Graph";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import GraphLayout from "./layouts/GraphLayout";
 

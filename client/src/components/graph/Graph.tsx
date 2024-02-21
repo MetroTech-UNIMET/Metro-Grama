@@ -20,9 +20,9 @@ export default function Graph() {
       label: node.Data.Name,
       data: node,
       style: {
-        // keyshape: {
-        //   fill: "red"
-        // },
+        keyshape: {
+          // stroke: "#00a88c"
+        },
         label: {
           value: node.Data.Name,
           fill: "white",

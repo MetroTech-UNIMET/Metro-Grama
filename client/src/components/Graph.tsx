@@ -1,13 +1,8 @@
 import { getSubjects } from "@/api/subjectsAPI";
-import Graphin, {
-  Components,
-  GraphinData,
-  Behaviors,
-  Utils,
-} from "@antv/graphin";
-import { useQuery } from "react-query";
-const { MiniMap } = Components;
-const { DragCanvas, ZoomCanvas } = Behaviors;
+import Graphin, { GraphinData, Behaviors, Utils } from "@antv/graphin";
+import { MiniMap } from "@antv/graphin-components";
+import { useQuery, useQueryClient } from "react-query";
+const { ActivateRelations } = Behaviors;
 
 export default function Graph() {
   const { data, isLoading, error } = useQuery<Graph<Subject>>(
@@ -25,8 +20,12 @@ export default function Graph() {
       label: node.Data.Name,
       data: node,
       style: {
+        // keyshape: {
+        //   fill: "red"
+        // },
         label: {
           value: node.Data.Name,
+          fill: "white",
         },
       },
     })),
@@ -35,28 +34,26 @@ export default function Graph() {
       target: edge.To,
     })),
   };
+  console.log(graph);
 
   return (
     <Graphin
       data={graph}
+      // width={undefined}
+      // height={undefined}
       style={{
-        width: "100vw",
-        height: "100vh",
+        backgroundColor: "transparent",
       }}
     >
-      <ZoomCanvas enableOptimize={true} />
-      <DragCanvas enableOptimize={true} />
-      {/* <MiniMap
+      {/* <ActivateRelations trigger="click" /> */}
+      <MiniMap
+        visible={true}
         style={{
-          position: "absolute",
-          right: 4,
-          bottom: 4,
-          width: 200,
-          height: 150,
           border: "1px solid #e2e2e2",
           borderRadius: 4,
         }}
-      /> */}
+        options={{ className: "fixed bottom-4 right-4 border-2 border-white rounded-lg bg-white" }}
+      />
     </Graphin>
   );
 }

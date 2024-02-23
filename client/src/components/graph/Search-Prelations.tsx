@@ -1,7 +1,9 @@
 import { GraphinContext, IG6GraphEvent } from "@antv/graphin";
 import { useContext, useEffect } from "react";
 import { INode, IEdge } from "@antv/g6";
-import { getNodesFromEdges } from "@/utils/graph";
+import { filterEdgesByTarget, getNodesFromEdges } from "@/utils/graph";
+
+type edgeCustomState = "future" | "prelation";
 
 // TODO - Que con cualquier click se limpie el estado de los edges
 // TODO - Diferentes colores en los edges si son prelation o future
@@ -15,7 +17,7 @@ export default function SearchPrelations() {
       if (!node._cfg) return;
 
       clearEdgesState();
-      console.log(node)
+      console.log(node);
       selectEdges(node.getEdges(), node.getID());
     }
 
@@ -27,13 +29,9 @@ export default function SearchPrelations() {
   }, []);
 
   function selectEdges(edges: IEdge[], nodeId: string) {
-    const prelations = edges.filter((edge) => {
-      return (edge._cfg?.source as INode).getID() !== nodeId;
-    });
+    const prelations = filterEdgesByTarget(edges, "source", nodeId);
 
-    const future = edges.filter((edge) => {
-      return (edge._cfg?.source as INode).getID() === nodeId;
-    });
+    const future = filterEdgesByTarget(edges, "target", nodeId);
 
     seePrelations(prelations);
     seeFuture(future);
@@ -44,11 +42,11 @@ export default function SearchPrelations() {
     const nodes = getNodesFromEdges(edges, "target");
 
     nodes.forEach((node) => {
-      console.log("future", node);
-      const future = node.getEdges().filter((edge) => {
-        console.log(edge.getStateStyle("active"))
-        return (edge._cfg?.target as INode).getID() !== node.getID();
-      });
+      const future = filterEdgesByTarget(
+        node.getEdges(),
+        "target",
+        node.getID()
+      );
 
       seeFuture(future);
     });
@@ -59,20 +57,23 @@ export default function SearchPrelations() {
     const nodes = getNodesFromEdges(edges, "source");
 
     nodes.forEach((node) => {
-      const prelations = node.getEdges().filter((edge) => {
-        return (edge._cfg?.source as INode).getID() !== node.getID();
-      });
+      const prelations = filterEdgesByTarget(
+        node.getEdges(),
+        "source",
+        node.getID()
+      );
+
       if (prelations.length == 0) return;
 
       seePrelations(prelations);
     });
   }
 
-  function highlightEdges(edges: IEdge[], tag: "future" | "prelation") {
+  function highlightEdges(edges: IEdge[], tag: edgeCustomState) {
     edges.forEach((edge) => highlightEdge(edge, tag));
   }
 
-  function highlightEdge(edge: IEdge, tag: "future" | "prelation") {
+  function highlightEdge(edge: IEdge, tag: edgeCustomState) {
     graph.setItemState(edge, tag, true);
   }
 

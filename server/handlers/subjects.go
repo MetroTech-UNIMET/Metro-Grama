@@ -47,5 +47,5 @@ func createSubject(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, tools.CreateMsg(err.Error()))
 	}
 
-	return c.NoContent(http.StatusOK)
+	return c.JSON(http.StatusCreated, tools.CreateMsg("Subject created"))
 }

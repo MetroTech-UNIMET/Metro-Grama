@@ -2,6 +2,7 @@ import { getSubjects } from "@/api/subjectsAPI";
 import Graphin, { GraphinData, Behaviors, Utils } from "@antv/graphin";
 import { MiniMap } from "@antv/graphin-components";
 import { useQuery, useQueryClient } from "react-query";
+import SearchPrelations from "./Search-Prelations";
 const { ActivateRelations } = Behaviors;
 
 export default function Graph() {
@@ -32,6 +33,28 @@ export default function Graph() {
     edges: data.Edges!.map((edge) => ({
       source: edge.From,
       target: edge.To,
+      style: {
+        status: {
+          prelation: {
+            keyshape: {
+              stroke: "blue",
+            },
+            halo: {
+              fill: "#ddd",
+              visible: true,
+            },
+          },
+          future: {
+            keyshape: {
+              stroke: "red",
+            },
+            halo: {
+              fill: "#ddd",
+              visible: true,
+            },
+          },
+        },
+      },
     })),
   };
   console.log(graph);
@@ -41,18 +64,23 @@ export default function Graph() {
       data={graph}
       // width={undefined}
       // height={undefined}
+
       style={{
         backgroundColor: "transparent",
       }}
     >
       {/* <ActivateRelations trigger="click" /> */}
+      <SearchPrelations />
       <MiniMap
         visible={true}
         style={{
           border: "1px solid #e2e2e2",
           borderRadius: 4,
         }}
-        options={{ className: "fixed bottom-4 right-4 border-2 border-white rounded-lg bg-white" }}
+        options={{
+          className:
+            "fixed bottom-4 right-4 border-2 border-white rounded-lg bg-white",
+        }}
       />
     </Graphin>
   );

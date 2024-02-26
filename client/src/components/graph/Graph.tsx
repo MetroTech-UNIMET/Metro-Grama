@@ -21,12 +21,20 @@ export default function Graph() {
       label: node.Data.Name,
       data: node,
       style: {
-        keyshape: {
-          // stroke: "#00a88c"
-        },
         label: {
           value: node.Data.Name,
           fill: "white",
+        },
+        status: {
+          start: {
+            halo: {
+              visible: true,
+              fill: "blue",
+            },
+            icon: {
+              // TODO - Ponerle un icono para el start
+            },
+          },
         },
       },
     })),
@@ -64,7 +72,6 @@ export default function Graph() {
       data={graph}
       // width={undefined}
       // height={undefined}
-
       style={{
         backgroundColor: "transparent",
       }}

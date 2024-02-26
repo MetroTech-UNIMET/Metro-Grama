@@ -1,7 +1,11 @@
 import { GraphinContext, IG6GraphEvent } from "@antv/graphin";
 import { useContext, useEffect } from "react";
 import { INode, IEdge } from "@antv/g6";
-import { filterEdgesByTarget, getNodesFromEdges } from "@/utils/graph";
+import {
+  clearGraphStates,
+  filterEdgesByTarget,
+  getNodesFromEdges,
+} from "@/utils/graph";
 
 type edgeCustomState = "future" | "prelation";
 
@@ -16,8 +20,9 @@ export default function SearchPrelations() {
       const node = e.item as INode; //Usar INode de G6
       if (!node._cfg) return;
 
-      clearEdgesState();
-      console.log(node);
+      clearGraphStates(graph);
+      console.log("selected", node);
+      graph.setItemState(node, "selected", true);
       selectEdges(node.getEdges(), node.getID());
     }
 
@@ -63,7 +68,10 @@ export default function SearchPrelations() {
         node.getID()
       );
 
-      if (prelations.length == 0) return;
+      if (prelations.length == 0) {
+        graph.setItemState(node, "start", true);
+        return;
+      }
 
       seePrelations(prelations);
     });
@@ -75,19 +83,6 @@ export default function SearchPrelations() {
 
   function highlightEdge(edge: IEdge, tag: edgeCustomState) {
     graph.setItemState(edge, tag, true);
-  }
-
-  function clearEdgesState() {
-    // REVIEW Analizar si se puede usar graph.findAllByState
-    const states = ["future", "prelation"];
-
-    graph.getEdges().forEach((edge) => {
-      states.forEach((state) => {
-        if (edge.hasState(state)) {
-          graph.setItemState(edge, state, false);
-        }
-      });
-    });
   }
 
   return null;

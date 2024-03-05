@@ -3,39 +3,65 @@ import Graphin, { GraphinData, Behaviors, Utils } from "@antv/graphin";
 import { MiniMap } from "@antv/graphin-components";
 import { useQuery, useQueryClient } from "react-query";
 import SearchPrelations from "./Search-Prelations";
+import React from "react";
+
+import  iconLoader  from "@antv/graphin-icons";
+import '@antv/graphin-icons/dist/index.css';
+
+const {fontFamily , glyphs} = iconLoader();
+
+const icons = Graphin.registerFontFamily(iconLoader);
+
+
 const { ActivateRelations } = Behaviors;
 
 export default function Graph() {
+
   const { data, isLoading, error } = useQuery<Graph<Subject>>(
     ["subjects", "Ingeniería en Sistemas"],
     getSubjects
   );
 
-  if (error) return <div>Error</div>;
+  if (error) return React.createElement('div', null, 'Error');
 
-  if (isLoading || !data) return <div>Loading...</div>;
+
+
+  if (isLoading || !data) return React.createElement('div', null, 'Loading...');
 
   const graph: GraphinData = {
-    nodes: data.Nodes!.map((node) => ({
+    nodes:
+    data.Nodes!.map((node) => ({
       id: node.Id,
       label: node.Data.Name,
       data: node,
       style: {
-        label: {
-          value: node.Data.Name,
-          fill: "white",
-        },
+            label: {
+              value: node.Data.Name,
+              fill: "white",
+            },
         status: {
-          start: {
+           start: {
             halo: {
               visible: true,
               fill: "blue",
             },
-            icon: {
-              // TODO - Ponerle un icono para el start
-            },
+
+  
           },
+
+          
         },
+        icon: {
+          type: "font",
+          fontFamily: fontFamily,
+          value: icons.compass,
+          fill: "green",
+          size: 20,
+        },
+
+
+      
+        
       },
     })),
     edges: data.Edges!.map((edge) => ({

@@ -5,7 +5,7 @@ import {
   clearGraphStates,
   filterEdgesByTarget,
   getNodesFromEdges,
-} from "@/utils/graph";
+} from "@/lib/utils/graph";
 
 type edgeCustomState = "future" | "prelation";
 
@@ -17,19 +17,30 @@ export default function SearchPrelations() {
   // TODO - Que funcione en touch de telefono
   useEffect(() => {
     function handleClick(e: IG6GraphEvent) {
-      const node = e.item as INode; //Usar INode de G6
+      const node = e.item as INode;
       if (!node._cfg) return;
 
-      clearGraphStates(graph);
-      console.log("selected", node);
+      clearGraphStates(graph, {
+        statesToTrue: ["inactive"],
+        statesToIgnore: ["viewed"],
+      });
+
       graph.setItemState(node, "selected", true);
+      graph.setItemState(node, "inactive", false);
+      console.log("selected", node);
       selectEdges(node.getEdges(), node.getID());
     }
 
     graph.on("node:click", handleClick);
+    graph.on("canvas:click", () => {
+      clearGraphStates(graph, { statesToIgnore: ["viewed"] });
+    });
 
     return () => {
       graph.off("node:click", handleClick);
+      graph.off("canvas:click", () => {
+        clearGraphStates(graph), { statesToIgnore: ["viewed"] };
+      });
     };
   }, []);
 
@@ -52,6 +63,7 @@ export default function SearchPrelations() {
         "target",
         node.getID()
       );
+      graph.setItemState(node, "inactive", false);
 
       seeFuture(future);
     });
@@ -67,6 +79,7 @@ export default function SearchPrelations() {
         "source",
         node.getID()
       );
+      graph.setItemState(node, "inactive", false);
 
       if (prelations.length == 0) {
         graph.setItemState(node, "start", true);
@@ -82,6 +95,7 @@ export default function SearchPrelations() {
   }
 
   function highlightEdge(edge: IEdge, tag: edgeCustomState) {
+    graph.setItemState(edge, "inactive", false);
     graph.setItemState(edge, tag, true);
   }
 

@@ -1,9 +1,10 @@
 import { getSubjects } from "@/api/subjectsAPI";
-import Graphin, { GraphinData, Behaviors, Utils } from "@antv/graphin";
+import Graphin, { GraphinData, Behaviors } from "@antv/graphin";
 import { MiniMap } from "@antv/graphin-components";
-import { useQuery, useQueryClient } from "react-query";
-import SearchPrelations from "./Search-Prelations";
-const { ActivateRelations } = Behaviors;
+import { useQuery } from "react-query";
+
+import SearchPrelations from "./behaviors/Search-Prelations";
+import MenuActions from "./behaviors/MenuActions";
 
 export default function Graph() {
   const { data, isLoading, error } = useQuery<Graph<Subject>>(
@@ -33,6 +34,18 @@ export default function Graph() {
             },
             icon: {
               // TODO - Ponerle un icono para el start
+            },
+          },
+          viewed: {
+            keyshape: {
+              fill: "green",
+              stroke: "green",
+            },
+          },
+          accesible: {
+            keyshape: {
+              fill: "blue",
+              stroke: "blue",
             },
           },
         },
@@ -78,6 +91,7 @@ export default function Graph() {
     >
       {/* <ActivateRelations trigger="click" /> */}
       <SearchPrelations />
+      <MenuActions />
       <MiniMap
         visible={true}
         style={{

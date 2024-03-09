@@ -16,7 +16,12 @@ func careersHandler(e *echo.Group) {
 }
 
 func getAllCareer(c echo.Context) error {
-	return nil
+	careers, err := storage.GetAllCareer(c.Request().Context())
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, tools.CreateMsg(err.Error()))
+	}
+
+	return c.JSON(http.StatusOK, careers)
 }
 
 type CareerForm struct {

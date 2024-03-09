@@ -41,8 +41,11 @@ func createSubject(c echo.Context) error {
 	if err := c.Bind(&subjectForm); err != nil {
 		return c.JSON(http.StatusBadRequest, tools.CreateMsg("Invalid trimester"))
 	}
+
 	fmt.Println(subjectForm)
+
 	_, err := storage.CreateSubject(c.Request().Context(), subjectForm.SubjectName, subjectForm.SubjectCode, subjectForm.CareerName, subjectForm.Trimester, subjectForm.PrecedesCode)
+
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, tools.CreateMsg(err.Error()))
 	}

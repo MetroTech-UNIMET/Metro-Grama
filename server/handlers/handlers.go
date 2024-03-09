@@ -6,4 +6,5 @@ func CreateHandlers(e *echo.Echo) {
 	apiGroup := e.Group("/api")
 	healthHandler(apiGroup)
 	subjectsHandler(apiGroup)
+	careersHandler(apiGroup)
 }

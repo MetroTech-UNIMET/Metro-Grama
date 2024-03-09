@@ -24,7 +24,7 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "subject_name", Type: field.TypeString},
 		{Name: "subject_code", Type: field.TypeString, Unique: true},
-		{Name: "trimester", Type: field.TypeUint8},
+		{Name: "trimester", Type: field.TypeUint},
 		{Name: "precedes_subject_id", Type: field.TypeUUID, Nullable: true},
 	}
 	// SubjectsTable holds the schema information for the "subjects" table.

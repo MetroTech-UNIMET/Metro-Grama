@@ -24,7 +24,7 @@ type Subject struct {
 	// SubjectCode holds the value of the "subject_code" field.
 	SubjectCode string `json:"subject_code,omitempty"`
 	// Trimester holds the value of the "trimester" field.
-	Trimester uint8 `json:"trimester,omitempty"`
+	Trimester uint `json:"trimester,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the SubjectQuery when eager-loading is set.
 	Edges        SubjectEdges `json:"edges"`
@@ -130,7 +130,7 @@ func (s *Subject) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field trimester", values[i])
 			} else if value.Valid {
-				s.Trimester = uint8(value.Int64)
+				s.Trimester = uint(value.Int64)
 			}
 		default:
 			s.selectValues.Set(columns[i], values[i])

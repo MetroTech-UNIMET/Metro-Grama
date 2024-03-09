@@ -71,7 +71,7 @@ func SubjectCode(v string) predicate.Subject {
 }
 
 // Trimester applies equality check predicate on the "trimester" field. It's identical to TrimesterEQ.
-func Trimester(v uint8) predicate.Subject {
+func Trimester(v uint) predicate.Subject {
 	return predicate.Subject(sql.FieldEQ(FieldTrimester, v))
 }
 
@@ -236,42 +236,42 @@ func SubjectCodeContainsFold(v string) predicate.Subject {
 }
 
 // TrimesterEQ applies the EQ predicate on the "trimester" field.
-func TrimesterEQ(v uint8) predicate.Subject {
+func TrimesterEQ(v uint) predicate.Subject {
 	return predicate.Subject(sql.FieldEQ(FieldTrimester, v))
 }
 
 // TrimesterNEQ applies the NEQ predicate on the "trimester" field.
-func TrimesterNEQ(v uint8) predicate.Subject {
+func TrimesterNEQ(v uint) predicate.Subject {
 	return predicate.Subject(sql.FieldNEQ(FieldTrimester, v))
 }
 
 // TrimesterIn applies the In predicate on the "trimester" field.
-func TrimesterIn(vs ...uint8) predicate.Subject {
+func TrimesterIn(vs ...uint) predicate.Subject {
 	return predicate.Subject(sql.FieldIn(FieldTrimester, vs...))
 }
 
 // TrimesterNotIn applies the NotIn predicate on the "trimester" field.
-func TrimesterNotIn(vs ...uint8) predicate.Subject {
+func TrimesterNotIn(vs ...uint) predicate.Subject {
 	return predicate.Subject(sql.FieldNotIn(FieldTrimester, vs...))
 }
 
 // TrimesterGT applies the GT predicate on the "trimester" field.
-func TrimesterGT(v uint8) predicate.Subject {
+func TrimesterGT(v uint) predicate.Subject {
 	return predicate.Subject(sql.FieldGT(FieldTrimester, v))
 }
 
 // TrimesterGTE applies the GTE predicate on the "trimester" field.
-func TrimesterGTE(v uint8) predicate.Subject {
+func TrimesterGTE(v uint) predicate.Subject {
 	return predicate.Subject(sql.FieldGTE(FieldTrimester, v))
 }
 
 // TrimesterLT applies the LT predicate on the "trimester" field.
-func TrimesterLT(v uint8) predicate.Subject {
+func TrimesterLT(v uint) predicate.Subject {
 	return predicate.Subject(sql.FieldLT(FieldTrimester, v))
 }
 
 // TrimesterLTE applies the LTE predicate on the "trimester" field.
-func TrimesterLTE(v uint8) predicate.Subject {
+func TrimesterLTE(v uint) predicate.Subject {
 	return predicate.Subject(sql.FieldLTE(FieldTrimester, v))
 }
 

@@ -48,7 +48,7 @@ func (sc *SubjectCreate) SetSubjectCode(s string) *SubjectCreate {
 }
 
 // SetTrimester sets the "trimester" field.
-func (sc *SubjectCreate) SetTrimester(u uint8) *SubjectCreate {
+func (sc *SubjectCreate) SetTrimester(u uint) *SubjectCreate {
 	sc.mutation.SetTrimester(u)
 	return sc
 }
@@ -211,7 +211,7 @@ func (sc *SubjectCreate) createSpec() (*Subject, *sqlgraph.CreateSpec) {
 		_node.SubjectCode = value
 	}
 	if value, ok := sc.mutation.Trimester(); ok {
-		_spec.SetField(subject.FieldTrimester, field.TypeUint8, value)
+		_spec.SetField(subject.FieldTrimester, field.TypeUint, value)
 		_node.Trimester = value
 	}
 	if nodes := sc.mutation.PrecedesSubjectIDs(); len(nodes) > 0 {

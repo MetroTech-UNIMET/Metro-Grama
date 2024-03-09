@@ -462,8 +462,8 @@ type SubjectMutation struct {
 	id                      *uuid.UUID
 	subject_name            *string
 	subject_code            *string
-	trimester               *uint8
-	addtrimester            *int8
+	trimester               *uint
+	addtrimester            *int
 	clearedFields           map[string]struct{}
 	precedes_subject        *uuid.UUID
 	clearedprecedes_subject bool
@@ -704,13 +704,13 @@ func (m *SubjectMutation) ResetSubjectCode() {
 }
 
 // SetTrimester sets the "trimester" field.
-func (m *SubjectMutation) SetTrimester(u uint8) {
+func (m *SubjectMutation) SetTrimester(u uint) {
 	m.trimester = &u
 	m.addtrimester = nil
 }
 
 // Trimester returns the value of the "trimester" field in the mutation.
-func (m *SubjectMutation) Trimester() (r uint8, exists bool) {
+func (m *SubjectMutation) Trimester() (r uint, exists bool) {
 	v := m.trimester
 	if v == nil {
 		return
@@ -721,7 +721,7 @@ func (m *SubjectMutation) Trimester() (r uint8, exists bool) {
 // OldTrimester returns the old "trimester" field's value of the Subject entity.
 // If the Subject object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *SubjectMutation) OldTrimester(ctx context.Context) (v uint8, err error) {
+func (m *SubjectMutation) OldTrimester(ctx context.Context) (v uint, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldTrimester is only allowed on UpdateOne operations")
 	}
@@ -736,7 +736,7 @@ func (m *SubjectMutation) OldTrimester(ctx context.Context) (v uint8, err error)
 }
 
 // AddTrimester adds u to the "trimester" field.
-func (m *SubjectMutation) AddTrimester(u int8) {
+func (m *SubjectMutation) AddTrimester(u int) {
 	if m.addtrimester != nil {
 		*m.addtrimester += u
 	} else {
@@ -745,7 +745,7 @@ func (m *SubjectMutation) AddTrimester(u int8) {
 }
 
 // AddedTrimester returns the value that was added to the "trimester" field in this mutation.
-func (m *SubjectMutation) AddedTrimester() (r int8, exists bool) {
+func (m *SubjectMutation) AddedTrimester() (r int, exists bool) {
 	v := m.addtrimester
 	if v == nil {
 		return
@@ -1005,7 +1005,7 @@ func (m *SubjectMutation) SetField(name string, value ent.Value) error {
 		m.SetSubjectCode(v)
 		return nil
 	case subject.FieldTrimester:
-		v, ok := value.(uint8)
+		v, ok := value.(uint)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -1042,7 +1042,7 @@ func (m *SubjectMutation) AddedField(name string) (ent.Value, bool) {
 func (m *SubjectMutation) AddField(name string, value ent.Value) error {
 	switch name {
 	case subject.FieldTrimester:
-		v, ok := value.(int8)
+		v, ok := value.(int)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}

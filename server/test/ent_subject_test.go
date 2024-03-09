@@ -28,7 +28,7 @@ func CreateClient() (*ent.Client, context.Context, error) {
 	return client, ctx, nil
 }
 
-func CreateSubject(ctx context.Context, client *ent.Client, id uuid.UUID, precedesID *uuid.UUID, name string, code string, career *ent.Career, trimester uint8) (*ent.Subject, error) {
+func CreateSubject(ctx context.Context, client *ent.Client, id uuid.UUID, precedesID *uuid.UUID, name string, code string, career *ent.Career, trimester uint) (*ent.Subject, error) {
 	subject, err := client.Subject.
 		Create().
 		SetID(id).
@@ -55,7 +55,7 @@ func CreateSubjectsData(t *testing.T, ctx context.Context, client *ent.Client, c
 		PrecedesID *uuid.UUID
 		Name       string
 		Code       string
-		trimester  uint8
+		trimester  uint
 	}{
 		{
 			subjectIDs[0], nil, "Matemática básica", "FBTMM01", 1,

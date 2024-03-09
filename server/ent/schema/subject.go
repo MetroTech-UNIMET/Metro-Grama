@@ -19,7 +19,7 @@ func (Subject) Fields() []ent.Field {
 		field.UUID("precedes_subject_id", uuid.New()).Optional().Nillable(),
 		field.String("subject_name").NotEmpty(),
 		field.String("subject_code").NotEmpty().Unique(),
-		field.Uint8("trimester"),
+		field.Uint("trimester"),
 	}
 }
 

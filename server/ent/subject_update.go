@@ -78,14 +78,14 @@ func (su *SubjectUpdate) SetNillableSubjectCode(s *string) *SubjectUpdate {
 }
 
 // SetTrimester sets the "trimester" field.
-func (su *SubjectUpdate) SetTrimester(u uint8) *SubjectUpdate {
+func (su *SubjectUpdate) SetTrimester(u uint) *SubjectUpdate {
 	su.mutation.ResetTrimester()
 	su.mutation.SetTrimester(u)
 	return su
 }
 
 // SetNillableTrimester sets the "trimester" field if the given value is not nil.
-func (su *SubjectUpdate) SetNillableTrimester(u *uint8) *SubjectUpdate {
+func (su *SubjectUpdate) SetNillableTrimester(u *uint) *SubjectUpdate {
 	if u != nil {
 		su.SetTrimester(*u)
 	}
@@ -93,7 +93,7 @@ func (su *SubjectUpdate) SetNillableTrimester(u *uint8) *SubjectUpdate {
 }
 
 // AddTrimester adds u to the "trimester" field.
-func (su *SubjectUpdate) AddTrimester(u int8) *SubjectUpdate {
+func (su *SubjectUpdate) AddTrimester(u int) *SubjectUpdate {
 	su.mutation.AddTrimester(u)
 	return su
 }
@@ -247,10 +247,10 @@ func (su *SubjectUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		_spec.SetField(subject.FieldSubjectCode, field.TypeString, value)
 	}
 	if value, ok := su.mutation.Trimester(); ok {
-		_spec.SetField(subject.FieldTrimester, field.TypeUint8, value)
+		_spec.SetField(subject.FieldTrimester, field.TypeUint, value)
 	}
 	if value, ok := su.mutation.AddedTrimester(); ok {
-		_spec.AddField(subject.FieldTrimester, field.TypeUint8, value)
+		_spec.AddField(subject.FieldTrimester, field.TypeUint, value)
 	}
 	if su.mutation.PrecedesSubjectCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -440,14 +440,14 @@ func (suo *SubjectUpdateOne) SetNillableSubjectCode(s *string) *SubjectUpdateOne
 }
 
 // SetTrimester sets the "trimester" field.
-func (suo *SubjectUpdateOne) SetTrimester(u uint8) *SubjectUpdateOne {
+func (suo *SubjectUpdateOne) SetTrimester(u uint) *SubjectUpdateOne {
 	suo.mutation.ResetTrimester()
 	suo.mutation.SetTrimester(u)
 	return suo
 }
 
 // SetNillableTrimester sets the "trimester" field if the given value is not nil.
-func (suo *SubjectUpdateOne) SetNillableTrimester(u *uint8) *SubjectUpdateOne {
+func (suo *SubjectUpdateOne) SetNillableTrimester(u *uint) *SubjectUpdateOne {
 	if u != nil {
 		suo.SetTrimester(*u)
 	}
@@ -455,7 +455,7 @@ func (suo *SubjectUpdateOne) SetNillableTrimester(u *uint8) *SubjectUpdateOne {
 }
 
 // AddTrimester adds u to the "trimester" field.
-func (suo *SubjectUpdateOne) AddTrimester(u int8) *SubjectUpdateOne {
+func (suo *SubjectUpdateOne) AddTrimester(u int) *SubjectUpdateOne {
 	suo.mutation.AddTrimester(u)
 	return suo
 }
@@ -639,10 +639,10 @@ func (suo *SubjectUpdateOne) sqlSave(ctx context.Context) (_node *Subject, err e
 		_spec.SetField(subject.FieldSubjectCode, field.TypeString, value)
 	}
 	if value, ok := suo.mutation.Trimester(); ok {
-		_spec.SetField(subject.FieldTrimester, field.TypeUint8, value)
+		_spec.SetField(subject.FieldTrimester, field.TypeUint, value)
 	}
 	if value, ok := suo.mutation.AddedTrimester(); ok {
-		_spec.AddField(subject.FieldTrimester, field.TypeUint8, value)
+		_spec.AddField(subject.FieldTrimester, field.TypeUint, value)
 	}
 	if suo.mutation.PrecedesSubjectCleared() {
 		edge := &sqlgraph.EdgeSpec{

@@ -29,7 +29,7 @@ type SubjectFormV2 struct {
 func subjectsHandler(e *echo.Group) {
 	subjectsGroup := e.Group("/subjects")
 	subjectsGroup.GET("/:career", getSubjectsByCareer)
-	subjectsGroup.GET("/v2/:careerID", getSubjectsByCareerV2)
+	subjectsGroup.GET("/v2/:career", getSubjectsByCareerV2)
 	subjectsGroup.POST("/", createSubject)
 	subjectsGroup.POST("/v2", createSubjectV2)
 }
@@ -48,15 +48,10 @@ func getSubjectsByCareer(c echo.Context) error {
 }
 
 func getSubjectsByCareerV2(c echo.Context) error {
-	careerIDstr := c.Param("careerID")
-	careerID, err := uuid.Parse(careerIDstr)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, tools.CreateMsg(err.Error()))
-	}
+	career := c.Param("career")
+	println(fmt.Sprintf("Career: %s", career))
 
-	println(fmt.Sprintf("CareerID: %s", careerID))
-
-	subjects, err := storage.GetSubjectByCareerV2(c.Request().Context(), careerID)
+	subjects, err := storage.GetSubjectByCareerV2(c.Request().Context(), career)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, tools.CreateMsg(err.Error()))
 	}

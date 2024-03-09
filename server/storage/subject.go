@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"metrograma/db"
 	"metrograma/ent"
+	"metrograma/ent/career"
 	"metrograma/models"
 
 	"github.com/google/uuid"
@@ -102,8 +103,8 @@ func GetSubjectByCareer(ctx context.Context, career string) (models.Graph[models
 	return graph.(models.Graph[models.Subject]), nil
 }
 
-func GetSubjectByCareerV2(ctx context.Context, careerID uuid.UUID) (models.Graph[models.Subject], error) {
-	career, err := db.EntClient.Career.Get(ctx, careerID)
+func GetSubjectByCareerV2(ctx context.Context, careerName string) (models.Graph[models.Subject], error) {
+	career, err := db.EntClient.Career.Query().Where(career.Name(careerName)).First(ctx)
 	if err != nil {
 		return models.Graph[models.Subject]{}, err
 	}

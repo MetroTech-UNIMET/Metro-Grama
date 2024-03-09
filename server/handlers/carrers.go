@@ -9,6 +9,10 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+type CareerForm struct {
+	CareerName string `form:"careerName"`
+}
+
 func careersHandler(e *echo.Group) {
 	careersGroup := e.Group("/careers")
 	careersGroup.GET("/", getAllCareer)
@@ -22,10 +26,6 @@ func getAllCareer(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, careers)
-}
-
-type CareerForm struct {
-	CareerName string `form:"careerName"`
 }
 
 func createCarrer(c echo.Context) error {

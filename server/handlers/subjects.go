@@ -9,6 +9,14 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+type SubjectForm struct {
+	SubjectName  string `form:"subjectName"`
+	SubjectCode  string `form:"subjectCode"`
+	CareerName   string `form:"careerName"`
+	Trimester    uint   `form:"trimester"`
+	PrecedesCode string `form:"precedesCode"`
+}
+
 func subjectsHandler(e *echo.Group) {
 	subjectsGroup := e.Group("/subjects")
 	subjectsGroup.GET("/:career", getSubjectsByCareer)
@@ -26,14 +34,6 @@ func getSubjectsByCareer(c echo.Context) error {
 	println(fmt.Sprintf("Subjects: %v", subjects))
 
 	return c.JSON(http.StatusOK, subjects)
-}
-
-type SubjectForm struct {
-	SubjectName  string `form:"subjectName"`
-	SubjectCode  string `form:"subjectCode"`
-	CareerName   string `form:"careerName"`
-	Trimester    uint   `form:"trimester"`
-	PrecedesCode string `form:"precedesCode"`
 }
 
 func createSubject(c echo.Context) error {

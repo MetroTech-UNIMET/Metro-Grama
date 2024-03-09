@@ -4,22 +4,25 @@ import (
 	"context"
 	"metrograma/db"
 	"metrograma/ent"
+	"metrograma/models"
 )
 
-func GetAllCareer(ctx context.Context) (map[string][]string, error) {
-	carrersJson := make(map[string][]string)
+func GetAllCareer(ctx context.Context) ([]models.Career, error) {
 	carrers, err := db.EntClient.Career.Query().All(ctx)
 	if err != nil {
 		return nil, nil
 	}
 
-	carrersJson["carrers"] = make([]string, len(carrers))
+	carrersOut := make([]models.Career, len(carrers))
 
 	for i, c := range carrers {
-		carrersJson["carrers"][i] = c.Name
+		carrersOut[i] = models.Career{
+			ID:   c.ID.String(),
+			Name: c.Name,
+		}
 	}
 
-	return carrersJson, nil
+	return carrersOut, nil
 }
 
 func CreateCarrer(ctx context.Context, careerName string) (*ent.Career, error) {

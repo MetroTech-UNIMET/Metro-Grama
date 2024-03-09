@@ -3,14 +3,27 @@
 package ent
 
 import (
+	"metrograma/ent/career"
 	"metrograma/ent/schema"
 	"metrograma/ent/subject"
+
+	"github.com/google/uuid"
 )
 
 // The init function reads all schema descriptors with runtime code
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	careerFields := schema.Career{}.Fields()
+	_ = careerFields
+	// careerDescName is the schema descriptor for name field.
+	careerDescName := careerFields[1].Descriptor()
+	// career.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	career.NameValidator = careerDescName.Validators[0].(func(string) error)
+	// careerDescID is the schema descriptor for id field.
+	careerDescID := careerFields[0].Descriptor()
+	// career.DefaultID holds the default value on creation for the id field.
+	career.DefaultID = careerDescID.Default.(func() uuid.UUID)
 	subjectFields := schema.Subject{}.Fields()
 	_ = subjectFields
 	// subjectDescSubjectName is the schema descriptor for subject_name field.
@@ -21,8 +34,8 @@ func init() {
 	subjectDescSubjectCode := subjectFields[3].Descriptor()
 	// subject.SubjectCodeValidator is a validator for the "subject_code" field. It is called by the builders before save.
 	subject.SubjectCodeValidator = subjectDescSubjectCode.Validators[0].(func(string) error)
-	// subjectDescCareerName is the schema descriptor for career_name field.
-	subjectDescCareerName := subjectFields[4].Descriptor()
-	// subject.CareerNameValidator is a validator for the "career_name" field. It is called by the builders before save.
-	subject.CareerNameValidator = subjectDescCareerName.Validators[0].(func(string) error)
+	// subjectDescID is the schema descriptor for id field.
+	subjectDescID := subjectFields[0].Descriptor()
+	// subject.DefaultID holds the default value on creation for the id field.
+	subject.DefaultID = subjectDescID.Default.(func() uuid.UUID)
 }

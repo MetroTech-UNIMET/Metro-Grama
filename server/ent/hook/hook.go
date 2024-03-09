@@ -8,6 +8,18 @@ import (
 	"metrograma/ent"
 )
 
+// The CareerFunc type is an adapter to allow the use of ordinary
+// function as Career mutator.
+type CareerFunc func(context.Context, *ent.CareerMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f CareerFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.CareerMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.CareerMutation", m)
+}
+
 // The SubjectFunc type is an adapter to allow the use of ordinary
 // function as Subject mutator.
 type SubjectFunc func(context.Context, *ent.SubjectMutation) (ent.Value, error)

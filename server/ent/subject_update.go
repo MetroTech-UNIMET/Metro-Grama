@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"metrograma/ent/career"
 	"metrograma/ent/predicate"
 	"metrograma/ent/subject"
 
@@ -76,20 +77,6 @@ func (su *SubjectUpdate) SetNillableSubjectCode(s *string) *SubjectUpdate {
 	return su
 }
 
-// SetCareerName sets the "career_name" field.
-func (su *SubjectUpdate) SetCareerName(s string) *SubjectUpdate {
-	su.mutation.SetCareerName(s)
-	return su
-}
-
-// SetNillableCareerName sets the "career_name" field if the given value is not nil.
-func (su *SubjectUpdate) SetNillableCareerName(s *string) *SubjectUpdate {
-	if s != nil {
-		su.SetCareerName(*s)
-	}
-	return su
-}
-
 // SetTrimester sets the "trimester" field.
 func (su *SubjectUpdate) SetTrimester(u uint8) *SubjectUpdate {
 	su.mutation.ResetTrimester()
@@ -131,6 +118,21 @@ func (su *SubjectUpdate) AddNextSubject(s ...*Subject) *SubjectUpdate {
 	return su.AddNextSubjectIDs(ids...)
 }
 
+// AddCarrerIDs adds the "carrer" edge to the Career entity by IDs.
+func (su *SubjectUpdate) AddCarrerIDs(ids ...uuid.UUID) *SubjectUpdate {
+	su.mutation.AddCarrerIDs(ids...)
+	return su
+}
+
+// AddCarrer adds the "carrer" edges to the Career entity.
+func (su *SubjectUpdate) AddCarrer(c ...*Career) *SubjectUpdate {
+	ids := make([]uuid.UUID, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return su.AddCarrerIDs(ids...)
+}
+
 // Mutation returns the SubjectMutation object of the builder.
 func (su *SubjectUpdate) Mutation() *SubjectMutation {
 	return su.mutation
@@ -161,6 +163,27 @@ func (su *SubjectUpdate) RemoveNextSubject(s ...*Subject) *SubjectUpdate {
 		ids[i] = s[i].ID
 	}
 	return su.RemoveNextSubjectIDs(ids...)
+}
+
+// ClearCarrer clears all "carrer" edges to the Career entity.
+func (su *SubjectUpdate) ClearCarrer() *SubjectUpdate {
+	su.mutation.ClearCarrer()
+	return su
+}
+
+// RemoveCarrerIDs removes the "carrer" edge to Career entities by IDs.
+func (su *SubjectUpdate) RemoveCarrerIDs(ids ...uuid.UUID) *SubjectUpdate {
+	su.mutation.RemoveCarrerIDs(ids...)
+	return su
+}
+
+// RemoveCarrer removes "carrer" edges to Career entities.
+func (su *SubjectUpdate) RemoveCarrer(c ...*Career) *SubjectUpdate {
+	ids := make([]uuid.UUID, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return su.RemoveCarrerIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -202,11 +225,6 @@ func (su *SubjectUpdate) check() error {
 			return &ValidationError{Name: "subject_code", err: fmt.Errorf(`ent: validator failed for field "Subject.subject_code": %w`, err)}
 		}
 	}
-	if v, ok := su.mutation.CareerName(); ok {
-		if err := subject.CareerNameValidator(v); err != nil {
-			return &ValidationError{Name: "career_name", err: fmt.Errorf(`ent: validator failed for field "Subject.career_name": %w`, err)}
-		}
-	}
 	return nil
 }
 
@@ -227,9 +245,6 @@ func (su *SubjectUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := su.mutation.SubjectCode(); ok {
 		_spec.SetField(subject.FieldSubjectCode, field.TypeString, value)
-	}
-	if value, ok := su.mutation.CareerName(); ok {
-		_spec.SetField(subject.FieldCareerName, field.TypeString, value)
 	}
 	if value, ok := su.mutation.Trimester(); ok {
 		_spec.SetField(subject.FieldTrimester, field.TypeUint8, value)
@@ -311,6 +326,51 @@ func (su *SubjectUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if su.mutation.CarrerCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   subject.CarrerTable,
+			Columns: subject.CarrerPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(career.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := su.mutation.RemovedCarrerIDs(); len(nodes) > 0 && !su.mutation.CarrerCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   subject.CarrerTable,
+			Columns: subject.CarrerPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(career.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := su.mutation.CarrerIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   subject.CarrerTable,
+			Columns: subject.CarrerPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(career.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, su.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{subject.Label}
@@ -379,20 +439,6 @@ func (suo *SubjectUpdateOne) SetNillableSubjectCode(s *string) *SubjectUpdateOne
 	return suo
 }
 
-// SetCareerName sets the "career_name" field.
-func (suo *SubjectUpdateOne) SetCareerName(s string) *SubjectUpdateOne {
-	suo.mutation.SetCareerName(s)
-	return suo
-}
-
-// SetNillableCareerName sets the "career_name" field if the given value is not nil.
-func (suo *SubjectUpdateOne) SetNillableCareerName(s *string) *SubjectUpdateOne {
-	if s != nil {
-		suo.SetCareerName(*s)
-	}
-	return suo
-}
-
 // SetTrimester sets the "trimester" field.
 func (suo *SubjectUpdateOne) SetTrimester(u uint8) *SubjectUpdateOne {
 	suo.mutation.ResetTrimester()
@@ -434,6 +480,21 @@ func (suo *SubjectUpdateOne) AddNextSubject(s ...*Subject) *SubjectUpdateOne {
 	return suo.AddNextSubjectIDs(ids...)
 }
 
+// AddCarrerIDs adds the "carrer" edge to the Career entity by IDs.
+func (suo *SubjectUpdateOne) AddCarrerIDs(ids ...uuid.UUID) *SubjectUpdateOne {
+	suo.mutation.AddCarrerIDs(ids...)
+	return suo
+}
+
+// AddCarrer adds the "carrer" edges to the Career entity.
+func (suo *SubjectUpdateOne) AddCarrer(c ...*Career) *SubjectUpdateOne {
+	ids := make([]uuid.UUID, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return suo.AddCarrerIDs(ids...)
+}
+
 // Mutation returns the SubjectMutation object of the builder.
 func (suo *SubjectUpdateOne) Mutation() *SubjectMutation {
 	return suo.mutation
@@ -464,6 +525,27 @@ func (suo *SubjectUpdateOne) RemoveNextSubject(s ...*Subject) *SubjectUpdateOne 
 		ids[i] = s[i].ID
 	}
 	return suo.RemoveNextSubjectIDs(ids...)
+}
+
+// ClearCarrer clears all "carrer" edges to the Career entity.
+func (suo *SubjectUpdateOne) ClearCarrer() *SubjectUpdateOne {
+	suo.mutation.ClearCarrer()
+	return suo
+}
+
+// RemoveCarrerIDs removes the "carrer" edge to Career entities by IDs.
+func (suo *SubjectUpdateOne) RemoveCarrerIDs(ids ...uuid.UUID) *SubjectUpdateOne {
+	suo.mutation.RemoveCarrerIDs(ids...)
+	return suo
+}
+
+// RemoveCarrer removes "carrer" edges to Career entities.
+func (suo *SubjectUpdateOne) RemoveCarrer(c ...*Career) *SubjectUpdateOne {
+	ids := make([]uuid.UUID, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return suo.RemoveCarrerIDs(ids...)
 }
 
 // Where appends a list predicates to the SubjectUpdate builder.
@@ -518,11 +600,6 @@ func (suo *SubjectUpdateOne) check() error {
 			return &ValidationError{Name: "subject_code", err: fmt.Errorf(`ent: validator failed for field "Subject.subject_code": %w`, err)}
 		}
 	}
-	if v, ok := suo.mutation.CareerName(); ok {
-		if err := subject.CareerNameValidator(v); err != nil {
-			return &ValidationError{Name: "career_name", err: fmt.Errorf(`ent: validator failed for field "Subject.career_name": %w`, err)}
-		}
-	}
 	return nil
 }
 
@@ -560,9 +637,6 @@ func (suo *SubjectUpdateOne) sqlSave(ctx context.Context) (_node *Subject, err e
 	}
 	if value, ok := suo.mutation.SubjectCode(); ok {
 		_spec.SetField(subject.FieldSubjectCode, field.TypeString, value)
-	}
-	if value, ok := suo.mutation.CareerName(); ok {
-		_spec.SetField(subject.FieldCareerName, field.TypeString, value)
 	}
 	if value, ok := suo.mutation.Trimester(); ok {
 		_spec.SetField(subject.FieldTrimester, field.TypeUint8, value)
@@ -637,6 +711,51 @@ func (suo *SubjectUpdateOne) sqlSave(ctx context.Context) (_node *Subject, err e
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(subject.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if suo.mutation.CarrerCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   subject.CarrerTable,
+			Columns: subject.CarrerPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(career.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := suo.mutation.RemovedCarrerIDs(); len(nodes) > 0 && !suo.mutation.CarrerCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   subject.CarrerTable,
+			Columns: subject.CarrerPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(career.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := suo.mutation.CarrerIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   subject.CarrerTable,
+			Columns: subject.CarrerPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(career.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

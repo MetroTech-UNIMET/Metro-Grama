@@ -15,11 +15,10 @@ type Subject struct {
 // Fields of the Subject.
 func (Subject) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.New()),
+		field.UUID("id", uuid.New()).Default(uuid.New),
 		field.UUID("precedes_subject_id", uuid.New()).Optional().Nillable(),
 		field.String("subject_name").NotEmpty(),
 		field.String("subject_code").NotEmpty().Unique(),
-		field.String("career_name").NotEmpty(),
 		field.Uint8("trimester"),
 	}
 }
@@ -31,5 +30,6 @@ func (Subject) Edges() []ent.Edge {
 			From("precedes_subject").
 			Field("precedes_subject_id").
 			Unique(),
+		edge.From("carrer", Career.Type).Ref("subjects"),
 	}
 }

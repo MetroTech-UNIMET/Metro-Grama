@@ -3,13 +3,15 @@ package test
 import (
 	"context"
 	"metrograma/ent"
-	"metrograma/ent/subject"
+	careerEnt "metrograma/ent/career"
 	"testing"
 
 	"entgo.io/ent/dialect"
 	"github.com/google/uuid"
 	_ "github.com/mattn/go-sqlite3"
 )
+
+const CareerName = "Ing. Sistemas"
 
 func CreateClient() (*ent.Client, context.Context, error) {
 	// Create an ent.Client with in-memory SQLite database.
@@ -26,14 +28,14 @@ func CreateClient() (*ent.Client, context.Context, error) {
 	return client, ctx, nil
 }
 
-func CreateSubject(ctx context.Context, client *ent.Client, id uuid.UUID, precedesID *uuid.UUID, name string, code string, career string, trimester uint8) (*ent.Subject, error) {
+func CreateSubject(ctx context.Context, client *ent.Client, id uuid.UUID, precedesID *uuid.UUID, name string, code string, career *ent.Career, trimester uint8) (*ent.Subject, error) {
 	subject, err := client.Subject.
 		Create().
 		SetID(id).
 		SetNillablePrecedesSubjectID(precedesID).
 		SetSubjectName(name).
 		SetSubjectCode(code).
-		SetCareerName(career).
+		AddCarrer(career).
 		SetTrimester(trimester).
 		Save(ctx)
 	if err != nil {
@@ -42,7 +44,7 @@ func CreateSubject(ctx context.Context, client *ent.Client, id uuid.UUID, preced
 	return subject, nil
 }
 
-func CreateSubjectsData(t *testing.T, ctx context.Context, client *ent.Client) {
+func CreateSubjectsData(t *testing.T, ctx context.Context, client *ent.Client, career *ent.Career) {
 	subjectIDs := make([]uuid.UUID, 6)
 	for i := 0; i < 6; i++ {
 		subjectIDs[i] = uuid.New()
@@ -53,34 +55,66 @@ func CreateSubjectsData(t *testing.T, ctx context.Context, client *ent.Client) {
 		PrecedesID *uuid.UUID
 		Name       string
 		Code       string
-		Career     string
 		trimester  uint8
 	}{
 		{
-			subjectIDs[0], nil, "Matemática básica", "FBTMM01", "Sistemas", 1,
+			subjectIDs[0], nil, "Matemática básica", "FBTMM01", 1,
 		},
 		{
-			subjectIDs[1], &subjectIDs[0], "Matemáticas I", "BPTMI01", "Sistemas", 2,
+			subjectIDs[1], &subjectIDs[0], "Matemáticas I", "BPTMI01", 2,
 		},
 		{
-			subjectIDs[2], &subjectIDs[1], "Matemáticas II", "BPTMI02", "Sistemas", 3,
+			subjectIDs[2], &subjectIDs[1], "Matemáticas II", "BPTMI02", 3,
 		},
 		{
-			subjectIDs[3], &subjectIDs[2], "Matemáticas III", "BPTMI03", "Sistemas", 4,
+			subjectIDs[3], &subjectIDs[2], "Matemáticas III", "BPTMI03", 4,
 		},
 		{
-			subjectIDs[4], &subjectIDs[1], "Física I", "BPTFI01", "Sistemas", 4,
+			subjectIDs[4], &subjectIDs[1], "Física I", "BPTFI01", 4,
 		},
 		{
-			subjectIDs[5], &subjectIDs[4], "Física II", "BPTFI02", "Sistemas", 5,
+			subjectIDs[5], &subjectIDs[4], "Física II", "BPTFI02", 5,
 		},
 	}
 
 	for _, s := range subjects {
-		_, err := CreateSubject(ctx, client, s.ID, s.PrecedesID, s.Name, s.Code, s.Career, s.trimester)
+		_, err := CreateSubject(ctx, client, s.ID, s.PrecedesID, s.Name, s.Code, career, s.trimester)
 		if err != nil {
 			t.Error(err)
 		}
+	}
+}
+
+func TestCreateCarrer(t *testing.T) {
+	client, ctx, err := CreateClient()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer client.Close()
+
+	if _, err := client.Career.Create().SetName(CareerName).Save(ctx); err != nil {
+		t.Error(err)
+	}
+}
+
+func TestGetCarrer(t *testing.T) {
+	client, ctx, err := CreateClient()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer client.Close()
+
+	carrer, err := client.Career.Create().SetName(CareerName).Save(ctx)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if _, err := client.Career.Get(ctx, carrer.ID); err != nil {
+		t.Error(err)
+	}
+
+	if _, err := client.Career.Query().Where(careerEnt.NameEQ(CareerName)).All(ctx); err != nil {
+		t.Error(err)
 	}
 }
 
@@ -91,7 +125,11 @@ func TestCreateSubject(t *testing.T) {
 	}
 	defer client.Close()
 
-	CreateSubjectsData(t, ctx, client)
+	career, err := client.Career.Create().SetName(CareerName).Save(ctx)
+	if err != nil {
+		t.Error(err)
+	}
+	CreateSubjectsData(t, ctx, client, career)
 }
 
 func TestSubjectByCarrer(t *testing.T) {
@@ -101,8 +139,14 @@ func TestSubjectByCarrer(t *testing.T) {
 	}
 	defer client.Close()
 
-	CreateSubjectsData(t, ctx, client)
-	subjects, err := client.Subject.Query().Where(subject.CareerName("Sistemas")).All(ctx)
+	career, err := client.Career.Create().SetName(CareerName).Save(ctx)
+	if err != nil {
+		t.Error(err)
+	}
+
+	CreateSubjectsData(t, ctx, client, career)
+
+	subjects, err := client.Career.Query().Where(careerEnt.Name(CareerName)).QuerySubjects().All(ctx)
 	if err != nil {
 		t.Error(err)
 	}

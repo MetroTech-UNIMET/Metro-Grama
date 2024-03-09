@@ -23,8 +23,6 @@ type Subject struct {
 	SubjectName string `json:"subject_name,omitempty"`
 	// SubjectCode holds the value of the "subject_code" field.
 	SubjectCode string `json:"subject_code,omitempty"`
-	// CareerName holds the value of the "career_name" field.
-	CareerName string `json:"career_name,omitempty"`
 	// Trimester holds the value of the "trimester" field.
 	Trimester uint8 `json:"trimester,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -39,9 +37,11 @@ type SubjectEdges struct {
 	PrecedesSubject *Subject `json:"precedes_subject,omitempty"`
 	// NextSubject holds the value of the next_subject edge.
 	NextSubject []*Subject `json:"next_subject,omitempty"`
+	// Carrer holds the value of the carrer edge.
+	Carrer []*Career `json:"carrer,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
 // PrecedesSubjectOrErr returns the PrecedesSubject value or an error if the edge
@@ -64,6 +64,15 @@ func (e SubjectEdges) NextSubjectOrErr() ([]*Subject, error) {
 	return nil, &NotLoadedError{edge: "next_subject"}
 }
 
+// CarrerOrErr returns the Carrer value or an error if the edge
+// was not loaded in eager-loading.
+func (e SubjectEdges) CarrerOrErr() ([]*Career, error) {
+	if e.loadedTypes[2] {
+		return e.Carrer, nil
+	}
+	return nil, &NotLoadedError{edge: "carrer"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Subject) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -73,7 +82,7 @@ func (*Subject) scanValues(columns []string) ([]any, error) {
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case subject.FieldTrimester:
 			values[i] = new(sql.NullInt64)
-		case subject.FieldSubjectName, subject.FieldSubjectCode, subject.FieldCareerName:
+		case subject.FieldSubjectName, subject.FieldSubjectCode:
 			values[i] = new(sql.NullString)
 		case subject.FieldID:
 			values[i] = new(uuid.UUID)
@@ -117,12 +126,6 @@ func (s *Subject) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				s.SubjectCode = value.String
 			}
-		case subject.FieldCareerName:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field career_name", values[i])
-			} else if value.Valid {
-				s.CareerName = value.String
-			}
 		case subject.FieldTrimester:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field trimester", values[i])
@@ -150,6 +153,11 @@ func (s *Subject) QueryPrecedesSubject() *SubjectQuery {
 // QueryNextSubject queries the "next_subject" edge of the Subject entity.
 func (s *Subject) QueryNextSubject() *SubjectQuery {
 	return NewSubjectClient(s.config).QueryNextSubject(s)
+}
+
+// QueryCarrer queries the "carrer" edge of the Subject entity.
+func (s *Subject) QueryCarrer() *CareerQuery {
+	return NewSubjectClient(s.config).QueryCarrer(s)
 }
 
 // Update returns a builder for updating this Subject.
@@ -185,9 +193,6 @@ func (s *Subject) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("subject_code=")
 	builder.WriteString(s.SubjectCode)
-	builder.WriteString(", ")
-	builder.WriteString("career_name=")
-	builder.WriteString(s.CareerName)
 	builder.WriteString(", ")
 	builder.WriteString("trimester=")
 	builder.WriteString(fmt.Sprintf("%v", s.Trimester))

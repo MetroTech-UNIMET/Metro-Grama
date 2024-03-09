@@ -39,6 +39,10 @@ func GetAllGreetings(ctx context.Context) ([]string, error) {
 	return greetings.([]string), nil
 }
 
+func GetSubjectByCareerV2(ctx context.Context, career string) (Graph[Subject], error) {
+	return Graph[Subject]{}, nil
+}
+
 func GetSubjectByCareer(ctx context.Context, career string) (Graph[Subject], error) {
 	session := db.Neo4j.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	defer session.Close(ctx)
@@ -137,4 +141,9 @@ func CreateSubject(ctx context.Context, subjectName string, subjectCode string, 
 	}
 
 	return summary.(neo4j.ResultSummary), nil
+}
+
+func CreateSubjectv2(ctx context.Context, subjectName string, subjectCode string, careerName string, trimester uint, precedesCode string) error {
+	// db.EntClient.Subject.Create()
+	return nil
 }

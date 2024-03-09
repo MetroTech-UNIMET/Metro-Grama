@@ -5,6 +5,7 @@ package subject
 import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/google/uuid"
 )
 
 const (
@@ -18,14 +19,14 @@ const (
 	FieldSubjectName = "subject_name"
 	// FieldSubjectCode holds the string denoting the subject_code field in the database.
 	FieldSubjectCode = "subject_code"
-	// FieldCareerName holds the string denoting the career_name field in the database.
-	FieldCareerName = "career_name"
 	// FieldTrimester holds the string denoting the trimester field in the database.
 	FieldTrimester = "trimester"
 	// EdgePrecedesSubject holds the string denoting the precedes_subject edge name in mutations.
 	EdgePrecedesSubject = "precedes_subject"
 	// EdgeNextSubject holds the string denoting the next_subject edge name in mutations.
 	EdgeNextSubject = "next_subject"
+	// EdgeCarrer holds the string denoting the carrer edge name in mutations.
+	EdgeCarrer = "carrer"
 	// Table holds the table name of the subject in the database.
 	Table = "subjects"
 	// PrecedesSubjectTable is the table that holds the precedes_subject relation/edge.
@@ -36,6 +37,11 @@ const (
 	NextSubjectTable = "subjects"
 	// NextSubjectColumn is the table column denoting the next_subject relation/edge.
 	NextSubjectColumn = "precedes_subject_id"
+	// CarrerTable is the table that holds the carrer relation/edge. The primary key declared below.
+	CarrerTable = "career_subjects"
+	// CarrerInverseTable is the table name for the Career entity.
+	// It exists in this package in order to avoid circular dependency with the "career" package.
+	CarrerInverseTable = "careers"
 )
 
 // Columns holds all SQL columns for subject fields.
@@ -44,9 +50,14 @@ var Columns = []string{
 	FieldPrecedesSubjectID,
 	FieldSubjectName,
 	FieldSubjectCode,
-	FieldCareerName,
 	FieldTrimester,
 }
+
+var (
+	// CarrerPrimaryKey and CarrerColumn2 are the table columns denoting the
+	// primary key for the carrer relation (M2M).
+	CarrerPrimaryKey = []string{"career_id", "subject_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -63,8 +74,8 @@ var (
 	SubjectNameValidator func(string) error
 	// SubjectCodeValidator is a validator for the "subject_code" field. It is called by the builders before save.
 	SubjectCodeValidator func(string) error
-	// CareerNameValidator is a validator for the "career_name" field. It is called by the builders before save.
-	CareerNameValidator func(string) error
+	// DefaultID holds the default value on creation for the "id" field.
+	DefaultID func() uuid.UUID
 )
 
 // OrderOption defines the ordering options for the Subject queries.
@@ -88,11 +99,6 @@ func BySubjectName(opts ...sql.OrderTermOption) OrderOption {
 // BySubjectCode orders the results by the subject_code field.
 func BySubjectCode(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldSubjectCode, opts...).ToFunc()
-}
-
-// ByCareerName orders the results by the career_name field.
-func ByCareerName(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldCareerName, opts...).ToFunc()
 }
 
 // ByTrimester orders the results by the trimester field.
@@ -120,6 +126,20 @@ func ByNextSubject(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newNextSubjectStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByCarrerCount orders the results by carrer count.
+func ByCarrerCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newCarrerStep(), opts...)
+	}
+}
+
+// ByCarrer orders the results by carrer terms.
+func ByCarrer(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newCarrerStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newPrecedesSubjectStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -132,5 +152,12 @@ func newNextSubjectStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(Table, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, NextSubjectTable, NextSubjectColumn),
+	)
+}
+func newCarrerStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(CarrerInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, true, CarrerTable, CarrerPrimaryKey...),
 	)
 }

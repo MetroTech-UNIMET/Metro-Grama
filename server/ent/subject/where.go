@@ -70,11 +70,6 @@ func SubjectCode(v string) predicate.Subject {
 	return predicate.Subject(sql.FieldEQ(FieldSubjectCode, v))
 }
 
-// CareerName applies equality check predicate on the "career_name" field. It's identical to CareerNameEQ.
-func CareerName(v string) predicate.Subject {
-	return predicate.Subject(sql.FieldEQ(FieldCareerName, v))
-}
-
 // Trimester applies equality check predicate on the "trimester" field. It's identical to TrimesterEQ.
 func Trimester(v uint8) predicate.Subject {
 	return predicate.Subject(sql.FieldEQ(FieldTrimester, v))
@@ -240,71 +235,6 @@ func SubjectCodeContainsFold(v string) predicate.Subject {
 	return predicate.Subject(sql.FieldContainsFold(FieldSubjectCode, v))
 }
 
-// CareerNameEQ applies the EQ predicate on the "career_name" field.
-func CareerNameEQ(v string) predicate.Subject {
-	return predicate.Subject(sql.FieldEQ(FieldCareerName, v))
-}
-
-// CareerNameNEQ applies the NEQ predicate on the "career_name" field.
-func CareerNameNEQ(v string) predicate.Subject {
-	return predicate.Subject(sql.FieldNEQ(FieldCareerName, v))
-}
-
-// CareerNameIn applies the In predicate on the "career_name" field.
-func CareerNameIn(vs ...string) predicate.Subject {
-	return predicate.Subject(sql.FieldIn(FieldCareerName, vs...))
-}
-
-// CareerNameNotIn applies the NotIn predicate on the "career_name" field.
-func CareerNameNotIn(vs ...string) predicate.Subject {
-	return predicate.Subject(sql.FieldNotIn(FieldCareerName, vs...))
-}
-
-// CareerNameGT applies the GT predicate on the "career_name" field.
-func CareerNameGT(v string) predicate.Subject {
-	return predicate.Subject(sql.FieldGT(FieldCareerName, v))
-}
-
-// CareerNameGTE applies the GTE predicate on the "career_name" field.
-func CareerNameGTE(v string) predicate.Subject {
-	return predicate.Subject(sql.FieldGTE(FieldCareerName, v))
-}
-
-// CareerNameLT applies the LT predicate on the "career_name" field.
-func CareerNameLT(v string) predicate.Subject {
-	return predicate.Subject(sql.FieldLT(FieldCareerName, v))
-}
-
-// CareerNameLTE applies the LTE predicate on the "career_name" field.
-func CareerNameLTE(v string) predicate.Subject {
-	return predicate.Subject(sql.FieldLTE(FieldCareerName, v))
-}
-
-// CareerNameContains applies the Contains predicate on the "career_name" field.
-func CareerNameContains(v string) predicate.Subject {
-	return predicate.Subject(sql.FieldContains(FieldCareerName, v))
-}
-
-// CareerNameHasPrefix applies the HasPrefix predicate on the "career_name" field.
-func CareerNameHasPrefix(v string) predicate.Subject {
-	return predicate.Subject(sql.FieldHasPrefix(FieldCareerName, v))
-}
-
-// CareerNameHasSuffix applies the HasSuffix predicate on the "career_name" field.
-func CareerNameHasSuffix(v string) predicate.Subject {
-	return predicate.Subject(sql.FieldHasSuffix(FieldCareerName, v))
-}
-
-// CareerNameEqualFold applies the EqualFold predicate on the "career_name" field.
-func CareerNameEqualFold(v string) predicate.Subject {
-	return predicate.Subject(sql.FieldEqualFold(FieldCareerName, v))
-}
-
-// CareerNameContainsFold applies the ContainsFold predicate on the "career_name" field.
-func CareerNameContainsFold(v string) predicate.Subject {
-	return predicate.Subject(sql.FieldContainsFold(FieldCareerName, v))
-}
-
 // TrimesterEQ applies the EQ predicate on the "trimester" field.
 func TrimesterEQ(v uint8) predicate.Subject {
 	return predicate.Subject(sql.FieldEQ(FieldTrimester, v))
@@ -383,6 +313,29 @@ func HasNextSubject() predicate.Subject {
 func HasNextSubjectWith(preds ...predicate.Subject) predicate.Subject {
 	return predicate.Subject(func(s *sql.Selector) {
 		step := newNextSubjectStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasCarrer applies the HasEdge predicate on the "carrer" edge.
+func HasCarrer() predicate.Subject {
+	return predicate.Subject(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, CarrerTable, CarrerPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasCarrerWith applies the HasEdge predicate on the "carrer" edge with a given conditions (other predicates).
+func HasCarrerWith(preds ...predicate.Career) predicate.Subject {
+	return predicate.Subject(func(s *sql.Selector) {
+		step := newCarrerStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

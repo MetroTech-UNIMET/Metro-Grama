@@ -11,6 +11,7 @@ import (
 
 	"metrograma/ent/migrate"
 
+	"metrograma/ent/career"
 	"metrograma/ent/subject"
 
 	"entgo.io/ent"
@@ -25,6 +26,8 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
+	// Career is the client for interacting with the Career builders.
+	Career *CareerClient
 	// Subject is the client for interacting with the Subject builders.
 	Subject *SubjectClient
 }
@@ -38,6 +41,7 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
+	c.Career = NewCareerClient(c.config)
 	c.Subject = NewSubjectClient(c.config)
 }
 
@@ -131,6 +135,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	return &Tx{
 		ctx:     ctx,
 		config:  cfg,
+		Career:  NewCareerClient(cfg),
 		Subject: NewSubjectClient(cfg),
 	}, nil
 }
@@ -151,6 +156,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	return &Tx{
 		ctx:     ctx,
 		config:  cfg,
+		Career:  NewCareerClient(cfg),
 		Subject: NewSubjectClient(cfg),
 	}, nil
 }
@@ -158,7 +164,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		Subject.
+//		Career.
 //		Query().
 //		Count(ctx)
 func (c *Client) Debug() *Client {
@@ -180,22 +186,175 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
+	c.Career.Use(hooks...)
 	c.Subject.Use(hooks...)
 }
 
 // Intercept adds the query interceptors to all the entity clients.
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
+	c.Career.Intercept(interceptors...)
 	c.Subject.Intercept(interceptors...)
 }
 
 // Mutate implements the ent.Mutator interface.
 func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
+	case *CareerMutation:
+		return c.Career.mutate(ctx, m)
 	case *SubjectMutation:
 		return c.Subject.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
+	}
+}
+
+// CareerClient is a client for the Career schema.
+type CareerClient struct {
+	config
+}
+
+// NewCareerClient returns a client for the Career from the given config.
+func NewCareerClient(c config) *CareerClient {
+	return &CareerClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `career.Hooks(f(g(h())))`.
+func (c *CareerClient) Use(hooks ...Hook) {
+	c.hooks.Career = append(c.hooks.Career, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `career.Intercept(f(g(h())))`.
+func (c *CareerClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Career = append(c.inters.Career, interceptors...)
+}
+
+// Create returns a builder for creating a Career entity.
+func (c *CareerClient) Create() *CareerCreate {
+	mutation := newCareerMutation(c.config, OpCreate)
+	return &CareerCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Career entities.
+func (c *CareerClient) CreateBulk(builders ...*CareerCreate) *CareerCreateBulk {
+	return &CareerCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *CareerClient) MapCreateBulk(slice any, setFunc func(*CareerCreate, int)) *CareerCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &CareerCreateBulk{err: fmt.Errorf("calling to CareerClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*CareerCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &CareerCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Career.
+func (c *CareerClient) Update() *CareerUpdate {
+	mutation := newCareerMutation(c.config, OpUpdate)
+	return &CareerUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *CareerClient) UpdateOne(ca *Career) *CareerUpdateOne {
+	mutation := newCareerMutation(c.config, OpUpdateOne, withCareer(ca))
+	return &CareerUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *CareerClient) UpdateOneID(id uuid.UUID) *CareerUpdateOne {
+	mutation := newCareerMutation(c.config, OpUpdateOne, withCareerID(id))
+	return &CareerUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Career.
+func (c *CareerClient) Delete() *CareerDelete {
+	mutation := newCareerMutation(c.config, OpDelete)
+	return &CareerDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *CareerClient) DeleteOne(ca *Career) *CareerDeleteOne {
+	return c.DeleteOneID(ca.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *CareerClient) DeleteOneID(id uuid.UUID) *CareerDeleteOne {
+	builder := c.Delete().Where(career.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &CareerDeleteOne{builder}
+}
+
+// Query returns a query builder for Career.
+func (c *CareerClient) Query() *CareerQuery {
+	return &CareerQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeCareer},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Career entity by its id.
+func (c *CareerClient) Get(ctx context.Context, id uuid.UUID) (*Career, error) {
+	return c.Query().Where(career.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *CareerClient) GetX(ctx context.Context, id uuid.UUID) *Career {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QuerySubjects queries the subjects edge of a Career.
+func (c *CareerClient) QuerySubjects(ca *Career) *SubjectQuery {
+	query := (&SubjectClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := ca.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(career.Table, career.FieldID, id),
+			sqlgraph.To(subject.Table, subject.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, career.SubjectsTable, career.SubjectsPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(ca.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *CareerClient) Hooks() []Hook {
+	return c.hooks.Career
+}
+
+// Interceptors returns the client interceptors.
+func (c *CareerClient) Interceptors() []Interceptor {
+	return c.inters.Career
+}
+
+func (c *CareerClient) mutate(ctx context.Context, m *CareerMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&CareerCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&CareerUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&CareerUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&CareerDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Career mutation op: %q", m.Op())
 	}
 }
 
@@ -339,6 +498,22 @@ func (c *SubjectClient) QueryNextSubject(s *Subject) *SubjectQuery {
 	return query
 }
 
+// QueryCarrer queries the carrer edge of a Subject.
+func (c *SubjectClient) QueryCarrer(s *Subject) *CareerQuery {
+	query := (&CareerClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := s.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(subject.Table, subject.FieldID, id),
+			sqlgraph.To(career.Table, career.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, subject.CarrerTable, subject.CarrerPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *SubjectClient) Hooks() []Hook {
 	return c.hooks.Subject
@@ -367,9 +542,9 @@ func (c *SubjectClient) mutate(ctx context.Context, m *SubjectMutation) (Value, 
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Subject []ent.Hook
+		Career, Subject []ent.Hook
 	}
 	inters struct {
-		Subject []ent.Interceptor
+		Career, Subject []ent.Interceptor
 	}
 )

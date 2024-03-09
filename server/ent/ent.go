@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"metrograma/ent/career"
 	"metrograma/ent/subject"
 	"reflect"
 	"sync"
@@ -73,6 +74,7 @@ var (
 func checkColumn(table, column string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
+			career.Table:  career.ValidColumn,
 			subject.Table: subject.ValidColumn,
 		})
 	})

@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"metrograma/ent/career"
 	"metrograma/ent/subject"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -46,12 +47,6 @@ func (sc *SubjectCreate) SetSubjectCode(s string) *SubjectCreate {
 	return sc
 }
 
-// SetCareerName sets the "career_name" field.
-func (sc *SubjectCreate) SetCareerName(s string) *SubjectCreate {
-	sc.mutation.SetCareerName(s)
-	return sc
-}
-
 // SetTrimester sets the "trimester" field.
 func (sc *SubjectCreate) SetTrimester(u uint8) *SubjectCreate {
 	sc.mutation.SetTrimester(u)
@@ -61,6 +56,14 @@ func (sc *SubjectCreate) SetTrimester(u uint8) *SubjectCreate {
 // SetID sets the "id" field.
 func (sc *SubjectCreate) SetID(u uuid.UUID) *SubjectCreate {
 	sc.mutation.SetID(u)
+	return sc
+}
+
+// SetNillableID sets the "id" field if the given value is not nil.
+func (sc *SubjectCreate) SetNillableID(u *uuid.UUID) *SubjectCreate {
+	if u != nil {
+		sc.SetID(*u)
+	}
 	return sc
 }
 
@@ -84,6 +87,21 @@ func (sc *SubjectCreate) AddNextSubject(s ...*Subject) *SubjectCreate {
 	return sc.AddNextSubjectIDs(ids...)
 }
 
+// AddCarrerIDs adds the "carrer" edge to the Career entity by IDs.
+func (sc *SubjectCreate) AddCarrerIDs(ids ...uuid.UUID) *SubjectCreate {
+	sc.mutation.AddCarrerIDs(ids...)
+	return sc
+}
+
+// AddCarrer adds the "carrer" edges to the Career entity.
+func (sc *SubjectCreate) AddCarrer(c ...*Career) *SubjectCreate {
+	ids := make([]uuid.UUID, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return sc.AddCarrerIDs(ids...)
+}
+
 // Mutation returns the SubjectMutation object of the builder.
 func (sc *SubjectCreate) Mutation() *SubjectMutation {
 	return sc.mutation
@@ -91,6 +109,7 @@ func (sc *SubjectCreate) Mutation() *SubjectMutation {
 
 // Save creates the Subject in the database.
 func (sc *SubjectCreate) Save(ctx context.Context) (*Subject, error) {
+	sc.defaults()
 	return withHooks(ctx, sc.sqlSave, sc.mutation, sc.hooks)
 }
 
@@ -116,6 +135,14 @@ func (sc *SubjectCreate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (sc *SubjectCreate) defaults() {
+	if _, ok := sc.mutation.ID(); !ok {
+		v := subject.DefaultID()
+		sc.mutation.SetID(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (sc *SubjectCreate) check() error {
 	if _, ok := sc.mutation.SubjectName(); !ok {
@@ -132,14 +159,6 @@ func (sc *SubjectCreate) check() error {
 	if v, ok := sc.mutation.SubjectCode(); ok {
 		if err := subject.SubjectCodeValidator(v); err != nil {
 			return &ValidationError{Name: "subject_code", err: fmt.Errorf(`ent: validator failed for field "Subject.subject_code": %w`, err)}
-		}
-	}
-	if _, ok := sc.mutation.CareerName(); !ok {
-		return &ValidationError{Name: "career_name", err: errors.New(`ent: missing required field "Subject.career_name"`)}
-	}
-	if v, ok := sc.mutation.CareerName(); ok {
-		if err := subject.CareerNameValidator(v); err != nil {
-			return &ValidationError{Name: "career_name", err: fmt.Errorf(`ent: validator failed for field "Subject.career_name": %w`, err)}
 		}
 	}
 	if _, ok := sc.mutation.Trimester(); !ok {
@@ -188,10 +207,6 @@ func (sc *SubjectCreate) createSpec() (*Subject, *sqlgraph.CreateSpec) {
 		_spec.SetField(subject.FieldSubjectCode, field.TypeString, value)
 		_node.SubjectCode = value
 	}
-	if value, ok := sc.mutation.CareerName(); ok {
-		_spec.SetField(subject.FieldCareerName, field.TypeString, value)
-		_node.CareerName = value
-	}
 	if value, ok := sc.mutation.Trimester(); ok {
 		_spec.SetField(subject.FieldTrimester, field.TypeUint8, value)
 		_node.Trimester = value
@@ -229,6 +244,22 @@ func (sc *SubjectCreate) createSpec() (*Subject, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
+	if nodes := sc.mutation.CarrerIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   subject.CarrerTable,
+			Columns: subject.CarrerPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(career.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	return _node, _spec
 }
 
@@ -250,6 +281,7 @@ func (scb *SubjectCreateBulk) Save(ctx context.Context) ([]*Subject, error) {
 	for i := range scb.builders {
 		func(i int, root context.Context) {
 			builder := scb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*SubjectMutation)
 				if !ok {

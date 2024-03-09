@@ -5,15 +5,11 @@ import (
 	"fmt"
 	"metrograma/db"
 	"metrograma/ent"
+	"metrograma/models"
 
 	"github.com/google/uuid"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
-
-type Subject struct {
-	Code string
-	Name string
-}
 
 func GetAllGreetings(ctx context.Context) ([]string, error) {
 	session := db.Neo4j.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
@@ -41,7 +37,7 @@ func GetAllGreetings(ctx context.Context) ([]string, error) {
 	return greetings.([]string), nil
 }
 
-func GetSubjectByCareer(ctx context.Context, career string) (Graph[Subject], error) {
+func GetSubjectByCareer(ctx context.Context, career string) (models.Graph[models.Subject], error) {
 	session := db.Neo4j.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
 	defer session.Close(ctx)
 
@@ -60,9 +56,9 @@ func GetSubjectByCareer(ctx context.Context, career string) (Graph[Subject], err
 				return nil, err
 			}
 
-			var graph Graph[Subject]
+			var graph models.Graph[models.Subject]
 			// fmt.Println(result)
-			nodeMap := make(map[string]Node[Subject])
+			nodeMap := make(map[string]models.Node[models.Subject])
 
 			for result.Next(ctx) {
 				record := result.Record()
@@ -71,7 +67,7 @@ func GetSubjectByCareer(ctx context.Context, career string) (Graph[Subject], err
 					return nil, fmt.Errorf("node not found")
 				}
 				properties := node_subject1.(neo4j.Node).GetProperties()
-				subject := Subject{
+				subject := models.Subject{
 					Code: properties["code"].(string),
 					Name: properties["name"].(string),
 				}
@@ -79,7 +75,7 @@ func GetSubjectByCareer(ctx context.Context, career string) (Graph[Subject], err
 				subject1_Id := node_subject1.(neo4j.Node).ElementId
 
 				if _, exists := nodeMap[subject1_Id]; !exists {
-					node := Node[Subject]{
+					node := models.Node[models.Subject]{
 						Id:   subject1_Id,
 						Data: subject,
 					}
@@ -92,7 +88,7 @@ func GetSubjectByCareer(ctx context.Context, career string) (Graph[Subject], err
 				if found && node_subject2 != nil {
 					subject2_Id := node_subject2.(neo4j.Node).ElementId
 
-					edge := Edge{From: subject1_Id, To: subject2_Id}
+					edge := models.Edge{From: subject1_Id, To: subject2_Id}
 					graph.Edges = append(graph.Edges, edge)
 				}
 			}
@@ -100,14 +96,42 @@ func GetSubjectByCareer(ctx context.Context, career string) (Graph[Subject], err
 		})
 
 	if err != nil {
-		return Graph[Subject]{}, err
+		return models.Graph[models.Subject]{}, err
 	}
 
-	return graph.(Graph[Subject]), nil
+	return graph.(models.Graph[models.Subject]), nil
 }
 
-func GetSubjectByCareerV2(ctx context.Context, career string) (Graph[Subject], error) {
-	return Graph[Subject]{}, nil
+func GetSubjectByCareerV2(ctx context.Context, careerID uuid.UUID) (models.Graph[models.Subject], error) {
+	career, err := db.EntClient.Career.Get(ctx, careerID)
+	if err != nil {
+		return models.Graph[models.Subject]{}, err
+	}
+
+	subjects, err := career.QuerySubjects().All(ctx)
+	if err != nil {
+		return models.Graph[models.Subject]{}, err
+	}
+
+	var graph models.Graph[models.Subject]
+	graph.Nodes = make([]models.Node[models.Subject], len(subjects))
+
+	for i, s := range subjects {
+		graph.Nodes[i] = models.Node[models.Subject]{
+			Id: s.ID.String(),
+			Data: models.Subject{
+				Name: s.SubjectName,
+				Code: s.SubjectCode,
+			},
+		}
+		if s.PrecedesSubjectID != nil {
+			graph.Edges = append(graph.Edges, models.Edge{
+				From: s.PrecedesSubjectID.String(), To: s.ID.String(),
+			})
+		}
+	}
+
+	return graph, nil
 }
 
 func CreateSubject(ctx context.Context, subjectName string, subjectCode string, careerName string, trimester uint, precedesCode string) (neo4j.ResultSummary, error) {

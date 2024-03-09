@@ -44,7 +44,7 @@ func CreateSubject(ctx context.Context, client *ent.Client, id uuid.UUID, preced
 	return subject, nil
 }
 
-func CreateSubjectsData(t *testing.T, ctx context.Context, client *ent.Client, career *ent.Career) {
+func CreateSubjectsData(t *testing.T, ctx context.Context, client *ent.Client, career *ent.Career) error {
 	subjectIDs := make([]uuid.UUID, 6)
 	for i := 0; i < 6; i++ {
 		subjectIDs[i] = uuid.New()
@@ -80,9 +80,10 @@ func CreateSubjectsData(t *testing.T, ctx context.Context, client *ent.Client, c
 	for _, s := range subjects {
 		_, err := CreateSubject(ctx, client, s.ID, s.PrecedesID, s.Name, s.Code, career, s.trimester)
 		if err != nil {
-			t.Error(err)
+			return err
 		}
 	}
+	return nil
 }
 
 func TestCreateCarrer(t *testing.T) {
@@ -129,7 +130,33 @@ func TestCreateSubject(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	CreateSubjectsData(t, ctx, client, career)
+	if err := CreateSubjectsData(t, ctx, client, career); err != nil {
+		t.Error(err)
+	}
+}
+
+func TestFailCreateSubject(t *testing.T) {
+	client, ctx, err := CreateClient()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer client.Close()
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	_, err = client.Subject.
+		Create().
+		SetNillablePrecedesSubjectID(nil).
+		SetSubjectName("Estructuras de Datos").
+		SetSubjectCode("123").
+		SetTrimester(3).
+		Save(ctx)
+
+	if err == nil {
+		t.Error("ERROR. Las materias deben tener un coneccion con por lo menos un grafo de alguna carrera.")
+	}
 }
 
 func TestSubjectByCarrer(t *testing.T) {

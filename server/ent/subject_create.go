@@ -164,6 +164,9 @@ func (sc *SubjectCreate) check() error {
 	if _, ok := sc.mutation.Trimester(); !ok {
 		return &ValidationError{Name: "trimester", err: errors.New(`ent: missing required field "Subject.trimester"`)}
 	}
+	if len(sc.mutation.CarrerIDs()) == 0 {
+		return &ValidationError{Name: "carrer", err: errors.New(`ent: missing required edge "Subject.carrer"`)}
+	}
 	return nil
 }
 

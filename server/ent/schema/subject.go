@@ -30,6 +30,6 @@ func (Subject) Edges() []ent.Edge {
 			From("precedes_subject").
 			Field("precedes_subject_id").
 			Unique(),
-		edge.From("carrer", Career.Type).Ref("subjects"),
+		edge.From("carrer", Career.Type).Ref("subjects").Required(),
 	}
 }

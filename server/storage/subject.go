@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"metrograma/db"
+	"metrograma/ent"
 
+	"github.com/google/uuid"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
@@ -37,10 +39,6 @@ func GetAllGreetings(ctx context.Context) ([]string, error) {
 	}
 
 	return greetings.([]string), nil
-}
-
-func GetSubjectByCareerV2(ctx context.Context, career string) (Graph[Subject], error) {
-	return Graph[Subject]{}, nil
 }
 
 func GetSubjectByCareer(ctx context.Context, career string) (Graph[Subject], error) {
@@ -108,6 +106,10 @@ func GetSubjectByCareer(ctx context.Context, career string) (Graph[Subject], err
 	return graph.(Graph[Subject]), nil
 }
 
+func GetSubjectByCareerV2(ctx context.Context, career string) (Graph[Subject], error) {
+	return Graph[Subject]{}, nil
+}
+
 func CreateSubject(ctx context.Context, subjectName string, subjectCode string, careerName string, trimester uint, precedesCode string) (neo4j.ResultSummary, error) {
 	session := db.Neo4j.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
 	defer session.Close(ctx)
@@ -143,7 +145,19 @@ func CreateSubject(ctx context.Context, subjectName string, subjectCode string, 
 	return summary.(neo4j.ResultSummary), nil
 }
 
-func CreateSubjectv2(ctx context.Context, subjectName string, subjectCode string, careerName string, trimester uint, precedesCode string) error {
-	// db.EntClient.Subject.Create()
-	return nil
+func CreateSubjectv2(ctx context.Context, subjectName string, subjectCode string, careerID uuid.UUID, trimester uint, precedesSubjectID *uuid.UUID) (*ent.Subject, error) {
+	subject, err := db.EntClient.Subject.
+		Create().
+		SetSubjectName(subjectName).
+		SetSubjectCode(subjectCode).
+		SetTrimester(trimester).
+		SetNillablePrecedesSubjectID(precedesSubjectID).
+		AddCarrerIDs(careerID).
+		Save(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return subject, nil
 }

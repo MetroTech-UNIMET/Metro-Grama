@@ -27,27 +27,6 @@ export function getNodesFromEdges(edges: IEdge[], nodeType: nodeType) {
 }
 
 /**
- * Filters an array of edges based on the node type and node ID.
- *
- * @param {IEdge[]} edges - The array of edges to filter.
- * @param {nodeType} nodeType - The type of the node ("source" or "target") to consider when filtering.
- * @param {string} nodeId - The ID of the node to exclude from the result.
- * @param {(edge: IEdge) => void} [sideEffect] - An optional function that is called for each edge.
- * @returns {IEdge[]} The filtered array of edges.
- */
-export function filterEdgesByTarget(
-  edges: IEdge[],
-  nodeType: nodeType,
-  nodeId: string,
-  sideEffect?: (edge: IEdge) => void
-) {
-  return edges.filter((edge) => {
-    if (sideEffect) sideEffect(edge);
-    return (edge._cfg?.[nodeType] as INode).getID() !== nodeId;
-  });
-}
-
-/**
  * Clears all states from all nodes and edges in the graph unless options is set.
  *
  * @param {IGraph} graph - The graph from which to clear states.

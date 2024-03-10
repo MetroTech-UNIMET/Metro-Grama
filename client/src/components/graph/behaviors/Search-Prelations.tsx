@@ -1,11 +1,7 @@
 import { GraphinContext, IG6GraphEvent } from "@antv/graphin";
 import { useContext, useEffect } from "react";
 import { INode, IEdge } from "@antv/g6";
-import {
-  clearGraphStates,
-  filterEdgesByTarget,
-  getNodesFromEdges,
-} from "@/lib/utils/graph";
+import { clearGraphStates, getNodesFromEdges } from "@/lib/utils/graph";
 
 type edgeCustomState = "future" | "prelation";
 
@@ -27,8 +23,8 @@ export default function SearchPrelations() {
 
       graph.setItemState(node, "selected", true);
       graph.setItemState(node, "inactive", false);
-      console.log("selected", node);
-      selectEdges(node.getEdges(), node.getID());
+
+      selectEdges(node);
     }
 
     graph.on("node:click", handleClick);
@@ -44,10 +40,10 @@ export default function SearchPrelations() {
     };
   }, []);
 
-  function selectEdges(edges: IEdge[], nodeId: string) {
-    const prelations = filterEdgesByTarget(edges, "source", nodeId);
+  function selectEdges(node: INode) {
+    const prelations = node.getInEdges();
 
-    const future = filterEdgesByTarget(edges, "target", nodeId);
+    const future = node.getOutEdges();
 
     seePrelations(prelations);
     seeFuture(future);
@@ -58,11 +54,7 @@ export default function SearchPrelations() {
     const nodes = getNodesFromEdges(edges, "target");
 
     nodes.forEach((node) => {
-      const future = filterEdgesByTarget(
-        node.getEdges(),
-        "target",
-        node.getID()
-      );
+      const future = node.getOutEdges();
       graph.setItemState(node, "inactive", false);
 
       seeFuture(future);
@@ -74,11 +66,7 @@ export default function SearchPrelations() {
     const nodes = getNodesFromEdges(edges, "source");
 
     nodes.forEach((node) => {
-      const prelations = filterEdgesByTarget(
-        node.getEdges(),
-        "source",
-        node.getID()
-      );
+      const prelations = node.getInEdges();
       graph.setItemState(node, "inactive", false);
 
       if (prelations.length == 0) {

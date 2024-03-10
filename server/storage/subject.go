@@ -109,7 +109,7 @@ func GetSubjectByCareerV2(ctx context.Context, careerName string) (models.Graph[
 		return models.Graph[models.Subject]{}, err
 	}
 
-	subjects, err := career.QuerySubjects().WithPrecedesSubject().All(ctx)
+	subjects, err := career.QuerySubjects().WithPrecedeSubjects().All(ctx)
 	if err != nil {
 		return models.Graph[models.Subject]{}, err
 	}
@@ -125,10 +125,13 @@ func GetSubjectByCareerV2(ctx context.Context, careerName string) (models.Graph[
 				Code: s.SubjectCode,
 			},
 		}
-		if s.PrecedesSubjectID != nil {
-			graph.Edges = append(graph.Edges, models.Edge{
-				From: s.PrecedesSubjectID.String(), To: s.ID.String(),
-			})
+
+		for _, v := range s.Edges.PrecedeSubjects {
+			if v != nil {
+				graph.Edges = append(graph.Edges, models.Edge{
+					From: v.ID.String(), To: s.ID.String(),
+				})
+			}
 		}
 	}
 
@@ -170,30 +173,29 @@ func CreateSubject(ctx context.Context, subjectName string, subjectCode string, 
 	return summary.(neo4j.ResultSummary), nil
 }
 
-func CreateSubjectv2(ctx context.Context, subjectName string, subjectCode string, careerName string, trimester uint, precedesSubjectCode *string) (*ent.Subject, error) {
-	var precedesSubject *ent.Subject
-	var err error
-	if precedesSubjectCode != nil {
-		precedesSubject, err = db.EntClient.Subject.Query().Where(subject.SubjectCode(*precedesSubjectCode)).First(ctx)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	fmt.Println(careerName)
+func CreateSubjectv2(ctx context.Context, subjectName string, subjectCode string, careerName string, trimester uint, precedesSubjectCodes []string) (*ent.Subject, error) {
 	career, err := db.EntClient.Career.Query().Where(career.Name(careerName)).First(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	subject, err := db.EntClient.Subject.
+	subjectToCreate := db.EntClient.Subject.
 		Create().
 		SetSubjectName(subjectName).
 		SetSubjectCode(subjectCode).
 		SetTrimester(trimester).
-		SetPrecedesSubject(precedesSubject).
-		AddCarrer(career).
-		Save(ctx)
+		AddCarrer(career)
+
+	for _, code := range precedesSubjectCodes {
+		precedesSubject, err := db.EntClient.Subject.Query().Where(subject.SubjectCode(code)).First(ctx)
+		if err != nil {
+			return nil, err
+		}
+		subjectToCreate.AddPrecedeSubjects(precedesSubject)
+	}
+
+	subject, err := subjectToCreate.Save(ctx)
+	// .
 
 	if err != nil {
 		return nil, err

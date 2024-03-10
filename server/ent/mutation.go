@@ -465,8 +465,9 @@ type SubjectMutation struct {
 	trimester               *uint
 	addtrimester            *int
 	clearedFields           map[string]struct{}
-	precedes_subject        *uuid.UUID
-	clearedprecedes_subject bool
+	precede_subjects        map[uuid.UUID]struct{}
+	removedprecede_subjects map[uuid.UUID]struct{}
+	clearedprecede_subjects bool
 	next_subject            map[uuid.UUID]struct{}
 	removednext_subject     map[uuid.UUID]struct{}
 	clearednext_subject     bool
@@ -580,55 +581,6 @@ func (m *SubjectMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
-}
-
-// SetPrecedesSubjectID sets the "precedes_subject_id" field.
-func (m *SubjectMutation) SetPrecedesSubjectID(u uuid.UUID) {
-	m.precedes_subject = &u
-}
-
-// PrecedesSubjectID returns the value of the "precedes_subject_id" field in the mutation.
-func (m *SubjectMutation) PrecedesSubjectID() (r uuid.UUID, exists bool) {
-	v := m.precedes_subject
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldPrecedesSubjectID returns the old "precedes_subject_id" field's value of the Subject entity.
-// If the Subject object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *SubjectMutation) OldPrecedesSubjectID(ctx context.Context) (v *uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldPrecedesSubjectID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldPrecedesSubjectID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldPrecedesSubjectID: %w", err)
-	}
-	return oldValue.PrecedesSubjectID, nil
-}
-
-// ClearPrecedesSubjectID clears the value of the "precedes_subject_id" field.
-func (m *SubjectMutation) ClearPrecedesSubjectID() {
-	m.precedes_subject = nil
-	m.clearedFields[subject.FieldPrecedesSubjectID] = struct{}{}
-}
-
-// PrecedesSubjectIDCleared returns if the "precedes_subject_id" field was cleared in this mutation.
-func (m *SubjectMutation) PrecedesSubjectIDCleared() bool {
-	_, ok := m.clearedFields[subject.FieldPrecedesSubjectID]
-	return ok
-}
-
-// ResetPrecedesSubjectID resets all changes to the "precedes_subject_id" field.
-func (m *SubjectMutation) ResetPrecedesSubjectID() {
-	m.precedes_subject = nil
-	delete(m.clearedFields, subject.FieldPrecedesSubjectID)
 }
 
 // SetSubjectName sets the "subject_name" field.
@@ -759,31 +711,58 @@ func (m *SubjectMutation) ResetTrimester() {
 	m.addtrimester = nil
 }
 
-// ClearPrecedesSubject clears the "precedes_subject" edge to the Subject entity.
-func (m *SubjectMutation) ClearPrecedesSubject() {
-	m.clearedprecedes_subject = true
-	m.clearedFields[subject.FieldPrecedesSubjectID] = struct{}{}
+// AddPrecedeSubjectIDs adds the "precede_subjects" edge to the Subject entity by ids.
+func (m *SubjectMutation) AddPrecedeSubjectIDs(ids ...uuid.UUID) {
+	if m.precede_subjects == nil {
+		m.precede_subjects = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.precede_subjects[ids[i]] = struct{}{}
+	}
 }
 
-// PrecedesSubjectCleared reports if the "precedes_subject" edge to the Subject entity was cleared.
-func (m *SubjectMutation) PrecedesSubjectCleared() bool {
-	return m.PrecedesSubjectIDCleared() || m.clearedprecedes_subject
+// ClearPrecedeSubjects clears the "precede_subjects" edge to the Subject entity.
+func (m *SubjectMutation) ClearPrecedeSubjects() {
+	m.clearedprecede_subjects = true
 }
 
-// PrecedesSubjectIDs returns the "precedes_subject" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// PrecedesSubjectID instead. It exists only for internal usage by the builders.
-func (m *SubjectMutation) PrecedesSubjectIDs() (ids []uuid.UUID) {
-	if id := m.precedes_subject; id != nil {
-		ids = append(ids, *id)
+// PrecedeSubjectsCleared reports if the "precede_subjects" edge to the Subject entity was cleared.
+func (m *SubjectMutation) PrecedeSubjectsCleared() bool {
+	return m.clearedprecede_subjects
+}
+
+// RemovePrecedeSubjectIDs removes the "precede_subjects" edge to the Subject entity by IDs.
+func (m *SubjectMutation) RemovePrecedeSubjectIDs(ids ...uuid.UUID) {
+	if m.removedprecede_subjects == nil {
+		m.removedprecede_subjects = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.precede_subjects, ids[i])
+		m.removedprecede_subjects[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedPrecedeSubjects returns the removed IDs of the "precede_subjects" edge to the Subject entity.
+func (m *SubjectMutation) RemovedPrecedeSubjectsIDs() (ids []uuid.UUID) {
+	for id := range m.removedprecede_subjects {
+		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetPrecedesSubject resets all changes to the "precedes_subject" edge.
-func (m *SubjectMutation) ResetPrecedesSubject() {
-	m.precedes_subject = nil
-	m.clearedprecedes_subject = false
+// PrecedeSubjectsIDs returns the "precede_subjects" edge IDs in the mutation.
+func (m *SubjectMutation) PrecedeSubjectsIDs() (ids []uuid.UUID) {
+	for id := range m.precede_subjects {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetPrecedeSubjects resets all changes to the "precede_subjects" edge.
+func (m *SubjectMutation) ResetPrecedeSubjects() {
+	m.precede_subjects = nil
+	m.clearedprecede_subjects = false
+	m.removedprecede_subjects = nil
 }
 
 // AddNextSubjectIDs adds the "next_subject" edge to the Subject entity by ids.
@@ -928,10 +907,7 @@ func (m *SubjectMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *SubjectMutation) Fields() []string {
-	fields := make([]string, 0, 4)
-	if m.precedes_subject != nil {
-		fields = append(fields, subject.FieldPrecedesSubjectID)
-	}
+	fields := make([]string, 0, 3)
 	if m.subject_name != nil {
 		fields = append(fields, subject.FieldSubjectName)
 	}
@@ -949,8 +925,6 @@ func (m *SubjectMutation) Fields() []string {
 // schema.
 func (m *SubjectMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case subject.FieldPrecedesSubjectID:
-		return m.PrecedesSubjectID()
 	case subject.FieldSubjectName:
 		return m.SubjectName()
 	case subject.FieldSubjectCode:
@@ -966,8 +940,6 @@ func (m *SubjectMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *SubjectMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case subject.FieldPrecedesSubjectID:
-		return m.OldPrecedesSubjectID(ctx)
 	case subject.FieldSubjectName:
 		return m.OldSubjectName(ctx)
 	case subject.FieldSubjectCode:
@@ -983,13 +955,6 @@ func (m *SubjectMutation) OldField(ctx context.Context, name string) (ent.Value,
 // type.
 func (m *SubjectMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case subject.FieldPrecedesSubjectID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetPrecedesSubjectID(v)
-		return nil
 	case subject.FieldSubjectName:
 		v, ok := value.(string)
 		if !ok {
@@ -1055,11 +1020,7 @@ func (m *SubjectMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *SubjectMutation) ClearedFields() []string {
-	var fields []string
-	if m.FieldCleared(subject.FieldPrecedesSubjectID) {
-		fields = append(fields, subject.FieldPrecedesSubjectID)
-	}
-	return fields
+	return nil
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -1072,11 +1033,6 @@ func (m *SubjectMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *SubjectMutation) ClearField(name string) error {
-	switch name {
-	case subject.FieldPrecedesSubjectID:
-		m.ClearPrecedesSubjectID()
-		return nil
-	}
 	return fmt.Errorf("unknown Subject nullable field %s", name)
 }
 
@@ -1084,9 +1040,6 @@ func (m *SubjectMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *SubjectMutation) ResetField(name string) error {
 	switch name {
-	case subject.FieldPrecedesSubjectID:
-		m.ResetPrecedesSubjectID()
-		return nil
 	case subject.FieldSubjectName:
 		m.ResetSubjectName()
 		return nil
@@ -1103,8 +1056,8 @@ func (m *SubjectMutation) ResetField(name string) error {
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *SubjectMutation) AddedEdges() []string {
 	edges := make([]string, 0, 3)
-	if m.precedes_subject != nil {
-		edges = append(edges, subject.EdgePrecedesSubject)
+	if m.precede_subjects != nil {
+		edges = append(edges, subject.EdgePrecedeSubjects)
 	}
 	if m.next_subject != nil {
 		edges = append(edges, subject.EdgeNextSubject)
@@ -1119,10 +1072,12 @@ func (m *SubjectMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *SubjectMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case subject.EdgePrecedesSubject:
-		if id := m.precedes_subject; id != nil {
-			return []ent.Value{*id}
+	case subject.EdgePrecedeSubjects:
+		ids := make([]ent.Value, 0, len(m.precede_subjects))
+		for id := range m.precede_subjects {
+			ids = append(ids, id)
 		}
+		return ids
 	case subject.EdgeNextSubject:
 		ids := make([]ent.Value, 0, len(m.next_subject))
 		for id := range m.next_subject {
@@ -1142,6 +1097,9 @@ func (m *SubjectMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *SubjectMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 3)
+	if m.removedprecede_subjects != nil {
+		edges = append(edges, subject.EdgePrecedeSubjects)
+	}
 	if m.removednext_subject != nil {
 		edges = append(edges, subject.EdgeNextSubject)
 	}
@@ -1155,6 +1113,12 @@ func (m *SubjectMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *SubjectMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
+	case subject.EdgePrecedeSubjects:
+		ids := make([]ent.Value, 0, len(m.removedprecede_subjects))
+		for id := range m.removedprecede_subjects {
+			ids = append(ids, id)
+		}
+		return ids
 	case subject.EdgeNextSubject:
 		ids := make([]ent.Value, 0, len(m.removednext_subject))
 		for id := range m.removednext_subject {
@@ -1174,8 +1138,8 @@ func (m *SubjectMutation) RemovedIDs(name string) []ent.Value {
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *SubjectMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 3)
-	if m.clearedprecedes_subject {
-		edges = append(edges, subject.EdgePrecedesSubject)
+	if m.clearedprecede_subjects {
+		edges = append(edges, subject.EdgePrecedeSubjects)
 	}
 	if m.clearednext_subject {
 		edges = append(edges, subject.EdgeNextSubject)
@@ -1190,8 +1154,8 @@ func (m *SubjectMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *SubjectMutation) EdgeCleared(name string) bool {
 	switch name {
-	case subject.EdgePrecedesSubject:
-		return m.clearedprecedes_subject
+	case subject.EdgePrecedeSubjects:
+		return m.clearedprecede_subjects
 	case subject.EdgeNextSubject:
 		return m.clearednext_subject
 	case subject.EdgeCarrer:
@@ -1204,9 +1168,6 @@ func (m *SubjectMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *SubjectMutation) ClearEdge(name string) error {
 	switch name {
-	case subject.EdgePrecedesSubject:
-		m.ClearPrecedesSubject()
-		return nil
 	}
 	return fmt.Errorf("unknown Subject unique edge %s", name)
 }
@@ -1215,8 +1176,8 @@ func (m *SubjectMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *SubjectMutation) ResetEdge(name string) error {
 	switch name {
-	case subject.EdgePrecedesSubject:
-		m.ResetPrecedesSubject()
+	case subject.EdgePrecedeSubjects:
+		m.ResetPrecedeSubjects()
 		return nil
 	case subject.EdgeNextSubject:
 		m.ResetNextSubject()

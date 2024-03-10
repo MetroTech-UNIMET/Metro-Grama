@@ -55,11 +55,6 @@ func IDLTE(id uuid.UUID) predicate.Subject {
 	return predicate.Subject(sql.FieldLTE(FieldID, id))
 }
 
-// PrecedesSubjectID applies equality check predicate on the "precedes_subject_id" field. It's identical to PrecedesSubjectIDEQ.
-func PrecedesSubjectID(v uuid.UUID) predicate.Subject {
-	return predicate.Subject(sql.FieldEQ(FieldPrecedesSubjectID, v))
-}
-
 // SubjectName applies equality check predicate on the "subject_name" field. It's identical to SubjectNameEQ.
 func SubjectName(v string) predicate.Subject {
 	return predicate.Subject(sql.FieldEQ(FieldSubjectName, v))
@@ -73,36 +68,6 @@ func SubjectCode(v string) predicate.Subject {
 // Trimester applies equality check predicate on the "trimester" field. It's identical to TrimesterEQ.
 func Trimester(v uint) predicate.Subject {
 	return predicate.Subject(sql.FieldEQ(FieldTrimester, v))
-}
-
-// PrecedesSubjectIDEQ applies the EQ predicate on the "precedes_subject_id" field.
-func PrecedesSubjectIDEQ(v uuid.UUID) predicate.Subject {
-	return predicate.Subject(sql.FieldEQ(FieldPrecedesSubjectID, v))
-}
-
-// PrecedesSubjectIDNEQ applies the NEQ predicate on the "precedes_subject_id" field.
-func PrecedesSubjectIDNEQ(v uuid.UUID) predicate.Subject {
-	return predicate.Subject(sql.FieldNEQ(FieldPrecedesSubjectID, v))
-}
-
-// PrecedesSubjectIDIn applies the In predicate on the "precedes_subject_id" field.
-func PrecedesSubjectIDIn(vs ...uuid.UUID) predicate.Subject {
-	return predicate.Subject(sql.FieldIn(FieldPrecedesSubjectID, vs...))
-}
-
-// PrecedesSubjectIDNotIn applies the NotIn predicate on the "precedes_subject_id" field.
-func PrecedesSubjectIDNotIn(vs ...uuid.UUID) predicate.Subject {
-	return predicate.Subject(sql.FieldNotIn(FieldPrecedesSubjectID, vs...))
-}
-
-// PrecedesSubjectIDIsNil applies the IsNil predicate on the "precedes_subject_id" field.
-func PrecedesSubjectIDIsNil() predicate.Subject {
-	return predicate.Subject(sql.FieldIsNull(FieldPrecedesSubjectID))
-}
-
-// PrecedesSubjectIDNotNil applies the NotNil predicate on the "precedes_subject_id" field.
-func PrecedesSubjectIDNotNil() predicate.Subject {
-	return predicate.Subject(sql.FieldNotNull(FieldPrecedesSubjectID))
 }
 
 // SubjectNameEQ applies the EQ predicate on the "subject_name" field.
@@ -275,21 +240,21 @@ func TrimesterLTE(v uint) predicate.Subject {
 	return predicate.Subject(sql.FieldLTE(FieldTrimester, v))
 }
 
-// HasPrecedesSubject applies the HasEdge predicate on the "precedes_subject" edge.
-func HasPrecedesSubject() predicate.Subject {
+// HasPrecedeSubjects applies the HasEdge predicate on the "precede_subjects" edge.
+func HasPrecedeSubjects() predicate.Subject {
 	return predicate.Subject(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, PrecedesSubjectTable, PrecedesSubjectColumn),
+			sqlgraph.Edge(sqlgraph.M2M, true, PrecedeSubjectsTable, PrecedeSubjectsPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasPrecedesSubjectWith applies the HasEdge predicate on the "precedes_subject" edge with a given conditions (other predicates).
-func HasPrecedesSubjectWith(preds ...predicate.Subject) predicate.Subject {
+// HasPrecedeSubjectsWith applies the HasEdge predicate on the "precede_subjects" edge with a given conditions (other predicates).
+func HasPrecedeSubjectsWith(preds ...predicate.Subject) predicate.Subject {
 	return predicate.Subject(func(s *sql.Selector) {
-		step := newPrecedesSubjectStep()
+		step := newPrecedeSubjectsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -303,7 +268,7 @@ func HasNextSubject() predicate.Subject {
 	return predicate.Subject(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, NextSubjectTable, NextSubjectColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, NextSubjectTable, NextSubjectPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})

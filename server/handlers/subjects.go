@@ -18,11 +18,11 @@ type SubjectForm struct {
 }
 
 type SubjectFormV2 struct {
-	SubjectName         string  `form:"subjectName"`
-	SubjectCode         string  `form:"subjectCode"`
-	CareerName          string  `form:"careerName"`
-	Trimester           uint    `form:"trimester"`
-	PrecedesSubjectCode *string `form:"precedesSubjectCode"`
+	SubjectName          string   `form:"subjectName"`
+	SubjectCode          string   `form:"subjectCode"`
+	CareerName           string   `form:"careerName"`
+	Trimester            uint     `form:"trimester"`
+	PrecedesSubjectCodes []string `form:"precedesSubjectCodes"`
 }
 
 func subjectsHandler(e *echo.Group) {
@@ -48,7 +48,6 @@ func getSubjectsByCareer(c echo.Context) error {
 
 func getSubjectsByCareerV2(c echo.Context) error {
 	career := c.Param("career")
-	println(fmt.Sprintf("Career: %s", career))
 
 	subjects, err := storage.GetSubjectByCareerV2(c.Request().Context(), career)
 	if err != nil {
@@ -81,9 +80,7 @@ func createSubjectV2(c echo.Context) error {
 		return c.JSON(http.StatusBadRequest, tools.CreateMsg(err.Error()))
 	}
 
-	fmt.Println(subjectForm)
-
-	_, err := storage.CreateSubjectv2(c.Request().Context(), subjectForm.SubjectName, subjectForm.SubjectCode, subjectForm.CareerName, subjectForm.Trimester, subjectForm.PrecedesSubjectCode)
+	_, err := storage.CreateSubjectv2(c.Request().Context(), subjectForm.SubjectName, subjectForm.SubjectCode, subjectForm.CareerName, subjectForm.Trimester, subjectForm.PrecedesSubjectCodes)
 
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, tools.CreateMsg(err.Error()))

@@ -27,11 +27,11 @@ func init() {
 	subjectFields := schema.Subject{}.Fields()
 	_ = subjectFields
 	// subjectDescSubjectName is the schema descriptor for subject_name field.
-	subjectDescSubjectName := subjectFields[2].Descriptor()
+	subjectDescSubjectName := subjectFields[1].Descriptor()
 	// subject.SubjectNameValidator is a validator for the "subject_name" field. It is called by the builders before save.
 	subject.SubjectNameValidator = subjectDescSubjectName.Validators[0].(func(string) error)
 	// subjectDescSubjectCode is the schema descriptor for subject_code field.
-	subjectDescSubjectCode := subjectFields[3].Descriptor()
+	subjectDescSubjectCode := subjectFields[2].Descriptor()
 	// subject.SubjectCodeValidator is a validator for the "subject_code" field. It is called by the builders before save.
 	subject.SubjectCodeValidator = subjectDescSubjectCode.Validators[0].(func(string) error)
 	// subjectDescID is the schema descriptor for id field.

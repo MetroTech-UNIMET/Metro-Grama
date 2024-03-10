@@ -21,20 +21,6 @@ type SubjectCreate struct {
 	hooks    []Hook
 }
 
-// SetPrecedesSubjectID sets the "precedes_subject_id" field.
-func (sc *SubjectCreate) SetPrecedesSubjectID(u uuid.UUID) *SubjectCreate {
-	sc.mutation.SetPrecedesSubjectID(u)
-	return sc
-}
-
-// SetNillablePrecedesSubjectID sets the "precedes_subject_id" field if the given value is not nil.
-func (sc *SubjectCreate) SetNillablePrecedesSubjectID(u *uuid.UUID) *SubjectCreate {
-	if u != nil {
-		sc.SetPrecedesSubjectID(*u)
-	}
-	return sc
-}
-
 // SetSubjectName sets the "subject_name" field.
 func (sc *SubjectCreate) SetSubjectName(s string) *SubjectCreate {
 	sc.mutation.SetSubjectName(s)
@@ -67,9 +53,19 @@ func (sc *SubjectCreate) SetNillableID(u *uuid.UUID) *SubjectCreate {
 	return sc
 }
 
-// SetPrecedesSubject sets the "precedes_subject" edge to the Subject entity.
-func (sc *SubjectCreate) SetPrecedesSubject(s *Subject) *SubjectCreate {
-	return sc.SetPrecedesSubjectID(s.ID)
+// AddPrecedeSubjectIDs adds the "precede_subjects" edge to the Subject entity by IDs.
+func (sc *SubjectCreate) AddPrecedeSubjectIDs(ids ...uuid.UUID) *SubjectCreate {
+	sc.mutation.AddPrecedeSubjectIDs(ids...)
+	return sc
+}
+
+// AddPrecedeSubjects adds the "precede_subjects" edges to the Subject entity.
+func (sc *SubjectCreate) AddPrecedeSubjects(s ...*Subject) *SubjectCreate {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return sc.AddPrecedeSubjectIDs(ids...)
 }
 
 // AddNextSubjectIDs adds the "next_subject" edge to the Subject entity by IDs.
@@ -214,12 +210,12 @@ func (sc *SubjectCreate) createSpec() (*Subject, *sqlgraph.CreateSpec) {
 		_spec.SetField(subject.FieldTrimester, field.TypeUint, value)
 		_node.Trimester = value
 	}
-	if nodes := sc.mutation.PrecedesSubjectIDs(); len(nodes) > 0 {
+	if nodes := sc.mutation.PrecedeSubjectsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   subject.PrecedesSubjectTable,
-			Columns: []string{subject.PrecedesSubjectColumn},
+			Table:   subject.PrecedeSubjectsTable,
+			Columns: subject.PrecedeSubjectsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(subject.FieldID, field.TypeUUID),
@@ -228,15 +224,14 @@ func (sc *SubjectCreate) createSpec() (*Subject, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.PrecedesSubjectID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := sc.mutation.NextSubjectIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   subject.NextSubjectTable,
-			Columns: []string{subject.NextSubjectColumn},
+			Columns: subject.NextSubjectPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(subject.FieldID, field.TypeUUID),

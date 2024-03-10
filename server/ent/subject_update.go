@@ -29,26 +29,6 @@ func (su *SubjectUpdate) Where(ps ...predicate.Subject) *SubjectUpdate {
 	return su
 }
 
-// SetPrecedesSubjectID sets the "precedes_subject_id" field.
-func (su *SubjectUpdate) SetPrecedesSubjectID(u uuid.UUID) *SubjectUpdate {
-	su.mutation.SetPrecedesSubjectID(u)
-	return su
-}
-
-// SetNillablePrecedesSubjectID sets the "precedes_subject_id" field if the given value is not nil.
-func (su *SubjectUpdate) SetNillablePrecedesSubjectID(u *uuid.UUID) *SubjectUpdate {
-	if u != nil {
-		su.SetPrecedesSubjectID(*u)
-	}
-	return su
-}
-
-// ClearPrecedesSubjectID clears the value of the "precedes_subject_id" field.
-func (su *SubjectUpdate) ClearPrecedesSubjectID() *SubjectUpdate {
-	su.mutation.ClearPrecedesSubjectID()
-	return su
-}
-
 // SetSubjectName sets the "subject_name" field.
 func (su *SubjectUpdate) SetSubjectName(s string) *SubjectUpdate {
 	su.mutation.SetSubjectName(s)
@@ -98,9 +78,19 @@ func (su *SubjectUpdate) AddTrimester(u int) *SubjectUpdate {
 	return su
 }
 
-// SetPrecedesSubject sets the "precedes_subject" edge to the Subject entity.
-func (su *SubjectUpdate) SetPrecedesSubject(s *Subject) *SubjectUpdate {
-	return su.SetPrecedesSubjectID(s.ID)
+// AddPrecedeSubjectIDs adds the "precede_subjects" edge to the Subject entity by IDs.
+func (su *SubjectUpdate) AddPrecedeSubjectIDs(ids ...uuid.UUID) *SubjectUpdate {
+	su.mutation.AddPrecedeSubjectIDs(ids...)
+	return su
+}
+
+// AddPrecedeSubjects adds the "precede_subjects" edges to the Subject entity.
+func (su *SubjectUpdate) AddPrecedeSubjects(s ...*Subject) *SubjectUpdate {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return su.AddPrecedeSubjectIDs(ids...)
 }
 
 // AddNextSubjectIDs adds the "next_subject" edge to the Subject entity by IDs.
@@ -138,10 +128,25 @@ func (su *SubjectUpdate) Mutation() *SubjectMutation {
 	return su.mutation
 }
 
-// ClearPrecedesSubject clears the "precedes_subject" edge to the Subject entity.
-func (su *SubjectUpdate) ClearPrecedesSubject() *SubjectUpdate {
-	su.mutation.ClearPrecedesSubject()
+// ClearPrecedeSubjects clears all "precede_subjects" edges to the Subject entity.
+func (su *SubjectUpdate) ClearPrecedeSubjects() *SubjectUpdate {
+	su.mutation.ClearPrecedeSubjects()
 	return su
+}
+
+// RemovePrecedeSubjectIDs removes the "precede_subjects" edge to Subject entities by IDs.
+func (su *SubjectUpdate) RemovePrecedeSubjectIDs(ids ...uuid.UUID) *SubjectUpdate {
+	su.mutation.RemovePrecedeSubjectIDs(ids...)
+	return su
+}
+
+// RemovePrecedeSubjects removes "precede_subjects" edges to Subject entities.
+func (su *SubjectUpdate) RemovePrecedeSubjects(s ...*Subject) *SubjectUpdate {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return su.RemovePrecedeSubjectIDs(ids...)
 }
 
 // ClearNextSubject clears all "next_subject" edges to the Subject entity.
@@ -252,12 +257,12 @@ func (su *SubjectUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := su.mutation.AddedTrimester(); ok {
 		_spec.AddField(subject.FieldTrimester, field.TypeUint, value)
 	}
-	if su.mutation.PrecedesSubjectCleared() {
+	if su.mutation.PrecedeSubjectsCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   subject.PrecedesSubjectTable,
-			Columns: []string{subject.PrecedesSubjectColumn},
+			Table:   subject.PrecedeSubjectsTable,
+			Columns: subject.PrecedeSubjectsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(subject.FieldID, field.TypeUUID),
@@ -265,12 +270,28 @@ func (su *SubjectUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := su.mutation.PrecedesSubjectIDs(); len(nodes) > 0 {
+	if nodes := su.mutation.RemovedPrecedeSubjectsIDs(); len(nodes) > 0 && !su.mutation.PrecedeSubjectsCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   subject.PrecedesSubjectTable,
-			Columns: []string{subject.PrecedesSubjectColumn},
+			Table:   subject.PrecedeSubjectsTable,
+			Columns: subject.PrecedeSubjectsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(subject.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := su.mutation.PrecedeSubjectsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   subject.PrecedeSubjectsTable,
+			Columns: subject.PrecedeSubjectsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(subject.FieldID, field.TypeUUID),
@@ -283,10 +304,10 @@ func (su *SubjectUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if su.mutation.NextSubjectCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   subject.NextSubjectTable,
-			Columns: []string{subject.NextSubjectColumn},
+			Columns: subject.NextSubjectPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(subject.FieldID, field.TypeUUID),
@@ -296,10 +317,10 @@ func (su *SubjectUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := su.mutation.RemovedNextSubjectIDs(); len(nodes) > 0 && !su.mutation.NextSubjectCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   subject.NextSubjectTable,
-			Columns: []string{subject.NextSubjectColumn},
+			Columns: subject.NextSubjectPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(subject.FieldID, field.TypeUUID),
@@ -312,10 +333,10 @@ func (su *SubjectUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := su.mutation.NextSubjectIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   subject.NextSubjectTable,
-			Columns: []string{subject.NextSubjectColumn},
+			Columns: subject.NextSubjectPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(subject.FieldID, field.TypeUUID),
@@ -391,26 +412,6 @@ type SubjectUpdateOne struct {
 	mutation *SubjectMutation
 }
 
-// SetPrecedesSubjectID sets the "precedes_subject_id" field.
-func (suo *SubjectUpdateOne) SetPrecedesSubjectID(u uuid.UUID) *SubjectUpdateOne {
-	suo.mutation.SetPrecedesSubjectID(u)
-	return suo
-}
-
-// SetNillablePrecedesSubjectID sets the "precedes_subject_id" field if the given value is not nil.
-func (suo *SubjectUpdateOne) SetNillablePrecedesSubjectID(u *uuid.UUID) *SubjectUpdateOne {
-	if u != nil {
-		suo.SetPrecedesSubjectID(*u)
-	}
-	return suo
-}
-
-// ClearPrecedesSubjectID clears the value of the "precedes_subject_id" field.
-func (suo *SubjectUpdateOne) ClearPrecedesSubjectID() *SubjectUpdateOne {
-	suo.mutation.ClearPrecedesSubjectID()
-	return suo
-}
-
 // SetSubjectName sets the "subject_name" field.
 func (suo *SubjectUpdateOne) SetSubjectName(s string) *SubjectUpdateOne {
 	suo.mutation.SetSubjectName(s)
@@ -460,9 +461,19 @@ func (suo *SubjectUpdateOne) AddTrimester(u int) *SubjectUpdateOne {
 	return suo
 }
 
-// SetPrecedesSubject sets the "precedes_subject" edge to the Subject entity.
-func (suo *SubjectUpdateOne) SetPrecedesSubject(s *Subject) *SubjectUpdateOne {
-	return suo.SetPrecedesSubjectID(s.ID)
+// AddPrecedeSubjectIDs adds the "precede_subjects" edge to the Subject entity by IDs.
+func (suo *SubjectUpdateOne) AddPrecedeSubjectIDs(ids ...uuid.UUID) *SubjectUpdateOne {
+	suo.mutation.AddPrecedeSubjectIDs(ids...)
+	return suo
+}
+
+// AddPrecedeSubjects adds the "precede_subjects" edges to the Subject entity.
+func (suo *SubjectUpdateOne) AddPrecedeSubjects(s ...*Subject) *SubjectUpdateOne {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return suo.AddPrecedeSubjectIDs(ids...)
 }
 
 // AddNextSubjectIDs adds the "next_subject" edge to the Subject entity by IDs.
@@ -500,10 +511,25 @@ func (suo *SubjectUpdateOne) Mutation() *SubjectMutation {
 	return suo.mutation
 }
 
-// ClearPrecedesSubject clears the "precedes_subject" edge to the Subject entity.
-func (suo *SubjectUpdateOne) ClearPrecedesSubject() *SubjectUpdateOne {
-	suo.mutation.ClearPrecedesSubject()
+// ClearPrecedeSubjects clears all "precede_subjects" edges to the Subject entity.
+func (suo *SubjectUpdateOne) ClearPrecedeSubjects() *SubjectUpdateOne {
+	suo.mutation.ClearPrecedeSubjects()
 	return suo
+}
+
+// RemovePrecedeSubjectIDs removes the "precede_subjects" edge to Subject entities by IDs.
+func (suo *SubjectUpdateOne) RemovePrecedeSubjectIDs(ids ...uuid.UUID) *SubjectUpdateOne {
+	suo.mutation.RemovePrecedeSubjectIDs(ids...)
+	return suo
+}
+
+// RemovePrecedeSubjects removes "precede_subjects" edges to Subject entities.
+func (suo *SubjectUpdateOne) RemovePrecedeSubjects(s ...*Subject) *SubjectUpdateOne {
+	ids := make([]uuid.UUID, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return suo.RemovePrecedeSubjectIDs(ids...)
 }
 
 // ClearNextSubject clears all "next_subject" edges to the Subject entity.
@@ -644,12 +670,12 @@ func (suo *SubjectUpdateOne) sqlSave(ctx context.Context) (_node *Subject, err e
 	if value, ok := suo.mutation.AddedTrimester(); ok {
 		_spec.AddField(subject.FieldTrimester, field.TypeUint, value)
 	}
-	if suo.mutation.PrecedesSubjectCleared() {
+	if suo.mutation.PrecedeSubjectsCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   subject.PrecedesSubjectTable,
-			Columns: []string{subject.PrecedesSubjectColumn},
+			Table:   subject.PrecedeSubjectsTable,
+			Columns: subject.PrecedeSubjectsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(subject.FieldID, field.TypeUUID),
@@ -657,12 +683,28 @@ func (suo *SubjectUpdateOne) sqlSave(ctx context.Context) (_node *Subject, err e
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := suo.mutation.PrecedesSubjectIDs(); len(nodes) > 0 {
+	if nodes := suo.mutation.RemovedPrecedeSubjectsIDs(); len(nodes) > 0 && !suo.mutation.PrecedeSubjectsCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.M2M,
 			Inverse: true,
-			Table:   subject.PrecedesSubjectTable,
-			Columns: []string{subject.PrecedesSubjectColumn},
+			Table:   subject.PrecedeSubjectsTable,
+			Columns: subject.PrecedeSubjectsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(subject.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := suo.mutation.PrecedeSubjectsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   subject.PrecedeSubjectsTable,
+			Columns: subject.PrecedeSubjectsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(subject.FieldID, field.TypeUUID),
@@ -675,10 +717,10 @@ func (suo *SubjectUpdateOne) sqlSave(ctx context.Context) (_node *Subject, err e
 	}
 	if suo.mutation.NextSubjectCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   subject.NextSubjectTable,
-			Columns: []string{subject.NextSubjectColumn},
+			Columns: subject.NextSubjectPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(subject.FieldID, field.TypeUUID),
@@ -688,10 +730,10 @@ func (suo *SubjectUpdateOne) sqlSave(ctx context.Context) (_node *Subject, err e
 	}
 	if nodes := suo.mutation.RemovedNextSubjectIDs(); len(nodes) > 0 && !suo.mutation.NextSubjectCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   subject.NextSubjectTable,
-			Columns: []string{subject.NextSubjectColumn},
+			Columns: subject.NextSubjectPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(subject.FieldID, field.TypeUUID),
@@ -704,10 +746,10 @@ func (suo *SubjectUpdateOne) sqlSave(ctx context.Context) (_node *Subject, err e
 	}
 	if nodes := suo.mutation.NextSubjectIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   subject.NextSubjectTable,
-			Columns: []string{subject.NextSubjectColumn},
+			Columns: subject.NextSubjectPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(subject.FieldID, field.TypeUUID),

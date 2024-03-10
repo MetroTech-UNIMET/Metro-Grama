@@ -13,30 +13,24 @@ const (
 	Label = "subject"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
-	// FieldPrecedesSubjectID holds the string denoting the precedes_subject_id field in the database.
-	FieldPrecedesSubjectID = "precedes_subject_id"
 	// FieldSubjectName holds the string denoting the subject_name field in the database.
 	FieldSubjectName = "subject_name"
 	// FieldSubjectCode holds the string denoting the subject_code field in the database.
 	FieldSubjectCode = "subject_code"
 	// FieldTrimester holds the string denoting the trimester field in the database.
 	FieldTrimester = "trimester"
-	// EdgePrecedesSubject holds the string denoting the precedes_subject edge name in mutations.
-	EdgePrecedesSubject = "precedes_subject"
+	// EdgePrecedeSubjects holds the string denoting the precede_subjects edge name in mutations.
+	EdgePrecedeSubjects = "precede_subjects"
 	// EdgeNextSubject holds the string denoting the next_subject edge name in mutations.
 	EdgeNextSubject = "next_subject"
 	// EdgeCarrer holds the string denoting the carrer edge name in mutations.
 	EdgeCarrer = "carrer"
 	// Table holds the table name of the subject in the database.
 	Table = "subjects"
-	// PrecedesSubjectTable is the table that holds the precedes_subject relation/edge.
-	PrecedesSubjectTable = "subjects"
-	// PrecedesSubjectColumn is the table column denoting the precedes_subject relation/edge.
-	PrecedesSubjectColumn = "precedes_subject_id"
-	// NextSubjectTable is the table that holds the next_subject relation/edge.
-	NextSubjectTable = "subjects"
-	// NextSubjectColumn is the table column denoting the next_subject relation/edge.
-	NextSubjectColumn = "precedes_subject_id"
+	// PrecedeSubjectsTable is the table that holds the precede_subjects relation/edge. The primary key declared below.
+	PrecedeSubjectsTable = "subject_next_subject"
+	// NextSubjectTable is the table that holds the next_subject relation/edge. The primary key declared below.
+	NextSubjectTable = "subject_next_subject"
 	// CarrerTable is the table that holds the carrer relation/edge. The primary key declared below.
 	CarrerTable = "career_subjects"
 	// CarrerInverseTable is the table name for the Career entity.
@@ -47,13 +41,18 @@ const (
 // Columns holds all SQL columns for subject fields.
 var Columns = []string{
 	FieldID,
-	FieldPrecedesSubjectID,
 	FieldSubjectName,
 	FieldSubjectCode,
 	FieldTrimester,
 }
 
 var (
+	// PrecedeSubjectsPrimaryKey and PrecedeSubjectsColumn2 are the table columns denoting the
+	// primary key for the precede_subjects relation (M2M).
+	PrecedeSubjectsPrimaryKey = []string{"subject_id", "precede_subject_id"}
+	// NextSubjectPrimaryKey and NextSubjectColumn2 are the table columns denoting the
+	// primary key for the next_subject relation (M2M).
+	NextSubjectPrimaryKey = []string{"subject_id", "precede_subject_id"}
 	// CarrerPrimaryKey and CarrerColumn2 are the table columns denoting the
 	// primary key for the carrer relation (M2M).
 	CarrerPrimaryKey = []string{"career_id", "subject_id"}
@@ -86,11 +85,6 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
 }
 
-// ByPrecedesSubjectID orders the results by the precedes_subject_id field.
-func ByPrecedesSubjectID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldPrecedesSubjectID, opts...).ToFunc()
-}
-
 // BySubjectName orders the results by the subject_name field.
 func BySubjectName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldSubjectName, opts...).ToFunc()
@@ -106,10 +100,17 @@ func ByTrimester(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTrimester, opts...).ToFunc()
 }
 
-// ByPrecedesSubjectField orders the results by precedes_subject field.
-func ByPrecedesSubjectField(field string, opts ...sql.OrderTermOption) OrderOption {
+// ByPrecedeSubjectsCount orders the results by precede_subjects count.
+func ByPrecedeSubjectsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newPrecedesSubjectStep(), sql.OrderByField(field, opts...))
+		sqlgraph.OrderByNeighborsCount(s, newPrecedeSubjectsStep(), opts...)
+	}
+}
+
+// ByPrecedeSubjects orders the results by precede_subjects terms.
+func ByPrecedeSubjects(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newPrecedeSubjectsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 
@@ -140,18 +141,18 @@ func ByCarrer(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newCarrerStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
-func newPrecedesSubjectStep() *sqlgraph.Step {
+func newPrecedeSubjectsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(Table, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, true, PrecedesSubjectTable, PrecedesSubjectColumn),
+		sqlgraph.Edge(sqlgraph.M2M, true, PrecedeSubjectsTable, PrecedeSubjectsPrimaryKey...),
 	)
 }
 func newNextSubjectStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(Table, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, NextSubjectTable, NextSubjectColumn),
+		sqlgraph.Edge(sqlgraph.M2M, false, NextSubjectTable, NextSubjectPrimaryKey...),
 	)
 }
 func newCarrerStep() *sqlgraph.Step {

@@ -17,8 +17,6 @@ type Subject struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
-	// PrecedesSubjectID holds the value of the "precedes_subject_id" field.
-	PrecedesSubjectID *uuid.UUID `json:"precedes_subject_id,omitempty"`
 	// SubjectName holds the value of the "subject_name" field.
 	SubjectName string `json:"subject_name,omitempty"`
 	// SubjectCode holds the value of the "subject_code" field.
@@ -33,8 +31,8 @@ type Subject struct {
 
 // SubjectEdges holds the relations/edges for other nodes in the graph.
 type SubjectEdges struct {
-	// PrecedesSubject holds the value of the precedes_subject edge.
-	PrecedesSubject *Subject `json:"precedes_subject,omitempty"`
+	// PrecedeSubjects holds the value of the precede_subjects edge.
+	PrecedeSubjects []*Subject `json:"precede_subjects,omitempty"`
 	// NextSubject holds the value of the next_subject edge.
 	NextSubject []*Subject `json:"next_subject,omitempty"`
 	// Carrer holds the value of the carrer edge.
@@ -44,15 +42,13 @@ type SubjectEdges struct {
 	loadedTypes [3]bool
 }
 
-// PrecedesSubjectOrErr returns the PrecedesSubject value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e SubjectEdges) PrecedesSubjectOrErr() (*Subject, error) {
-	if e.PrecedesSubject != nil {
-		return e.PrecedesSubject, nil
-	} else if e.loadedTypes[0] {
-		return nil, &NotFoundError{label: subject.Label}
+// PrecedeSubjectsOrErr returns the PrecedeSubjects value or an error if the edge
+// was not loaded in eager-loading.
+func (e SubjectEdges) PrecedeSubjectsOrErr() ([]*Subject, error) {
+	if e.loadedTypes[0] {
+		return e.PrecedeSubjects, nil
 	}
-	return nil, &NotLoadedError{edge: "precedes_subject"}
+	return nil, &NotLoadedError{edge: "precede_subjects"}
 }
 
 // NextSubjectOrErr returns the NextSubject value or an error if the edge
@@ -78,8 +74,6 @@ func (*Subject) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case subject.FieldPrecedesSubjectID:
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case subject.FieldTrimester:
 			values[i] = new(sql.NullInt64)
 		case subject.FieldSubjectName, subject.FieldSubjectCode:
@@ -106,13 +100,6 @@ func (s *Subject) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				s.ID = *value
-			}
-		case subject.FieldPrecedesSubjectID:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field precedes_subject_id", values[i])
-			} else if value.Valid {
-				s.PrecedesSubjectID = new(uuid.UUID)
-				*s.PrecedesSubjectID = *value.S.(*uuid.UUID)
 			}
 		case subject.FieldSubjectName:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -145,9 +132,9 @@ func (s *Subject) Value(name string) (ent.Value, error) {
 	return s.selectValues.Get(name)
 }
 
-// QueryPrecedesSubject queries the "precedes_subject" edge of the Subject entity.
-func (s *Subject) QueryPrecedesSubject() *SubjectQuery {
-	return NewSubjectClient(s.config).QueryPrecedesSubject(s)
+// QueryPrecedeSubjects queries the "precede_subjects" edge of the Subject entity.
+func (s *Subject) QueryPrecedeSubjects() *SubjectQuery {
+	return NewSubjectClient(s.config).QueryPrecedeSubjects(s)
 }
 
 // QueryNextSubject queries the "next_subject" edge of the Subject entity.
@@ -183,11 +170,6 @@ func (s *Subject) String() string {
 	var builder strings.Builder
 	builder.WriteString("Subject(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", s.ID))
-	if v := s.PrecedesSubjectID; v != nil {
-		builder.WriteString("precedes_subject_id=")
-		builder.WriteString(fmt.Sprintf("%v", *v))
-	}
-	builder.WriteString(", ")
 	builder.WriteString("subject_name=")
 	builder.WriteString(s.SubjectName)
 	builder.WriteString(", ")

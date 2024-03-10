@@ -25,21 +25,12 @@ var (
 		{Name: "subject_name", Type: field.TypeString},
 		{Name: "subject_code", Type: field.TypeString, Unique: true},
 		{Name: "trimester", Type: field.TypeUint},
-		{Name: "precedes_subject_id", Type: field.TypeUUID, Nullable: true},
 	}
 	// SubjectsTable holds the schema information for the "subjects" table.
 	SubjectsTable = &schema.Table{
 		Name:       "subjects",
 		Columns:    SubjectsColumns,
 		PrimaryKey: []*schema.Column{SubjectsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "subjects_subjects_next_subject",
-				Columns:    []*schema.Column{SubjectsColumns[4]},
-				RefColumns: []*schema.Column{SubjectsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-		},
 	}
 	// CareerSubjectsColumns holds the columns for the "career_subjects" table.
 	CareerSubjectsColumns = []*schema.Column{
@@ -66,16 +57,43 @@ var (
 			},
 		},
 	}
+	// SubjectNextSubjectColumns holds the columns for the "subject_next_subject" table.
+	SubjectNextSubjectColumns = []*schema.Column{
+		{Name: "subject_id", Type: field.TypeUUID},
+		{Name: "precede_subject_id", Type: field.TypeUUID},
+	}
+	// SubjectNextSubjectTable holds the schema information for the "subject_next_subject" table.
+	SubjectNextSubjectTable = &schema.Table{
+		Name:       "subject_next_subject",
+		Columns:    SubjectNextSubjectColumns,
+		PrimaryKey: []*schema.Column{SubjectNextSubjectColumns[0], SubjectNextSubjectColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "subject_next_subject_subject_id",
+				Columns:    []*schema.Column{SubjectNextSubjectColumns[0]},
+				RefColumns: []*schema.Column{SubjectsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "subject_next_subject_precede_subject_id",
+				Columns:    []*schema.Column{SubjectNextSubjectColumns[1]},
+				RefColumns: []*schema.Column{SubjectsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		CareersTable,
 		SubjectsTable,
 		CareerSubjectsTable,
+		SubjectNextSubjectTable,
 	}
 )
 
 func init() {
-	SubjectsTable.ForeignKeys[0].RefTable = SubjectsTable
 	CareerSubjectsTable.ForeignKeys[0].RefTable = CareersTable
 	CareerSubjectsTable.ForeignKeys[1].RefTable = SubjectsTable
+	SubjectNextSubjectTable.ForeignKeys[0].RefTable = SubjectsTable
+	SubjectNextSubjectTable.ForeignKeys[1].RefTable = SubjectsTable
 }

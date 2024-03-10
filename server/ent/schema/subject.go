@@ -16,7 +16,6 @@ type Subject struct {
 func (Subject) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.New()).Default(uuid.New),
-		field.UUID("precedes_subject_id", uuid.New()).Optional().Nillable(),
 		field.String("subject_name").NotEmpty(),
 		field.String("subject_code").NotEmpty().Unique(),
 		field.Uint("trimester"),
@@ -27,9 +26,7 @@ func (Subject) Fields() []ent.Field {
 func (Subject) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("next_subject", Subject.Type).
-			From("precedes_subject").
-			Field("precedes_subject_id").
-			Unique(),
+			From("precede_subjects"),
 		edge.From("carrer", Career.Type).Ref("subjects").Required(),
 	}
 }

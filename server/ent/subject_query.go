@@ -24,7 +24,7 @@ type SubjectQuery struct {
 	order               []subject.OrderOption
 	inters              []Interceptor
 	predicates          []predicate.Subject
-	withPrecedesSubject *SubjectQuery
+	withPrecedeSubjects *SubjectQuery
 	withNextSubject     *SubjectQuery
 	withCarrer          *CareerQuery
 	// intermediate query (i.e. traversal path).
@@ -63,8 +63,8 @@ func (sq *SubjectQuery) Order(o ...subject.OrderOption) *SubjectQuery {
 	return sq
 }
 
-// QueryPrecedesSubject chains the current query on the "precedes_subject" edge.
-func (sq *SubjectQuery) QueryPrecedesSubject() *SubjectQuery {
+// QueryPrecedeSubjects chains the current query on the "precede_subjects" edge.
+func (sq *SubjectQuery) QueryPrecedeSubjects() *SubjectQuery {
 	query := (&SubjectClient{config: sq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := sq.prepareQuery(ctx); err != nil {
@@ -77,7 +77,7 @@ func (sq *SubjectQuery) QueryPrecedesSubject() *SubjectQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(subject.Table, subject.FieldID, selector),
 			sqlgraph.To(subject.Table, subject.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, subject.PrecedesSubjectTable, subject.PrecedesSubjectColumn),
+			sqlgraph.Edge(sqlgraph.M2M, true, subject.PrecedeSubjectsTable, subject.PrecedeSubjectsPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(sq.driver.Dialect(), step)
 		return fromU, nil
@@ -99,7 +99,7 @@ func (sq *SubjectQuery) QueryNextSubject() *SubjectQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(subject.Table, subject.FieldID, selector),
 			sqlgraph.To(subject.Table, subject.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, subject.NextSubjectTable, subject.NextSubjectColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, subject.NextSubjectTable, subject.NextSubjectPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(sq.driver.Dialect(), step)
 		return fromU, nil
@@ -321,7 +321,7 @@ func (sq *SubjectQuery) Clone() *SubjectQuery {
 		order:               append([]subject.OrderOption{}, sq.order...),
 		inters:              append([]Interceptor{}, sq.inters...),
 		predicates:          append([]predicate.Subject{}, sq.predicates...),
-		withPrecedesSubject: sq.withPrecedesSubject.Clone(),
+		withPrecedeSubjects: sq.withPrecedeSubjects.Clone(),
 		withNextSubject:     sq.withNextSubject.Clone(),
 		withCarrer:          sq.withCarrer.Clone(),
 		// clone intermediate query.
@@ -330,14 +330,14 @@ func (sq *SubjectQuery) Clone() *SubjectQuery {
 	}
 }
 
-// WithPrecedesSubject tells the query-builder to eager-load the nodes that are connected to
-// the "precedes_subject" edge. The optional arguments are used to configure the query builder of the edge.
-func (sq *SubjectQuery) WithPrecedesSubject(opts ...func(*SubjectQuery)) *SubjectQuery {
+// WithPrecedeSubjects tells the query-builder to eager-load the nodes that are connected to
+// the "precede_subjects" edge. The optional arguments are used to configure the query builder of the edge.
+func (sq *SubjectQuery) WithPrecedeSubjects(opts ...func(*SubjectQuery)) *SubjectQuery {
 	query := (&SubjectClient{config: sq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	sq.withPrecedesSubject = query
+	sq.withPrecedeSubjects = query
 	return sq
 }
 
@@ -369,12 +369,12 @@ func (sq *SubjectQuery) WithCarrer(opts ...func(*CareerQuery)) *SubjectQuery {
 // Example:
 //
 //	var v []struct {
-//		PrecedesSubjectID uuid.UUID `json:"precedes_subject_id,omitempty"`
+//		SubjectName string `json:"subject_name,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Subject.Query().
-//		GroupBy(subject.FieldPrecedesSubjectID).
+//		GroupBy(subject.FieldSubjectName).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (sq *SubjectQuery) GroupBy(field string, fields ...string) *SubjectGroupBy {
@@ -392,11 +392,11 @@ func (sq *SubjectQuery) GroupBy(field string, fields ...string) *SubjectGroupBy 
 // Example:
 //
 //	var v []struct {
-//		PrecedesSubjectID uuid.UUID `json:"precedes_subject_id,omitempty"`
+//		SubjectName string `json:"subject_name,omitempty"`
 //	}
 //
 //	client.Subject.Query().
-//		Select(subject.FieldPrecedesSubjectID).
+//		Select(subject.FieldSubjectName).
 //		Scan(ctx, &v)
 func (sq *SubjectQuery) Select(fields ...string) *SubjectSelect {
 	sq.ctx.Fields = append(sq.ctx.Fields, fields...)
@@ -442,7 +442,7 @@ func (sq *SubjectQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Subj
 		nodes       = []*Subject{}
 		_spec       = sq.querySpec()
 		loadedTypes = [3]bool{
-			sq.withPrecedesSubject != nil,
+			sq.withPrecedeSubjects != nil,
 			sq.withNextSubject != nil,
 			sq.withCarrer != nil,
 		}
@@ -465,9 +465,10 @@ func (sq *SubjectQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Subj
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := sq.withPrecedesSubject; query != nil {
-		if err := sq.loadPrecedesSubject(ctx, query, nodes, nil,
-			func(n *Subject, e *Subject) { n.Edges.PrecedesSubject = e }); err != nil {
+	if query := sq.withPrecedeSubjects; query != nil {
+		if err := sq.loadPrecedeSubjects(ctx, query, nodes,
+			func(n *Subject) { n.Edges.PrecedeSubjects = []*Subject{} },
+			func(n *Subject, e *Subject) { n.Edges.PrecedeSubjects = append(n.Edges.PrecedeSubjects, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -488,68 +489,125 @@ func (sq *SubjectQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Subj
 	return nodes, nil
 }
 
-func (sq *SubjectQuery) loadPrecedesSubject(ctx context.Context, query *SubjectQuery, nodes []*Subject, init func(*Subject), assign func(*Subject, *Subject)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*Subject)
-	for i := range nodes {
-		if nodes[i].PrecedesSubjectID == nil {
-			continue
+func (sq *SubjectQuery) loadPrecedeSubjects(ctx context.Context, query *SubjectQuery, nodes []*Subject, init func(*Subject), assign func(*Subject, *Subject)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[uuid.UUID]*Subject)
+	nids := make(map[uuid.UUID]map[*Subject]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
 		}
-		fk := *nodes[i].PrecedesSubjectID
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
-		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
 	}
-	if len(ids) == 0 {
-		return nil
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(subject.PrecedeSubjectsTable)
+		s.Join(joinT).On(s.C(subject.FieldID), joinT.C(subject.PrecedeSubjectsPrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(subject.PrecedeSubjectsPrimaryKey[1]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(subject.PrecedeSubjectsPrimaryKey[1]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
 	}
-	query.Where(subject.IDIn(ids...))
-	neighbors, err := query.All(ctx)
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(uuid.UUID)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := *values[0].(*uuid.UUID)
+				inValue := *values[1].(*uuid.UUID)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Subject]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*Subject](ctx, query, qr, query.inters)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
+		nodes, ok := nids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "precedes_subject_id" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected "precede_subjects" node returned %v`, n.ID)
 		}
-		for i := range nodes {
-			assign(nodes[i], n)
+		for kn := range nodes {
+			assign(kn, n)
 		}
 	}
 	return nil
 }
 func (sq *SubjectQuery) loadNextSubject(ctx context.Context, query *SubjectQuery, nodes []*Subject, init func(*Subject), assign func(*Subject, *Subject)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*Subject)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[uuid.UUID]*Subject)
+	nids := make(map[uuid.UUID]map[*Subject]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
 		if init != nil {
-			init(nodes[i])
+			init(node)
 		}
 	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(subject.FieldPrecedesSubjectID)
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(subject.NextSubjectTable)
+		s.Join(joinT).On(s.C(subject.FieldID), joinT.C(subject.NextSubjectPrimaryKey[1]))
+		s.Where(sql.InValues(joinT.C(subject.NextSubjectPrimaryKey[0]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(subject.NextSubjectPrimaryKey[0]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
 	}
-	query.Where(predicate.Subject(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(subject.NextSubjectColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(uuid.UUID)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := *values[0].(*uuid.UUID)
+				inValue := *values[1].(*uuid.UUID)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Subject]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*Subject](ctx, query, qr, query.inters)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.PrecedesSubjectID
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "precedes_subject_id" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		nodes, ok := nids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "precedes_subject_id" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected "next_subject" node returned %v`, n.ID)
 		}
-		assign(node, n)
+		for kn := range nodes {
+			assign(kn, n)
+		}
 	}
 	return nil
 }
@@ -639,9 +697,6 @@ func (sq *SubjectQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != subject.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
-		}
-		if sq.withPrecedesSubject != nil {
-			_spec.Node.AddColumnOnce(subject.FieldPrecedesSubjectID)
 		}
 	}
 	if ps := sq.predicates; len(ps) > 0 {

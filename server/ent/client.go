@@ -466,15 +466,15 @@ func (c *SubjectClient) GetX(ctx context.Context, id uuid.UUID) *Subject {
 	return obj
 }
 
-// QueryPrecedesSubject queries the precedes_subject edge of a Subject.
-func (c *SubjectClient) QueryPrecedesSubject(s *Subject) *SubjectQuery {
+// QueryPrecedeSubjects queries the precede_subjects edge of a Subject.
+func (c *SubjectClient) QueryPrecedeSubjects(s *Subject) *SubjectQuery {
 	query := (&SubjectClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := s.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(subject.Table, subject.FieldID, id),
 			sqlgraph.To(subject.Table, subject.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, subject.PrecedesSubjectTable, subject.PrecedesSubjectColumn),
+			sqlgraph.Edge(sqlgraph.M2M, true, subject.PrecedeSubjectsTable, subject.PrecedeSubjectsPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
 		return fromV, nil
@@ -490,7 +490,7 @@ func (c *SubjectClient) QueryNextSubject(s *Subject) *SubjectQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(subject.Table, subject.FieldID, id),
 			sqlgraph.To(subject.Table, subject.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, subject.NextSubjectTable, subject.NextSubjectColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, subject.NextSubjectTable, subject.NextSubjectPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
 		return fromV, nil

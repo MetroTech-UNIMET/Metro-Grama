@@ -6,9 +6,9 @@ import (
 	"metrograma/db"
 	"metrograma/ent"
 	"metrograma/ent/career"
+	"metrograma/ent/subject"
 	"metrograma/models"
 
-	"github.com/google/uuid"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
@@ -170,14 +170,29 @@ func CreateSubject(ctx context.Context, subjectName string, subjectCode string, 
 	return summary.(neo4j.ResultSummary), nil
 }
 
-func CreateSubjectv2(ctx context.Context, subjectName string, subjectCode string, careerID uuid.UUID, trimester uint, precedesSubjectID *uuid.UUID) (*ent.Subject, error) {
+func CreateSubjectv2(ctx context.Context, subjectName string, subjectCode string, careerName string, trimester uint, precedesSubjectCode *string) (*ent.Subject, error) {
+	var precedesSubject *ent.Subject
+	var err error
+	if precedesSubjectCode != nil {
+		precedesSubject, err = db.EntClient.Subject.Query().Where(subject.SubjectCode(*precedesSubjectCode)).First(ctx)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	fmt.Println(careerName)
+	career, err := db.EntClient.Career.Query().Where(career.Name(careerName)).First(ctx)
+	if err != nil {
+		return nil, err
+	}
+
 	subject, err := db.EntClient.Subject.
 		Create().
 		SetSubjectName(subjectName).
 		SetSubjectCode(subjectCode).
 		SetTrimester(trimester).
-		SetNillablePrecedesSubjectID(precedesSubjectID).
-		AddCarrerIDs(careerID).
+		SetPrecedesSubject(precedesSubject).
+		AddCarrer(career).
 		Save(ctx)
 
 	if err != nil {

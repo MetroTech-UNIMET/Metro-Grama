@@ -6,7 +6,6 @@ import (
 	"metrograma/tools"
 	"net/http"
 
-	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
 
@@ -19,11 +18,11 @@ type SubjectForm struct {
 }
 
 type SubjectFormV2 struct {
-	SubjectName       string     `form:"subjectName"`
-	SubjectCode       string     `form:"subjectCode"`
-	CareerID          uuid.UUID  `form:"careerID"`
-	Trimester         uint       `form:"trimester"`
-	PrecedesSubjectID *uuid.UUID `form:"precedesSubjectID"`
+	SubjectName         string  `form:"subjectName"`
+	SubjectCode         string  `form:"subjectCode"`
+	CareerName          string  `form:"careerName"`
+	Trimester           uint    `form:"trimester"`
+	PrecedesSubjectCode *string `form:"precedesSubjectCode"`
 }
 
 func subjectsHandler(e *echo.Group) {
@@ -84,7 +83,7 @@ func createSubjectV2(c echo.Context) error {
 
 	fmt.Println(subjectForm)
 
-	_, err := storage.CreateSubjectv2(c.Request().Context(), subjectForm.SubjectName, subjectForm.SubjectCode, subjectForm.CareerID, subjectForm.Trimester, subjectForm.PrecedesSubjectID)
+	_, err := storage.CreateSubjectv2(c.Request().Context(), subjectForm.SubjectName, subjectForm.SubjectCode, subjectForm.CareerName, subjectForm.Trimester, subjectForm.PrecedesSubjectCode)
 
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, tools.CreateMsg(err.Error()))

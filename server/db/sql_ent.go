@@ -2,25 +2,31 @@ package db
 
 import (
 	"context"
+	"database/sql"
 	"log"
 	"metrograma/ent"
 	"metrograma/ent/migrate"
+	"os"
 
 	"entgo.io/ent/dialect"
-	_ "github.com/mattn/go-sqlite3"
+	entsql "entgo.io/ent/dialect/sql"
+	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
-var EntClient ent.Client
+var EntClient *ent.Client
 
 func InitSqlEnt() {
-	client, err := ent.Open(dialect.SQLite, "file:db.sqlite3?cache=shared&_fk=1&_pragma=foreign_keys(1)")
+	db, err := sql.Open("pgx", os.Getenv("POSTGRES_URL"))
 	if err != nil {
-		log.Panic(err)
+		log.Fatal(err)
 	}
 
+	// Create an ent.Driver from `db`.
+	drv := entsql.OpenDB(dialect.Postgres, db)
+	EntClient = ent.NewClient(ent.Driver(drv))
 	ctx := context.Background()
 
-	if err := client.Schema.Create(ctx,
+	if err := EntClient.Schema.Create(ctx,
 		migrate.WithForeignKeys(true),
 		migrate.WithDropIndex(true),
 		migrate.WithDropColumn(true),
@@ -29,5 +35,4 @@ func InitSqlEnt() {
 		log.Fatalf("failed creating schema resources: %v", err)
 	}
 
-	EntClient = *client
 }

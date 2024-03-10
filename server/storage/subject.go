@@ -109,7 +109,7 @@ func GetSubjectByCareerV2(ctx context.Context, careerName string) (models.Graph[
 		return models.Graph[models.Subject]{}, err
 	}
 
-	subjects, err := career.QuerySubjects().All(ctx)
+	subjects, err := career.QuerySubjects().WithPrecedesSubject().All(ctx)
 	if err != nil {
 		return models.Graph[models.Subject]{}, err
 	}

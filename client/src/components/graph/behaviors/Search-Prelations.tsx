@@ -18,7 +18,7 @@ export default function SearchPrelations() {
 
       clearGraphStates(graph, {
         statesToTrue: ["inactive"],
-        statesToIgnore: ["viewed"],
+        statesToIgnore: ["viewed", "accesible"],
       });
 
       graph.setItemState(node, "selected", true);
@@ -29,13 +29,13 @@ export default function SearchPrelations() {
 
     graph.on("node:click", handleClick);
     graph.on("canvas:click", () => {
-      clearGraphStates(graph, { statesToIgnore: ["viewed"] });
+      clearGraphStates(graph, { statesToIgnore: ["viewed", "accesible"] });
     });
 
     return () => {
       graph.off("node:click", handleClick);
       graph.off("canvas:click", () => {
-        clearGraphStates(graph), { statesToIgnore: ["viewed"] };
+        clearGraphStates(graph), { statesToIgnore: ["viewed", "accesible"] };
       });
     };
   }, []);

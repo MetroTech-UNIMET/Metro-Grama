@@ -1,9 +1,9 @@
 import { getSubjects } from "@/api/subjectsAPI";
-import Graphin, { GraphinData, Behaviors, Utils } from "@antv/graphin";
+import Graphin, { GraphinData, Behaviors } from "@antv/graphin";
 import { MiniMap } from "@antv/graphin-components";
-import { useQuery, useQueryClient } from "react-query";
+import { useQuery } from "react-query";
 import SearchPrelations from "./Search-Prelations";
-const { ActivateRelations } = Behaviors;
+const { } = Behaviors;
 
 export default function Graph() {
   const { data, isLoading, error } = useQuery<Graph<Subject>>(
@@ -16,6 +16,7 @@ export default function Graph() {
   if (isLoading || !data) return <div>Loading...</div>;
 
   const graph: GraphinData = {
+    // @ts-ignore
     nodes: data.Nodes!.map((node) => ({
       id: node.Id,
       label: node.Data.Name,

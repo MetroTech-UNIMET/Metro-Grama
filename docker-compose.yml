@@ -1,0 +1,13 @@
+version: "3.8"
+services:
+  frontend:
+    build: ./client
+    ports:
+      - 1403:1403
+  backend:
+    build: ./server
+    ports:
+      - 6969:6969
+  # db:
+  # volumes:
+# volumes:

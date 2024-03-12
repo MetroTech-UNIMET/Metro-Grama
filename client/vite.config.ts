@@ -18,7 +18,12 @@ export default defineConfig({
       }
     ],
   },
+  preview: {
+    host: "0.0.0.0",
+    port: 1403,
+  },
   server: {
+    host: "0.0.0.0",
     port: 1403,
   },
 });

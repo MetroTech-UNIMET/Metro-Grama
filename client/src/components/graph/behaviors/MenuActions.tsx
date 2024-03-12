@@ -5,7 +5,7 @@ import { GraphinContextType } from "@antv/graphin";
 import { INode, IEdge } from "@antv/g6";
 
 import { ListContent, ListItem } from "../../ui/list";
-import { getNodesFromEdges } from "@/lib/utils/graph";
+import { markNodeAsViewed } from "@/lib/utils/graphStates";
 
 export default function MenuActions() {
   return (
@@ -32,29 +32,7 @@ function MenuNode() {
   const hola = useContext(GraphinContext);
   console.log(hola);
 
-  function markAsViewed() {
-    const nodeItem = node.item as INode;
-    if (!nodeItem) return;
-
-    graph.setItemState(nodeItem, "viewed", true);
-    checkAccesible(nodeItem);
-
-    console.log("Marcar como vista", node);
-  }
-
-  function checkAccesible(nodeViewed: INode) {
-    const nodesToCheck = getNodesFromEdges(nodeViewed.getOutEdges(), "target");
-
-    console.log(nodesToCheck, nodeViewed.getOutEdges())
-    // debugger;
-    nodesToCheck.forEach((node) => {
-      const sourceNodes = getNodesFromEdges(node.getInEdges(), "source");
-
-      if (sourceNodes.every((node) => node.hasState("viewed"))) {
-        graph.setItemState(node, "accesible", true); 
-      }
-    });
-  }
+  
 
   return (
     // <DropdownMenuContent>
@@ -66,7 +44,13 @@ function MenuNode() {
     //   <DropdownMenuItem>Subscription</DropdownMenuItem>
     // </DropdownMenuContent>
     <ListContent>
-      <ListItem onClick={markAsViewed}>Marcar como materia vista</ListItem>
+      <ListItem
+        onClick={() => {
+          markNodeAsViewed(node.item as INode);
+        }}
+      >
+        Marcar como materia vista
+      </ListItem>
     </ListContent>
   );
 }

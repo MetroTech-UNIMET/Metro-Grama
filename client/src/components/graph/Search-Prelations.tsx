@@ -23,7 +23,11 @@ export default function SearchPrelations() {
       clearGraphStates(graph);
       console.log("selected", node);
       graph.setItemState(node, "selected", true);
+      graph.setItemState(node, "selected", true);
+      graph.setItemState(node, "icon", true);
       selectEdges(node.getEdges(), node.getID());
+      graph.setItemState(node, "icon", "home");
+      
     }
 
     graph.on("node:click", handleClick);

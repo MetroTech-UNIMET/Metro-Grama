@@ -41,6 +41,7 @@ export default function Graph() {
             },
         status: {
            start: {
+            
             halo: {
               visible: true,
               fill: "blue",

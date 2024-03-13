@@ -5,7 +5,7 @@ import { GraphinContextType } from "@antv/graphin";
 import { INode, IEdge } from "@antv/g6";
 
 import { ListContent, ListItem } from "../../ui/list";
-import { markNodeAsViewed } from "@/lib/utils/graphStates";
+import { markNodeAsViewed } from "@/lib/utils/states/NodeStates";
 
 export default function MenuActions() {
   return (

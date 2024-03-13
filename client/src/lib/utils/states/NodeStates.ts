@@ -1,8 +1,11 @@
 import { INode, IEdge } from "@antv/g6";
-import { getNodesFromEdges } from "./graph";
+import { getNodesFromEdges } from "../graph";
 
-export function markNodeAsViewed(node: INode, shouldCheckAccesible = true) {
-  if (!node || node.hasState("viewed")) return;
+export function markNodeAsViewed(node: INode) {
+  if (node.hasState("viewed")) {
+    node.setState("viewed", false);
+    return;
+  }
 
   node.setState("viewed", true);
   const inEdges = node.getInEdges();
@@ -10,13 +13,11 @@ export function markNodeAsViewed(node: INode, shouldCheckAccesible = true) {
 
   const previousNodes = getNodesFromEdges(inEdges, "source");
   previousNodes.forEach((node) => {
-    console.log(node._cfg?.model)
-    markNodeAsViewed(node,false);
-  })
+    console.log(node._cfg?.model);
+    node.setState("viewed", true);
+  });
 
-  if (shouldCheckAccesible) {
     checkAccesible(outEdges);
-  }
 }
 
 function checkAccesible(outEdges: IEdge[]) {
@@ -26,7 +27,7 @@ function checkAccesible(outEdges: IEdge[]) {
     const sourceNodes = getNodesFromEdges(node.getInEdges(), "source");
 
     if (sourceNodes.every((node) => node.hasState("viewed"))) {
-      node.setState("accesible", true); 
+      node.setState("accesible", true);
     }
   });
 }

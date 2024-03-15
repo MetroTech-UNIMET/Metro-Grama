@@ -1,8 +1,7 @@
-import { ContextMenuValue, GraphinContext, IG6GraphEvent } from "@antv/graphin";
-import { useContext, useEffect, useRef, useState } from "react";
-import { ContextMenu } from "@antv/graphin-components";
+import { GraphinContext, IG6GraphEvent } from "@antv/graphin";
+import { useContext, useEffect, useState } from "react";
 import { GraphinContextType } from "@antv/graphin";
-import { INode, IEdge } from "@antv/g6";
+import { INode } from "@antv/g6";
 
 import { ListContent, ListHeader, ListItem } from "../../ui/list";
 import { markNodeAsViewed } from "@/lib/utils/states/NodeStates";
@@ -17,7 +16,9 @@ interface MenuNodeProps {
 function MenuNode({ node, close }: MenuNodeProps) {
   if (!node) return null;
 
+  //@ts-ignore
   const subjectCode = node._cfg?.model?.data.Data.Code;
+  //@ts-ignore
   const subjectName = node._cfg?.model?.data.Data.Name;
 
   return (

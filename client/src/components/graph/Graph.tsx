@@ -1,11 +1,11 @@
 import { getSubjects } from "@/api/subjectsAPI";
-import Graphin, { GraphinData } from "@antv/graphin";
+import Graphin from "@antv/graphin";
 import { MiniMap } from "@antv/graphin-components";
 import { useQuery } from "react-query";
 
 import SearchPrelations from "./behaviors/Search-Prelations";
+// @ts-ignore
 import MenuActions from "./behaviors/MenuActions";
-import SearchAccesible from "./behaviors/Search-Accesible";
 import useSubectGraph from "@/hooks/useSubectGraph";
 
 export default function Graph() {

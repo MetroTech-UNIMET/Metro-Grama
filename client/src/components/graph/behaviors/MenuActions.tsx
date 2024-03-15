@@ -21,7 +21,7 @@ function MenuNode({ node, close }: MenuNodeProps) {
   const subjectName = node._cfg?.model?.data.Data.Name;
 
   return (
-    <ListContent>
+    <ListContent className="max-w-64">
       <ListHeader>
         {subjectCode} - {subjectName}
       </ListHeader>

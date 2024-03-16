@@ -1,4 +1,4 @@
-import { INode, IEdge } from "@antv/g6";
+import { IEdge } from "@antv/g6";
 import { getNodesFromEdges } from "../graph";
 
 type edgeCustomState = "future" | "prelation";

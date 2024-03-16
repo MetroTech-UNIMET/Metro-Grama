@@ -1,8 +1,8 @@
 import { GraphinData } from "@antv/graphin/lib/typings/type";
-import { useEffect } from "react";
 
 export default function useSubectGraph(data: Graph<Subject>) {
   const graph: GraphinData = {
+    // @ts-ignore
     nodes: data.Nodes!.map((node) => ({
       id: node.Id,
       label: node.Data.Name,

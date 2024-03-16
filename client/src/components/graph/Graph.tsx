@@ -1,9 +1,12 @@
 import { getSubjects } from "@/api/subjectsAPI";
-import Graphin, { GraphinData, Behaviors } from "@antv/graphin";
+import Graphin from "@antv/graphin";
 import { MiniMap } from "@antv/graphin-components";
 import { useQuery } from "react-query";
-import SearchPrelations from "./Search-Prelations";
-const { } = Behaviors;
+
+import SearchPrelations from "./behaviors/Search-Prelations";
+// @ts-ignore
+import MenuActions from "./behaviors/MenuActions";
+import useSubectGraph from "@/hooks/useSubectGraph";
 
 export default function Graph() {
   const { data, isLoading, error } = useQuery<Graph<Subject>>(
@@ -15,70 +18,17 @@ export default function Graph() {
 
   if (isLoading || !data) return <div>Loading...</div>;
 
-  const graph: GraphinData = {
-    // @ts-ignore
-    nodes: data.Nodes!.map((node) => ({
-      id: node.Id,
-      label: node.Data.Name,
-      data: node,
-      style: {
-        label: {
-          value: node.Data.Name,
-          fill: "white",
-        },
-        status: {
-          start: {
-            halo: {
-              visible: true,
-              fill: "blue",
-            },
-            icon: {
-              // TODO - Ponerle un icono para el start
-            },
-          },
-        },
-      },
-    })),
-    edges: data.Edges!.map((edge) => ({
-      source: edge.From,
-      target: edge.To,
-      style: {
-        status: {
-          prelation: {
-            keyshape: {
-              stroke: "blue",
-            },
-            halo: {
-              fill: "#ddd",
-              visible: true,
-            },
-          },
-          future: {
-            keyshape: {
-              stroke: "red",
-            },
-            halo: {
-              fill: "#ddd",
-              visible: true,
-            },
-          },
-        },
-      },
-    })),
-  };
-  console.log(graph);
+  const {graph} = useSubectGraph(data);
 
   return (
     <Graphin
       data={graph}
-      // width={undefined}
-      // height={undefined}
       style={{
         backgroundColor: "transparent",
       }}
     >
-      {/* <ActivateRelations trigger="click" /> */}
       <SearchPrelations />
+      <MenuActions />
       <MiniMap
         visible={true}
         style={{

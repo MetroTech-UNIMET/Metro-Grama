@@ -8,6 +8,14 @@ services:
     build: ./server
     ports:
       - 6969:6969
-  # db:
-  # volumes:
-# volumes:
+    develop:
+      watch:
+        - action: rebuild
+          path: ./server
+    depends_on:
+      - surrealdb
+  surrealdb:
+    image: surrealdb/surrealdb:latest
+    command: start -A --log debug --user root --pass root
+    ports:
+      - 8000:8000

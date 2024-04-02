@@ -14,8 +14,23 @@ services:
           path: ./server
     depends_on:
       - surrealdb
+  surrealdb_seed:
+    container_name: surrealdb_seed
+    image: surrealdb/surrealdb:latest
+    build: ./surrealdb
+    volumes:
+      - ./surrealdb/seed.surql:/seed.surql
+    command: [ "import", "--conn", "http://0.0.0.0:8000", "--user", "root", "--pass", "root", "--ns" , "test", "--db", "test", "/seed.surql"] 
+    network_mode: "container:surrealdb"
+    depends_on:
+      - surrealdb
   surrealdb:
+    container_name: surrealdb
     image: surrealdb/surrealdb:latest
     command: start -A --log debug --user root --pass root
+    # volumes:
+    #   - db-vol:/var/lib/surrealdb
     ports:
       - 8000:8000
+volumes:
+  db-vol:

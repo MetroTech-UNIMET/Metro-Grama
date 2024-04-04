@@ -2,7 +2,6 @@ package storage
 
 import (
 	"context"
-	"fmt"
 	"metrograma/db"
 	"metrograma/models"
 
@@ -28,7 +27,6 @@ func GetSubject(id string) (*models.Subject, error) {
 }
 
 func CreateSubject(ctx context.Context, subject models.SubjectInput) error {
-	a, err := db.SurrealDB.Create("subjects", subject)
-	fmt.Println(a, err)
+	_, err := db.SurrealDB.Create("subjects", subject)
 	return err
 }

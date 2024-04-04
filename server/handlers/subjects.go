@@ -18,13 +18,11 @@ func subjectsHandler(e *echo.Group) {
 
 func getSubjectsByCareer(c echo.Context) error {
 	career := c.Param("career")
-	println(fmt.Sprintf("Career: %s", career))
 
 	subjects, err := storage.GetSubjectByCareer(c.Request().Context(), career)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err)
 	}
-	println(fmt.Sprintf("Subjects: %v", subjects))
 
 	return c.JSON(http.StatusOK, subjects)
 }

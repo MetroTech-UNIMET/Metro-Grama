@@ -14,14 +14,14 @@ type SubjectNode struct {
 }
 
 type Subject struct {
-	ID               string   `json:"id,omitempty"`
-	Name             string   `json:"name"`
-	Trimester        uint8    `json:"trimester"`
-	Careers          []string `json:"careers"`
-	PrecedesSubjects []string `json:"precedesSubjects"`
+	ID               string        `json:"id,omitempty"`
+	Name             string        `json:"name"`
+	Trimester        uint8         `json:"trimester"`
+	Careers          []string      `json:"careers"`
+	PrecedesSubjects []SubjectBase `json:"precedesSubjects"`
 }
 
-type SubjectInput struct {
+type SubjectBase struct {
 	ID               string   `json:"id,omitempty"`
 	Name             string   `json:"name"`
 	Trimester        uint8    `json:"trimester"`

@@ -38,7 +38,7 @@ func createSubject(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, tools.CreateMsg("Already exist"))
 	}
 
-	subject := models.SubjectInput{
+	subject := models.SubjectBase{
 		ID:               subjectForm.SubjectCode,
 		Name:             subjectForm.SubjectName,
 		Trimester:        subjectForm.Trimester,

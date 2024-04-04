@@ -17,13 +17,13 @@ export default function Graph() {
 
   const graph: GraphinData = {
     // @ts-ignore
-    nodes: data.Nodes!.map((node) => ({
-      id: node.Id,
-      label: node.Data.Name,
+    nodes: data.nodes!.map((node) => ({
+      id: node.id,
+      label: node.data.name,
       data: node,
       style: {
         label: {
-          value: node.Data.Name,
+          value: node.data.name,
           fill: "white",
         },
         status: {
@@ -39,9 +39,9 @@ export default function Graph() {
         },
       },
     })),
-    edges: data.Edges!.map((edge) => ({
-      source: edge.From,
-      target: edge.To,
+    edges: data.edges!.map((edge) => ({
+      source: edge.from,
+      target: edge.to,
       style: {
         status: {
           prelation: {

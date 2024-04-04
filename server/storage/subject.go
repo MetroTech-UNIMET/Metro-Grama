@@ -2,18 +2,33 @@ package storage
 
 import (
 	"context"
+	"fmt"
+	"metrograma/db"
+	"metrograma/models"
+
+	"github.com/surrealdb/surrealdb.go"
 )
 
-type Subject struct {
-	Code string
-	Name string
+func GetSubjectByCareer(ctx context.Context, career string) (models.Graph[models.SubjectNode], error) {
+	return models.Graph[models.SubjectNode]{}, nil
 }
 
-func GetSubjectByCareer(ctx context.Context, career string) (Graph[Subject], error) {
-	return Graph[Subject]{}, nil
+func GetSubject(id string) (*models.Subject, error) {
+	data, err := db.SurrealDB.Select(id)
+	if err != nil {
+		return nil, err
+	}
+
+	subject := new(models.Subject)
+	err = surrealdb.Unmarshal(data, &subject)
+	if err != nil {
+		return nil, err
+	}
+	return subject, nil
 }
 
-func CreateSubject(ctx context.Context, subjectName string, subjectCode string, careerName string, trimester uint, precedesCode string) error {
-
-	return nil
+func CreateSubject(ctx context.Context, subject models.SubjectInput) error {
+	a, err := db.SurrealDB.Create("subjects", subject)
+	fmt.Println(a, err)
+	return err
 }

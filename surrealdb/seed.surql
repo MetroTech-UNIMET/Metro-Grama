@@ -16,7 +16,7 @@ CREATE subjects:FBTMM01 SET name="Matemática básica", careers=["Ingeniería de
 CREATE subjects:FBTSP03 SET name="Introducción a la Ingeniería", careers=["Ingeniería de sistemas"], trimester=1, precedesSubjects=[];
 CREATE subjects:FBTSP04 SET name="Pensamiento Computacional", careers=["Ingeniería de sistemas"], trimester=1, precedesSubjects=[];
 CREATE subjects:FBTEM01 SET name="Competencias para emprender", careers=["Ingeniería de sistemas"], trimester=1, precedesSubjects=[];
-CREATE subjects:FBTIN04 SET name="Inglés IV", careers=["Ingeniería de sistemas"], trimester=1, precedesSubjects=["subjects:FBPIN03"];
+CREATE subjects:FBTIN04 SET name="Inglés IV", careers=["Ingeniería de sistemas"], trimester=1, precedesSubjects=[];
 
 -- Trimestre 2
 CREATE subjects:BPTMI01 SET name="Matemáticas I", careers=["Ingeniería de sistemas"], trimester=2, precedesSubjects=["subjects:FBTMM01"];
@@ -56,4 +56,5 @@ CREATE subjects:BPTMI05 SET name="Matemáticas V", careers=["Ingeniería de sist
 CREATE subjects:BPTMI07 SET name="Estadística para Ingenieros II", careers=["Ingeniería de sistemas"], trimester=7, precedesSubjects=["subjects:BPTMI06"];
 CREATE subjects:FPTSP26 SET name="Bases de Datos II", careers=["Ingeniería de sistemas"], trimester=7, precedesSubjects=["subjects:FPTSP01"];
 CREATE subjects:FPTSP17 SET name="Optimización I", careers=["Ingeniería de sistemas"], trimester=7, precedesSubjects=["subjects:BPTMI11"];
-CREATE subjects:BPTSP04 SET name="Sistemas Operativos", careers=["Ingeniería de sistemas"], trimester=7, precedesSubjects=["subjects:BPTSP03"];
+CREATE subjects:BPTMI31 SET name="Sistemas Operativos", careers=["Ingeniería de sistemas"], trimester=7, precedesSubjects=["subjects:BPTMI03"];
+BEGIN TRANSACTION;

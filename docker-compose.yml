@@ -33,10 +33,11 @@ services:
 
   db:
     container_name: db
+    user: root
     image: surrealdb/surrealdb:latest
-    command: start -A --log debug --user root --pass root
+    command: start -A --log debug --user root --pass root file:/database/database.db
     volumes:
-      - db-vol:/var/lib/surrealdb
+      - db-vol:/database
     ports:
       - 8000:8000
     networks:

@@ -57,4 +57,3 @@ CREATE subjects:BPTMI07 SET name="Estadística para Ingenieros II", careers=["In
 CREATE subjects:FPTSP26 SET name="Bases de Datos II", careers=["Ingeniería de sistemas"], trimester=7, precedesSubjects=["subjects:FPTSP01"];
 CREATE subjects:FPTSP17 SET name="Optimización I", careers=["Ingeniería de sistemas"], trimester=7, precedesSubjects=["subjects:BPTMI11"];
 CREATE subjects:BPTMI31 SET name="Sistemas Operativos", careers=["Ingeniería de sistemas"], trimester=7, precedesSubjects=["subjects:BPTMI03"];
-BEGIN TRANSACTION;

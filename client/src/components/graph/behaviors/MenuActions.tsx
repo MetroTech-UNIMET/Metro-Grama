@@ -39,7 +39,7 @@ function MenuNode({ node, close }: MenuNodeProps) {
   );
 }
 
-const longTouchDuration = 500
+const longTouchDuration = 1000;
 // TODO - Mejor manejo de posición como si fuera un tooltip
 // TODO - Bloquear el mover el grafo cuando el menu está abierto
 export default function MenuActions() {
@@ -61,33 +61,46 @@ export default function MenuActions() {
     function handleNodeTouchStart(e: IG6GraphEvent) {
       timerRef.current = setTimeout(() => {
         // FIXME - No funciona si está en silencio, tiene que haber otra manera
-        window.navigator.vibrate(200)
+        window.navigator.vibrate(200);
         handleOpenContextMenu(e);
       }, longTouchDuration);
     }
 
-    function handleNodeTouchEnd(e: IG6GraphEvent) {
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-        timerRef.current = null;
-      }
+    function handleNodeTouchMove(e: IG6GraphEvent) {
+      clearTimerRef();
+      handleNodeTouchStart(e);
     }
 
     graph.on("node:contextmenu", handleOpenContextMenu);
+
     graph.on("node:touchstart", handleNodeTouchStart);
-    graph.on("node:touchend", handleNodeTouchEnd);
+    // FIXME - Touch move not firing
+    graph.on("node:touchmove", handleNodeTouchMove);
+    // FIXME - Touch end not firing
+    graph.on("node:touchend", clearTimerRef);
 
     graph.on("canvas:click", close);
     graph.on("canvas:touchstart", close);
 
     return () => {
       graph.off("node:contextmenu", handleOpenContextMenu);
+
       graph.off("node:touchstart", handleNodeTouchStart);
-      graph.off("node:touchend", handleNodeTouchEnd);
+      graph.off("node:touchend", clearTimerRef);
+      graph.off("node:touchmove", handleNodeTouchMove);
+
       graph.off("canvas:click", close);
       graph.off("canvas:touchstart", close);
     };
   }, []);
+
+  function clearTimerRef() {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+      console.log(timerRef.current);
+    }
+  }
 
   function close() {
     setNode(null);

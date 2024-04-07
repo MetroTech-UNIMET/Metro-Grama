@@ -48,4 +48,4 @@ En este modo tendras que instalar las dependencias en tu computadora
 
 3. ejecutar el fichero semilla `seed.surql` la primera vez que quieras correrlo
 
-	- Corre el siguiente comando en el root del proyecto: `surreal import --conn http://localhost:8000 --user root --pass root --ns test --db test surreal/seed.surql"d.surql`
+	- Corre el siguiente comando en el root del proyecto: `surreal import --conn http://localhost:8000 --user root --pass root --ns test --db test surrealdb/seed.surql"d.surql`

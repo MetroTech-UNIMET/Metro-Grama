@@ -1,12 +1,11 @@
 import { GraphinContext, IG6GraphEvent } from "@antv/graphin";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { GraphinContextType } from "@antv/graphin";
 import { INode } from "@antv/g6";
 
 import { ListContent, ListHeader, ListItem } from "../../ui/list";
 import { markNodeAsViewed } from "@/lib/utils/states/NodeStates";
 import { cn } from "@/lib/utils/className";
-
 
 interface MenuNodeProps {
   node: INode | null;
@@ -29,7 +28,7 @@ function MenuNode({ node, close }: MenuNodeProps) {
       <ListItem
         onClick={() => {
           markNodeAsViewed(node);
-          close()
+          close();
         }}
       >
         {node?.hasState("viewed")
@@ -40,6 +39,7 @@ function MenuNode({ node, close }: MenuNodeProps) {
   );
 }
 
+const longTouchDuration = 1000;
 // TODO - Mejor manejo de posición como si fuera un tooltip
 // TODO - Bloquear el mover el grafo cuando el menu está abierto
 export default function MenuActions() {
@@ -47,35 +47,69 @@ export default function MenuActions() {
   const [node, setNode] = useState<INode | null>(null);
   const [position, setPosition] = useState({ x: 0, y: 0 });
 
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
   useEffect(() => {
     function handleOpenContextMenu(e: IG6GraphEvent) {
       e.preventDefault();
       const { item } = e;
 
-      //   graph.set("contextmenu", {
-      //   node: {
-      //     visible: true,
-      //     x: e.canvasX,
-      //     y: e.canvasY,
-      //     item,
-      //   },
-      // });
-
       setPosition({ x: e.canvasX, y: e.canvasY });
       setNode(item as INode);
     }
 
+    function handleNodeTouchStart(e: IG6GraphEvent) {
+      console.log("Touch start")
+
+      timerRef.current = setTimeout(() => {
+        handleOpenContextMenu(e);
+      }, longTouchDuration);
+    }
+
+    function handleNodeTouchMove(e: IG6GraphEvent) {
+      console.log("Touch move")
+      clearTimerRef();
+      handleNodeTouchStart(e);
+    }
+
+    function handleNodeTouchEnd(e: IG6GraphEvent) {
+      clearTimerRef();
+    }
+
     graph.on("node:contextmenu", handleOpenContextMenu);
+
+    graph.on("node:touchstart", handleNodeTouchStart);
+    // FIXME - Touch move not firing
+    graph.on("node:touchmove", handleNodeTouchMove);
+    // FIXME - Touch end not firing
+    graph.on("node:touchend", handleNodeTouchEnd);
+
     graph.on("canvas:click", close);
+    graph.on("canvas:touchstart", close);
 
     return () => {
       graph.off("node:contextmenu", handleOpenContextMenu);
+
+      graph.off("node:touchstart", handleNodeTouchStart);
+      graph.off("node:touchmove", handleNodeTouchMove);
+      graph.off("node:touchend", handleNodeTouchEnd);
+
       graph.off("canvas:click", close);
+      graph.off("canvas:touchstart", close);
     };
   }, []);
 
+  function clearTimerRef() {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+      console.log(timerRef.current);
+    }
+  }
+
   function close() {
     setNode(null);
+    clearTimerRef();
     setPosition({ x: 0, y: 0 });
   }
 

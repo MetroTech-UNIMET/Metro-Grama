@@ -29,6 +29,12 @@ export default function SearchPrelations() {
     }
 
     graph.on("node:click", handleClick);
+    
+    // FIXME - Que el si se mantiene el touch para el drag, no genere el handleClick
+    graph.on("node:touchstart", handleClick)
+    graph.on("canvas:touchstart", () => {
+      clearGraphStates(graph, { statesToIgnore: ["viewed", "accesible"] });
+    });
     graph.on("canvas:click", () => {
       clearGraphStates(graph, { statesToIgnore: ["viewed", "accesible"] });
     });
@@ -38,6 +44,10 @@ export default function SearchPrelations() {
       graph.off("canvas:click", () => {
         clearGraphStates(graph), { statesToIgnore: ["viewed", "accesible"] };
       });
+      graph.off("node:touchstart", handleClick)
+    graph.off("canvas:touchstart", () => {
+      clearGraphStates(graph, { statesToIgnore: ["viewed", "accesible"] });
+    });
     };
   }, []);
 

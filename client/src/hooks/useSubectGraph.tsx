@@ -1,20 +1,13 @@
 import Graphin, { GraphinData } from "@antv/graphin";
-
-import  iconLoader  from "@antv/graphin-icons";
-import '@antv/graphin-icons/dist/index.css';
-
-const {fontFamily , glyphs} = iconLoader();
+import iconLoader from "@antv/graphin-icons";
+import "@antv/graphin-icons/dist/index.css";
 
 const icons = Graphin.registerFontFamily(iconLoader);
 
 
-
 export default function useSubectGraph(data: Graph<Subject>) {
-  
-
-
   const graph: GraphinData = {
-    // @ts-ignore
+    //@ts-ignore 
     nodes: data.nodes!.map((node) => ({
       id: node.id,
       label: node.data.name,
@@ -32,7 +25,11 @@ export default function useSubectGraph(data: Graph<Subject>) {
               fill: "blue",
             },
             icon: {
-              // TODO - Ponerle un icono para el start
+              size: 20,
+              fill: "green",
+              type: "font",
+              fontFamily: "graphin",
+              value: icons.home,
             },
           },
           viewed: {
@@ -47,13 +44,6 @@ export default function useSubectGraph(data: Graph<Subject>) {
               stroke: "blue",
             },
           },
-        },
-        icon: {
-          type: "font",
-          fontFamily: fontFamily,
-          // value: icons.compass,
-          fill: "green",
-          size: 20,
         },
       },
     })),

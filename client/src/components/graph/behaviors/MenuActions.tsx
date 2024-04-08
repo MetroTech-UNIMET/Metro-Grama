@@ -16,9 +16,9 @@ function MenuNode({ node, close }: MenuNodeProps) {
   if (!node) return null;
 
   //@ts-ignore
-  const subjectCode = node._cfg?.model?.data.Data.Code;
+  const subjectCode = node._cfg?.model?.data.data.code;
   //@ts-ignore
-  const subjectName = node._cfg?.model?.data.Data.Name;
+  const subjectName = node._cfg?.model?.data.data.name;
 
   return (
     <ListContent className="max-w-64">

@@ -73,6 +73,7 @@ export default function MenuActions() {
     }
 
     function handleNodeTouchEnd(e: IG6GraphEvent) {
+      console.log("Touch end")
       clearTimerRef();
     }
 

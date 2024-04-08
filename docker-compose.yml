@@ -1,0 +1,50 @@
+version: "3.8"
+services:
+  frontend:
+    container_name: frontend
+    build: ./client
+    ports:
+      - 1403:1403
+
+  backend:
+    container_name: backend
+    build: ./server
+    ports:
+      - 6969:6969
+    develop:
+      watch:
+        - action: rebuild
+          path: ./server
+    depends_on:
+      - db
+    network_mode: host
+    restart: on-failure
+
+  surrealdb_seed:
+    container_name: surrealdb_seed
+    image: surrealdb/surrealdb:latest
+    build: ./surrealdb
+    volumes:
+      - ./surrealdb/seed.surql:/seed.surql
+    command: [ "import", "--conn", "http://0.0.0.0:8000", "--user", "root", "--pass", "root", "--ns" , "test", "--db", "test", "/seed.surql"] 
+    network_mode: "container:db"
+    depends_on:
+      - db
+
+  db:
+    container_name: db
+    user: root
+    image: surrealdb/surrealdb:latest
+    command: start -A --log debug --user root --pass root file:/database/database.db
+    volumes:
+      - db-vol:/database
+    ports:
+      - 8000:8000
+    networks:
+      - app
+
+volumes:
+  db-vol:
+
+networks:
+  app:

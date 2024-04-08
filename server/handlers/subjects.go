@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"metrograma/models"
 	"metrograma/storage"
 	"metrograma/tools"
 	"net/http"
@@ -17,32 +18,45 @@ func subjectsHandler(e *echo.Group) {
 
 func getSubjectsByCareer(c echo.Context) error {
 	career := c.Param("career")
-	println(fmt.Sprintf("Career: %s", career))
 
 	subjects, err := storage.GetSubjectByCareer(c.Request().Context(), career)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err)
 	}
-	println(fmt.Sprintf("Subjects: %v", subjects))
 
 	return c.JSON(http.StatusOK, subjects)
 }
 
-type SubjectForm struct {
-	SubjectName  string `form:"subjectName"`
-	SubjectCode  string `form:"subjectCode"`
-	CareerName   string `form:"careerName"`
-	Trimester    uint   `form:"trimester"`
-	PrecedesCode string `form:"precedesCode"`
-}
-
 func createSubject(c echo.Context) error {
-	var subjectForm SubjectForm
+	var subjectForm models.SubjectForm
 	if err := c.Bind(&subjectForm); err != nil {
 		return c.JSON(http.StatusBadRequest, tools.CreateMsg("Invalid trimester"))
 	}
-	fmt.Println(subjectForm)
-	_, err := storage.CreateSubject(c.Request().Context(), subjectForm.SubjectName, subjectForm.SubjectCode, subjectForm.CareerName, subjectForm.Trimester, subjectForm.PrecedesCode)
+
+	// Ok, por alguna razon el sdk de surreal no me suelta el error de que ya existe
+	if _, err := storage.GetSubject(tools.ToID("subjects", subjectForm.SubjectCode)); err == nil {
+		return c.JSON(http.StatusInternalServerError, tools.CreateMsg("Already exist"))
+	}
+
+	subject := models.SubjectBase{
+		ID:               subjectForm.SubjectCode,
+		Name:             subjectForm.SubjectName,
+		Trimester:        subjectForm.Trimester,
+		Careers:          subjectForm.Careers,
+		PrecedesSubjects: make([]string, len(subjectForm.PrecedesCodes)),
+	}
+
+	// Sacar las materias que preceden
+	for i := 0; i < len(subjectForm.PrecedesCodes); i++ {
+		precedesSubject, err := storage.GetSubject(tools.ToID("subjects", subjectForm.PrecedesCodes[i]))
+		if err != nil {
+			return c.JSON(http.StatusNotFound, tools.CreateMsg(fmt.Sprintf("Precedes subject `%s` not found", subjectForm.PrecedesCodes[i])))
+		}
+		subject.PrecedesSubjects[i] = precedesSubject.ID
+	}
+
+	err := storage.CreateSubject(c.Request().Context(), subject)
+
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, tools.CreateMsg(err.Error()))
 	}

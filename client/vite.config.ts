@@ -12,9 +12,18 @@ export default defineConfig({
         find: "@components",
         replacement: path.resolve(__dirname, "src/components"),
       },
+      {
+        find: "@ui",
+        replacement: path.resolve(__dirname, "src/components/ui"),
+      }
     ],
   },
+  preview: {
+    host: "0.0.0.0",
+    port: 1403,
+  },
   server: {
+    host: "0.0.0.0",
     port: 1403,
   },
 });

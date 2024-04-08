@@ -11,7 +11,7 @@ import (
 
 func main() {
 	env.LoadDotEnv()
-	db.InitNeo4j()
+	db.InitSurrealDB()
 
 	e := echo.New()
 

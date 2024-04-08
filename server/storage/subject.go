@@ -4,137 +4,64 @@ import (
 	"context"
 	"fmt"
 	"metrograma/db"
+	"metrograma/models"
 
-	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
+	"github.com/surrealdb/surrealdb.go"
 )
 
-type Subject struct {
-	Code string
-	Name string
-}
-
-func GetAllGreetings(ctx context.Context) ([]string, error) {
-	session := db.Neo4j.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	defer session.Close(ctx)
-
-	greetings, err := session.ExecuteRead(
-		ctx, func(tx neo4j.ManagedTransaction) (interface{}, error) {
-			result, err := tx.Run(ctx, "MATCH (g:Greeting) RETURN g.message AS greeting", nil)
-			if err != nil {
-				return nil, err
-			}
-
-			var greetings []string
-			for result.Next(ctx) {
-				greetings = append(greetings, result.Record().Values[0].(string))
-			}
-
-			return greetings, result.Err()
-		})
+func GetSubjectByCareer(ctx context.Context, career string) (models.Graph[models.SubjectNode], error) {
+	subjects, err := surrealdb.SmartUnmarshal[[]models.Subject](db.SurrealDB.Query(`SELECT * FROM subjects WHERE careers ?= $career ORDER BY trimester FETCH precedesSubjects;`, map[string]interface{}{
+		"career": career,
+	}))
 
 	if err != nil {
-		return nil, err
+		return models.Graph[models.SubjectNode]{}, err
+	} else if len(subjects) == 0 {
+		return models.Graph[models.SubjectNode]{}, fmt.Errorf("carrer %s not found", career)
 	}
 
-	return greetings.([]string), nil
-}
+	nodes := make([]models.Node[models.SubjectNode], len(subjects))
+	edges := make([]models.Edge, 0)
 
-func GetSubjectByCareer(ctx context.Context, career string) (Graph[Subject], error) {
-	session := db.Neo4j.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
-	defer session.Close(ctx)
-
-	graph, err := session.ExecuteRead(
-		ctx,
-		func(tx neo4j.ManagedTransaction) (interface{}, error) {
-			cypher := `
-			MATCH (s:Subject)-[:BELONGS_TO]->(c:Career {name: $career})
-			OPTIONAL MATCH (s)-[p:PRECEDES]->(s2:Subject)
-			RETURN s, p, s2`
-
-			result, err := tx.Run(ctx, cypher, map[string]interface{}{
-				"career": career,
+	for i := 0; i < len(subjects); i++ {
+		nodes[i] = models.Node[models.SubjectNode]{
+			ID: subjects[i].ID,
+			Data: models.SubjectNode{
+				Code: subjects[i].ID,
+				Name: subjects[i].Name,
+			},
+		}
+		for _, ps := range subjects[i].PrecedesSubjects {
+			edges = append(edges, models.Edge{
+				From: ps.ID,
+				To:   subjects[i].ID,
 			})
-			if err != nil {
-				return nil, err
-			}
+		}
 
-			var graph Graph[Subject]
-			// fmt.Println(result)
-			nodeMap := make(map[string]Node[Subject])
-
-			for result.Next(ctx) {
-				record := result.Record()
-				node_subject1, found := record.Get("s")
-				if !found {
-					return nil, fmt.Errorf("node not found")
-				}
-				properties := node_subject1.(neo4j.Node).GetProperties()
-				subject := Subject{
-					Code: properties["code"].(string),
-					Name: properties["name"].(string),
-				}
-
-				subject1_Id := node_subject1.(neo4j.Node).ElementId
-
-				if _, exists := nodeMap[subject1_Id]; !exists {
-					node := Node[Subject]{
-						Id:   subject1_Id,
-						Data: subject,
-					}
-
-					graph.Nodes = append(graph.Nodes, node)
-					nodeMap[subject1_Id] = node
-				}
-
-				node_subject2, found := record.Get("s2")
-				if found && node_subject2 != nil {
-					subject2_Id := node_subject2.(neo4j.Node).ElementId
-
-					edge := Edge{From: subject1_Id, To: subject2_Id}
-					graph.Edges = append(graph.Edges, edge)
-				}
-			}
-			return graph, result.Err()
-		})
-
-	if err != nil {
-		return Graph[Subject]{}, err
 	}
 
-	return graph.(Graph[Subject]), nil
+	graph := models.Graph[models.SubjectNode]{
+		Nodes: nodes,
+		Edges: edges,
+	}
+	return graph, nil
 }
 
-func CreateSubject(ctx context.Context, subjectName string, subjectCode string, careerName string, trimester uint, precedesCode string) (neo4j.ResultSummary, error) {
-	session := db.Neo4j.NewSession(ctx, neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	defer session.Close(ctx)
-
-	summary, err := session.ExecuteWrite(
-		ctx, func(tx neo4j.ManagedTransaction) (interface{}, error) {
-			cypher := `MATCH (c:Career {name: $careerName})
-                       CREATE (s:Subject {name: $subjectName, code: $subjectCode})-[:BELONGS_TO {trimester: $trimester}]->(c)`
-			params := map[string]interface{}{
-				"subjectName": subjectName,
-				"subjectCode": subjectCode,
-				"careerName":  careerName,
-				"trimester":   trimester,
-			}
-
-			if precedesCode != "" {
-				cypher += `WITH s MATCH (p:Subject {code: $precedesCode}) CREATE (p)-[:PRECEDES]->(s)`
-				params["precedesCode"] = precedesCode
-			}
-
-			result, err := tx.Run(ctx, cypher, params)
-			if err != nil {
-				return nil, err
-			}
-
-			return result.Consume(ctx)
-		})
-
+func GetSubject(id string) (*models.Subject, error) {
+	data, err := db.SurrealDB.Select(id)
 	if err != nil {
 		return nil, err
 	}
 
-	return summary.(neo4j.ResultSummary), nil
+	subject := new(models.Subject)
+	err = surrealdb.Unmarshal(data, &subject)
+	if err != nil {
+		return nil, err
+	}
+	return subject, nil
+}
+
+func CreateSubject(ctx context.Context, subject models.SubjectBase) error {
+	_, err := db.SurrealDB.Create("subjects", subject)
+	return err
 }

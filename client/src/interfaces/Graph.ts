@@ -1,14 +1,14 @@
 interface Node4j<T> {
-  Id: string;
-  Data: T;
+  id: string;
+  data: T;
 }
 
 interface Edge {
-  From: string;
-  To: string;
+  from: string;
+  to: string;
 }
 
 interface Graph<T> {
-  Nodes: Node4j<T>[];
-  Edges: Edge[];
+  nodes: Node4j<T>[];
+  edges: Edge[];
 }

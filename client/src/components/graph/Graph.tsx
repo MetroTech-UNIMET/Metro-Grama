@@ -1,19 +1,12 @@
 import { getSubjects } from "@/api/subjectsAPI";
-import Graphin, { GraphinData, Behaviors, Utils } from "@antv/graphin";
+import Graphin from "@antv/graphin";
 import { MiniMap } from "@antv/graphin-components";
-import { useQuery, useQueryClient } from "react-query";
-import SearchPrelations from "./Search-Prelations";
-import React from "react";
+import { useQuery } from "react-query";
 
-import  iconLoader  from "@antv/graphin-icons";
-import '@antv/graphin-icons/dist/index.css';
-
-const {fontFamily , glyphs} = iconLoader();
-
-const icons = Graphin.registerFontFamily(iconLoader);
-
-
-const { ActivateRelations } = Behaviors;
+import SearchPrelations from "./behaviors/Search-Prelations";
+// @ts-ignore
+import MenuActions from "./behaviors/MenuActions";
+import useSubectGraph from "@/hooks/useSubectGraph";
 
 export default function Graph() {
 
@@ -22,89 +15,21 @@ export default function Graph() {
     getSubjects
   );
 
-  if (error) return React.createElement('div', null, 'Error');
+  if (error) return <div>Error</div>;
 
-
-
-  if (isLoading || !data) return React.createElement('div', null, 'Loading...');
-
-  const graph: GraphinData = {
-    nodes:
-    data.Nodes!.map((node) => ({
-      id: node.Id,
-      label: node.Data.Name,
-      data: node,
-      style: {
-            label: {
-              value: node.Data.Name,
-              fill: "white",
-            },
-        status: {
-           start: {
-            
-            halo: {
-              visible: true,
-              fill: "blue",
-            },
-
+  if (isLoading || !data) return <div>Loading...</div>;
   
-          },
-
-          
-        },
-        icon: {
-          type: "font",
-          fontFamily: fontFamily,
-          value: icons.compass,
-          fill: "green",
-          size: 20,
-        },
-
-
-      
-        
-      },
-    })),
-    edges: data.Edges!.map((edge) => ({
-      source: edge.From,
-      target: edge.To,
-      style: {
-        status: {
-          prelation: {
-            keyshape: {
-              stroke: "blue",
-            },
-            halo: {
-              fill: "#ddd",
-              visible: true,
-            },
-          },
-          future: {
-            keyshape: {
-              stroke: "red",
-            },
-            halo: {
-              fill: "#ddd",
-              visible: true,
-            },
-          },
-        },
-      },
-    })),
-  };
-  console.log(graph);
+  const {graph} = useSubectGraph(data);
 
   return (
     <Graphin
       data={graph}
-      // width={undefined}
-      // height={undefined}
       style={{
         backgroundColor: "transparent",
       }}
     >
-      {/* <ActivateRelations trigger="click" /> */}
       <SearchPrelations />
+      <MenuActions />
       <MiniMap
         visible={true}
         style={{

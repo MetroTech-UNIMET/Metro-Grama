@@ -59,16 +59,21 @@ export default function MenuActions() {
     }
 
     function handleNodeTouchStart(e: IG6GraphEvent) {
+      console.log("Touch start")
+
       timerRef.current = setTimeout(() => {
-        // FIXME - No funciona si está en silencio, tiene que haber otra manera
-        window.navigator.vibrate(200);
         handleOpenContextMenu(e);
       }, longTouchDuration);
     }
 
     function handleNodeTouchMove(e: IG6GraphEvent) {
+      console.log("Touch move")
       clearTimerRef();
       handleNodeTouchStart(e);
+    }
+
+    function handleNodeTouchEnd(e: IG6GraphEvent) {
+      clearTimerRef();
     }
 
     graph.on("node:contextmenu", handleOpenContextMenu);
@@ -77,7 +82,7 @@ export default function MenuActions() {
     // FIXME - Touch move not firing
     graph.on("node:touchmove", handleNodeTouchMove);
     // FIXME - Touch end not firing
-    graph.on("node:touchend", clearTimerRef);
+    graph.on("node:touchend", handleNodeTouchEnd);
 
     graph.on("canvas:click", close);
     graph.on("canvas:touchstart", close);
@@ -86,8 +91,8 @@ export default function MenuActions() {
       graph.off("node:contextmenu", handleOpenContextMenu);
 
       graph.off("node:touchstart", handleNodeTouchStart);
-      graph.off("node:touchend", clearTimerRef);
       graph.off("node:touchmove", handleNodeTouchMove);
+      graph.off("node:touchend", handleNodeTouchEnd);
 
       graph.off("canvas:click", close);
       graph.off("canvas:touchstart", close);
@@ -104,6 +109,7 @@ export default function MenuActions() {
 
   function close() {
     setNode(null);
+    clearTimerRef();
     setPosition({ x: 0, y: 0 });
   }
 

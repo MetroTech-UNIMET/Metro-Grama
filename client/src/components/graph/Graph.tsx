@@ -1,19 +1,31 @@
 import { getSubjects } from "@/api/subjectsAPI";
-import Graphin, { GraphinData, Behaviors } from "@antv/graphin";
+import Graphin, { GraphinData } from "@antv/graphin";
 import { MiniMap } from "@antv/graphin-components";
 import { useQuery } from "react-query";
 import SearchPrelations from "./Search-Prelations";
-const { } = Behaviors;
+import React from "react";
+
+import  iconLoader  from "@antv/graphin-icons";
+import '@antv/graphin-icons/dist/index.css';
+
+const {fontFamily , glyphs} = iconLoader();
+
+const icons = Graphin.registerFontFamily(iconLoader);
+
+
 
 export default function Graph() {
+
   const { data, isLoading, error } = useQuery<Graph<Subject>>(
     ["subjects", "Ingeniería en Sistemas"],
     getSubjects
   );
 
-  if (error) return <div>Error</div>;
+  if (error) return React.createElement('div', null, 'Error');
 
-  if (isLoading || !data) return <div>Loading...</div>;
+
+
+  if (isLoading || !data) return React.createElement('div', null, 'Loading...');
 
   const graph: GraphinData = {
     // @ts-ignore
@@ -27,16 +39,29 @@ export default function Graph() {
           fill: "white",
         },
         status: {
-          start: {
+           start: {
+            
             halo: {
               visible: true,
               fill: "blue",
             },
-            icon: {
-              // TODO - Ponerle un icono para el start
-            },
+
+  
           },
+
+          
         },
+        icon: {
+          type: "font",
+          fontFamily: fontFamily,
+          value: icons.compass,
+          fill: "green",
+          size: 20,
+        },
+
+
+      
+        
       },
     })),
     edges: data.edges!.map((edge) => ({

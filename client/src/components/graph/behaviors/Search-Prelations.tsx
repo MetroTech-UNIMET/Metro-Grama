@@ -7,11 +7,9 @@ import {
   markEdgesAsPrelation,
 } from "@/lib/utils/states/EdgesStates";
 
-
 export default function SearchPrelations() {
   const { graph } = useContext(GraphinContext);
 
-  // TODO - Que funcione en touch de telefono
   useEffect(() => {
     function handleClick(e: IG6GraphEvent) {
       const node = e.item as INode;
@@ -29,9 +27,9 @@ export default function SearchPrelations() {
     }
 
     graph.on("node:click", handleClick);
-    
+
     // FIXME - Que el si se mantiene el touch para el drag, no genere el handleClick
-    graph.on("node:touchstart", handleClick)
+    graph.on("node:touchstart", handleClick);
     graph.on("canvas:touchstart", () => {
       clearGraphStates(graph, { statesToIgnore: ["viewed", "accesible"] });
     });
@@ -44,10 +42,10 @@ export default function SearchPrelations() {
       graph.off("canvas:click", () => {
         clearGraphStates(graph), { statesToIgnore: ["viewed", "accesible"] };
       });
-      graph.off("node:touchstart", handleClick)
-    graph.off("canvas:touchstart", () => {
-      clearGraphStates(graph, { statesToIgnore: ["viewed", "accesible"] });
-    });
+      graph.off("node:touchstart", handleClick);
+      graph.off("canvas:touchstart", () => {
+        clearGraphStates(graph, { statesToIgnore: ["viewed", "accesible"] });
+      });
     };
   }, []);
 

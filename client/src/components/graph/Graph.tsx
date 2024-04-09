@@ -4,22 +4,22 @@ import { MiniMap } from "@antv/graphin-components";
 import { useQuery } from "react-query";
 
 import SearchPrelations from "./behaviors/Search-Prelations";
-// @ts-ignore
 import MenuActions from "./behaviors/MenuActions";
 import useSubectGraph from "@/hooks/useSubectGraph";
+import { ShowAxiosError } from "@/components/ShowAxiosError";
+import { AxiosError } from "axios";
 
 export default function Graph() {
-
   const { data, isLoading, error } = useQuery<Graph<Subject>>(
     ["subjects", "Ingeniería en Sistemas"],
     getSubjects
   );
 
-  if (error) return <div>Error</div>;
+  if (error) return <ShowAxiosError error={error as AxiosError} />;
 
   if (isLoading || !data) return <div>Loading...</div>;
-  
-  const {graph} = useSubectGraph(data);
+
+  const { graph } = useSubectGraph(data);
 
   return (
     <Graphin

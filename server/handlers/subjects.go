@@ -21,7 +21,7 @@ func getSubjectsByCareer(c echo.Context) error {
 
 	subjects, err := storage.GetSubjectByCareer(c.Request().Context(), career)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, err)
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
 	return c.JSON(http.StatusOK, subjects)
@@ -30,7 +30,8 @@ func getSubjectsByCareer(c echo.Context) error {
 func createSubject(c echo.Context) error {
 	var subjectForm models.SubjectForm
 	if err := c.Bind(&subjectForm); err != nil {
-		return c.JSON(http.StatusBadRequest, tools.CreateMsg("Invalid trimester"))
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+		// return c.JSON(http.StatusBadRequest, tools.CreateMsg("Invalid trimester"))
 	}
 
 	// Ok, por alguna razon el sdk de surreal no me suelta el error de que ya existe

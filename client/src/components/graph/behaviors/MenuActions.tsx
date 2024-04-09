@@ -4,7 +4,7 @@ import { GraphinContextType } from "@antv/graphin";
 import { INode } from "@antv/g6";
 
 import { ListContent, ListHeader, ListItem } from "../../ui/list";
-import { markNodeAsViewed } from "@/lib/utils/states/NodeStates";
+import { enableViewedNode } from "@/lib/utils/states/NodeStates";
 import { cn } from "@/lib/utils/className";
 
 interface MenuNodeProps {
@@ -27,7 +27,7 @@ function MenuNode({ node, close }: MenuNodeProps) {
       </ListHeader>
       <ListItem
         onClick={() => {
-          markNodeAsViewed(node);
+          enableViewedNode(node);
           close();
         }}
       >

@@ -1,7 +1,7 @@
 import { INode, IEdge } from "@antv/g6";
 import { getNodesFromEdges } from "../graph";
 
-export function markNodeAsViewed(node: INode, firstNode = true) {
+export function enableViewedNode(node: INode, firstNode = true) {
   const outEdges = node.getOutEdges();
 
   if (firstNode && node.hasState("viewed")) {
@@ -15,7 +15,7 @@ export function markNodeAsViewed(node: INode, firstNode = true) {
   const inEdges = node.getInEdges();
 
   const previousNodes = getNodesFromEdges(inEdges, "source");
-  previousNodes.forEach((node) => markNodeAsViewed(node, false));
+  previousNodes.forEach((node) => enableViewedNode(node, false));
 
   checkAccesible(outEdges);
 }

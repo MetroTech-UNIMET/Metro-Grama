@@ -8,6 +8,7 @@ import MenuActions from "./behaviors/MenuActions";
 import useSubectGraph from "@/hooks/useSubectGraph";
 import { ShowAxiosError } from "@/components/ShowAxiosError";
 import { AxiosError } from "axios";
+import { Subject } from "@/interfaces/Subject";
 
 export default function Graph() {
   const { data, isLoading, error } = useQuery<Graph<Subject>>(

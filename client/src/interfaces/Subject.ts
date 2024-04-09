@@ -1,4 +1,4 @@
-interface Subject {
+export interface Subject {
   code: string;
   name: string;
 }

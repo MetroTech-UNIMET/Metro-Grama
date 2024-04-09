@@ -6,6 +6,9 @@ import { INode } from "@antv/g6";
 import { ListContent, ListHeader, ListItem } from "../../ui/list";
 import { enableViewedNode } from "@/lib/utils/states/NodeStates";
 import { cn } from "@/lib/utils/className";
+import { SheetTrigger } from "@/components/ui/sheet";
+import { useSubjectSheet } from "@/components/SubjectSheet";
+import { Subject } from "@/interfaces/Subject";
 
 interface MenuNodeProps {
   node: INode | null;
@@ -13,6 +16,7 @@ interface MenuNodeProps {
 }
 
 function MenuNode({ node, close }: MenuNodeProps) {
+  const { selectSubject } = useSubjectSheet();
   if (!node) return null;
 
   //@ts-ignore
@@ -34,6 +38,15 @@ function MenuNode({ node, close }: MenuNodeProps) {
         {node?.hasState("viewed")
           ? "Desmarcar como materia vista"
           : "Marcar como materia vista"}
+      </ListItem>
+      <ListItem
+        onClick={() => {
+          const subject = (node._cfg?.model?.data as Node4j<Subject>).data;
+          selectSubject(subject);
+          close();
+        }}
+      >
+        Ver detalles
       </ListItem>
     </ListContent>
   );
@@ -59,7 +72,7 @@ export default function MenuActions() {
     }
 
     function handleNodeTouchStart(e: IG6GraphEvent) {
-      console.log("Touch start")
+      console.log("Touch start");
 
       timerRef.current = setTimeout(() => {
         handleOpenContextMenu(e);
@@ -67,13 +80,13 @@ export default function MenuActions() {
     }
 
     function handleNodeTouchMove(e: IG6GraphEvent) {
-      console.log("Touch move")
+      console.log("Touch move");
       clearTimerRef();
       handleNodeTouchStart(e);
     }
 
     function handleNodeTouchEnd(e: IG6GraphEvent) {
-      console.log("Touch end")
+      console.log("Touch end");
       clearTimerRef();
     }
 

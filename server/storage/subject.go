@@ -17,7 +17,7 @@ func GetSubjectByCareer(ctx context.Context, career string) (models.Graph[models
 	if err != nil {
 		return models.Graph[models.SubjectNode]{}, err
 	} else if len(subjects) == 0 {
-		return models.Graph[models.SubjectNode]{}, fmt.Errorf("carrer %s not found", career)
+		return models.Graph[models.SubjectNode]{}, fmt.Errorf("Carrer '%s' not found", career)
 	}
 
 	nodes := make([]models.Node[models.SubjectNode], len(subjects))

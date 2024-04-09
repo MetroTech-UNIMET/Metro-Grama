@@ -4,10 +4,9 @@ import "@antv/graphin-icons/dist/index.css";
 
 const icons = Graphin.registerFontFamily(iconLoader);
 
-
 export default function useSubectGraph(data: Graph<Subject>) {
   const graph: GraphinData = {
-    //@ts-ignore 
+    //@ts-ignore
     nodes: data.nodes!.map((node) => ({
       id: node.id,
       label: node.data.name,
@@ -59,6 +58,11 @@ export default function useSubectGraph(data: Graph<Subject>) {
             halo: {
               fill: "#ddd",
               visible: true,
+            },
+          },
+          "prelation-viewed": {
+            keyshape: {
+              stroke: "blue",
             },
           },
           future: {

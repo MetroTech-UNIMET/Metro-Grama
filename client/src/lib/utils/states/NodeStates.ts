@@ -9,25 +9,29 @@ export function markNodeAsViewed(node: INode, firstNode = true) {
     return;
   }
 
+  node.setState("accesible", false);
   node.setState("viewed", true);
+
   const inEdges = node.getInEdges();
 
   const previousNodes = getNodesFromEdges(inEdges, "source");
-  previousNodes.forEach((node) => {
-    markNodeAsViewed(node, false);
-  });
+  previousNodes.forEach((node) => markNodeAsViewed(node, false));
 
-  if (firstNode) checkAccesible(outEdges);
+  checkAccesible(outEdges);
 }
 
 function disableViewedNode(node: INode, outEdges: IEdge[]) {
   node.setState("viewed", false);
-  node.setState("accesible", false);
+
+  const sourceNodes = getNodesFromEdges(node.getInEdges(), "source");
+
+  const isAccesible = sourceNodes.every((node) => node.hasState("viewed"));
+
+  node.setState("accesible", isAccesible);
+
   const outNodes = getNodesFromEdges(outEdges, "target");
 
-  outNodes.forEach((node) => {
-    disableViewedNode(node, node.getOutEdges())
-  });
+  outNodes.forEach((node) => disableViewedNode(node, node.getOutEdges()));
 }
 
 function checkAccesible(outEdges: IEdge[]) {
@@ -37,7 +41,7 @@ function checkAccesible(outEdges: IEdge[]) {
     const sourceNodes = getNodesFromEdges(node.getInEdges(), "source");
 
     if (sourceNodes.every((node) => node.hasState("viewed"))) {
-      node.setState("accesible", true);
+      if (!node.hasState("viewed")) node.setState("accesible", true);
     }
   });
 }

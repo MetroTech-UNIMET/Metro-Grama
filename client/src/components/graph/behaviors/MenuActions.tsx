@@ -4,9 +4,8 @@ import { GraphinContextType } from "@antv/graphin";
 import { INode } from "@antv/g6";
 
 import { ListContent, ListHeader, ListItem } from "../../ui/list";
-import { enableViewedNode } from "@/lib/utils/states/NodeStates";
-import { cn } from "@/lib/utils/className";
-import { SheetTrigger } from "@/components/ui/sheet";
+import { enableViewedNode } from "@utils/states/NodeStates";
+import { cn } from "@utils/className";
 import { useSubjectSheet } from "@/components/SubjectSheet";
 import { Subject } from "@/interfaces/Subject";
 

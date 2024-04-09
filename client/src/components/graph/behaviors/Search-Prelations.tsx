@@ -1,11 +1,11 @@
 import { GraphinContext, IG6GraphEvent } from "@antv/graphin";
 import { useContext, useEffect } from "react";
 import { INode } from "@antv/g6";
-import { clearGraphStates } from "@/lib/utils/graph";
+import { clearGraphStates } from "@utils/graph";
 import {
   markEdgesAsFuture,
   markEdgesAsPrelation,
-} from "@/lib/utils/states/EdgesStates";
+} from "@utils/states/EdgesStates";
 
 export default function SearchPrelations() {
   const { graph } = useContext(GraphinContext);

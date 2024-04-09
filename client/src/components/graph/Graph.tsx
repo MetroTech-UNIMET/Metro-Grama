@@ -28,13 +28,13 @@ export default function Graph() {
       style={{
         backgroundColor: "transparent",
       }}
+      
     >
       <SearchPrelations />
       <MenuActions />
       <MiniMap
         visible={true}
         style={{
-          border: "1px solid #e2e2e2",
           borderRadius: 4,
         }}
         options={{

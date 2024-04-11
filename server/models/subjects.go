@@ -3,7 +3,7 @@ package models
 type SubjectForm struct {
 	SubjectName   string   `form:"subjectName" json:"subjectName"`
 	SubjectCode   string   `form:"subjectCode" json:"subjectCode"`
-	Trimester     uint8    `form:"trimester" json:"trimester"`
+	Trimesters    []uint8  `form:"trimesters" json:"trimesters"`
 	Careers       []string `form:"careers" json:"careers"`
 	PrecedesCodes []string `form:"precedesCodes" json:"precedesCodes"`
 }

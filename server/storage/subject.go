@@ -1,10 +1,13 @@
 package storage
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"metrograma/db"
 	"metrograma/models"
+	"metrograma/tools"
+	"text/template"
 
 	"github.com/surrealdb/surrealdb.go"
 )
@@ -47,6 +50,14 @@ func GetSubjectByCareer(ctx context.Context, career string) (models.Graph[models
 	return graph, nil
 }
 
+func ExistSubject(id string) error {
+	_, err := db.SurrealDB.Select(id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func GetSubject(id string) (*models.Subject, error) {
 	data, err := db.SurrealDB.Select(id)
 	if err != nil {
@@ -61,7 +72,39 @@ func GetSubject(id string) (*models.Subject, error) {
 	return subject, nil
 }
 
-func CreateSubject(ctx context.Context, subject models.SubjectBase) error {
-	_, err := db.SurrealDB.Create("subjects", subject)
+const createQuery = `
+BEGIN TRANSACTION;
+CREATE $subjectID SET name=$subjectName;
+{{ range $i, $p := .PrecedesCodes }}
+RELATE $precedeID{{$i}}->precede->$subjectID;
+{{end}}
+{{ range $i, $c := .Careers }}
+RELATE $subjectID->belong->$carrerID{{$i}} SET trimester = {{index $.Trimesters $i}};
+{{end}}
+COMMIT TRANSACTION;	
+`
+
+func CreateSubject(subject models.SubjectForm) error {
+	t, err := template.New("query").Parse(createQuery)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	var query bytes.Buffer
+	t.Execute(&query, subject)
+
+	queryParams := map[string]string{
+		"subjectID":   subject.SubjectCode,
+		"subjectName": subject.SubjectName,
+	}
+
+	for i, p := range subject.PrecedesCodes {
+		queryParams[fmt.Sprintf("precedeID%d", i)] = p
+	}
+
+	for i, c := range subject.Careers {
+		queryParams[fmt.Sprintf("carrerID%d", i)] = tools.ToID("carrer", c)
+	}
+
+	_, err = db.SurrealDB.Query(query.String(), queryParams)
 	return err
 }

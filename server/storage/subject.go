@@ -2,7 +2,6 @@ package storage
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"metrograma/db"
 	"metrograma/models"
@@ -12,35 +11,42 @@ import (
 	"github.com/surrealdb/surrealdb.go"
 )
 
-func GetSubjectByCareer(ctx context.Context, career string) (models.Graph[models.SubjectNode], error) {
-	subjects, err := surrealdb.SmartUnmarshal[[]models.Subject](db.SurrealDB.Query(`SELECT * FROM subjects WHERE careers ?= $career ORDER BY trimester FETCH precedesSubjects;`, map[string]interface{}{
-		"career": career,
-	}))
+const queryGraph = `SELECT array::distinct(<-belong<-subject<-precede) as edges, array::distinct(<-belong<-subject) as nodes FROM $carrerID FETCH edges, edges.in, edges.out, nodes;`
+
+func GetSubjectByCareer(carrer string) (models.Graph[models.SubjectNode], error) {
+	rows, err := db.SurrealDB.Query(queryGraph, map[string]string{
+		"carrerID": tools.ToID("carrer", carrer),
+	})
+	if err != nil {
+		return models.Graph[models.SubjectNode]{}, fmt.Errorf("carrer %s not found", carrer)
+	}
+
+	carrersEdges, err := surrealdb.SmartUnmarshal[[]models.SubjectsEdges](rows, err)
 
 	if err != nil {
 		return models.Graph[models.SubjectNode]{}, err
-	} else if len(subjects) == 0 {
-		return models.Graph[models.SubjectNode]{}, fmt.Errorf("carrer %s not found", career)
+	} else if len(carrersEdges) == 0 {
+		return models.Graph[models.SubjectNode]{}, fmt.Errorf("carrer %s not found", carrer)
 	}
 
-	nodes := make([]models.Node[models.SubjectNode], len(subjects))
-	edges := make([]models.Edge, 0)
+	nodes := make([]models.Node[models.SubjectNode], len(carrersEdges[0].SubjectNodes))
+	edges := make([]models.Edge, len(carrersEdges[0].SubjectEdges))
 
-	for i := 0; i < len(subjects); i++ {
+	for i, subjectNode := range carrersEdges[0].SubjectNodes {
 		nodes[i] = models.Node[models.SubjectNode]{
-			ID: subjects[i].ID,
+			ID: subjectNode.ID,
 			Data: models.SubjectNode{
-				Code: subjects[i].ID,
-				Name: subjects[i].Name,
+				Code: subjectNode.ID[len("subject:"):],
+				Name: subjectNode.Name,
 			},
 		}
-		for _, ps := range subjects[i].PrecedesSubjects {
-			edges = append(edges, models.Edge{
-				From: ps.ID,
-				To:   subjects[i].ID,
-			})
-		}
+	}
 
+	for i, subjectEdge := range carrersEdges[0].SubjectEdges {
+		edges[i] = models.Edge{
+			From: subjectEdge.From.ID,
+			To:   subjectEdge.To.ID,
+		}
 	}
 
 	graph := models.Graph[models.SubjectNode]{
@@ -56,20 +62,6 @@ func ExistSubject(id string) error {
 		return err
 	}
 	return nil
-}
-
-func GetSubject(id string) (*models.Subject, error) {
-	data, err := db.SurrealDB.Select(id)
-	if err != nil {
-		return nil, err
-	}
-
-	subject := new(models.Subject)
-	err = surrealdb.Unmarshal(data, &subject)
-	if err != nil {
-		return nil, err
-	}
-	return subject, nil
 }
 
 const createQuery = `

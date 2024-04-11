@@ -19,7 +19,7 @@ func subjectsHandler(e *echo.Group) {
 func getSubjectsByCareer(c echo.Context) error {
 	career := c.Param("career")
 
-	subjects, err := storage.GetSubjectByCareer(c.Request().Context(), career)
+	subjects, err := storage.GetSubjectByCareer(career)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, err)
 	}

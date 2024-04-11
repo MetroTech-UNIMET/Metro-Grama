@@ -116,10 +116,10 @@ RELATE subject:BPTMI02->precede->subject:BPTFI02;
 RELATE subject:BPTSP05->precede->subject:BPTSP06;
 RELATE subject:BPTMI01->precede->subject:BPTMI30;
 
-RELATE subject:BPTMI03->belong->carrer:sistmeas SET trimester=4;
-RELATE subject:BPTFI02->belong->carrer:sistmeas SET trimester=4;
-RELATE subject:BPTSP06->belong->carrer:sistmeas SET trimester=4;
-RELATE subject:BPTMI30->belong->carrer:sistmeas SET trimester=4;
+RELATE subject:BPTMI03->belong->carrer:sistemas SET trimester=4;
+RELATE subject:BPTFI02->belong->carrer:sistemas SET trimester=4;
+RELATE subject:BPTSP06->belong->carrer:sistemas SET trimester=4;
+RELATE subject:BPTMI30->belong->carrer:sistemas SET trimester=4;
 
 -- Trimestre 5
 CREATE subject:BPTMI04 SET name="Matemáticas IV";
@@ -134,11 +134,11 @@ RELATE subject:BPTSP06->precede->subject:FPTSP04;
 RELATE subject:BPTSP05->precede->subject:BPTEN12;
 RELATE subject:BPTMI03->precede->subject:BPTMI31;
 
-RELATE subject:BPTMI04->belong->carrer:sistmeas;
-RELATE subject:BPTFI05->belong->carrer:sistmeas;
-RELATE subject:FPTSP04->belong->carrer:sistmeas;
-RELATE subject:BPTEN12->belong->carrer:sistmeas;
-RELATE subject:BPTMI31->belong->carrer:sistmeas;
+RELATE subject:BPTMI04->belong->carrer:sistemas SET trimester=5;
+RELATE subject:BPTFI05->belong->carrer:sistemas SET trimester=5;
+RELATE subject:FPTSP04->belong->carrer:sistemas SET trimester=5;
+RELATE subject:BPTEN12->belong->carrer:sistemas SET trimester=5;
+RELATE subject:BPTMI31->belong->carrer:sistemas SET trimester=5;
 
 -- Trimestre 6
 CREATE subject:BPTMI11 SET name="Ecuaciones Diferenciales";
@@ -151,10 +151,10 @@ RELATE subject:BPTMI03->precede->subject:BPTMI06;
 RELATE subject:BPTSP06->precede->subject:FPTSP01;
 RELATE subject:BPTEN12->precede->subject:BPTSP03;
 
-RELATE subject:BPTMI11->belong->carrer:sistemas;
-RELATE subject:BPTMI06->belong->carrer:sistemas;
-RELATE subject:FPTSP01->belong->carrer:sistemas;
-RELATE subject:BPTSP03->belong->carrer:sistemas;
+RELATE subject:BPTMI11->belong->carrer:sistemas SET trimester = 6;
+RELATE subject:BPTMI06->belong->carrer:sistemas SET trimester = 6;
+RELATE subject:FPTSP01->belong->carrer:sistemas SET trimester = 6;
+RELATE subject:BPTSP03->belong->carrer:sistemas SET trimester = 6;
 
 -- Trimestre 7
 CREATE subject:BPTMI05 SET name="Matemáticas V";
@@ -169,8 +169,8 @@ RELATE subject:FPTSP01->precede->subject:FPTSP26;
 RELATE subject:BPTMI11->precede->subject:FPTSP17;
 RELATE subject:BPTMI03->precede->subject:BPTMI31;
 
-RELATE subject:BPTMI05->belong->carrer:sistemas;
-RELATE subject:BPTMI07->belong->carrer:sistemas;
-RELATE subject:FPTSP26->belong->carrer:sistemas;
-RELATE subject:FPTSP17->belong->carrer:sistemas;
-RELATE subject:BPTMI31->belong->carrer:sistemas;
+RELATE subject:BPTMI05->belong->carrer:sistemas SET trimester = 7;
+RELATE subject:BPTMI07->belong->carrer:sistemas SET trimester = 7;
+RELATE subject:FPTSP26->belong->carrer:sistemas SET trimester = 7;
+RELATE subject:FPTSP17->belong->carrer:sistemas SET trimester = 7;
+RELATE subject:BPTMI31->belong->carrer:sistemas SET trimester = 7;

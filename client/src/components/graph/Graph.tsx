@@ -20,6 +20,7 @@ export default function Graph() {
 
   if (isLoading || !data) return <div>Loading...</div>;
 
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const { graph } = useSubectGraph(data);
 
   return (
@@ -28,7 +29,6 @@ export default function Graph() {
       style={{
         backgroundColor: "transparent",
       }}
-      
     >
       <SearchPrelations />
       <MenuActions />

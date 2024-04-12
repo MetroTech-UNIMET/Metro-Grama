@@ -1,24 +1,21 @@
-import { QueryClient, QueryClientProvider } from "react-query";
-import Graph from "@/components/graph/Graph";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import Grafo from "./features/grafo/Grafo";
 import GraphLayout from "./layouts/GraphLayout";
-import { SubjectSheet, SubjectSheetContent } from "@components/SubjectSheet";
+import Hero from "./features/landing/Hero";
 
 function App() {
-  const queryClient = new QueryClient();
+  const router = createBrowserRouter([
+    { path: "/", element: <Hero /> },
 
+    {
+      element: <GraphLayout />,
+
+      children: [{ path: "/graph", element: <Grafo /> }],
+    },
+  ]);
   return (
     <>
-      <QueryClientProvider client={queryClient}>
-        <GraphLayout>
-          <SubjectSheet>
-            <Graph />
-
-            <SubjectSheetContent/>
-              
-          </SubjectSheet>
-          {/* <ReactQueryDevtools initialIsOpen={false} /> */}
-        </GraphLayout>
-      </QueryClientProvider>
+      <RouterProvider router={router} />
     </>
   );
 }

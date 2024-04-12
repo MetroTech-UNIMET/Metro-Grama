@@ -9,13 +9,13 @@ package models
 // }
 
 type SubjectForm struct {
-	Name    string `json:"name"`
-	Code    string `json:"code"`
+	Name    string `json:"name" validate:"required"`
+	Code    string `json:"code" validate:"required"`
 	Carrers []struct {
-		Trimester uint8  `json:"trimester"`
-		CarrerID  string `json:"carrerID"`
-	} `json:"carrers"`
-	PrecedesID []string `json:"precedesID"`
+		Trimester uint8  `json:"trimester" validate:"required, gte=1,lte=20"`
+		CarrerID  string `json:"carrerID" validate:"required"`
+	} `json:"carrers" validate:"required"`
+	PrecedesID []string `json:"precedesID" validate:"required"`
 }
 
 type SubjectNode struct {

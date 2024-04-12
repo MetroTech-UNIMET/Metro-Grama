@@ -22,7 +22,7 @@ DEFINE TABLE student SCHEMALESS;
 DEFINE TABLE subject SCHEMALESS;
 DEFINE FIELD name ON subject TYPE string
     ASSERT string::len($value) > 3 && string::len($value) < 100;
-DEFINE INDEX nameIndex ON TABLE carrer COLUMNS name UNIQUE;
+DEFINE INDEX nameIndex ON TABLE subject COLUMNS name UNIQUE;
 
 -- Definir tabla de relacion estudiante -> materia
 DEFINE TABLE passed SCHEMALESS;

@@ -19,7 +19,7 @@ func subjectsHandler(e *echo.Group) {
 func getSubjectsByCareer(c echo.Context) error {
 	career := c.Param("career")
 
-	subjects, err := storage.GetSubjectByCareer(c.Request().Context(), career)
+	subjects, err := storage.GetSubjectByCareer(career)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
@@ -31,35 +31,29 @@ func createSubject(c echo.Context) error {
 	var subjectForm models.SubjectForm
 	if err := c.Bind(&subjectForm); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-		// return c.JSON(http.StatusBadRequest, tools.CreateMsg("Invalid trimester"))
+	}
+	if len(subjectForm.Careers) != len(subjectForm.Trimesters) {
+		return echo.NewHTTPError(http.StatusBadRequest, "The number of trimesters and carrers must be the same")
 	}
 
-	// Ok, por alguna razon el sdk de surreal no me suelta el error de que ya existe
-	if _, err := storage.GetSubject(tools.ToID("subjects", subjectForm.SubjectCode)); err == nil {
-		return c.JSON(http.StatusInternalServerError, tools.CreateMsg("Already exist"))
-	}
-
-	subject := models.SubjectBase{
-		ID:               subjectForm.SubjectCode,
-		Name:             subjectForm.SubjectName,
-		Trimester:        subjectForm.Trimester,
-		Careers:          subjectForm.Careers,
-		PrecedesSubjects: make([]string, len(subjectForm.PrecedesCodes)),
+	subjectForm.SubjectCode = tools.ToID("subject", subjectForm.SubjectCode)
+	if err := storage.ExistSubject(subjectForm.SubjectCode); err == nil {
+		return echo.NewHTTPError(http.StatusConflict, "Already exist")
 	}
 
 	// Sacar las materias que preceden
 	for i := 0; i < len(subjectForm.PrecedesCodes); i++ {
-		precedesSubject, err := storage.GetSubject(tools.ToID("subjects", subjectForm.PrecedesCodes[i]))
+		subjectForm.PrecedesCodes[i] = tools.ToID("subject", subjectForm.PrecedesCodes[i])
+		err := storage.ExistSubject(subjectForm.PrecedesCodes[i])
 		if err != nil {
-			return c.JSON(http.StatusNotFound, tools.CreateMsg(fmt.Sprintf("Precedes subject `%s` not found", subjectForm.PrecedesCodes[i])))
+			return echo.NewHTTPError(http.StatusNotFound, fmt.Sprintf("Precedes subject `%s` not found", subjectForm.PrecedesCodes[i]))
 		}
-		subject.PrecedesSubjects[i] = precedesSubject.ID
 	}
 
-	err := storage.CreateSubject(c.Request().Context(), subject)
+	err := storage.CreateSubject(subjectForm)
 
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, tools.CreateMsg(err.Error()))
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
 	return c.JSON(http.StatusCreated, tools.CreateMsg("Subject created"))

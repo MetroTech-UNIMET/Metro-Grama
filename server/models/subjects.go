@@ -3,7 +3,7 @@ package models
 type SubjectForm struct {
 	SubjectName   string   `form:"subjectName" json:"subjectName"`
 	SubjectCode   string   `form:"subjectCode" json:"subjectCode"`
-	Trimester     uint8    `form:"trimester" json:"trimester"`
+	Trimesters    []uint8  `form:"trimesters" json:"trimesters"`
 	Careers       []string `form:"careers" json:"careers"`
 	PrecedesCodes []string `form:"precedesCodes" json:"precedesCodes"`
 }
@@ -13,18 +13,20 @@ type SubjectNode struct {
 	Name string `json:"name"`
 }
 
-type Subject struct {
-	ID               string        `json:"id,omitempty"`
-	Name             string        `json:"name"`
-	Trimester        uint8         `json:"trimester"`
-	Careers          []string      `json:"careers"`
-	PrecedesSubjects []SubjectBase `json:"precedesSubjects"`
+type SubjectEdge struct {
+	ID   string `json:"id,omitempty"`
+	Name string `json:"name"`
 }
 
-type SubjectBase struct {
-	ID               string   `json:"id,omitempty"`
-	Name             string   `json:"name"`
-	Trimester        uint8    `json:"trimester"`
-	Careers          []string `json:"careers"`
-	PrecedesSubjects []string `json:"precedesSubjects"`
+type SubjectsEdges struct {
+	SubjectEdges []struct {
+		ID   string      `json:"id,omitempty"`
+		From SubjectEdge `json:"in"`
+		To   SubjectEdge `json:"out"`
+	} `json:"edges"`
+
+	SubjectNodes []struct {
+		ID   string `json:"id,omitempty"`
+		Name string `json:"name"`
+	} `json:"nodes"`
 }

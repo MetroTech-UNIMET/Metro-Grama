@@ -7,7 +7,9 @@ import (
 )
 
 func healthHandler(e *echo.Group) {
-	e.GET("/health", func(c echo.Context) error {
-		return c.String(http.StatusOK, "😎")
-	})
+	e.GET("/health", health)
+}
+
+func health(c echo.Context) error {
+	return c.String(http.StatusOK, "😎")
 }

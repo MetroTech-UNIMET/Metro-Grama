@@ -67,11 +67,11 @@ func ExistSubject(id string) error {
 const createQuery = `
 BEGIN TRANSACTION;
 CREATE $subjectID SET name=$subjectName;
-{{ range $i, $p := .PrecedesCodes }}
+{{ range $i, $p := .PrecedesID }}
 RELATE $precedeID{{$i}}->precede->$subjectID;
 {{end}}
-{{ range $i, $c := .Careers }}
-RELATE $subjectID->belong->$carrerID{{$i}} SET trimester = {{index $.Trimesters $i}};
+{{ range $i, $c := .Carrers }}
+RELATE $subjectID->belong->$carrerID{{$i}} SET trimester = $trimester{{$i}};
 {{end}}
 COMMIT TRANSACTION;	
 `
@@ -79,22 +79,26 @@ COMMIT TRANSACTION;
 func CreateSubject(subject models.SubjectForm) error {
 	t, err := template.New("query").Parse(createQuery)
 	if err != nil {
-		fmt.Println(err.Error())
+		return err
 	}
 	var query bytes.Buffer
-	t.Execute(&query, subject)
-
-	queryParams := map[string]string{
-		"subjectID":   subject.SubjectCode,
-		"subjectName": subject.SubjectName,
+	err = t.Execute(&query, subject)
+	if err != nil {
+		return err
 	}
 
-	for i, p := range subject.PrecedesCodes {
+	queryParams := map[string]interface{}{
+		"subjectID":   subject.Code,
+		"subjectName": subject.Name,
+	}
+
+	for i, p := range subject.PrecedesID {
 		queryParams[fmt.Sprintf("precedeID%d", i)] = p
 	}
 
-	for i, c := range subject.Careers {
-		queryParams[fmt.Sprintf("carrerID%d", i)] = tools.ToID("carrer", c)
+	for i, c := range subject.Carrers {
+		queryParams[fmt.Sprintf("carrerID%d", i)] = c.CarrerID
+		queryParams[fmt.Sprintf("trimester%d", i)] = c.Trimester
 	}
 
 	_, err = db.SurrealDB.Query(query.String(), queryParams)

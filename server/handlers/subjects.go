@@ -33,6 +33,10 @@ func createSubject(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
+	if err := c.Validate(subjectForm); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
 	subjectForm.Code = tools.ToID("subject", subjectForm.Code)
 	if err := storage.ExistSubject(subjectForm.Code); err == nil {
 		return echo.NewHTTPError(http.StatusConflict, "Already exist")

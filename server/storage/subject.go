@@ -26,7 +26,7 @@ func GetSubjectByCareer(carrer string) (models.Graph[models.SubjectNode], error)
 	if err != nil {
 		return models.Graph[models.SubjectNode]{}, err
 	} else if len(carrersEdges) == 0 {
-		return models.Graph[models.SubjectNode]{}, fmt.Errorf("Carrer '%s' not found", carrer)
+		return models.Graph[models.SubjectNode]{}, fmt.Errorf("carrer '%s' not found", carrer)
 	}
 
 	nodes := make([]models.Node[models.SubjectNode], len(carrersEdges[0].SubjectNodes))

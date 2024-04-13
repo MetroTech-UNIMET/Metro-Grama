@@ -101,8 +101,7 @@ func CreateSubject(subject models.SubjectForm) error {
 		queryParams[fmt.Sprintf("trimester%d", i)] = c.Trimester
 	}
 
-	a, err := db.SurrealDB.Query(query.String(), queryParams)
-	fmt.Println(a)
+	_, err = db.SurrealDB.Query(query.String(), queryParams)
 	return err
 }
 

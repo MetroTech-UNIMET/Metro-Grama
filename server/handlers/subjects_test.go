@@ -78,21 +78,25 @@ var subjectMockData = map[SubjectCase]models.SubjectForm{
 	},
 }
 
+func createEchoContextWithJson(t *testing.T, e *echo.Echo, data interface{}) (echo.Context, *httptest.ResponseRecorder) {
+	buf, err := json.Marshal(data)
+	assert.NoError(t, err, "Fail to encode subject to json")
+
+	req := httptest.NewRequest(http.MethodPost, "/", bytes.NewReader(buf))
+	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+	return c, rec
+}
+
 func TestCreateSubject(t *testing.T) {
 	e := tools.SetupEcho()
 	subjectMock := subjectMockData[SubjectSuccess]
 
 	storage.DeleteSubject(tools.ToID("subject", subjectMock.Code))
 
-	data, err := json.Marshal(subjectMock)
-	assert.NoError(t, err, "Fail to encode subject to json")
-
-	req := httptest.NewRequest(http.MethodPost, "/", bytes.NewReader(data))
-	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	rec := httptest.NewRecorder()
-	c := e.NewContext(req, rec)
-
-	err = createSubject(c)
+	c, rec := createEchoContextWithJson(t, e, subjectMock)
+	err := createSubject(c)
 
 	storage.DeleteSubject(tools.ToID("subject", subjectMock.Code))
 
@@ -112,13 +116,7 @@ func TestDuplicateCreateSubject(t *testing.T) {
 	err := storage.CreateSubject(subjectMock)
 	assert.NoError(t, err)
 
-	data, err := json.Marshal(subjectMock2)
-	assert.NoError(t, err, "Fail to encode subject to json")
-
-	req := httptest.NewRequest(http.MethodPost, "/", bytes.NewReader(data))
-	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	rec := httptest.NewRecorder()
-	c := e.NewContext(req, rec)
+	c, _ := createEchoContextWithJson(t, e, subjectMock2)
 	err = createSubject(c)
 	httpErr := err.(*echo.HTTPError)
 
@@ -134,14 +132,8 @@ func TestCreateSubjectWithNonExistingPrecedesSubjects(t *testing.T) {
 
 	storage.DeleteSubject(tools.ToID("subject", subjectMock.Code))
 
-	data, err := json.Marshal(subjectMock)
-	assert.NoError(t, err, "Fail to encode subject to json")
-
-	req := httptest.NewRequest(http.MethodPost, "/", bytes.NewReader(data))
-	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	rec := httptest.NewRecorder()
-	c := e.NewContext(req, rec)
-	err = createSubject(c)
+	c, _ := createEchoContextWithJson(t, e, subjectMock)
+	err := createSubject(c)
 	httpErr := err.(*echo.HTTPError)
 
 	storage.DeleteSubject(tools.ToID("subject", subjectMock.Code))
@@ -156,14 +148,8 @@ func TestCreateSubjectWithNonExistingCarrer(t *testing.T) {
 
 	storage.DeleteSubject(tools.ToID("subject", subjectMock.Code))
 
-	data, err := json.Marshal(subjectMock)
-	assert.NoError(t, err, "Fail to encode subject to json")
-
-	req := httptest.NewRequest(http.MethodPost, "/", bytes.NewReader(data))
-	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	rec := httptest.NewRecorder()
-	c := e.NewContext(req, rec)
-	err = createSubject(c)
+	c, _ := createEchoContextWithJson(t, e, subjectMock)
+	err := createSubject(c)
 
 	httpErr := err.(*echo.HTTPError)
 
@@ -179,14 +165,8 @@ func TestCreateSubjectWithInvalidBody(t *testing.T) {
 
 	storage.DeleteSubject(tools.ToID("subject", subjectMock.Code))
 
-	data, err := json.Marshal(subjectMock)
-	assert.NoError(t, err, "Fail to encode subject to json")
-
-	req := httptest.NewRequest(http.MethodPost, "/", bytes.NewReader(data))
-	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	rec := httptest.NewRecorder()
-	c := e.NewContext(req, rec)
-	err = createSubject(c)
+	c, _ := createEchoContextWithJson(t, e, subjectMock)
+	err := createSubject(c)
 
 	httpErr := err.(*echo.HTTPError)
 

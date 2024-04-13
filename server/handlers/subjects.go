@@ -12,12 +12,12 @@ import (
 
 func subjectsHandler(e *echo.Group) {
 	subjectsGroup := e.Group("/subjects")
-	subjectsGroup.GET("/:career", getSubjectsByCareer)
+	subjectsGroup.GET("/:carrer", getSubjectsByCareer)
 	subjectsGroup.POST("/", createSubject)
 }
 
 func getSubjectsByCareer(c echo.Context) error {
-	career := c.Param("career")
+	career := c.Param("carrer")
 
 	subjects, err := storage.GetSubjectByCareer(career)
 	if err != nil {

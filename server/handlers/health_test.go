@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/labstack/echo/v4"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestHealth(t *testing.T) {
@@ -17,7 +18,6 @@ func TestHealth(t *testing.T) {
 
 	health(c)
 
-	if rec.Body.String() != "😎" || rec.Code != http.StatusOK {
-		t.FailNow()
-	}
+	assert.Equal(t, rec.Body.String(), "😎")
+	assert.Equal(t, rec.Code, http.StatusOK)
 }

@@ -56,7 +56,7 @@ func GetSubjectByCareer(carrer string) (models.Graph[models.SubjectNode], error)
 	return graph, nil
 }
 
-func ExistSubject(id string) error {
+func ExistRecord(id string) error {
 	_, err := db.SurrealDB.Select(id)
 	if err != nil {
 		return err
@@ -101,6 +101,12 @@ func CreateSubject(subject models.SubjectForm) error {
 		queryParams[fmt.Sprintf("trimester%d", i)] = c.Trimester
 	}
 
-	_, err = db.SurrealDB.Query(query.String(), queryParams)
+	a, err := db.SurrealDB.Query(query.String(), queryParams)
+	fmt.Println(a)
+	return err
+}
+
+func DeleteSubject(subjectID string) error {
+	_, err := db.SurrealDB.Delete(subjectID)
 	return err
 }

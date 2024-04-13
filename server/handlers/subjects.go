@@ -38,15 +38,22 @@ func createSubject(c echo.Context) error {
 	}
 
 	subjectForm.Code = tools.ToID("subject", subjectForm.Code)
-	if err := storage.ExistSubject(subjectForm.Code); err == nil {
+	if err := storage.ExistRecord(subjectForm.Code); err == nil {
 		return echo.NewHTTPError(http.StatusConflict, "Already exist")
 	}
 
-	// Sacar las materias que preceden
-	for i := 0; i < len(subjectForm.PrecedesID); i++ {
-		err := storage.ExistSubject(subjectForm.PrecedesID[i])
+	for _, c := range subjectForm.Carrers {
+		err := storage.ExistRecord(c.CarrerID)
 		if err != nil {
-			return echo.NewHTTPError(http.StatusNotFound, fmt.Sprintf("Precedes subject `%s` not found", subjectForm.PrecedesID[i]))
+			return echo.NewHTTPError(http.StatusNotFound, fmt.Sprintf("Precedes subject `%s` not found", c.CarrerID))
+		}
+	}
+
+	// Sacar las materias que preceden
+	for _, p := range subjectForm.PrecedesID {
+		err := storage.ExistRecord(p)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusNotFound, fmt.Sprintf("Precedes subject `%s` not found", p))
 		}
 	}
 

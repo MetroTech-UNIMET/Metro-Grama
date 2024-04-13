@@ -161,16 +161,16 @@ CREATE subject:BPTMI05 SET name="Matemáticas V";
 CREATE subject:BPTMI07 SET name="Estadística para Ingenieros II";
 CREATE subject:FPTSP26 SET name="Bases de Datos II";
 CREATE subject:FPTSP17 SET name="Optimización I";
-CREATE subject:BPTMI31 SET name="Sistemas Operativos";
+CREATE subject:BPTSP04 SET name="Sistemas Operativos";
 
 RELATE subject:BPTMI04->precede->subject:BPTMI05;
 RELATE subject:BPTMI06->precede->subject:BPTMI07;
 RELATE subject:FPTSP01->precede->subject:FPTSP26;
 RELATE subject:BPTMI11->precede->subject:FPTSP17;
-RELATE subject:BPTMI03->precede->subject:BPTMI31;
+RELATE subject:BPTMI03->precede->subject:BPTSP04;
 
 RELATE subject:BPTMI05->belong->carrer:sistemas SET trimester = 7;
 RELATE subject:BPTMI07->belong->carrer:sistemas SET trimester = 7;
 RELATE subject:FPTSP26->belong->carrer:sistemas SET trimester = 7;
 RELATE subject:FPTSP17->belong->carrer:sistemas SET trimester = 7;
-RELATE subject:BPTMI31->belong->carrer:sistemas SET trimester = 7;
+RELATE subject:BPTSP04->belong->carrer:sistemas SET trimester = 7;

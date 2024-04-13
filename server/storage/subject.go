@@ -11,7 +11,7 @@ import (
 	"github.com/surrealdb/surrealdb.go"
 )
 
-const queryGraph = `SELECT array::distinct(<-belong<-subject<-precede) as edges, array::distinct(<-belong<-subject) as nodes FROM $carrerID FETCH edges, edges.in, edges.out, nodes;`
+const queryGraph = `SELECT <-belong<-subject<-precede as edges, <-belong<-subject as nodes FROM $carrerID FETCH edges, edges.in, edges.out, nodes;`
 
 func GetSubjectByCareer(carrer string) (models.Graph[models.SubjectNode], error) {
 	rows, err := db.SurrealDB.Query(queryGraph, map[string]string{

@@ -3,11 +3,13 @@ package handlers
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"metrograma/models"
 	"metrograma/storage"
 	"metrograma/tools"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/labstack/echo/v4"
@@ -174,4 +176,96 @@ func TestCreateSubjectWithInvalidBody(t *testing.T) {
 
 	assert.Error(t, err, "Create subject must fail")
 	assert.Equal(t, httpErr.Code, http.StatusBadRequest, err)
+}
+
+var edgesMock = []models.Edge{
+	{
+		From: "subject:FBTMM01",
+		To:   "subject:BPTMI01",
+	},
+	{
+		From: "subject:FBTMM01",
+		To:   "subject:BPTQI21",
+	},
+	{
+		From: "subject:BPTQI21",
+		To:   "subject:BPTQI22",
+	},
+	{
+		From: "subject:BPTMI01",
+		To:   "subject:BPTMI02",
+	},
+	{
+		From: "subject:BPTMI01",
+		To:   "subject:BPTMI30",
+	},
+	{
+		From: "subject:BPTMI01",
+		To:   "subject:BPTFI01",
+	},
+	{
+		From: "subject:BPTFI01",
+		To:   "subject:BPTFI02",
+	},
+	{
+		From: "subject:BPTFI02",
+		To:   "subject:BPTFI05",
+	},
+	{
+		From: "subject:BPTMI02",
+		To:   "subject:BPTMI03",
+	},
+	{
+		From: "subject:BPTMI02",
+		To:   "subject:BPTFI02",
+	},
+	{
+		From: "subject:BPTMI03",
+		To:   "subject:BPTMI04",
+	},
+	{
+		From: "subject:BPTMI03",
+		To:   "subject:BPTMI31",
+	},
+	{
+		From: "subject:BPTMI03",
+		To:   "subject:BPTMI06",
+	},
+	{
+		From: "subject:BPTMI04",
+		To:   "subject:BPTMI05",
+	},
+	{
+		From: "subject:BPTMI04",
+		To:   "subject:BPTMI11",
+	},
+}
+
+func TestBasicSubjectsGraph(t *testing.T) {
+	e := tools.SetupEcho()
+
+	req := httptest.NewRequest(http.MethodGet, "/", strings.NewReader(""))
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+	c.SetParamNames("carrer")
+	c.SetParamValues("sistemas")
+
+	err := getSubjectsByCareer(c)
+
+	if assert.NoError(t, err) {
+		graph := new(models.Graph[models.SubjectNode])
+		err := json.Unmarshal(rec.Body.Bytes(), graph)
+		assert.NoError(t, err)
+		matchs := 0
+
+		for _, e := range graph.Edges {
+			for _, eMock := range edgesMock {
+				if e.From == eMock.From && e.To == eMock.To {
+					fmt.Printf("%s -> %s\n", e.From, e.To)
+					matchs += 1
+				}
+			}
+		}
+		assert.Equal(t, matchs, len(edgesMock))
+	}
 }

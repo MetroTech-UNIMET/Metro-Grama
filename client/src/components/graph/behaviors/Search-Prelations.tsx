@@ -7,6 +7,8 @@ import {
   markEdgesAsPrelation,
 } from "@utils/states/EdgesStates";
 
+const statesToIgnore = ["viewed", "accesible", "normal"];
+
 export default function SearchPrelations() {
   const { graph } = useContext(GraphinContext);
 
@@ -17,7 +19,7 @@ export default function SearchPrelations() {
 
       clearGraphStates(graph, {
         statesToTrue: ["inactive"],
-        statesToIgnore: ["viewed", "accesible"],
+        statesToIgnore,
       });
 
       graph.setItemState(node, "selected", true);
@@ -31,10 +33,10 @@ export default function SearchPrelations() {
     // FIXME - Que el si se mantiene el touch para el drag, no genere el handleClick
     graph.on("node:touchstart", handleClick);
     graph.on("canvas:touchstart", () => {
-      clearGraphStates(graph, { statesToIgnore: ["viewed", "accesible"] });
+      clearGraphStates(graph, { statesToIgnore });
     });
     graph.on("canvas:click", () => {
-      clearGraphStates(graph, { statesToIgnore: ["viewed", "accesible"] });
+      clearGraphStates(graph, { statesToIgnore });
     });
 
     return () => {

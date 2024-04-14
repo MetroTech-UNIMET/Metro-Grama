@@ -6,6 +6,7 @@ import (
 	"metrograma/storage"
 	"metrograma/tools"
 	"net/http"
+	"strings"
 
 	"github.com/labstack/echo/v4"
 )
@@ -14,17 +15,32 @@ func subjectsHandler(e *echo.Group) {
 	subjectsGroup := e.Group("/subjects")
 	subjectsGroup.GET("/:career", getSubjectsByCareer)
 	subjectsGroup.POST("/", createSubject)
+	subjectsGroup.POST("/", getSubjects)
+
 }
 
 func getSubjectsByCareer(c echo.Context) error {
 	career := c.Param("career")
 
 	subjects, err := storage.GetSubjectByCareer(career)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+
+	return tools.GetResponse(c, subjects, err)
+}
+
+func getSubjects(c echo.Context) error {
+	filter := c.QueryParam("filter")
+	parts := strings.Split(filter, ":")
+
+	if len(parts) != 2 {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid filter format. Expected 'field:value'.")
 	}
 
-	return c.JSON(http.StatusOK, subjects)
+	field := parts[0]
+	value := parts[1]
+
+	subjects, err := storage.GetSubjects(field, value)
+
+	return tools.GetResponse(c, subjects, err)
 }
 
 func createSubject(c echo.Context) error {
@@ -52,9 +68,5 @@ func createSubject(c echo.Context) error {
 
 	err := storage.CreateSubject(subjectForm)
 
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
-	}
-
-	return c.JSON(http.StatusCreated, tools.CreateMsg("Subject created"))
+	return tools.GetResponse(c, tools.CreateMsg("Subject created"), err)
 }

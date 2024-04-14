@@ -1,9 +1,8 @@
 package handlers
 
 import (
-	"fmt"
 	"metrograma/storage"
-	"net/http"
+	"metrograma/tools"
 
 	"github.com/labstack/echo/v4"
 )
@@ -11,14 +10,22 @@ import (
 func careersHandler(e *echo.Group) {
 	careersGroup := e.Group("/careers")
 	careersGroup.GET("/", getCareers)
+	// subjectsGroup.GET("/:careerId", getCareerById)
 }
 
 func getCareers(c echo.Context) error {
 	careers, err := storage.GetCareers()
-	if err != nil {
-		fmt.Println(err)
-		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
-	}
 
-	return c.JSON(http.StatusOK, careers)
+	return tools.GetResponse(c, careers, err)
 }
+
+// func getCareerById(c echo.Context) error {
+// 	careerId := c.Param("careerId")
+
+// 	subjects, err := storage.GetCareerById(careerId)
+// 	if err != nil {
+// 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+// 	}
+
+// 	return c.JSON(http.StatusOK, subjects)
+// }

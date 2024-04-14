@@ -14,19 +14,20 @@ import { CareerMultiDropdown } from "@components/CareerMultiDropdown";
 import { Option } from "@ui/multidropdown";
 
 export default function Graph() {
+  const [selectedCareers, setSelectedCareers] = useState<Option[]>([]);
   const { data, isLoading, error } = useQuery<Graph<Subject>>(
     ["subjects", "Ingeniería en Sistemas"],
     getSubjects
   );
 
-  const [selectedCareers, setSelectedCareers] = useState<Option[]>([]);
 
+  const { graph } = useSubectGraph(data, isLoading, selectedCareers);
+
+  
   if (error) return <ShowAxiosError error={error as AxiosError} />;
 
   if (isLoading || !data) return <div>Loading...</div>;
-
-  const { graph } = useSubectGraph(data);
-
+  
   return (
     <>
       <CareerMultiDropdown
@@ -39,6 +40,7 @@ export default function Graph() {
         style={{
           backgroundColor: "transparent",
         }}
+        layout={{type: "dagre"}}
       >
         <SearchPrelations />
         <MenuActions />

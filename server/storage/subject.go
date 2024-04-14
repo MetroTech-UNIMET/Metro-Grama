@@ -56,6 +56,16 @@ func GetSubjectByCareer(carrer string) (models.Graph[models.SubjectNode], error)
 	return graph, nil
 }
 
+// SELECT array::distinct(<-belong<-subject<-precede) as edges, array::distinct(<-belong<-subject) as nodes 
+// FROM carrer 
+// WHERE id IN  ['carrer:sistemas', 'carrer:quimica']
+// FETCH edges, edges.in, edges.out, nodes;
+
+func GetSubjects(field, value string) (models.Graph[models.SubjectNode], error) {
+
+	return models.Graph[models.SubjectNode]{}, nil
+}
+
 func ExistSubject(id string) error {
 	_, err := db.SurrealDB.Select(id)
 	if err != nil {

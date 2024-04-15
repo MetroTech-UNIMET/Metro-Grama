@@ -116,7 +116,7 @@ function getNormalIcon(
     icon = "🤝";
   } else {
     const career = selectedCareers.find(
-      (option) => option.value === `carrer:${subject.careers[0]}`
+      (option) => option.value === subject.careers[0]
     );
 
     if (career) {

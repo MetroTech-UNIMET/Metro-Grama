@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { getSubjects } from "@/api/subjectsAPI";
 import Graphin from "@antv/graphin";
 import { MiniMap } from "@antv/graphin-components";
@@ -18,10 +18,16 @@ import { Spinner } from "@ui/spinner";
 
 export default function Graph() {
   const [selectedCareers, setSelectedCareers] = useState<Option[]>([]);
-  const { data, isLoading, error } = useQuery<Graph<Subject>>(
-    ["subjects", "Ingeniería en Sistemas"],
-    getSubjects
+  const { data, isLoading, error, refetch } = useQuery<Graph<Subject>>(
+    {
+      queryFn: () => getSubjects(selectedCareers.map((c) => c.value)),
+    }
   );
+
+  useEffect(() => {
+    refetch()
+  }, [selectedCareers])
+  
 
   const { graph } = useSubjectGraph(data, isLoading, selectedCareers);
 

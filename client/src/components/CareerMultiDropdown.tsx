@@ -1,8 +1,9 @@
 import { getCareers } from "@/api/careersApi";
 import { Career } from "@/interfaces/Career";
 import MultipleSelector, { Option } from "@ui/multidropdown";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "react-query";
+import { Spinner } from "@ui/spinner";
 
 interface Props {
   value: Option[];
@@ -20,17 +21,21 @@ export function CareerMultiDropdown({
     getCareers
   );
 
+  useEffect(() => {
+    // TODO - Change the queryparams
+  }, [value]);
+
+  // TODO - Handle error (capaz ponerlo en el empty indicator)
   if (error) return null;
 
-  console.log(data);
   const options =
     data?.map((career) => ({
       value: career.id,
-      label: career.name,
+      label: `${career.emoji} ${career.name}`,
     })) ?? [];
 
   return (
-    <div className="relative w-full max-w-sm">
+    <div className="relative max-w-sm ">
       <MultipleSelector
         value={value}
         onChange={onChange}
@@ -44,7 +49,9 @@ export function CareerMultiDropdown({
         // TODO Spinner
         emptyIndicator={
           isLoading ? (
-            "loading..."
+            <span className="grid place-items-center">
+              <Spinner />
+            </span>
           ) : (
             <p className="text-lg ">
               {options.length === 0
@@ -54,11 +61,14 @@ export function CareerMultiDropdown({
           )
         }
         commandProps={{
-          className: "absolute z-10 w-full h-auto ",
+          className: "absolute z-10 h-auto",
+        }}
+        inputProps={{
+          className: "w-auto",
         }}
         badgeClassName="bg-blue-300 text-black"
         className="bg-gray-200"
       />
-  </div>
+    </div>
   );
 }

@@ -1,5 +1,5 @@
 import React from "react";
-import { cn } from "@/lib/utils/className";
+import { cn } from "@utils/className";
 
 function ListContent({
   className,

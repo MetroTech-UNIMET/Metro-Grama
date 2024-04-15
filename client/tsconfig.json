@@ -23,6 +23,7 @@
       "@/*": ["./src/*"],
       "@components/*": ["./src/components/*"],
       "@ui/*": ["./src/components/ui/*"],
+      "@utils/*": ["./src/lib/utils/*"],
     }
   },
   "include": ["src"],

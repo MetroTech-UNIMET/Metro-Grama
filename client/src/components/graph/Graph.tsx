@@ -3,15 +3,18 @@ import { getSubjects } from "@/api/subjectsAPI";
 import Graphin from "@antv/graphin";
 import { MiniMap } from "@antv/graphin-components";
 import { useQuery } from "react-query";
+import { AxiosError } from  "axios";
 
 import SearchPrelations from "./behaviors/Search-Prelations";
 import MenuActions from "./behaviors/MenuActions";
+
 import useSubectGraph from "@/hooks/useSubectGraph";
-import { ShowAxiosError } from "@components/ShowAxiosError";
-import { AxiosError } from "axios";
 import { Subject } from "@/interfaces/Subject";
+import { ShowAxiosError } from "@components/ShowAxiosError";
 import { CareerMultiDropdown } from "@components/CareerMultiDropdown";
+
 import { Option } from "@ui/multidropdown";
+import { Spinner } from "@ui/spinner";
 
 export default function Graph() {
   const [selectedCareers, setSelectedCareers] = useState<Option[]>([]);
@@ -20,14 +23,17 @@ export default function Graph() {
     getSubjects
   );
 
-
   const { graph } = useSubectGraph(data, isLoading, selectedCareers);
 
-  
   if (error) return <ShowAxiosError error={error as AxiosError} />;
 
-  if (isLoading || !data) return <div>Loading...</div>;
-  
+  if (isLoading || !data)
+    return (
+      <div className="h-full grid place-items-center ">
+        <Spinner size="giant" />
+      </div>
+    );
+
   return (
     <>
       <CareerMultiDropdown
@@ -40,7 +46,7 @@ export default function Graph() {
         style={{
           backgroundColor: "transparent",
         }}
-        layout={{type: "dagre"}}
+        layout={{ type: "dagre" }}
       >
         <SearchPrelations />
         <MenuActions />

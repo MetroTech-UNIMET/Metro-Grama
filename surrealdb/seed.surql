@@ -291,7 +291,7 @@ RELATE subject:BPTMI03->belong->carrer:quimica SET trimester=4;
 RELATE subject:BPTFI02->belong->carrer:quimica SET trimester=4;
 RELATE subject:BPTEN02->belong->carrer:quimica SET trimester=4;
 RELATE subject:BPTSP05->belong->carrer:quimica SET trimester=4;
-CREATE subject:BPTQI01->belong->carrer:quimica SET trimester=4;
+RELATE subject:BPTQI01->belong->carrer:quimica SET trimester=4;
 
 -- Trimestre 5
 CREATE subject:BPTFI03 SET name="Física III";

@@ -1,9 +1,12 @@
-import { GraphinContext, IG6GraphEvent } from "@antv/graphin";
 import { useContext, useEffect, useRef, useState } from "react";
-import { GraphinContextType } from "@antv/graphin";
+import {
+  GraphinContext,
+  IG6GraphEvent,
+  GraphinContextType,
+} from "@antv/graphin";
 import { INode } from "@antv/g6";
 
-import { ListContent, ListHeader, ListItem } from "../../ui/list";
+import { ListContent, ListHeader, ListItem } from "@ui/list";
 import { enableViewedNode } from "@utils/states/NodeStates";
 import { cn } from "@utils/className";
 import { useSubjectSheet } from "@/components/SubjectSheet";
@@ -52,19 +55,24 @@ function MenuNode({ node, close }: MenuNodeProps) {
 }
 
 const longTouchDuration = 1000;
+
+// REVIEW - Considerar hacer focus en el nodo al abrir el menu
 // TODO - Mejor manejo de posición como si fuera un tooltip
 // TODO - Bloquear el mover el grafo cuando el menu está abierto
 export default function MenuActions() {
-  const { graph }: GraphinContextType = useContext(GraphinContext);
+  const { graph,  }: GraphinContextType = useContext(GraphinContext);
   const [node, setNode] = useState<INode | null>(null);
   const [position, setPosition] = useState({ x: 0, y: 0 });
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    function handleOpenContextMenu(e: IG6GraphEvent) {
+
+    async function handleOpenContextMenu(e: IG6GraphEvent) {
       e.preventDefault();
       const { item } = e;
+
+      if (!item) return;
 
       setPosition({ x: e.canvasX, y: e.canvasY });
       setNode(item as INode);
@@ -87,7 +95,7 @@ export default function MenuActions() {
     function handleNodeTouchEnd() {
       console.log("Touch end");
       clearTimerRef();
-      close()
+      close();
     }
 
     graph.on("node:contextmenu", handleOpenContextMenu);

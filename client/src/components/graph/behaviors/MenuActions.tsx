@@ -84,21 +84,20 @@ export default function MenuActions() {
       handleNodeTouchStart(e);
     }
 
-    function handleNodeTouchEnd(e: IG6GraphEvent) {
+    function handleNodeTouchEnd() {
       console.log("Touch end");
       clearTimerRef();
+      close()
     }
 
     graph.on("node:contextmenu", handleOpenContextMenu);
 
     graph.on("node:touchstart", handleNodeTouchStart);
-    // FIXME - Touch move not firing
     graph.on("node:touchmove", handleNodeTouchMove);
-    // FIXME - Touch end not firing
     graph.on("node:touchend", handleNodeTouchEnd);
 
     graph.on("canvas:click", close);
-    graph.on("canvas:touchstart", close);
+    graph.on("canvas:touchstart", handleNodeTouchEnd);
 
     return () => {
       graph.off("node:contextmenu", handleOpenContextMenu);
@@ -108,7 +107,7 @@ export default function MenuActions() {
       graph.off("node:touchend", handleNodeTouchEnd);
 
       graph.off("canvas:click", close);
-      graph.off("canvas:touchstart", close);
+      graph.off("canvas:touchstart", handleNodeTouchEnd);
     };
   }, []);
 

@@ -15,7 +15,7 @@ func subjectsHandler(e *echo.Group) {
 	subjectsGroup := e.Group("/subjects")
 	subjectsGroup.GET("/:carrer", getSubjectsByCareer)
 	subjectsGroup.POST("/", createSubject)
-	subjectsGroup.POST("/", getSubjects)
+	subjectsGroup.GET("/", getSubjects)
 
 }
 
@@ -29,14 +29,21 @@ func getSubjectsByCareer(c echo.Context) error {
 
 func getSubjects(c echo.Context) error {
 	filter := c.QueryParam("filter")
-	parts := strings.Split(filter, ":")
+	field := ""
+	value := ""
 
-	if len(parts) != 2 {
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid filter format. Expected 'field:value'.")
+	if filter == "all" {
+		field = ""
+		value = "all"
+	} else {
+		found := false
+		field, value, found = strings.Cut(filter, ":")
+
+		if !found {
+			return echo.NewHTTPError(http.StatusBadRequest, "Invalid filter format. Expected 'field:value'.")
+		}
+
 	}
-
-	field := parts[0]
-	value := parts[1]
 
 	subjects, err := storage.GetSubjects(field, value)
 

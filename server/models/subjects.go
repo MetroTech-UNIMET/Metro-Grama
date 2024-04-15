@@ -21,8 +21,9 @@ type SubjectForm struct {
 }
 
 type SubjectNode struct {
-	Code string `json:"code"`
-	Name string `json:"name"`
+	Code    string   `json:"code"`
+	Name    string   `json:"name"`
+	Careers []string `json:"careers"`
 }
 
 type SubjectEdge struct {
@@ -41,4 +42,13 @@ type SubjectsEdges struct {
 		ID   string `json:"id,omitempty"`
 		Name string `json:"name"`
 	} `json:"nodes"`
+}
+
+type SubjectsByCareers struct {
+	Careers    []string `json:"careers"`
+	Prelations []string `json:"prelations"`
+	Subject    struct {
+		ID   string `json:"id,omitempty"`
+		Name string `json:"name"`
+	}
 }

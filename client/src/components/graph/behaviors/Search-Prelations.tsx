@@ -1,17 +1,17 @@
 import { GraphinContext, IG6GraphEvent } from "@antv/graphin";
 import { useContext, useEffect } from "react";
 import { INode } from "@antv/g6";
-import { clearGraphStates } from "@/lib/utils/graph";
+import { clearGraphStates } from "@utils/graph";
 import {
   markEdgesAsFuture,
   markEdgesAsPrelation,
-} from "@/lib/utils/states/EdgesStates";
+} from "@utils/states/EdgesStates";
 
+const statesToIgnore = ["viewed", "accesible", "normal"];
 
 export default function SearchPrelations() {
   const { graph } = useContext(GraphinContext);
 
-  // TODO - Que funcione en touch de telefono
   useEffect(() => {
     function handleClick(e: IG6GraphEvent) {
       const node = e.item as INode;
@@ -19,7 +19,7 @@ export default function SearchPrelations() {
 
       clearGraphStates(graph, {
         statesToTrue: ["inactive"],
-        statesToIgnore: ["viewed", "accesible"],
+        statesToIgnore,
       });
 
       graph.setItemState(node, "selected", true);
@@ -29,14 +29,14 @@ export default function SearchPrelations() {
     }
 
     graph.on("node:click", handleClick);
-    
+
     // FIXME - Que el si se mantiene el touch para el drag, no genere el handleClick
-    graph.on("node:touchstart", handleClick)
+    graph.on("node:touchstart", handleClick);
     graph.on("canvas:touchstart", () => {
-      clearGraphStates(graph, { statesToIgnore: ["viewed", "accesible"] });
+      clearGraphStates(graph, { statesToIgnore });
     });
     graph.on("canvas:click", () => {
-      clearGraphStates(graph, { statesToIgnore: ["viewed", "accesible"] });
+      clearGraphStates(graph, { statesToIgnore });
     });
 
     return () => {
@@ -44,10 +44,10 @@ export default function SearchPrelations() {
       graph.off("canvas:click", () => {
         clearGraphStates(graph), { statesToIgnore: ["viewed", "accesible"] };
       });
-      graph.off("node:touchstart", handleClick)
-    graph.off("canvas:touchstart", () => {
-      clearGraphStates(graph, { statesToIgnore: ["viewed", "accesible"] });
-    });
+      graph.off("node:touchstart", handleClick);
+      graph.off("canvas:touchstart", () => {
+        clearGraphStates(graph, { statesToIgnore: ["viewed", "accesible"] });
+      });
     };
   }, []);
 

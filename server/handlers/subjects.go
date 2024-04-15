@@ -13,14 +13,14 @@ import (
 
 func subjectsHandler(e *echo.Group) {
 	subjectsGroup := e.Group("/subjects")
-	subjectsGroup.GET("/:career", getSubjectsByCareer)
+	subjectsGroup.GET("/:carrer", getSubjectsByCareer)
 	subjectsGroup.POST("/", createSubject)
 	subjectsGroup.POST("/", getSubjects)
 
 }
 
 func getSubjectsByCareer(c echo.Context) error {
-	career := c.Param("career")
+	career := c.Param("carrer")
 
 	subjects, err := storage.GetSubjectByCareer(career)
 
@@ -48,21 +48,28 @@ func createSubject(c echo.Context) error {
 	if err := c.Bind(&subjectForm); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	if len(subjectForm.Careers) != len(subjectForm.Trimesters) {
-		return echo.NewHTTPError(http.StatusBadRequest, "The number of trimesters and carrers must be the same")
+
+	if err := c.Validate(subjectForm); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	subjectForm.SubjectCode = tools.ToID("subject", subjectForm.SubjectCode)
-	if err := storage.ExistSubject(subjectForm.SubjectCode); err == nil {
+	subjectForm.Code = tools.ToID("subject", subjectForm.Code)
+	if err := storage.ExistRecord(subjectForm.Code); err == nil {
 		return echo.NewHTTPError(http.StatusConflict, "Already exist")
 	}
 
-	// Sacar las materias que preceden
-	for i := 0; i < len(subjectForm.PrecedesCodes); i++ {
-		subjectForm.PrecedesCodes[i] = tools.ToID("subject", subjectForm.PrecedesCodes[i])
-		err := storage.ExistSubject(subjectForm.PrecedesCodes[i])
+	for _, c := range subjectForm.Carrers {
+		err := storage.ExistRecord(c.CarrerID)
 		if err != nil {
-			return echo.NewHTTPError(http.StatusNotFound, fmt.Sprintf("Precedes subject `%s` not found", subjectForm.PrecedesCodes[i]))
+			return echo.NewHTTPError(http.StatusNotFound, fmt.Sprintf("Precedes subject `%s` not found", c.CarrerID))
+		}
+	}
+
+	// Sacar las materias que preceden
+	for _, p := range subjectForm.PrecedesID {
+		err := storage.ExistRecord(p)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusNotFound, fmt.Sprintf("Precedes subject `%s` not found", p))
 		}
 	}
 

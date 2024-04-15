@@ -1,11 +1,23 @@
 package models
 
+// type SubjectForm struct {
+// 	SubjectName   string   `form:"subjectName"`
+// 	SubjectCode   string   `form:"subjectCode"`
+// 	Trimesters    []uint8  `form:"trimesters"`
+// 	Careers       []string `form:"careers"`
+// 	PrecedesCodes []string `form:"precedesCodes"`
+// }
+
+type CarrerForm struct {
+	Trimester uint8  `json:"trimester" validate:"required, gte=1,lte=20"`
+	CarrerID  string `json:"carrerID" validate:"required"`
+}
+
 type SubjectForm struct {
-	SubjectName   string   `form:"subjectName" json:"subjectName"`
-	SubjectCode   string   `form:"subjectCode" json:"subjectCode"`
-	Trimesters    []uint8  `form:"trimesters" json:"trimesters"`
-	Careers       []string `form:"careers" json:"careers"`
-	PrecedesCodes []string `form:"precedesCodes" json:"precedesCodes"`
+	Name       string       `json:"name" validate:"required"`
+	Code       string       `json:"code" validate:"required"`
+	Carrers    []CarrerForm `json:"carrers" validate:"required"`
+	PrecedesID []string     `json:"precedesID" validate:"required"`
 }
 
 type SubjectNode struct {

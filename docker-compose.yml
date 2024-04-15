@@ -17,7 +17,7 @@ services:
           path: ./server
     depends_on:
       - db
-    network_mode: host
+    # network_mode: host
     restart: on-failure
 
   db_seed:

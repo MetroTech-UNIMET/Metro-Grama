@@ -14,6 +14,7 @@ func main() {
 	db.InitSurrealDB()
 
 	e := echo.New()
+	e.Validator = middlewares.NewValidator()
 
 	e.Use(middlewares.Cors())
 

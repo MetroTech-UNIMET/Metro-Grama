@@ -25,9 +25,6 @@ export function CareerMultiDropdown({
     // TODO - Change the queryparams
   }, [value]);
 
-  // TODO - Handle error (capaz ponerlo en el empty indicator)
-  if (error) return null;
-
   const options =
     data?.map((career) => ({
       value: career.id,
@@ -46,15 +43,14 @@ export function CareerMultiDropdown({
             ? "Máximo alcanzado"
             : "Selecciona las carreras que deseas visualizar"
         }
-        // TODO Spinner
         emptyIndicator={
           isLoading ? (
             <span className="grid place-items-center">
               <Spinner />
             </span>
           ) : (
-            <p className="text-lg ">
-              {options.length === 0
+            <p>
+              {options.length === 0 || error
                 ? " No se encontraron carreras. Por favor, intenta más tarde o recarga la página."
                 : "No hay más carreras para seleccionar."}
             </p>

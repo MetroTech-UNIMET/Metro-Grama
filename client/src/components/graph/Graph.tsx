@@ -8,7 +8,7 @@ import { AxiosError } from  "axios";
 import SearchPrelations from "./behaviors/Search-Prelations";
 import MenuActions from "./behaviors/MenuActions";
 
-import useSubectGraph from "@/hooks/useSubectGraph";
+import useSubjectGraph from "@/hooks/useSubjectGraph";
 import { Subject } from "@/interfaces/Subject";
 import { ShowAxiosError } from "@components/ShowAxiosError";
 import { CareerMultiDropdown } from "@components/CareerMultiDropdown";
@@ -23,7 +23,7 @@ export default function Graph() {
     getSubjects
   );
 
-  const { graph } = useSubectGraph(data, isLoading, selectedCareers);
+  const { graph } = useSubjectGraph(data, isLoading, selectedCareers);
 
   if (error) return <ShowAxiosError error={error as AxiosError} />;
 

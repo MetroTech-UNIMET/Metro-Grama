@@ -10,7 +10,7 @@ import "@antv/graphin-icons/dist/index.css";
 
 const icons = Graphin.registerFontFamily(iconLoader);
 
-export default function useSubectGraph(
+export default function useSubjectGraph(
   data: Graph<Subject> | undefined,
   isLoading: boolean,
   selectedCareers: Option[]

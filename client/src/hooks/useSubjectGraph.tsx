@@ -4,7 +4,7 @@ import { NodeStyleIcon } from "@antv/graphin/lib/typings/type";
 
 import { useEffect, useState } from "react";
 import { Subject } from "@/interfaces/Subject";
-import { Option } from "@ui/multidropdown";
+import { Option as DropdownOption } from "@ui/multidropdown";
 
 import "@antv/graphin-icons/dist/index.css";
 
@@ -13,7 +13,7 @@ const icons = Graphin.registerFontFamily(iconLoader);
 export default function useSubjectGraph(
   data: Graph<Subject> | undefined,
   isLoading: boolean,
-  selectedCareers: Option[]
+  selectedCareers: DropdownOption[]
 ) {
   const [graph, setGraph] = useState<GraphinData>({ nodes: [], edges: [] });
 
@@ -22,8 +22,13 @@ export default function useSubjectGraph(
 
     const newGraph: GraphinData = {
       //@ts-ignore
-      nodes: data.nodes!.map((node, index) => ({
-        id: node.id,
+      nodes: data.nodes!.map((node, index) => {
+        let icon = getNormalIcon(node.data, selectedCareers)
+        let iconLen = icon.value!.replace(" ", "").replace("\n", "").length
+        iconLen = iconLen == 0 ? 2 : iconLen > 2 ? iconLen * 0.54 : iconLen
+        let labelOffset = iconLen > 2 ? 20 * 0.52 * iconLen : 20 
+
+        return {id: node.id,
         label: node.data.name,
         data: node,
         status: {
@@ -34,10 +39,15 @@ export default function useSubjectGraph(
           label: {
             value: node.data.name,
             fill: "white",
+            offset: [0,labelOffset],
+            // fontSize: 12
           },
           status: {
             normal: {
-              icon: getNormalIcon(node.data, selectedCareers),
+              icon: icon,
+              keyshape: {
+                size: 22.5 * iconLen,
+              },
             },
             start: {
               halo: {
@@ -60,13 +70,14 @@ export default function useSubjectGraph(
             },
             accesible: {
               keyshape: {
+                size: 20,
                 fill: "blue",
                 stroke: "blue",
               },
             },
           },
         },
-      })),
+      }}),
       edges: data.edges!.map((edge) => ({
         source: edge.from,
         target: edge.to,
@@ -106,26 +117,50 @@ export default function useSubjectGraph(
   return { graph };
 }
 
+function carrerEmoji(carrer: string): string {
+  switch (carrer) {
+    case "carrer:quimica":
+      return "🧪";
+    case "carrer:sistemas":
+      return "💾";
+  }
+  return ""
+}
+
 function getNormalIcon(
   subject: Subject,
-  selectedCareers: Option[]
+  selectedCareers: DropdownOption[]
 ): NodeStyleIcon {
   let icon = "";
 
   if (subject.careers.length > 1) {
     icon = "🤝";
+    for (let i = 0; i < subject.careers.length; i++) {
+      if (i == 0) {
+        icon += "\n\r" + carrerEmoji(subject.careers[i]) + " "
+        continue
+      }
+      icon += carrerEmoji(subject.careers[i]) + " "
+    }
   } else {
-    const career = selectedCareers.find(
+    let career = selectedCareers.find(
       (option) => option.value === subject.careers[0]
     );
+    if (career == undefined) {
+      var c: DropdownOption = {
+        value: subject.careers[0],
+        label: subject.careers[0],
+      }
+      career = c
+    }
 
     if (career) {
-      icon = career.label.split(" ")[0];
+      icon = carrerEmoji(career.value)
     }
   }
 
   return {
-    size: 15,
+    size: 25,
     fill: "green",
     type: "text",
     fontFamily: "graphin",

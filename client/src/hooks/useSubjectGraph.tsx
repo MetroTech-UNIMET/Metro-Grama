@@ -22,27 +22,71 @@ export default function useSubjectGraph(
 
   useEffect(() => {
     if (isLoading || !data) return;
-    console.log(graphStatuses)
+
+    const nodesWithEdges = new Set<string>();
 
     const newGraph: GraphinData = {
+      edges: data.edges!.map((edge) => {
+        nodesWithEdges.add(edge.to);
+
+        return {
+          source: edge.from,
+          target: edge.to,
+          style: {
+            status: {
+              prelation: {
+                keyshape: {
+                  stroke: "blue",
+                },
+                halo: {
+                  fill: "#ddd",
+                  visible: true,
+                },
+              },
+              "prelation-viewed": {
+                keyshape: {
+                  stroke: "blue",
+                },
+              },
+              future: {
+                keyshape: {
+                  stroke: "red",
+                },
+                halo: {
+                  fill: "#ddd",
+                  visible: true,
+                },
+              },
+            },
+          },
+        };
+      }),
+
       //@ts-ignore
-      nodes: data.nodes!.map((node, index) => {
-        let icon = getNormalIcon(node.data, selectedCareers);
-        let iconLen = icon.value!.replace(" ", "").replace("\n", "").length;
+      nodes: data.nodes!.map((node) => {
+        const icon = getNormalIcon(node.data, selectedCareers);
+        let iconLen = icon.value!.replace(/\s/g, "").length;
         iconLen = iconLen == 0 ? 2 : iconLen > 2 ? iconLen * 0.54 : iconLen;
-        let labelOffset = iconLen > 2 ? 20 * 0.52 * iconLen : 20;
+        const labelOffset = iconLen > 2 ? 10 * 0.52 * iconLen : 10;
+
+        console.log(iconLen, labelOffset)
 
         return {
           id: node.id,
           label: node.data.name,
           data: node,
           status: {
-            normal: true,
             viewed: graphStatuses.viewed.includes(node.id),
-            accesible: graphStatuses.accesible.includes(node.id),
+            accesible:
+              !nodesWithEdges.has(node.id) ||
+              graphStatuses.accesible.includes(node.id),
           },
 
           style: {
+            icon: icon,
+            keyshape: {
+              size: 22.5 * iconLen,
+            },
             label: {
               value: node.data.name,
               fill: "white",
@@ -50,12 +94,6 @@ export default function useSubjectGraph(
               fontSize: 12,
             },
             status: {
-              normal: {
-                icon: icon,
-                keyshape: {
-                  size: 22.5 * iconLen,
-                },
-              },
               start: {
                 halo: {
                   visible: true,
@@ -85,37 +123,6 @@ export default function useSubjectGraph(
           },
         };
       }),
-      edges: data.edges!.map((edge) => ({
-        source: edge.from,
-        target: edge.to,
-        style: {
-          status: {
-            prelation: {
-              keyshape: {
-                stroke: "blue",
-              },
-              halo: {
-                fill: "#ddd",
-                visible: true,
-              },
-            },
-            "prelation-viewed": {
-              keyshape: {
-                stroke: "blue",
-              },
-            },
-            future: {
-              keyshape: {
-                stroke: "red",
-              },
-              halo: {
-                fill: "#ddd",
-                visible: true,
-              },
-            },
-          },
-        },
-      })),
     };
 
     setGraph(newGraph);

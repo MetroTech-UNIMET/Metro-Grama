@@ -7,10 +7,10 @@ import {
 import { INode } from "@antv/g6";
 
 import { ListContent, ListHeader, ListItem } from "@ui/list";
-import { enableViewedNode } from "@utils/states/NodeStates";
 import { cn } from "@utils/className";
 import { useSubjectSheet } from "@/components/SubjectSheet";
 import { Subject } from "@/interfaces/Subject";
+import { useStatusActions } from "./StatusActions";
 
 interface MenuNodeProps {
   node: INode | null;
@@ -19,6 +19,8 @@ interface MenuNodeProps {
 
 function MenuNode({ node, close }: MenuNodeProps) {
   const { selectSubject } = useSubjectSheet();
+  const { nodeActions } = useStatusActions();
+
   if (!node) return null;
 
   //@ts-ignore
@@ -33,7 +35,7 @@ function MenuNode({ node, close }: MenuNodeProps) {
       </ListHeader>
       <ListItem
         onClick={() => {
-          enableViewedNode(node);
+          nodeActions.enableViewedNode(node);
           close();
         }}
       >
@@ -60,14 +62,13 @@ const longTouchDuration = 1000;
 // TODO - Mejor manejo de posición como si fuera un tooltip
 // TODO - Bloquear el mover el grafo cuando el menu está abierto
 export default function MenuActions() {
-  const { graph,  }: GraphinContextType = useContext(GraphinContext);
+  const { graph }: GraphinContextType = useContext(GraphinContext);
   const [node, setNode] = useState<INode | null>(null);
   const [position, setPosition] = useState({ x: 0, y: 0 });
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-
     async function handleOpenContextMenu(e: IG6GraphEvent) {
       e.preventDefault();
       const { item } = e;

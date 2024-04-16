@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from "react-query";
 import Graph from "@/components/graph/Graph";
 import GraphLayout from "./layouts/GraphLayout";
 import { SubjectSheet, SubjectSheetContent } from "@components/SubjectSheet";
+import { StatusActions } from "@components/graph/behaviors/StatusActions";
 
 function App() {
   const queryClient = new QueryClient();
@@ -11,10 +12,11 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <GraphLayout>
           <SubjectSheet>
-            <Graph />
+            <StatusActions>
+              <Graph />
+            </StatusActions>
 
-            <SubjectSheetContent/>
-              
+            <SubjectSheetContent />
           </SubjectSheet>
           {/* <ReactQueryDevtools initialIsOpen={false} /> */}
         </GraphLayout>

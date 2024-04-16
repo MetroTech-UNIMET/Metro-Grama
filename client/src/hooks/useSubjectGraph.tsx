@@ -7,6 +7,7 @@ import { Subject } from "@/interfaces/Subject";
 import { Option as DropdownOption } from "@ui/multidropdown";
 
 import "@antv/graphin-icons/dist/index.css";
+import { useStatusActions } from "@/components/graph/behaviors/StatusActions";
 
 const icons = Graphin.registerFontFamily(iconLoader);
 
@@ -17,66 +18,73 @@ export default function useSubjectGraph(
 ) {
   const [graph, setGraph] = useState<GraphinData>({ nodes: [], edges: [] });
 
+  const { nodeStatuses: graphStatuses } = useStatusActions();
+
   useEffect(() => {
     if (isLoading || !data) return;
+    console.log(graphStatuses)
 
     const newGraph: GraphinData = {
       //@ts-ignore
       nodes: data.nodes!.map((node, index) => {
-        let icon = getNormalIcon(node.data, selectedCareers)
-        let iconLen = icon.value!.replace(" ", "").replace("\n", "").length
-        iconLen = iconLen == 0 ? 2 : iconLen > 2 ? iconLen * 0.54 : iconLen
-        let labelOffset = iconLen > 2 ? 20 * 0.52 * iconLen : 20 
+        let icon = getNormalIcon(node.data, selectedCareers);
+        let iconLen = icon.value!.replace(" ", "").replace("\n", "").length;
+        iconLen = iconLen == 0 ? 2 : iconLen > 2 ? iconLen * 0.54 : iconLen;
+        let labelOffset = iconLen > 2 ? 20 * 0.52 * iconLen : 20;
 
-        return {id: node.id,
-        label: node.data.name,
-        data: node,
-        status: {
-          normal: true,
-        },
-
-        style: {
-          label: {
-            value: node.data.name,
-            fill: "white",
-            offset: [0,labelOffset],
-            // fontSize: 12
-          },
+        return {
+          id: node.id,
+          label: node.data.name,
+          data: node,
           status: {
-            normal: {
-              icon: icon,
-              keyshape: {
-                size: 22.5 * iconLen,
-              },
+            normal: true,
+            viewed: graphStatuses.viewed.includes(node.id),
+            accesible: graphStatuses.accesible.includes(node.id),
+          },
+
+          style: {
+            label: {
+              value: node.data.name,
+              fill: "white",
+              offset: [0, labelOffset],
+              fontSize: 12,
             },
-            start: {
-              halo: {
-                visible: true,
-                fill: "blue",
+            status: {
+              normal: {
+                icon: icon,
+                keyshape: {
+                  size: 22.5 * iconLen,
+                },
               },
-              icon: {
-                size: 16 * iconLen,
-                fill: "green",
-                type: "font",
-                fontFamily: "graphin",
-                value: icons.home,
+              start: {
+                halo: {
+                  visible: true,
+                  fill: "blue",
+                },
+                icon: {
+                  size: 16 * iconLen,
+                  fill: "green",
+                  type: "font",
+                  fontFamily: "graphin",
+                  value: icons.home,
+                },
               },
-            },
-            viewed: {
-              keyshape: {
-                fill: "green",
-                stroke: "green",
+              viewed: {
+                keyshape: {
+                  fill: "green",
+                  stroke: "green",
+                },
               },
-            },
-            accesible: {
-              keyshape: {
-                fill: "blue",
-                stroke: "blue",
+              accesible: {
+                keyshape: {
+                  fill: "blue",
+                  stroke: "blue",
+                },
               },
             },
           },
-        },
-      }}),
+        };
+      }),
       edges: data.edges!.map((edge) => ({
         source: edge.from,
         target: edge.to,
@@ -123,7 +131,7 @@ function carrerEmoji(carrer: string): string {
     case "carrer:sistemas":
       return "💾";
   }
-  return ""
+  return "";
 }
 
 function getNormalIcon(
@@ -136,10 +144,10 @@ function getNormalIcon(
     icon = "🤝";
     for (let i = 0; i < subject.careers.length; i++) {
       if (i == 0) {
-        icon += "\n\r" + carrerEmoji(subject.careers[i]) + " "
-        continue
+        icon += "\n\r" + carrerEmoji(subject.careers[i]) + " ";
+        continue;
       }
-      icon += carrerEmoji(subject.careers[i]) + " "
+      icon += carrerEmoji(subject.careers[i]) + " ";
     }
   } else {
     let career = selectedCareers.find(
@@ -149,12 +157,12 @@ function getNormalIcon(
       var c: DropdownOption = {
         value: subject.careers[0],
         label: subject.careers[0],
-      }
-      career = c
+      };
+      career = c;
     }
 
     if (career) {
-      icon = carrerEmoji(career.value)
+      icon = carrerEmoji(career.value);
     }
   }
 

@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
 import { getSubjects } from "@/api/subjectsAPI";
 import Graphin from "@antv/graphin";
-import { MiniMap } from "@antv/graphin-components";
 import { useQuery } from "react-query";
-import { AxiosError } from  "axios";
+import { AxiosError } from "axios";
 
 import SearchPrelations from "./behaviors/Search-Prelations";
 import MenuActions from "./behaviors/MenuActions";
@@ -18,16 +17,16 @@ import { Spinner } from "@ui/spinner";
 
 export default function Graph() {
   const [selectedCareers, setSelectedCareers] = useState<Option[]>([]);
-  const { data, isLoading, error, refetch } = useQuery<Graph<Subject>>(
-    {
-      queryFn: () => getSubjects(selectedCareers.map((c) => c.value)),
-    }
-  );
+  // REVIEW - Considerar usar queryKey
+  const { data, isLoading, isRefetching, error, refetch } = useQuery<
+    Graph<Subject>
+  >({
+    queryFn: () => getSubjects(selectedCareers.map((c) => c.value)),
+  });
 
   useEffect(() => {
-    refetch()
-  }, [selectedCareers])
-  
+    refetch();
+  }, [selectedCareers]);
 
   const { graph } = useSubjectGraph(data, isLoading, selectedCareers);
 
@@ -43,6 +42,7 @@ export default function Graph() {
   return (
     <>
       <CareerMultiDropdown
+        loadingSubjects={isRefetching}
         value={selectedCareers}
         onChange={setSelectedCareers}
       />
@@ -56,16 +56,6 @@ export default function Graph() {
       >
         <SearchPrelations />
         <MenuActions />
-        <MiniMap
-          visible={true}
-          style={{
-            borderRadius: 4,
-          }}
-          options={{
-            className:
-              "fixed bottom-4 right-4 border-2 border-white rounded-lg bg-white",
-          }}
-        />
       </Graphin>
     </>
   );

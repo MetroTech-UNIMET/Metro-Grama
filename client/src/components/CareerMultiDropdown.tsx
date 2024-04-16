@@ -6,12 +6,15 @@ import { useQuery } from "react-query";
 import { Spinner } from "@ui/spinner";
 
 interface Props {
+  loadingSubjects: boolean;
   value: Option[];
   onChange: (value: Option[]) => void;
   maxSelected?: number;
 }
 
+// FIXME - Width del input no se ajusta al tamaño cuando hay una sola badge
 export function CareerMultiDropdown({
+  loadingSubjects,
   value,
   onChange,
   maxSelected = 2,
@@ -25,6 +28,8 @@ export function CareerMultiDropdown({
     // TODO - Change the queryparams
   }, [value]);
 
+  console.log(data)
+
   const options =
     data?.map((career) => ({
       value: career.id,
@@ -32,7 +37,7 @@ export function CareerMultiDropdown({
     })) ?? [];
 
   return (
-    <div className="relative max-w-sm ">
+    <div className="relative max-w-sm">
       <MultipleSelector
         value={value}
         onChange={onChange}
@@ -43,6 +48,7 @@ export function CareerMultiDropdown({
             ? "Máximo alcanzado"
             : "Selecciona las carreras que deseas visualizar"
         }
+        showSpinner={loadingSubjects}
         emptyIndicator={
           isLoading ? (
             <span className="grid place-items-center">
@@ -63,7 +69,7 @@ export function CareerMultiDropdown({
           className: "w-auto",
         }}
         badgeClassName="bg-blue-300 text-black"
-        className="bg-gray-200"
+        className="bg-gray-200 "
       />
     </div>
   );

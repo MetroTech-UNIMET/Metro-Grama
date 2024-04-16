@@ -55,7 +55,7 @@ export default function useSubjectGraph(
                 fill: "blue",
               },
               icon: {
-                size: 20,
+                size: 16 * iconLen,
                 fill: "green",
                 type: "font",
                 fontFamily: "graphin",
@@ -70,7 +70,6 @@ export default function useSubjectGraph(
             },
             accesible: {
               keyshape: {
-                size: 20,
                 fill: "blue",
                 stroke: "blue",
               },

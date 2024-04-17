@@ -1,7 +1,7 @@
 import { getCareers } from "@/api/careersApi";
 import { Career } from "@/interfaces/Career";
 import MultipleSelector, { Option } from "@ui/multidropdown";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useQuery } from "react-query";
 import { Spinner } from "@ui/spinner";
 

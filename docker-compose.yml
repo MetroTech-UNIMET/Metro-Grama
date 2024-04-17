@@ -1,33 +1,32 @@
 version: "3.8"
 services:
-  frontend:
-    container_name: frontend
-    build: ./client
-    ports:
-      - 1403:1403
-
   backend:
     container_name: backend
-    build: ./server
+    build: ./
     ports:
       - 6969:6969
     develop:
       watch:
         - action: rebuild
           path: ./server
+    restart: on-failure
     depends_on:
       - db
-    # network_mode: host
-    restart: on-failure
+    links:
+      - "db"
+    networks:
+      - backend-network
 
   db_seed:
     container_name: db_seed
     image: surrealdb/surrealdb:latest
-    build: ./surrealdb
     volumes:
       - ./surrealdb/seed.surql:/seed.surql
-    command: [ "import", "--conn", "http://0.0.0.0:8000", "--user", "root", "--pass", "root", "--ns" , "test", "--db", "test", "/seed.surql"] 
-    network_mode: "container:db"
+    command: [ "import", "--conn", "http://${SURREAL_HOST}", "--user", "${SURREAL_USER}", "--pass", "${SURREAL_PASS}", "--ns" , "${SURREAL_NS}", "--db", "${SURREAL_DB}", "/seed.surql"] 
+    links:
+      - "db"
+    networks:
+      - backend-network
     depends_on:
       - db
 
@@ -35,16 +34,19 @@ services:
     container_name: db
     user: root
     image: surrealdb/surrealdb:latest
-    command: start -A --log all --user root --pass root file:/database/database.db
+    command: start -A --log all --user ${SURREAL_USER} --pass ${SURREAL_PASS} file:/database/database.db
     volumes:
       - db-vol:/database
     ports:
       - 8000:8000
+    env_file:
+    - path: .env
+      required: true
     networks:
-      - app
+      - backend-network
+
+networks:
+  backend-network:
 
 volumes:
   db-vol:
-
-networks:
-  app:

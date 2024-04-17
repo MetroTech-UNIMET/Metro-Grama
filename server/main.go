@@ -22,7 +22,7 @@ func main() {
 
 	// Servir el frontend ya compilado en todas las rutas no tomadas
 	// Ya el frontend se encargara de manejarlas con react router
-	e.Static("/*", "build")
+	e.Static("/*", "www-build")
 
 	e.Logger.Fatal(e.Start(":6969"))
 

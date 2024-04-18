@@ -20,7 +20,7 @@ type SubjectCase int
 const (
 	SubjectSuccess SubjectCase = iota
 	SubjectWithNonExistingPrecedesSubjects
-	SubjectWithNonExistingCarrer
+	SubjectWithNonExistingCareer
 	SubjectInvalidBody
 )
 
@@ -28,10 +28,10 @@ var subjectMockData = map[SubjectCase]models.SubjectForm{
 	SubjectSuccess: {
 		Name: "Esta materia no exite :p",
 		Code: "QWERT12",
-		Carrers: []models.CarrerForm{
+		Careers: []models.CareerForm{
 			{
 				Trimester: 9,
-				CarrerID:  "carrer:sistemas",
+				CareerID:  "career:sistemas",
 			},
 		},
 		PrecedesID: []string{
@@ -41,23 +41,23 @@ var subjectMockData = map[SubjectCase]models.SubjectForm{
 	SubjectWithNonExistingPrecedesSubjects: {
 		Name: "Esta materia no exite :p",
 		Code: "QWERT12",
-		Carrers: []models.CarrerForm{
+		Careers: []models.CareerForm{
 			{
 				Trimester: 9,
-				CarrerID:  "carrer:sistemas",
+				CareerID:  "career:sistemas",
 			},
 		},
 		PrecedesID: []string{
 			"subject:NoExiste", "subject:EsteTambien",
 		},
 	},
-	SubjectWithNonExistingCarrer: {
+	SubjectWithNonExistingCareer: {
 		Name: "Esta materia no exite :p",
 		Code: "QWERT12",
-		Carrers: []models.CarrerForm{
+		Careers: []models.CareerForm{
 			{
 				Trimester: 9,
-				CarrerID:  "carrer:NoExiste",
+				CareerID:  "career:NoExiste",
 			},
 		},
 		PrecedesID: []string{
@@ -67,10 +67,10 @@ var subjectMockData = map[SubjectCase]models.SubjectForm{
 	SubjectInvalidBody: {
 		Name: "",
 		Code: "",
-		Carrers: []models.CarrerForm{
+		Careers: []models.CareerForm{
 			{
 				Trimester: 0,
-				CarrerID:  "",
+				CareerID:  "",
 			},
 		},
 		PrecedesID: []string{
@@ -143,9 +143,9 @@ func TestCreateSubjectWithNonExistingPrecedesSubjects(t *testing.T) {
 	assert.Equal(t, httpErr.Code, http.StatusNotFound, err)
 }
 
-func TestCreateSubjectWithNonExistingCarrer(t *testing.T) {
+func TestCreateSubjectWithNonExistingCareer(t *testing.T) {
 	e := tools.SetupEcho()
-	subjectMock := subjectMockData[SubjectWithNonExistingCarrer]
+	subjectMock := subjectMockData[SubjectWithNonExistingCareer]
 
 	storage.DeleteSubject(tools.ToID("subject", subjectMock.Code))
 

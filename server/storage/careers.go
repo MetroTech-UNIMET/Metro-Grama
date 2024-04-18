@@ -9,7 +9,7 @@ import (
 )
 
 func GetCareers() ([]models.CareerNode, error) {
-	rows, err := db.SurrealDB.Query("SELECT * FROM carrer", nil)
+	rows, err := db.SurrealDB.Query("SELECT * FROM career", nil)
 
 	if err != nil {
 		return []models.CareerNode{}, fmt.Errorf("error getting careers: %v", err)

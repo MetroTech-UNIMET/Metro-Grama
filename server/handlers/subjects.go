@@ -13,14 +13,14 @@ import (
 
 func subjectsHandler(e *echo.Group) {
 	subjectsGroup := e.Group("/subjects")
-	// subjectsGroup.GET("/:carrer", getSubjectsByCareer)
+	// subjectsGroup.GET("/:career", getSubjectsByCareer)
 	subjectsGroup.POST("/", createSubject)
 	subjectsGroup.GET("/", getSubjects)
 
 }
 
 // func getSubjectsByCareer(c echo.Context) error {
-// 	career := c.Param("carrer")
+// 	career := c.Param("career")
 
 // 	subjects, err := storage.GetSubjectByCareer(career)
 
@@ -66,10 +66,10 @@ func createSubject(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusConflict, "Already exist")
 	}
 
-	for _, c := range subjectForm.Carrers {
-		err := storage.ExistRecord(c.CarrerID)
+	for _, c := range subjectForm.Careers {
+		err := storage.ExistRecord(c.CareerID)
 		if err != nil {
-			return echo.NewHTTPError(http.StatusNotFound, fmt.Sprintf("Precedes subject `%s` not found", c.CarrerID))
+			return echo.NewHTTPError(http.StatusNotFound, fmt.Sprintf("Precedes subject `%s` not found", c.CareerID))
 		}
 	}
 

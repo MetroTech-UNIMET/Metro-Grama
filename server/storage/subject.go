@@ -12,27 +12,27 @@ import (
 	"github.com/surrealdb/surrealdb.go"
 )
 
-// const queryGraph = `SELECT <-belong<-subject<-precede as edges, <-belong<-subject as nodes FROM $carrerID FETCH edges, edges.in, edges.out, nodes;`
-// func GetSubjectByCareer(carrer string) (models.Graph[models.SubjectNode], error) {
+// const queryGraph = `SELECT <-belong<-subject<-precede as edges, <-belong<-subject as nodes FROM $careerID FETCH edges, edges.in, edges.out, nodes;`
+// func GetSubjectByCareer(career string) (models.Graph[models.SubjectNode], error) {
 // 	rows, err := db.SurrealDB.Query(queryGraph, map[string]string{
-// 		"carrerID": tools.ToID("carrer", carrer),
+// 		"careerID": tools.ToID("career", career),
 // 	})
 // 	if err != nil {
-// 		return models.Graph[models.SubjectNode]{}, fmt.Errorf("career %s not found", carrer)
+// 		return models.Graph[models.SubjectNode]{}, fmt.Errorf("career %s not found", career)
 // 	}
 
-// 	carrersEdges, err := surrealdb.SmartUnmarshal[[]models.SubjectsEdges](rows, err)
+// 	careersEdges, err := surrealdb.SmartUnmarshal[[]models.SubjectsEdges](rows, err)
 
 // 	if err != nil {
 // 		return models.Graph[models.SubjectNode]{}, err
-// 	} else if len(carrersEdges) == 0 {
-// 		return models.Graph[models.SubjectNode]{}, fmt.Errorf("carrer '%s' not found", carrer)
+// 	} else if len(careersEdges) == 0 {
+// 		return models.Graph[models.SubjectNode]{}, fmt.Errorf("career '%s' not found", career)
 // 	}
 
-// 	nodes := make([]models.Node[models.SubjectNode], len(carrersEdges[0].SubjectNodes))
-// 	edges := make([]models.Edge, len(carrersEdges[0].SubjectEdges))
+// 	nodes := make([]models.Node[models.SubjectNode], len(careersEdges[0].SubjectNodes))
+// 	edges := make([]models.Edge, len(careersEdges[0].SubjectEdges))
 
-// 	for i, subjectNode := range carrersEdges[0].SubjectNodes {
+// 	for i, subjectNode := range careersEdges[0].SubjectNodes {
 // 		nodes[i] = models.Node[models.SubjectNode]{
 // 			ID: subjectNode.ID,
 // 			Data: models.SubjectNode{
@@ -42,7 +42,7 @@ import (
 // 		}
 // 	}
 
-// 	for i, subjectEdge := range carrersEdges[0].SubjectEdges {
+// 	for i, subjectEdge := range careersEdges[0].SubjectEdges {
 // 		edges[i] = models.Edge{
 // 			From: subjectEdge.From.ID,
 // 			To:   subjectEdge.To.ID,
@@ -176,8 +176,8 @@ CREATE $subjectID SET name=$subjectName;
 {{ range $i, $p := .PrecedesID }}
 RELATE $precedeID{{$i}}->precede->$subjectID;
 {{end}}
-{{ range $i, $c := .Carrers }}
-RELATE $subjectID->belong->$carrerID{{$i}} SET trimester = $trimester{{$i}};
+{{ range $i, $c := .Careers }}
+RELATE $subjectID->belong->$careerID{{$i}} SET trimester = $trimester{{$i}};
 {{end}}
 COMMIT TRANSACTION;	
 `
@@ -202,8 +202,8 @@ func CreateSubject(subject models.SubjectForm) error {
 		queryParams[fmt.Sprintf("precedeID%d", i)] = p
 	}
 
-	for i, c := range subject.Carrers {
-		queryParams[fmt.Sprintf("carrerID%d", i)] = c.CarrerID
+	for i, c := range subject.Careers {
+		queryParams[fmt.Sprintf("careerID%d", i)] = c.CareerID
 		queryParams[fmt.Sprintf("trimester%d", i)] = c.Trimester
 	}
 

@@ -1,15 +1,18 @@
 import Graph from "@/components/graph/Graph";
+import { StatusActions } from "@/components/graph/behaviors/StatusActions";
 
 import { SubjectSheet, SubjectSheetContent } from "@components/SubjectSheet";
 
 function Grafo() {
   return (
     <>
-      <SubjectSheet>
-        <Graph />
+      <StatusActions>
+        <SubjectSheet>
+          <Graph />
 
-        <SubjectSheetContent />
-      </SubjectSheet>
+          <SubjectSheetContent />
+        </SubjectSheet>
+      </StatusActions>
       {/* <ReactQueryDevtools initialIsOpen={false} /> */}
     </>
   );

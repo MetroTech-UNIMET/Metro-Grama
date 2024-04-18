@@ -3,7 +3,6 @@ package handlers
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"metrograma/models"
 	"metrograma/storage"
 	"metrograma/tools"
@@ -244,13 +243,11 @@ var edgesMock = []models.Edge{
 func TestBasicSubjectsGraph(t *testing.T) {
 	e := tools.SetupEcho()
 
-	req := httptest.NewRequest(http.MethodGet, "/", strings.NewReader(""))
+	req := httptest.NewRequest(http.MethodGet, "/?filter=all", strings.NewReader(""))
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
-	c.SetParamNames("carrer")
-	c.SetParamValues("sistemas")
 
-	err := getSubjectsByCareer(c)
+	err := getSubjects(c)
 
 	if assert.NoError(t, err) {
 		graph := new(models.Graph[models.SubjectNode])
@@ -261,7 +258,6 @@ func TestBasicSubjectsGraph(t *testing.T) {
 		for _, e := range graph.Edges {
 			for _, eMock := range edgesMock {
 				if e.From == eMock.From && e.To == eMock.To {
-					fmt.Printf("%s -> %s\n", e.From, e.To)
 					matchs += 1
 				}
 			}

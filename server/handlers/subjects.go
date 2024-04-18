@@ -13,22 +13,23 @@ import (
 
 func subjectsHandler(e *echo.Group) {
 	subjectsGroup := e.Group("/subjects")
-	subjectsGroup.GET("/:carrer", getSubjectsByCareer)
+	// subjectsGroup.GET("/:carrer", getSubjectsByCareer)
 	subjectsGroup.POST("/", createSubject)
 	subjectsGroup.GET("/", getSubjects)
 
 }
 
-func getSubjectsByCareer(c echo.Context) error {
-	career := c.Param("carrer")
+// func getSubjectsByCareer(c echo.Context) error {
+// 	career := c.Param("carrer")
 
-	subjects, err := storage.GetSubjectByCareer(career)
+// 	subjects, err := storage.GetSubjectByCareer(career)
 
-	return tools.GetResponse(c, subjects, err)
-}
+// 	return tools.GetResponse(c, subjects, err)
+// }
 
 func getSubjects(c echo.Context) error {
 	filter := c.QueryParam("filter")
+
 	field := ""
 	value := ""
 

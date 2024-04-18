@@ -12,50 +12,49 @@ import (
 	"github.com/surrealdb/surrealdb.go"
 )
 
-const queryGraph = `SELECT <-belong<-subject<-precede as edges, <-belong<-subject as nodes FROM $carrerID FETCH edges, edges.in, edges.out, nodes;`
+// const queryGraph = `SELECT <-belong<-subject<-precede as edges, <-belong<-subject as nodes FROM $carrerID FETCH edges, edges.in, edges.out, nodes;`
+// func GetSubjectByCareer(carrer string) (models.Graph[models.SubjectNode], error) {
+// 	rows, err := db.SurrealDB.Query(queryGraph, map[string]string{
+// 		"carrerID": tools.ToID("carrer", carrer),
+// 	})
+// 	if err != nil {
+// 		return models.Graph[models.SubjectNode]{}, fmt.Errorf("career %s not found", carrer)
+// 	}
 
-func GetSubjectByCareer(carrer string) (models.Graph[models.SubjectNode], error) {
-	rows, err := db.SurrealDB.Query(queryGraph, map[string]string{
-		"carrerID": tools.ToID("carrer", carrer),
-	})
-	if err != nil {
-		return models.Graph[models.SubjectNode]{}, fmt.Errorf("career %s not found", carrer)
-	}
+// 	carrersEdges, err := surrealdb.SmartUnmarshal[[]models.SubjectsEdges](rows, err)
 
-	carrersEdges, err := surrealdb.SmartUnmarshal[[]models.SubjectsEdges](rows, err)
+// 	if err != nil {
+// 		return models.Graph[models.SubjectNode]{}, err
+// 	} else if len(carrersEdges) == 0 {
+// 		return models.Graph[models.SubjectNode]{}, fmt.Errorf("carrer '%s' not found", carrer)
+// 	}
 
-	if err != nil {
-		return models.Graph[models.SubjectNode]{}, err
-	} else if len(carrersEdges) == 0 {
-		return models.Graph[models.SubjectNode]{}, fmt.Errorf("carrer '%s' not found", carrer)
-	}
+// 	nodes := make([]models.Node[models.SubjectNode], len(carrersEdges[0].SubjectNodes))
+// 	edges := make([]models.Edge, len(carrersEdges[0].SubjectEdges))
 
-	nodes := make([]models.Node[models.SubjectNode], len(carrersEdges[0].SubjectNodes))
-	edges := make([]models.Edge, len(carrersEdges[0].SubjectEdges))
+// 	for i, subjectNode := range carrersEdges[0].SubjectNodes {
+// 		nodes[i] = models.Node[models.SubjectNode]{
+// 			ID: subjectNode.ID,
+// 			Data: models.SubjectNode{
+// 				Code: subjectNode.ID[len("subject:"):],
+// 				Name: subjectNode.Name,
+// 			},
+// 		}
+// 	}
 
-	for i, subjectNode := range carrersEdges[0].SubjectNodes {
-		nodes[i] = models.Node[models.SubjectNode]{
-			ID: subjectNode.ID,
-			Data: models.SubjectNode{
-				Code: subjectNode.ID[len("subject:"):],
-				Name: subjectNode.Name,
-			},
-		}
-	}
+// 	for i, subjectEdge := range carrersEdges[0].SubjectEdges {
+// 		edges[i] = models.Edge{
+// 			From: subjectEdge.From.ID,
+// 			To:   subjectEdge.To.ID,
+// 		}
+// 	}
 
-	for i, subjectEdge := range carrersEdges[0].SubjectEdges {
-		edges[i] = models.Edge{
-			From: subjectEdge.From.ID,
-			To:   subjectEdge.To.ID,
-		}
-	}
-
-	graph := models.Graph[models.SubjectNode]{
-		Nodes: nodes,
-		Edges: edges,
-	}
-	return graph, nil
-}
+// 	graph := models.Graph[models.SubjectNode]{
+// 		Nodes: nodes,
+// 		Edges: edges,
+// 	}
+// 	return graph, nil
+// }
 
 func getSubjectsQuery(field, value string) (interface{}, error) {
 	baseQuery := `SELECT 
@@ -126,7 +125,7 @@ func GetSubjects(field, value string) (models.Graph[models.SubjectNode], error) 
 	// 	}
 	// }
 
-	subjectSet := map[string]bool{}
+	subjectSet := make(map[string]bool, len(subjectsByCareers))
 	for i, subjectByCareer := range subjectsByCareers {
 		subject := subjectByCareer.Subject
 		subjectSet[subject.ID] = true

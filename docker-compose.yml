@@ -23,6 +23,7 @@ services:
     volumes:
       - ./surrealdb/seed.surql:/seed.surql
     command: [ "import", "--conn", "http://${SURREAL_HOST}", "--user", "${SURREAL_USER}", "--pass", "${SURREAL_PASS}", "--ns" , "${SURREAL_NS}", "--db", "${SURREAL_DB}", "/seed.surql"] 
+    restart: on-failure
     links:
       - "db"
     networks:
@@ -37,8 +38,8 @@ services:
     command: start -A --log all --user ${SURREAL_USER} --pass ${SURREAL_PASS} file:/database/database.db
     volumes:
       - db-vol:/database
-    ports:
-      - 8000:8000
+    # ports:
+    #   - 8000:8000
     env_file:
     - path: .env
       required: true

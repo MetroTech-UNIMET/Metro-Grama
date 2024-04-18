@@ -28,7 +28,7 @@ var subjectMockData = map[SubjectCase]models.SubjectForm{
 	SubjectSuccess: {
 		Name: "Esta materia no exite :p",
 		Code: "QWERT12",
-		Careers: []models.CareerForm{
+		Careers: []models.SubjectCareer{
 			{
 				Trimester: 9,
 				CareerID:  "career:sistemas",
@@ -41,7 +41,7 @@ var subjectMockData = map[SubjectCase]models.SubjectForm{
 	SubjectWithNonExistingPrecedesSubjects: {
 		Name: "Esta materia no exite :p",
 		Code: "QWERT12",
-		Careers: []models.CareerForm{
+		Careers: []models.SubjectCareer{
 			{
 				Trimester: 9,
 				CareerID:  "career:sistemas",
@@ -54,7 +54,7 @@ var subjectMockData = map[SubjectCase]models.SubjectForm{
 	SubjectWithNonExistingCareer: {
 		Name: "Esta materia no exite :p",
 		Code: "QWERT12",
-		Careers: []models.CareerForm{
+		Careers: []models.SubjectCareer{
 			{
 				Trimester: 9,
 				CareerID:  "career:NoExiste",
@@ -67,7 +67,7 @@ var subjectMockData = map[SubjectCase]models.SubjectForm{
 	SubjectInvalidBody: {
 		Name: "",
 		Code: "",
-		Careers: []models.CareerForm{
+		Careers: []models.SubjectCareer{
 			{
 				Trimester: 0,
 				CareerID:  "",

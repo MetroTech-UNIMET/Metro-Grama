@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"metrograma/db"
 	"metrograma/models"
+	"metrograma/tools"
 
 	"github.com/surrealdb/surrealdb.go"
 )
@@ -25,3 +26,11 @@ func GetCareers() ([]models.CareerNode, error) {
 }
 
 func GetCareerById(careerId string) {}
+
+func CreateCareer(careerForm models.CareerForm) error {
+	_, err := db.SurrealDB.Query(`CREATE $id SET name=$name`, map[string]interface{}{
+		"id":   tools.ToID("career", careerForm.ID_Name),
+		"name": careerForm.Name,
+	})
+	return err
+}

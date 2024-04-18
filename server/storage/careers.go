@@ -48,7 +48,6 @@ func CreateCareer(careerForm models.CareerForm) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(query.String())
 
 	queryParams := map[string]interface{}{
 		"careerID":   tools.ToID("career", careerForm.ID_Name),
@@ -63,4 +62,12 @@ func CreateCareer(careerForm models.CareerForm) error {
 	_, err = db.SurrealDB.Query(query.String(), queryParams)
 
 	return err
+}
+
+func DeleteCareer(careerID string, deleteRelatedSubjects bool) error {
+	if !deleteRelatedSubjects {
+		_, err := db.SurrealDB.Delete(careerID)
+		return err
+	}
+	return nil
 }

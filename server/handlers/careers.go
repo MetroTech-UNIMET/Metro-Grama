@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"metrograma/models"
 	"metrograma/storage"
 	"metrograma/tools"
@@ -13,6 +14,7 @@ func careersHandler(e *echo.Group) {
 	careersGroup := e.Group("/careers")
 	careersGroup.GET("/", getCareers)
 	careersGroup.POST("/", createCareer)
+	careersGroup.DELETE("/:careerId", deleteCareer)
 	// subjectsGroup.GET("/:careerId", getCareerById)
 }
 
@@ -43,9 +45,27 @@ func createCareer(c echo.Context) error {
 	return nil
 }
 
-// func getCareerById(c echo.Context) error {
-// 	careerId := c.Param("careerId")
+type deleteCareerParam struct {
+	ID       string `param:"careerId" validate:"required"`
+	Subjects bool   `query:"subjects"`
+}
 
+func deleteCareer(c echo.Context) error {
+	var target deleteCareerParam
+	if err := c.Bind(&target); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	if err := c.Validate(target); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	fmt.Println(target)
+
+	return storage.DeleteCareer(target.ID, target.Subjects)
+}
+
+// func getCareerById(c echo.Context) error {
 // 	subjects, err := storage.GetCareerById(careerId)
 // 	if err != nil {
 // 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())

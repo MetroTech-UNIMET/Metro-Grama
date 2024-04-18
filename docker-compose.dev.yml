@@ -1,0 +1,36 @@
+version: "3.8"
+services:
+  db_seed:
+    container_name: db_seed
+    image: surrealdb/surrealdb:latest
+    volumes:
+      - ./surrealdb/seed.surql:/seed.surql
+    command: [ "import", "--conn", "http://${SURREAL_HOST}", "--user", "root", "--pass", "root", "--ns" , "test", "--db", "test", "/seed.surql"] 
+    restart: on-failure
+    links:
+      - "db"
+    networks:
+      - backend-network
+    depends_on:
+      - db
+
+  db:
+    container_name: db
+    user: root
+    image: surrealdb/surrealdb:latest
+    command: start -A --log all --user root --pass root file:/database/database.db
+    volumes:
+      - db-vol:/database
+    ports:
+      - 8000:8000
+    env_file:
+    - path: .env
+      required: true
+    networks:
+      - backend-network
+
+networks:
+  backend-network:
+
+volumes:
+  db-vol:

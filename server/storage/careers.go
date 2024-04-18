@@ -1,10 +1,12 @@
 package storage
 
 import (
+	"bytes"
 	"fmt"
 	"metrograma/db"
 	"metrograma/models"
 	"metrograma/tools"
+	"text/template"
 
 	"github.com/surrealdb/surrealdb.go"
 )
@@ -27,10 +29,38 @@ func GetCareers() ([]models.CareerNode, error) {
 
 func GetCareerById(careerId string) {}
 
+var createCareerQuery = `
+BEGIN TRANSACTION;
+CREATE $careerID SET name=$careerName;
+{{ range $i, $c := .Subjects }}
+RELATE $subjectID{{$i}}->belong->$careerID SET trimester = $trimester{{$i}};
+{{end}}
+COMMIT TRANSACTION;	
+`
+
 func CreateCareer(careerForm models.CareerForm) error {
-	_, err := db.SurrealDB.Query(`CREATE $id SET name=$name`, map[string]interface{}{
-		"id":   tools.ToID("career", careerForm.ID_Name),
-		"name": careerForm.Name,
-	})
+	t, err := template.New("query").Parse(createCareerQuery)
+	if err != nil {
+		return err
+	}
+	var query bytes.Buffer
+	err = t.Execute(&query, careerForm)
+	if err != nil {
+		return err
+	}
+	fmt.Println(query.String())
+
+	queryParams := map[string]interface{}{
+		"careerID":   tools.ToID("career", careerForm.ID_Name),
+		"careerName": careerForm.Name,
+	}
+
+	for i, c := range careerForm.Subjects {
+		queryParams[fmt.Sprintf("subjectID%d", i)] = c.ID
+		queryParams[fmt.Sprintf("trimester%d", i)] = c.Trimester
+	}
+
+	_, err = db.SurrealDB.Query(query.String(), queryParams)
+
 	return err
 }

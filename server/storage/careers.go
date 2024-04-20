@@ -21,7 +21,7 @@ func GetCareers() ([]models.CareerNode, error) {
 	careers, err := surrealdb.SmartUnmarshal[[]models.CareerNode](rows, err)
 
 	if err != nil {
-		return []models.CareerNode{}, fmt.Errorf("error unmarshalling careers: %v", err)
+		return []models.CareerNode{}, fmt.Errorf("error fetching careers: %v", err)
 	}
 
 	return careers, nil
@@ -59,9 +59,11 @@ func CreateCareer(careerForm models.CareerForm) error {
 		queryParams[fmt.Sprintf("trimester%d", i)] = c.Trimester
 	}
 
-	_, err = db.SurrealDB.Query(query.String(), queryParams)
-
-	return err
+	data, err := db.SurrealDB.Query(query.String(), queryParams)
+	if err != nil {
+		return err
+	}
+	return tools.GetErrorMsgs(data)
 }
 
 func DeleteCareer(careerID string, deleteRelatedSubjects bool) error {

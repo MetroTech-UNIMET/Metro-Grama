@@ -162,14 +162,6 @@ func GetSubjects(field, value string) (models.Graph[models.SubjectNode], error) 
 	return graph, nil
 }
 
-func ExistRecord(id string) error {
-	_, err := db.SurrealDB.Select(id)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
 const createQuery = `
 BEGIN TRANSACTION;
 CREATE $subjectID SET name=$subjectName;
@@ -207,8 +199,11 @@ func CreateSubject(subject models.SubjectForm) error {
 		queryParams[fmt.Sprintf("trimester%d", i)] = c.Trimester
 	}
 
-	_, err = db.SurrealDB.Query(query.String(), queryParams)
-	return err
+	data, err := db.SurrealDB.Query(query.String(), queryParams)
+	if err != nil {
+		return err
+	}
+	return tools.GetErrorMsgs(data)
 }
 
 func DeleteSubject(subjectID string) error {

@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"metrograma/models"
 	"metrograma/storage"
 	"metrograma/tools"
@@ -34,7 +33,7 @@ func createCareer(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	if err := storage.ExistRecord(tools.ToID("career", careerForm.ID_Name)); err == nil {
+	if err := tools.ExistRecord(tools.ToID("career", careerForm.ID_Name)); err == nil {
 		return echo.NewHTTPError(http.StatusConflict, "career already exist")
 	}
 
@@ -60,9 +59,10 @@ func deleteCareer(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	fmt.Println(target)
-
-	return storage.DeleteCareer(target.ID, target.Subjects)
+	if err := storage.DeleteCareer(target.ID, target.Subjects); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	}
+	return nil
 }
 
 // func getCareerById(c echo.Context) error {

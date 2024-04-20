@@ -9,6 +9,12 @@ import (
 
 var SurrealDB *surrealdb.DB
 
+type SurrealErrMsg struct {
+	Result string `json:"result"`
+	Status string `json:"status"`
+	Time   string `json:"time"`
+}
+
 func InitSurrealDB() {
 	db, err := surrealdb.New(fmt.Sprintf("ws://%s/rpc", os.Getenv("SURREAL_HOST")))
 	if err != nil {

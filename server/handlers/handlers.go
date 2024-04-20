@@ -9,4 +9,5 @@ func CreateHandlers(e *echo.Echo) {
 	healthHandler(apiGroup)
 	subjectsHandler(apiGroup)
 	careersHandler(apiGroup)
+	usersHandler(apiGroup)
 }

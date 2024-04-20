@@ -11,50 +11,56 @@ DELETE belong;
 -- El id de la careera tendra que ser una palabra sin espacios,
 -- por que los id con espacios necesitan un caracter especial que
 -- no esta en los teclados. Por eso que esta el field del nombre
-DEFINE TABLE career SCHEMALESS;
-DEFINE FIELD name ON career TYPE string
-    ASSERT string::len($value) > 3 && string::len($value) < 100;
-DEFINE INDEX nameIndex ON TABLE career COLUMNS name UNIQUE;
+DEFINE TABLE career SCHEMAFULL;
+DEFINE FIELD name ON career TYPE string;
+DEFINE INDEX careerNameIndex ON TABLE career COLUMNS name UNIQUE;
+
+-- Roles
+DEFINE TABLE role SCHEMAFULL;
+CREATE role:user;
+CREATE role:admin;
 
 -- Estudiantes
-DEFINE TABLE student SCHEMALESS;
+DEFINE TABLE student SCHEMAFULL;
+DEFINE FIELD firstName ON student TYPE string;
+DEFINE FIELD lastName ON student TYPE string;
+DEFINE FIELD email ON student TYPE string ASSERT string::is::email($value);
+DEFINE FIELD password ON student TYPE string;
+DEFINE FIELD verified ON student TYPE bool DEFAULT false;
+DEFINE FIELD role ON student TYPE record<role> DEFAULT role:user;
+DEFINE FIELD created ON student DEFAULT time::now() READONLY;
+DEFINE INDEX studentEmailIndex ON TABLE student COLUMNS email UNIQUE;
 
 -- Definir esquema de materias
-DEFINE TABLE subject SCHEMALESS;
-DEFINE FIELD name ON subject TYPE string
-    ASSERT string::len($value) > 3 && string::len($value) < 100;
-DEFINE INDEX nameIndex ON TABLE subject COLUMNS name UNIQUE;
+DEFINE TABLE subject SCHEMAFULL;
+DEFINE FIELD name ON subject TYPE string;
+DEFINE INDEX subjectNameIndex ON TABLE subject COLUMNS name UNIQUE;
 
 -- Definir tabla de relacion estudiante -> materia
-DEFINE TABLE passed SCHEMALESS;
+DEFINE TABLE passed SCHEMAFULL;
 DEFINE FIELD in ON passed TYPE record<student>;
 DEFINE FIELD out ON passed TYPE record<subject>;
-DEFINE FIELD trimester ON course TYPE string; 
+DEFINE FIELD trimester ON passed TYPE number; 
 
 -- Definir tabla de relacion studiante -> careera 
-DEFINE TABLE course SCHEMALESS;
+DEFINE TABLE course SCHEMAFULL;
 DEFINE FIELD in ON course TYPE record<student>;
 DEFINE FIELD out ON course TYPE record<career>;
 
 -- Definir tabla de relacion careeras -> materias 
-DEFINE TABLE belong SCHEMALESS;
+DEFINE TABLE belong SCHEMAFULL;
 DEFINE FIELD in ON belong TYPE record<subject>;
 DEFINE FIELD out ON belong TYPE record<career>;
-DEFINE FIELD trimester ON belong TYPE number
-    ASSERT $value > 0;
+DEFINE FIELD trimester ON belong TYPE number;
 
 -- Definir tabla de relacion materias -> materias 
-DEFINE TABLE precede SCHEMALESS;
+DEFINE TABLE precede SCHEMAFULL;
 DEFINE FIELD in ON precede TYPE record<subject>;
 DEFINE FIELD out ON precede TYPE record<subject>;
 
 -- Popular careeras
 CREATE career:sistemas SET name="Ingeniería de sistemas";
 CREATE career:quimica SET name="Ingeniería quimica";
-
--- popular studientes de prueba
-CREATE student:pepe;
-RELATE student:pepe->course->career:sistemas SET trimester = "2024-1";
 
 -- Popular careeras
 -- Trimestre 1

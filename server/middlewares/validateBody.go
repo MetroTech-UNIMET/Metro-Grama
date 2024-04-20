@@ -2,6 +2,7 @@ package middlewares
 
 import (
 	"net/http"
+	"regexp"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
@@ -20,5 +21,14 @@ func (cv *CustomValidator) Validate(i interface{}) error {
 }
 
 func NewValidator() *CustomValidator {
-	return &CustomValidator{validator: validator.New()}
+	validate := validator.New()
+	regex := regexp.MustCompile(`[\w-\.]+@correo.unimet.edu.ve`)
+	err := validate.RegisterValidation("unimet_email", func(fl validator.FieldLevel) bool {
+		value := fl.Field().String()
+		return regex.MatchString(value)
+	})
+	if err != nil {
+		panic(err)
+	}
+	return &CustomValidator{validator: validate}
 }

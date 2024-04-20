@@ -203,7 +203,7 @@ func CreateSubject(subject models.SubjectForm) error {
 	if err != nil {
 		return err
 	}
-	return tools.GetErrorMsgs(data)
+	return tools.GetSurrealErrorMsgs(data)
 }
 
 func DeleteSubject(subjectID string) error {

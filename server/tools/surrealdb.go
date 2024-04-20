@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-func GetErrorMsgs(data interface{}) error {
+func GetSurrealErrorMsgs(data interface{}) error {
 	if msgs, ok := data.([]interface{}); ok {
 		msgErr := make([]string, 0, 3)
 		for _, m := range msgs {

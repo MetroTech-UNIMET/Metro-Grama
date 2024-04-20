@@ -63,7 +63,7 @@ func CreateCareer(careerForm models.CareerForm) error {
 	if err != nil {
 		return err
 	}
-	return tools.GetErrorMsgs(data)
+	return tools.GetSurrealErrorMsgs(data)
 }
 
 func DeleteCareer(careerID string, deleteRelatedSubjects bool) error {

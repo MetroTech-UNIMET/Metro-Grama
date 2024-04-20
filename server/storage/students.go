@@ -55,5 +55,16 @@ func CreateStudent(user models.StudentSigninForm) error {
 	if err != nil {
 		return err
 	}
-	return tools.GetErrorMsgs(data)
+	return tools.GetSurrealErrorMsgs(data)
+}
+
+func DeleteStudentByEmail(email string) error {
+	data, err := db.SurrealDB.Query("DELETE student WHERE email = $email;", map[string]string{
+		"email": email,
+	})
+	if err != nil {
+		return err
+	}
+
+	return tools.GetSurrealErrorMsgs(data)
 }

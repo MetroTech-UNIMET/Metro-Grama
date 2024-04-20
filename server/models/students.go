@@ -18,3 +18,8 @@ type StudentSigninForm struct {
 	CareerID       string          `json:"careerID" validate:"required"`
 	SubjectsPassed []SubjectPassed `json:"subjectsPassed" validate:"required,dive"`
 }
+
+type MinimalStudent struct {
+	ID   string `json:"id"`
+	Role string `json:"role"`
+}

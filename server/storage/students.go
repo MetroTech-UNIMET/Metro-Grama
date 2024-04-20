@@ -7,10 +7,29 @@ import (
 	"metrograma/models"
 	"metrograma/tools"
 	"text/template"
+
+	"github.com/surrealdb/surrealdb.go"
 )
 
-func LoginStudent(login models.StudentLoginForm) {
+var loginQuery = "SELECT id, role FROM student WHERE email = $email AND crypto::bcrypt::compare(password, $password) = true"
 
+func LoginStudent(login models.StudentLoginForm) (models.MinimalStudent, error) {
+	data, err := db.SurrealDB.Query(loginQuery, map[string]string{
+		"email":    login.Email,
+		"password": login.Password,
+	})
+
+	user, err := surrealdb.SmartUnmarshal[[]models.MinimalStudent](data, err)
+
+	if err != nil {
+		return models.MinimalStudent{}, err
+	}
+
+	if len(user) == 0 {
+		return models.MinimalStudent{}, fmt.Errorf("incorrect credentials")
+	}
+
+	return user[0], nil
 }
 
 var createUserQuery = `

@@ -6,14 +6,17 @@ import (
 	"metrograma/storage"
 	"metrograma/tools"
 	"net/http"
+	"os"
+	"time"
 
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 )
 
 func usersHandler(e *echo.Group) {
-	usersGroup := e.Group("/users")
+	usersGroup := e.Group("/students")
 	usersGroup.GET("/verifie/:token", login)
-	usersGroup.GET("/login", login)
+	usersGroup.POST("/login", login)
 	usersGroup.POST("/sigin", signin)
 }
 
@@ -27,9 +30,33 @@ func login(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	storage.LoginStudent(loginForm)
+	user, err := storage.LoginStudent(loginForm)
 
-	return nil
+	if err != nil {
+		return echo.NewHTTPError(http.StatusUnauthorized, err.Error())
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"id":  user.ID,
+		"exp": time.Now().Add(time.Hour * time.Duration(24) * time.Duration(30)).Unix(),
+	})
+
+	tokenStr := ""
+	err = nil
+	switch user.Role {
+	case "role:user":
+		tokenStr, err = token.SignedString([]byte(os.Getenv("USER_TOKEN_SECRECT")))
+	case "role:admin":
+		tokenStr, err = token.SignedString([]byte(os.Getenv("ADMIN_TOKEN_SECRECT")))
+	}
+
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+
+	return c.JSON(http.StatusOK, map[string]string{
+		"token": tokenStr,
+	})
 }
 
 func signin(c echo.Context) error {
@@ -53,8 +80,8 @@ func signin(c echo.Context) error {
 	}
 
 	if err := storage.CreateStudent(signinForm); err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err)
+		return echo.NewHTTPError(http.StatusConflict, err)
 	}
 
-	return nil
+	return c.NoContent(http.StatusCreated)
 }

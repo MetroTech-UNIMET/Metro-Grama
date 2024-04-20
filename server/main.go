@@ -7,6 +7,7 @@ import (
 	"metrograma/middlewares"
 
 	"github.com/labstack/echo/v4"
+	echoMiddleware "github.com/labstack/echo/v4/middleware"
 )
 
 func main() {
@@ -17,6 +18,7 @@ func main() {
 	e.Validator = middlewares.NewValidator()
 
 	e.Use(middlewares.Cors())
+	e.Use(echoMiddleware.BodyLimit("2M"))
 
 	handlers.CreateHandlers(e)
 

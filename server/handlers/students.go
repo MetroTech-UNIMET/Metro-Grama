@@ -2,11 +2,11 @@ package handlers
 
 import (
 	"fmt"
+	"metrograma/env"
 	"metrograma/models"
 	"metrograma/storage"
 	"metrograma/tools"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -45,9 +45,9 @@ func login(c echo.Context) error {
 	err = nil
 	switch user.Role {
 	case "role:user":
-		tokenStr, err = token.SignedString([]byte(os.Getenv("USER_TOKEN_SECRECT")))
+		tokenStr, err = token.SignedString([]byte(env.UserTokenSigninKey))
 	case "role:admin":
-		tokenStr, err = token.SignedString([]byte(os.Getenv("ADMIN_TOKEN_SECRECT")))
+		tokenStr, err = token.SignedString([]byte(env.AdminTokenSigninKey))
 	}
 
 	if err != nil {

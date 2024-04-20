@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"metrograma/middlewares"
 	"metrograma/models"
 	"metrograma/storage"
 	"metrograma/tools"
@@ -12,8 +13,9 @@ import (
 func careersHandler(e *echo.Group) {
 	careersGroup := e.Group("/careers")
 	careersGroup.GET("/", getCareers)
-	careersGroup.POST("/", createCareer)
-	careersGroup.DELETE("/:careerId", deleteCareer)
+	authCareersGroup := careersGroup.Group("", middlewares.AdminJWTAuth())
+	authCareersGroup.POST("/", createCareer)
+	authCareersGroup.DELETE("/:careerId", deleteCareer)
 	// subjectsGroup.GET("/:careerId", getCareerById)
 }
 

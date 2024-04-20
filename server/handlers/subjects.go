@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"metrograma/middlewares"
 	"metrograma/models"
 	"metrograma/storage"
 	"metrograma/tools"
@@ -14,9 +15,9 @@ import (
 func subjectsHandler(e *echo.Group) {
 	subjectsGroup := e.Group("/subjects")
 	// subjectsGroup.GET("/:career", getSubjectsByCareer)
-	subjectsGroup.POST("/", createSubject)
 	subjectsGroup.GET("/", getSubjects)
-
+	authSubjectsGroup := subjectsGroup.Group("", middlewares.AdminJWTAuth())
+	authSubjectsGroup.POST("/", createSubject)
 }
 
 // func getSubjectsByCareer(c echo.Context) error {

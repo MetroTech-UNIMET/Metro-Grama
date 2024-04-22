@@ -17,7 +17,7 @@ func usersHandler(e *echo.Group) {
 	usersGroup := e.Group("/students")
 	usersGroup.POST("/login", login)
 	usersGroup.POST("/sigin", signin)
-	usersGroup.GET("/verifie/:token", verifieEmail)
+	usersGroup.GET("/verifie/:token", verifyEmail)
 }
 
 func login(c echo.Context) error {
@@ -86,6 +86,6 @@ func signin(c echo.Context) error {
 	return c.NoContent(http.StatusCreated)
 }
 
-func verifieEmail(c echo.Context) error {
+func verifyEmail(c echo.Context) error {
 	return c.NoContent(http.StatusNotImplemented)
 }

@@ -3,7 +3,6 @@ package handlers
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"metrograma/models"
 	"metrograma/storage"
 	"metrograma/tools"
@@ -21,7 +20,7 @@ type SubjectCase int
 const (
 	SubjectSuccess SubjectCase = iota
 	SubjectWithNonExistingPrecedesSubjects
-	SubjectWithNonExistingCarrer
+	SubjectWithNonExistingCareer
 	SubjectInvalidBody
 )
 
@@ -29,10 +28,10 @@ var subjectMockData = map[SubjectCase]models.SubjectForm{
 	SubjectSuccess: {
 		Name: "Esta materia no exite :p",
 		Code: "QWERT12",
-		Carrers: []models.CarrerForm{
+		Careers: []models.SubjectCareer{
 			{
 				Trimester: 9,
-				CarrerID:  "carrer:sistemas",
+				CareerID:  "career:sistemas",
 			},
 		},
 		PrecedesID: []string{
@@ -42,23 +41,23 @@ var subjectMockData = map[SubjectCase]models.SubjectForm{
 	SubjectWithNonExistingPrecedesSubjects: {
 		Name: "Esta materia no exite :p",
 		Code: "QWERT12",
-		Carrers: []models.CarrerForm{
+		Careers: []models.SubjectCareer{
 			{
 				Trimester: 9,
-				CarrerID:  "carrer:sistemas",
+				CareerID:  "career:sistemas",
 			},
 		},
 		PrecedesID: []string{
 			"subject:NoExiste", "subject:EsteTambien",
 		},
 	},
-	SubjectWithNonExistingCarrer: {
+	SubjectWithNonExistingCareer: {
 		Name: "Esta materia no exite :p",
 		Code: "QWERT12",
-		Carrers: []models.CarrerForm{
+		Careers: []models.SubjectCareer{
 			{
 				Trimester: 9,
-				CarrerID:  "carrer:NoExiste",
+				CareerID:  "career:NoExiste",
 			},
 		},
 		PrecedesID: []string{
@@ -68,10 +67,10 @@ var subjectMockData = map[SubjectCase]models.SubjectForm{
 	SubjectInvalidBody: {
 		Name: "",
 		Code: "",
-		Carrers: []models.CarrerForm{
+		Careers: []models.SubjectCareer{
 			{
 				Trimester: 0,
-				CarrerID:  "",
+				CareerID:  "",
 			},
 		},
 		PrecedesID: []string{
@@ -144,9 +143,9 @@ func TestCreateSubjectWithNonExistingPrecedesSubjects(t *testing.T) {
 	assert.Equal(t, httpErr.Code, http.StatusNotFound, err)
 }
 
-func TestCreateSubjectWithNonExistingCarrer(t *testing.T) {
+func TestCreateSubjectWithNonExistingCareer(t *testing.T) {
 	e := tools.SetupEcho()
-	subjectMock := subjectMockData[SubjectWithNonExistingCarrer]
+	subjectMock := subjectMockData[SubjectWithNonExistingCareer]
 
 	storage.DeleteSubject(tools.ToID("subject", subjectMock.Code))
 
@@ -244,13 +243,11 @@ var edgesMock = []models.Edge{
 func TestBasicSubjectsGraph(t *testing.T) {
 	e := tools.SetupEcho()
 
-	req := httptest.NewRequest(http.MethodGet, "/", strings.NewReader(""))
+	req := httptest.NewRequest(http.MethodGet, "/?filter=all", strings.NewReader(""))
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
-	c.SetParamNames("carrer")
-	c.SetParamValues("sistemas")
 
-	err := getSubjectsByCareer(c)
+	err := getSubjects(c)
 
 	if assert.NoError(t, err) {
 		graph := new(models.Graph[models.SubjectNode])
@@ -261,7 +258,6 @@ func TestBasicSubjectsGraph(t *testing.T) {
 		for _, e := range graph.Edges {
 			for _, eMock := range edgesMock {
 				if e.From == eMock.From && e.To == eMock.To {
-					fmt.Printf("%s -> %s\n", e.From, e.To)
 					matchs += 1
 				}
 			}

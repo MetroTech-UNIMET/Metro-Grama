@@ -22,6 +22,9 @@ export default defineConfig({
       }
     ],
   },
+  build: {
+    outDir: "../www-build"
+  },
   preview: {
     host: "0.0.0.0",
     port: 1403,

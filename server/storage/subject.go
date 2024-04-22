@@ -12,50 +12,49 @@ import (
 	"github.com/surrealdb/surrealdb.go"
 )
 
-const queryGraph = `SELECT <-belong<-subject<-precede as edges, <-belong<-subject as nodes FROM $carrerID FETCH edges, edges.in, edges.out, nodes;`
+// const queryGraph = `SELECT <-belong<-subject<-precede as edges, <-belong<-subject as nodes FROM $careerID FETCH edges, edges.in, edges.out, nodes;`
+// func GetSubjectByCareer(career string) (models.Graph[models.SubjectNode], error) {
+// 	rows, err := db.SurrealDB.Query(queryGraph, map[string]string{
+// 		"careerID": tools.ToID("career", career),
+// 	})
+// 	if err != nil {
+// 		return models.Graph[models.SubjectNode]{}, fmt.Errorf("career %s not found", career)
+// 	}
 
-func GetSubjectByCareer(carrer string) (models.Graph[models.SubjectNode], error) {
-	rows, err := db.SurrealDB.Query(queryGraph, map[string]string{
-		"carrerID": tools.ToID("carrer", carrer),
-	})
-	if err != nil {
-		return models.Graph[models.SubjectNode]{}, fmt.Errorf("career %s not found", carrer)
-	}
+// 	careersEdges, err := surrealdb.SmartUnmarshal[[]models.SubjectsEdges](rows, err)
 
-	carrersEdges, err := surrealdb.SmartUnmarshal[[]models.SubjectsEdges](rows, err)
+// 	if err != nil {
+// 		return models.Graph[models.SubjectNode]{}, err
+// 	} else if len(careersEdges) == 0 {
+// 		return models.Graph[models.SubjectNode]{}, fmt.Errorf("career '%s' not found", career)
+// 	}
 
-	if err != nil {
-		return models.Graph[models.SubjectNode]{}, err
-	} else if len(carrersEdges) == 0 {
-		return models.Graph[models.SubjectNode]{}, fmt.Errorf("carrer '%s' not found", carrer)
-	}
+// 	nodes := make([]models.Node[models.SubjectNode], len(careersEdges[0].SubjectNodes))
+// 	edges := make([]models.Edge, len(careersEdges[0].SubjectEdges))
 
-	nodes := make([]models.Node[models.SubjectNode], len(carrersEdges[0].SubjectNodes))
-	edges := make([]models.Edge, len(carrersEdges[0].SubjectEdges))
+// 	for i, subjectNode := range careersEdges[0].SubjectNodes {
+// 		nodes[i] = models.Node[models.SubjectNode]{
+// 			ID: subjectNode.ID,
+// 			Data: models.SubjectNode{
+// 				Code: subjectNode.ID[len("subject:"):],
+// 				Name: subjectNode.Name,
+// 			},
+// 		}
+// 	}
 
-	for i, subjectNode := range carrersEdges[0].SubjectNodes {
-		nodes[i] = models.Node[models.SubjectNode]{
-			ID: subjectNode.ID,
-			Data: models.SubjectNode{
-				Code: subjectNode.ID[len("subject:"):],
-				Name: subjectNode.Name,
-			},
-		}
-	}
+// 	for i, subjectEdge := range careersEdges[0].SubjectEdges {
+// 		edges[i] = models.Edge{
+// 			From: subjectEdge.From.ID,
+// 			To:   subjectEdge.To.ID,
+// 		}
+// 	}
 
-	for i, subjectEdge := range carrersEdges[0].SubjectEdges {
-		edges[i] = models.Edge{
-			From: subjectEdge.From.ID,
-			To:   subjectEdge.To.ID,
-		}
-	}
-
-	graph := models.Graph[models.SubjectNode]{
-		Nodes: nodes,
-		Edges: edges,
-	}
-	return graph, nil
-}
+// 	graph := models.Graph[models.SubjectNode]{
+// 		Nodes: nodes,
+// 		Edges: edges,
+// 	}
+// 	return graph, nil
+// }
 
 func getSubjectsQuery(field, value string) (interface{}, error) {
 	baseQuery := `SELECT 
@@ -126,7 +125,7 @@ func GetSubjects(field, value string) (models.Graph[models.SubjectNode], error) 
 	// 	}
 	// }
 
-	subjectSet := map[string]bool{}
+	subjectSet := make(map[string]bool, len(subjectsByCareers))
 	for i, subjectByCareer := range subjectsByCareers {
 		subject := subjectByCareer.Subject
 		subjectSet[subject.ID] = true
@@ -163,22 +162,14 @@ func GetSubjects(field, value string) (models.Graph[models.SubjectNode], error) 
 	return graph, nil
 }
 
-func ExistRecord(id string) error {
-	_, err := db.SurrealDB.Select(id)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
 const createQuery = `
 BEGIN TRANSACTION;
 CREATE $subjectID SET name=$subjectName;
 {{ range $i, $p := .PrecedesID }}
 RELATE $precedeID{{$i}}->precede->$subjectID;
 {{end}}
-{{ range $i, $c := .Carrers }}
-RELATE $subjectID->belong->$carrerID{{$i}} SET trimester = $trimester{{$i}};
+{{ range $i, $c := .Careers }}
+RELATE $subjectID->belong->$careerID{{$i}} SET trimester = $trimester{{$i}};
 {{end}}
 COMMIT TRANSACTION;	
 `
@@ -203,13 +194,16 @@ func CreateSubject(subject models.SubjectForm) error {
 		queryParams[fmt.Sprintf("precedeID%d", i)] = p
 	}
 
-	for i, c := range subject.Carrers {
-		queryParams[fmt.Sprintf("carrerID%d", i)] = c.CarrerID
+	for i, c := range subject.Careers {
+		queryParams[fmt.Sprintf("careerID%d", i)] = c.CareerID
 		queryParams[fmt.Sprintf("trimester%d", i)] = c.Trimester
 	}
 
-	_, err = db.SurrealDB.Query(query.String(), queryParams)
-	return err
+	data, err := db.SurrealDB.Query(query.String(), queryParams)
+	if err != nil {
+		return err
+	}
+	return tools.GetSurrealErrorMsgs(data)
 }
 
 func DeleteSubject(subjectID string) error {

@@ -131,11 +131,11 @@ export default function useSubjectGraph(
   return { graph };
 }
 
-function carrerEmoji(carrer: string): string {
-  switch (carrer) {
-    case "carrer:quimica":
+function careerEmoji(career: string): string {
+  switch (career) {
+    case "career:quimica":
       return "🧪";
-    case "carrer:sistemas":
+    case "career:sistemas":
       return "💾";
   }
   return "";
@@ -151,10 +151,10 @@ function getNormalIcon(
     icon = "🤝";
     for (let i = 0; i < subject.careers.length; i++) {
       if (i == 0) {
-        icon += "\n\r" + carrerEmoji(subject.careers[i]) + " ";
-        continue;
+        icon += "\n\r" + careerEmoji(subject.careers[i]) + " "
+        continue
       }
-      icon += carrerEmoji(subject.careers[i]) + " ";
+      icon += careerEmoji(subject.careers[i]) + " "
     }
   } else {
     let career = selectedCareers.find(
@@ -169,7 +169,7 @@ function getNormalIcon(
     }
 
     if (career) {
-      icon = carrerEmoji(career.value);
+      icon = careerEmoji(career.value)
     }
   }
 

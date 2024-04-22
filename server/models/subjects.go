@@ -8,16 +8,16 @@ package models
 // 	PrecedesCodes []string `form:"precedesCodes"`
 // }
 
-type CarrerForm struct {
+type SubjectCareer struct {
 	Trimester uint8  `json:"trimester" validate:"required, gte=1,lte=20"`
-	CarrerID  string `json:"carrerID" validate:"required"`
+	CareerID  string `json:"careerID" validate:"required"`
 }
 
 type SubjectForm struct {
-	Name       string       `json:"name" validate:"required"`
-	Code       string       `json:"code" validate:"required"`
-	Carrers    []CarrerForm `json:"carrers" validate:"required"`
-	PrecedesID []string     `json:"precedesID" validate:"required"`
+	Name       string          `json:"name" validate:"required"`
+	Code       string          `json:"code" validate:"required"`
+	Careers    []SubjectCareer `json:"careers" validate:"required"`
+	PrecedesID []string        `json:"precedesID" validate:"required"`
 }
 
 type SubjectNode struct {

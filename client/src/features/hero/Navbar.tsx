@@ -1,6 +1,6 @@
 /* import { Fragment } from "react"; */
 import { Disclosure /* Menu, Transition  */ } from "@headlessui/react";
-import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
+import { Menu, X } from "lucide-react";
 import Icono from "@/assets/images/Icono_MetroTech.png";
 import { Link, Outlet } from "react-router-dom";
 const navigation = [
@@ -30,9 +30,9 @@ export default function Navbar() {
                     <span className="absolute -inset-0.5" />
                     <span className="sr-only">Open main menu</span>
                     {open ? (
-                      <XMarkIcon className="block h-6 w-6" aria-hidden="true" />
+                      <X className="block h-6 w-6" aria-hidden="true" />
                     ) : (
-                      <Bars3Icon className="block h-6 w-6" aria-hidden="true" />
+                      <Menu className="block h-6 w-6" aria-hidden="true" />
                     )}
                   </Disclosure.Button>
                 </div>

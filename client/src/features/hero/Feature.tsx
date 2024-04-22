@@ -1,27 +1,23 @@
-import {
-  ArrowPathIcon,
-  CloudArrowUpIcon,
-  LockClosedIcon,
-} from "@heroicons/react/20/solid";
+import { CloudUpload, Lock, RefreshCw } from "lucide-react";
 
 const features = [
   {
     name: "Visualizar materias.",
     description:
       "Lorem ipsum, dolor sit amet consectetur adipisicing elit aute id magna.",
-    icon: CloudArrowUpIcon,
+    icon: CloudUpload,
   },
   {
     name: "Ajustar materias.",
     description:
       "Anim aute id magna aliqua ad ad non deserunt sunt. Qui irure qui lorem cupidatat commodo.",
-    icon: LockClosedIcon,
+    icon: Lock,
   },
   {
     name: "Mejorar tu plan de estudios.",
     description:
       "Ac tincidunt sapien vehicula erat auctor pellentesque rhoncus.",
-    icon: ArrowPathIcon,
+    icon: RefreshCw,
   },
 ];
 

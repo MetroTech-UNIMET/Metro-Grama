@@ -11,6 +11,26 @@ import (
 	"github.com/surrealdb/surrealdb.go"
 )
 
+var existQuery = "SELECT id, role FROM student WHERE email = $email"
+
+func ExistStudent(email string) (models.MinimalStudent, error) {
+	data, err := db.SurrealDB.Query(existQuery, map[string]string{
+		"email": email,
+	})
+
+	user, err := surrealdb.SmartUnmarshal[[]models.MinimalStudent](data, err)
+
+	if err != nil {
+		return models.MinimalStudent{}, err
+	}
+
+	if len(user) == 0 {
+		return models.MinimalStudent{}, fmt.Errorf("incorrect credentials")
+	}
+
+	return user[0], nil
+}
+
 var loginQuery = "SELECT id, role FROM student WHERE email = $email AND crypto::bcrypt::compare(password, $password) = true"
 
 func LoginStudent(login models.StudentLoginForm) (models.MinimalStudent, error) {
@@ -37,6 +57,7 @@ BEGIN TRANSACTION;
 LET $student = CREATE student SET
 	firstName=$firstName,
 	lastName=$lastName,
+	pictureUrl=$pictureUrl,
 	email=$email,
 	password=crypto::bcrypt::generate($password);
 LET $studentID = $student.id;
@@ -58,11 +79,12 @@ func CreateStudent(user models.StudentSigninForm) error {
 	}
 
 	queryParams := map[string]interface{}{
-		"firstName": user.FirstName,
-		"lastName":  user.LastName,
-		"email":     user.Email,
-		"password":  user.Password,
-		"careerID":  user.CareerID,
+		"firstName":  user.FirstName,
+		"lastName":   user.LastName,
+		"pictureUrl": user.PictureUrl,
+		"email":      user.Email,
+		"password":   user.Password,
+		"careerID":   user.CareerID,
 	}
 
 	for i, s := range user.SubjectsPassed {
@@ -71,6 +93,30 @@ func CreateStudent(user models.StudentSigninForm) error {
 	}
 
 	data, err := db.SurrealDB.Query(query.String(), queryParams)
+	if err != nil {
+		return err
+	}
+	return tools.GetSurrealErrorMsgs(data)
+}
+
+var createSimpleUserQuery = `
+CREATE student SET
+	firstName=$firstName,
+	lastName=$lastName,
+	pictureUrl=$pictureUrl,
+	email=$email,
+	password=crypto::bcrypt::generate($password);`
+
+func CreateSimpleStudent(user models.SimpleStudentSigninForm) error {
+	queryParams := map[string]interface{}{
+		"firstName":  user.FirstName,
+		"lastName":   user.LastName,
+		"pictureUrl": user.PictureUrl,
+		"email":      user.Email,
+		"password":   user.Password,
+	}
+
+	data, err := db.SurrealDB.Query(createSimpleUserQuery, queryParams)
 	if err != nil {
 		return err
 	}

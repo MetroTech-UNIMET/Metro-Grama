@@ -2,64 +2,21 @@ package handlers
 
 import (
 	"fmt"
-	"metrograma/env"
+	"metrograma/middlewares"
 	"metrograma/models"
 	"metrograma/storage"
 	"metrograma/tools"
 	"net/http"
-	"time"
 
-	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
 )
 
 func usersHandler(e *echo.Group) {
 	usersGroup := e.Group("/students")
-	usersGroup.POST("/login", login)
-	usersGroup.POST("/sigin", signin)
-	usersGroup.GET("/verifie/:token", verifieEmail)
+	usersGroup.POST("/create_user", createStudent, middlewares.AdminJWTAuth())
 }
 
-func login(c echo.Context) error {
-	var loginForm models.StudentLoginForm
-	if err := c.Bind(&loginForm); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-	}
-
-	if err := c.Validate(loginForm); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-	}
-
-	user, err := storage.LoginStudent(loginForm)
-
-	if err != nil {
-		return echo.NewHTTPError(http.StatusUnauthorized, err.Error())
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"id":  user.ID,
-		"exp": time.Now().Add(time.Hour * time.Duration(24) * time.Duration(30)).Unix(),
-	})
-
-	tokenStr := ""
-	err = nil
-	switch user.Role {
-	case "role:user":
-		tokenStr, err = token.SignedString([]byte(env.UserTokenSigninKey))
-	case "role:admin":
-		tokenStr, err = token.SignedString([]byte(env.AdminTokenSigninKey))
-	}
-
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
-	}
-
-	return c.JSON(http.StatusOK, map[string]string{
-		"token": tokenStr,
-	})
-}
-
-func signin(c echo.Context) error {
+func createStudent(c echo.Context) error {
 	var signinForm models.StudentSigninForm
 	if err := c.Bind(&signinForm); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
@@ -84,8 +41,4 @@ func signin(c echo.Context) error {
 	}
 
 	return c.NoContent(http.StatusCreated)
-}
-
-func verifieEmail(c echo.Context) error {
-	return c.NoContent(http.StatusNotImplemented)
 }

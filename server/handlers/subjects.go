@@ -82,7 +82,9 @@ func createSubject(c echo.Context) error {
 		}
 	}
 
-	err := storage.CreateSubject(subjectForm)
+	if err := storage.CreateSubject(subjectForm); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	}
 
-	return tools.GetResponse(c, tools.CreateMsg("Subject created"), err)
+	return c.NoContent(http.StatusCreated)
 }

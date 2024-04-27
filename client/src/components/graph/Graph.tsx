@@ -6,6 +6,7 @@ import { AxiosError } from "axios";
 
 import SearchPrelations from "./behaviors/Search-Prelations";
 import MenuActions from "./behaviors/MenuActions";
+import SideBarGraph from "./SideBarGraph";
 
 import useSubjectGraph from "@/hooks/useSubjectGraph";
 import { Subject } from "@/interfaces/Subject";
@@ -41,11 +42,15 @@ export default function Graph() {
 
   return (
     <>
-      <CareerMultiDropdown
-        loadingSubjects={isRefetching}
-        value={selectedCareers}
-        onChange={setSelectedCareers}
-      />
+      <div className="fixed flex flex-row gap-4 z-10 w-full pr-12">
+        <SideBarGraph />
+
+        <CareerMultiDropdown
+          loadingSubjects={isRefetching}
+          value={selectedCareers}
+          onChange={setSelectedCareers}
+        />
+      </div>
 
       <Graphin
         data={graph}

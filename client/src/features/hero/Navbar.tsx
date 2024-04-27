@@ -15,6 +15,7 @@ const navigation = [
 
 export default function Navbar() {
   const isDesktop = useMediaQuery("(min-width: 768px)");
+  const isExtraSmall = useMediaQuery("(max-width: 400px)");
 
   const links = navigation.map((item) => (
     <NavLink
@@ -32,27 +33,26 @@ export default function Navbar() {
     </NavLink>
   ));
 
+  const authLinks = (
+    <>
+      <ButtonLink to="/register" className="px-4 py-2">
+        Regístrate
+      </ButtonLink>
+
+      <ButtonLink variant="outline" to="/login" className="ml-4">
+        Inicia Sesión
+      </ButtonLink>
+    </>
+  );
+
   return (
-    <header className="fixed flex justify-center w-full z-[999] ">
+    <header className="fixed flex justify-center w-full z-50 ">
       <div
         className="flex items-center justify-between w-[95%] backdrop-blur-sm
-          mt-8 py-2 px-8 rounded-3xl transition-all bg-background shadow-md"
+          mt-8 py-2 px-6 rounded-3xl transition-all bg-background shadow-md
+          min-h-14"
       >
-        {isDesktop ? (
-          <nav className="flex flex-row justify-between items-center w-full">
-            <div className="flex gap-4">{links}</div>
-
-            <div>
-              <ButtonLink to="/register" className="px-4 py-2">
-                Registrate
-              </ButtonLink>
-
-              <ButtonLink variant="outline" to="/login" className="ml-4">
-                Inicia Sesión
-              </ButtonLink>
-            </div>
-          </nav>
-        ) : (
+        {!isDesktop && (
           <Drawer direction="right" orientation="vertical">
             <DrawerTrigger>
               <Menu />
@@ -64,6 +64,17 @@ export default function Navbar() {
             </DrawerContent>
           </Drawer>
         )}
+
+        <nav
+          className={cn(
+            "flex flex-row justify-between items-center",
+            isDesktop && "w-full"
+          )}
+        >
+          {isDesktop && <div className="flex gap-4">{links}</div>}
+
+          {!isExtraSmall && <div>{authLinks}</div>}
+        </nav>
       </div>
     </header>
   );

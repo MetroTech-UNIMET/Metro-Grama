@@ -10,4 +10,5 @@ func CreateHandlers(e *echo.Echo) {
 	subjectsHandler(apiGroup)
 	careersHandler(apiGroup)
 	usersHandler(apiGroup)
+	authHandlers(apiGroup)
 }

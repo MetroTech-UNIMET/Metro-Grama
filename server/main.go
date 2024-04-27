@@ -1,11 +1,14 @@
 package main
 
 import (
+	"metrograma/auth"
 	"metrograma/db"
 	"metrograma/env"
 	"metrograma/handlers"
 	"metrograma/middlewares"
 
+	"github.com/gorilla/sessions"
+	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 	echoMiddleware "github.com/labstack/echo/v4/middleware"
 )
@@ -13,10 +16,12 @@ import (
 func main() {
 	env.LoadDotEnv()
 	db.InitSurrealDB()
+	auth.InitGoogleOauth()
 
 	e := echo.New()
 	e.Validator = middlewares.NewValidator()
 
+	e.Use(session.Middleware(sessions.NewCookieStore([]byte(env.UserTokenSigninKey))))
 	e.Use(middlewares.Cors())
 	e.Use(echoMiddleware.BodyLimit("2M"))
 

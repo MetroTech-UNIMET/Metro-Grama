@@ -18,6 +18,7 @@ func TestFailSignin(t *testing.T) {
 			Email:          "prueba@correo.unimet.edu.ve",
 			Password:       "123456789",
 			CareerID:       "career:sistemas",
+			PictureUrl:     ">.<",
 			SubjectsPassed: []models.SubjectPassed{},
 		},
 		{
@@ -26,6 +27,7 @@ func TestFailSignin(t *testing.T) {
 			Email:          "prueba@correo.unimet.edu.ve",
 			Password:       "123456789",
 			CareerID:       "career:sistemas",
+			PictureUrl:     ">.<",
 			SubjectsPassed: []models.SubjectPassed{},
 		},
 		{
@@ -34,6 +36,7 @@ func TestFailSignin(t *testing.T) {
 			Email:          "prueba@email.com",
 			Password:       "123456789",
 			CareerID:       "career:sistemas",
+			PictureUrl:     ">.<",
 			SubjectsPassed: []models.SubjectPassed{},
 		},
 		{
@@ -42,6 +45,7 @@ func TestFailSignin(t *testing.T) {
 			Email:          "prueba@correo.unimet.edu.ve",
 			Password:       "1245",
 			CareerID:       "career:sistemas",
+			PictureUrl:     ">.<",
 			SubjectsPassed: []models.SubjectPassed{},
 		},
 		{
@@ -50,14 +54,16 @@ func TestFailSignin(t *testing.T) {
 			Email:          "prueba@correo.unimet.edu.ve",
 			Password:       "123456789",
 			CareerID:       "career:noexiste",
+			PictureUrl:     ">.<",
 			SubjectsPassed: []models.SubjectPassed{},
 		},
 		{
-			FirstName: "Jhon",
-			LastName:  "Doe",
-			Email:     "prueba@correo.unimet.edu.ve",
-			Password:  "123456789",
-			CareerID:  "career:sistemas",
+			FirstName:  "Jhon",
+			LastName:   "Doe",
+			Email:      "prueba@correo.unimet.edu.ve",
+			Password:   "123456789",
+			CareerID:   "career:sistemas",
+			PictureUrl: "",
 			SubjectsPassed: []models.SubjectPassed{
 				{
 					ID:        "subject:noexiste",
@@ -66,11 +72,12 @@ func TestFailSignin(t *testing.T) {
 			},
 		},
 		{
-			FirstName: "Jhon",
-			LastName:  "Doe",
-			Email:     "prueba@correo.unimet.edu.ve",
-			Password:  "123456789",
-			CareerID:  "career:sistemas",
+			FirstName:  "Jhon",
+			LastName:   "Doe",
+			Email:      "prueba@correo.unimet.edu.ve",
+			Password:   "123456789",
+			CareerID:   "career:sistemas",
+			PictureUrl: "",
 			SubjectsPassed: []models.SubjectPassed{
 				{
 					ID:        "subject:FBTMM01",
@@ -81,7 +88,7 @@ func TestFailSignin(t *testing.T) {
 	}
 	for _, s := range students {
 		c, _ := createEchoContextWithJson(t, e, s)
-		err := signin(c)
+		err := createStudent(c)
 		assert.Error(t, err)
 	}
 }
@@ -95,6 +102,7 @@ func TestDuplicateSignin(t *testing.T) {
 			Email:          "prueba@correo.unimet.edu.ve",
 			Password:       "123456789",
 			CareerID:       "career:sistemas",
+			PictureUrl:     ">.<",
 			SubjectsPassed: []models.SubjectPassed{},
 		},
 		{
@@ -103,18 +111,19 @@ func TestDuplicateSignin(t *testing.T) {
 			Email:          "prueba@correo.unimet.edu.ve",
 			Password:       "123456789",
 			CareerID:       "career:sistemas",
+			PictureUrl:     ">.<",
 			SubjectsPassed: []models.SubjectPassed{},
 		},
 	}
 	storage.DeleteStudentByEmail(students[0].Email)
 	{
 		c, _ := createEchoContextWithJson(t, e, students[0])
-		err := signin(c)
+		err := createStudent(c)
 		assert.NoError(t, err)
 	}
 	{
 		c, _ := createEchoContextWithJson(t, e, students[1])
-		err := signin(c)
+		err := createStudent(c)
 		storage.DeleteStudentByEmail(students[0].Email)
 		assert.Error(t, err)
 	}

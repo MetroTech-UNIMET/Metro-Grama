@@ -28,7 +28,7 @@ export function CareerMultiDropdown({
     // TODO - Change the queryparams
   }, [value]);
 
-  console.log(data)
+  console.log(data);
 
   const options =
     data?.map((career) => ({
@@ -37,7 +37,7 @@ export function CareerMultiDropdown({
     })) ?? [];
 
   return (
-    <div className="relative max-w-sm">
+    <div className="relative max-w-sm w-full">
       <MultipleSelector
         value={value}
         onChange={onChange}
@@ -62,14 +62,8 @@ export function CareerMultiDropdown({
             </p>
           )
         }
-        commandProps={{
-          className: "absolute z-10 h-auto",
-        }}
-        inputProps={{
-          className: "w-auto",
-        }}
         badgeClassName="bg-blue-200 hover:bg-blue-300 text-black"
-        className="bg-gray-200"
+        className="bg-gray-200 "
       />
     </div>
   );

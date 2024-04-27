@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils/className";
+import { cn } from "@utils/className";
 import { Link } from "react-router-dom";
 
 export default function Hero() {
@@ -18,8 +18,8 @@ export default function Hero() {
           containerClassName="top-[calc(100%-13rem)] sm:top-[calc(100%-30rem)]"
           blurClassName=" left-[calc(50%-11rem)] sm:left-[calc(50%+36rem)]"
         />
+        
         <div className="mx-auto max-w-2xl py-32 sm:py-48 lg:py-56">
-          <div className="hidden sm:mb-8 sm:flex sm:justify-center"></div>
           <div className="text-center">
             <h1 className="text-4xl font-bold tracking-tight text-white sm:text-6xl">
               Ajusta tus materias con Metrograma
@@ -29,6 +29,7 @@ export default function Hero() {
               lorem cupidatat commodo. Elit sunt amet fugiat veniam occaecat
               fugiat aliqua.
             </p>
+            
             <div className="mt-10 flex items-center justify-center gap-x-6">
               <Link
                 to="/register"

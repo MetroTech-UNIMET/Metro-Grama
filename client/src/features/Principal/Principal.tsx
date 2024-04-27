@@ -5,11 +5,9 @@ import Hero from "../hero/Hero";
 export const Principal = () => {
   return (
     <>
-      <div className="w-screen">
-        <Hero />
-        <Feature />
-        <Footer />
-      </div>
+      <Hero />
+      <Feature />
+      <Footer />
     </>
   );
 };

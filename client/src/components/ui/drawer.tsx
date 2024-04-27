@@ -90,15 +90,7 @@ const DrawerContent = React.forwardRef<
             )}
           />
 
-          <main
-            className={cn(
-              "h-full",
-              direction === "left" && orientation === "vertical" && "pr-6",
-              direction === "right" && orientation === "vertical" && "pl-6"
-            )}
-          >
-            {children}
-          </main>
+          {children}
         </div>
       </DrawerPrimitive.Content>
     </DrawerPortal>

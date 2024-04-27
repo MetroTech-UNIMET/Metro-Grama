@@ -34,12 +34,12 @@ export default function Navbar() {
 
   const authLinks = (
     <>
-      <ButtonLink to="/register" className="px-4 py-2">
-        Regístrate
-      </ButtonLink>
-
-      <ButtonLink variant="outline" to="/login" className="ml-4">
+      <ButtonLink variant="outline" to="/login">
         Inicia Sesión
+      </ButtonLink>
+      
+      <ButtonLink to="/register" className="ml-4">
+        Regístrate
       </ButtonLink>
     </>
   );
@@ -57,7 +57,7 @@ export default function Navbar() {
               <Menu />
             </DrawerTrigger>
             <DrawerContent>
-              <div className="h-full p-2">
+              <div className="h-full p-2 pt-12">
                 <nav className="flex flex-col gap-2">{links}</nav>
               </div>
             </DrawerContent>

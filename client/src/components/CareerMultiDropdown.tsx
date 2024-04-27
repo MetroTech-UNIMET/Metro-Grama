@@ -68,8 +68,8 @@ export function CareerMultiDropdown({
         inputProps={{
           className: "w-auto",
         }}
-        badgeClassName="bg-blue-300 text-black"
-        className="bg-gray-200 "
+        badgeClassName="bg-blue-200 hover:bg-blue-300 text-black"
+        className="bg-gray-200"
       />
     </div>
   );

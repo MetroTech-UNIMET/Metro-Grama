@@ -1,11 +1,10 @@
-/* import { Fragment } from "react"; */
-import { Menu, X } from "lucide-react";
+import { Menu } from "lucide-react";
 import Icono from "@/assets/images/Icono_MetroTech.png";
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import { cn } from "@utils/className";
 import useMediaQuery from "@/hooks/useMediaQuery";
 import { Drawer, DrawerContent, DrawerTrigger } from "@ui/drawer";
-import { ButtonLink, NavButtonLink } from "@ui/link";
+import { ButtonLink } from "@ui/link";
 
 const navigation = [
   { name: "Grafo", href: "/materias" },

@@ -2,6 +2,7 @@ import * as React from "react";
 import { Drawer as DrawerPrimitive } from "vaul";
 
 import { cn } from "@utils/className";
+import { X } from "lucide-react";
 
 type Orientation = "horizontal" | "vertical";
 type Direction = "left" | "right" | "top" | "bottom";
@@ -65,22 +66,32 @@ const DrawerContent = React.forwardRef<
       <DrawerPrimitive.Content
         ref={ref}
         className={cn(
-          "fixed z-50 flex h-auto flex-col rounded-t-[10px] border bg-background",
+          "fixed z-50 flex h-auto flex-col rounded-t-[10px] border-none bg-background",
           orientation === "horizontal"
             ? "inset-x-0 bottom-0 mt-24"
             : "top-0 w-screen max-w-md h-full",
 
-          direction === "left" && orientation === "vertical" && "left-0",
-          direction === "right" && orientation === "vertical" && "right-0",
+          direction === "left" &&
+            orientation === "vertical" &&
+            "left-0 rounded-tl-none",
+          direction === "right" &&
+            orientation === "vertical" &&
+            "right-0 rounded-tr-none",
 
           className
         )}
         {...props}
       >
-        <div className="relative h-full">
+        <div className="flex flex-col relative h-full">
+          <DrawerClose
+            className="absolute top-2 right-2 rounded-full p-1
+              hover:bg-muted active:bg-input transition-colors"
+          >
+            <X />
+          </DrawerClose>
           <div
             className={cn(
-              "mx-auto mt-4  rounded-full bg-muted",
+              "mx-auto mt-4 rounded-full bg-muted",
               orientation === "horizontal"
                 ? "w-[100px] h-2"
                 : "w-2 h-[100px] absolute top-1/2 -translate-y-1/2",

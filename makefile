@@ -1,12 +1,7 @@
-containers:
-	docker compose up --no-start
-
-db-containers:
-	docker compose up --no-start db
-	docker compose up --no-start db_seed
+dev: start-db seed-db
 
 seed-db:
-	docker compose start db_seed
+	docker compose -f docker-compose.dev.yml up db_seed
 
 start-db:
-	docker compose start db
+	docker compose -f docker-compose.dev.yml up -d

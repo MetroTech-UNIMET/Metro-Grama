@@ -13,9 +13,8 @@ import (
 func careersHandler(e *echo.Group) {
 	careersGroup := e.Group("/careers")
 	careersGroup.GET("/", getCareers)
-	authCareersGroup := careersGroup.Group("", middlewares.AdminJWTAuth())
-	authCareersGroup.POST("/", createCareer)
-	authCareersGroup.DELETE("/:careerId", deleteCareer)
+	careersGroup.POST("/", createCareer, middlewares.AdminJWTAuth())
+	careersGroup.DELETE("/:careerId", deleteCareer, middlewares.AdminJWTAuth())
 	// subjectsGroup.GET("/:careerId", getCareerById)
 }
 

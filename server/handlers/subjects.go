@@ -15,9 +15,8 @@ import (
 func subjectsHandler(e *echo.Group) {
 	subjectsGroup := e.Group("/subjects")
 	// subjectsGroup.GET("/:career", getSubjectsByCareer)
-	subjectsGroup.GET("/", getSubjects)
-	authSubjectsGroup := subjectsGroup.Group("", middlewares.AdminJWTAuth())
-	authSubjectsGroup.POST("/", createSubject)
+	subjectsGroup.GET("/", getSubjects, middlewares.UserSessionAuth)
+	subjectsGroup.POST("/", createSubject, middlewares.AdminJWTAuth())
 }
 
 // func getSubjectsByCareer(c echo.Context) error {

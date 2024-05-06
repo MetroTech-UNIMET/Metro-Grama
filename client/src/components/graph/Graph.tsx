@@ -13,7 +13,7 @@ import { Subject } from "@/interfaces/Subject";
 import { ShowAxiosError } from "@components/ShowAxiosError";
 import { CareerMultiDropdown } from "@components/CareerMultiDropdown";
 
-import { Option } from "@ui/multidropdown";
+import { Option } from "@ui/derived/multidropdown";
 import { Spinner } from "@ui/spinner";
 
 export default function Graph() {

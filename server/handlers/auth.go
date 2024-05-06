@@ -32,8 +32,8 @@ type GoogleEmailData struct {
 func authHandlers(e *echo.Group) {
 	e.Any("/auth/google/login", oauthGoogleLogin)
 	e.Any("/auth/google/callback", oauthGoogleCallback)
-
-	e.POST("/auth/login", adminLogin)
+	e.Any("/auth/google/logout", oauthGoogleLogout)
+	e.POST("/auth/admin/login", adminLogin)
 }
 
 func oauthGoogleLogin(c echo.Context) error {
@@ -56,6 +56,10 @@ func oauthGoogleLogin(c echo.Context) error {
 	u := auth.GoogleOauthConfig.AuthCodeURL(oauthState, oauth2.SetAuthURLParam("hd", "unimet.edu.ve"))
 
 	return c.Redirect(http.StatusTemporaryRedirect, u)
+}
+
+func oauthGoogleLogout(c echo.Context) error {
+	return c.NoContent(http.StatusNotImplemented)
 }
 
 func oauthGoogleCallback(c echo.Context) error {
@@ -90,7 +94,7 @@ func oauthGoogleCallback(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Errorf("the email domain %s is not allowed", googleEmailData.HD))
 	}
 
-	_, err = storage.ExistStudent(googleEmailData.Email)
+	dbUser, err := storage.ExistStudent(googleEmailData.Email)
 	if err != nil {
 		if err := storage.CreateSimpleStudent(models.SimpleStudentSigninForm{
 			FirstName:  googleEmailData.GivenName,
@@ -112,7 +116,8 @@ func oauthGoogleCallback(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	sessAuth.Values["user-id"] = googleEmailData.Email
+
+	sessAuth.Values["user-id"] = dbUser.ID
 	if err := sessAuth.Save(c.Request(), c.Response()); err != nil {
 		return err
 	}
@@ -145,8 +150,8 @@ func adminLogin(c echo.Context) error {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"id":  user.ID,
-		"exp": time.Now().Add(time.Hour * time.Duration(24) * time.Duration(30)).Unix(),
+		"user-id": user.ID,
+		"exp":     time.Now().Add(time.Hour * time.Duration(24) * time.Duration(30)).Unix(),
 	})
 
 	tokenStr, err := token.SignedString([]byte(env.AdminTokenSigninKey))

@@ -1,17 +1,16 @@
 # Metro-Grama
 
-## Como compilar el proyecto
+## Como compilar el proyecto para desarrollo
 
-### Docker y mixto
-Puedes ejecutar todos los servicios y estar en modo desarrollo:
+### Docker
+Unicamente crea un container con la base de datos
 
-1) Ejecutar todos los servicios `docker compose -d up`
-2) Modo desarrollo del backend `docker compose watch`
+`make dev`
 
-Pero si solo quieres ejecutar la base de datos y los demas pasos manual:
+o
 
-1) Llenar la base de datos `make seed-surrealdb`
-1) Iniciar surreal `make start-surrealdb`
+`docker compose -f docker-compose.dev.yml up -d &&
+docker compose -f docker-compose.dev.yml up db_seed`
 
 ### Manual
 

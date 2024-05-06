@@ -15,7 +15,7 @@ import (
 func subjectsHandler(e *echo.Group) {
 	subjectsGroup := e.Group("/subjects")
 	// subjectsGroup.GET("/:career", getSubjectsByCareer)
-	subjectsGroup.GET("/", getSubjects, middlewares.UserSessionAuth)
+	subjectsGroup.GET("/", getSubjects)
 	subjectsGroup.POST("/", createSubject, middlewares.AdminJWTAuth())
 }
 

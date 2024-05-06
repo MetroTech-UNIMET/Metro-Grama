@@ -1,4 +1,4 @@
-package handlers
+package auth
 
 import (
 	"crypto/rand"
@@ -7,13 +7,10 @@ import (
 	"fmt"
 	"io"
 	"metrograma/auth"
-	"metrograma/env"
 	"metrograma/models"
 	"metrograma/storage"
 	"net/http"
-	"time"
 
-	"github.com/golang-jwt/jwt"
 	"github.com/gorilla/sessions"
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
@@ -27,13 +24,6 @@ type GoogleEmailData struct {
 	Email         string `json:"email"`
 	EmailVerified bool   `json:"email_verified"`
 	HD            string `json:"hd"`
-}
-
-func authHandlers(e *echo.Group) {
-	e.Any("/auth/google/login", oauthGoogleLogin)
-	e.Any("/auth/google/callback", oauthGoogleCallback)
-	e.Any("/auth/google/logout", oauthGoogleLogout)
-	e.POST("/auth/admin/login", adminLogin)
 }
 
 func oauthGoogleLogin(c echo.Context) error {
@@ -131,36 +121,4 @@ func generateStateOauthCookie() string {
 	state := base64.URLEncoding.EncodeToString(b)
 
 	return state
-}
-
-func adminLogin(c echo.Context) error {
-	var loginForm models.StudentLoginForm
-	if err := c.Bind(&loginForm); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-	}
-
-	if err := c.Validate(loginForm); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-	}
-
-	user, err := storage.LoginStudent(loginForm)
-
-	if err != nil {
-		return echo.NewHTTPError(http.StatusUnauthorized, err.Error())
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"user-id": user.ID,
-		"exp":     time.Now().Add(time.Hour * time.Duration(24) * time.Duration(30)).Unix(),
-	})
-
-	tokenStr, err := token.SignedString([]byte(env.AdminTokenSigninKey))
-
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
-	}
-
-	return c.JSON(http.StatusOK, map[string]string{
-		"token": tokenStr,
-	})
 }

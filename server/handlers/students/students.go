@@ -1,4 +1,4 @@
-package handlers
+package students
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func usersHandler(e *echo.Group) {
+func Handlers(e *echo.Group) {
 	usersGroup := e.Group("/students")
 	usersGroup.POST("/create_user", createStudent, middlewares.AdminJWTAuth())
 }

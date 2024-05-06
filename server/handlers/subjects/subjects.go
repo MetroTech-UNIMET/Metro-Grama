@@ -1,4 +1,4 @@
-package handlers
+package subjects
 
 import (
 	"fmt"
@@ -12,7 +12,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func subjectsHandler(e *echo.Group) {
+func Handlers(e *echo.Group) {
 	subjectsGroup := e.Group("/subjects")
 	// subjectsGroup.GET("/:career", getSubjectsByCareer)
 	subjectsGroup.GET("/", getSubjects)

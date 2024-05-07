@@ -1,7 +1,6 @@
-package handlers
+package subjects
 
 import (
-	"bytes"
 	"encoding/json"
 	"metrograma/models"
 	"metrograma/storage"
@@ -79,24 +78,13 @@ var subjectMockData = map[SubjectCase]models.SubjectForm{
 	},
 }
 
-func createEchoContextWithJson(t *testing.T, e *echo.Echo, data interface{}) (echo.Context, *httptest.ResponseRecorder) {
-	buf, err := json.Marshal(data)
-	assert.NoError(t, err, "Fail to encode subject to json")
-
-	req := httptest.NewRequest(http.MethodPost, "/", bytes.NewReader(buf))
-	req.Header.Set(echo.HeaderContentType, echo.MIMEApplicationJSON)
-	rec := httptest.NewRecorder()
-	c := e.NewContext(req, rec)
-	return c, rec
-}
-
 func TestCreateSubject(t *testing.T) {
 	e := tools.SetupEcho()
 	subjectMock := subjectMockData[SubjectSuccess]
 
 	storage.DeleteSubject(tools.ToID("subject", subjectMock.Code))
 
-	c, rec := createEchoContextWithJson(t, e, subjectMock)
+	c, rec := tools.CreateEchoContextWithJson(t, e, subjectMock)
 	err := createSubject(c)
 
 	storage.DeleteSubject(tools.ToID("subject", subjectMock.Code))
@@ -117,7 +105,7 @@ func TestDuplicateCreateSubject(t *testing.T) {
 	err := storage.CreateSubject(subjectMock)
 	assert.NoError(t, err)
 
-	c, _ := createEchoContextWithJson(t, e, subjectMock2)
+	c, _ := tools.CreateEchoContextWithJson(t, e, subjectMock2)
 	err = createSubject(c)
 	httpErr := err.(*echo.HTTPError)
 
@@ -133,7 +121,7 @@ func TestCreateSubjectWithNonExistingPrecedesSubjects(t *testing.T) {
 
 	storage.DeleteSubject(tools.ToID("subject", subjectMock.Code))
 
-	c, _ := createEchoContextWithJson(t, e, subjectMock)
+	c, _ := tools.CreateEchoContextWithJson(t, e, subjectMock)
 	err := createSubject(c)
 	httpErr := err.(*echo.HTTPError)
 
@@ -149,7 +137,7 @@ func TestCreateSubjectWithNonExistingCareer(t *testing.T) {
 
 	storage.DeleteSubject(tools.ToID("subject", subjectMock.Code))
 
-	c, _ := createEchoContextWithJson(t, e, subjectMock)
+	c, _ := tools.CreateEchoContextWithJson(t, e, subjectMock)
 	err := createSubject(c)
 
 	httpErr := err.(*echo.HTTPError)
@@ -166,7 +154,7 @@ func TestCreateSubjectWithInvalidBody(t *testing.T) {
 
 	storage.DeleteSubject(tools.ToID("subject", subjectMock.Code))
 
-	c, _ := createEchoContextWithJson(t, e, subjectMock)
+	c, _ := tools.CreateEchoContextWithJson(t, e, subjectMock)
 	err := createSubject(c)
 
 	httpErr := err.(*echo.HTTPError)

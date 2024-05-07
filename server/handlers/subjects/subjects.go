@@ -1,4 +1,4 @@
-package handlers
+package subjects
 
 import (
 	"fmt"
@@ -12,12 +12,11 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func subjectsHandler(e *echo.Group) {
+func Handlers(e *echo.Group) {
 	subjectsGroup := e.Group("/subjects")
 	// subjectsGroup.GET("/:career", getSubjectsByCareer)
 	subjectsGroup.GET("/", getSubjects)
-	authSubjectsGroup := subjectsGroup.Group("", middlewares.AdminJWTAuth())
-	authSubjectsGroup.POST("/", createSubject)
+	subjectsGroup.POST("/", createSubject, middlewares.AdminJWTAuth())
 }
 
 // func getSubjectsByCareer(c echo.Context) error {

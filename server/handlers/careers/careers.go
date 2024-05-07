@@ -1,4 +1,4 @@
-package handlers
+package careers
 
 import (
 	"metrograma/middlewares"
@@ -10,12 +10,11 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func careersHandler(e *echo.Group) {
+func Handlers(e *echo.Group) {
 	careersGroup := e.Group("/careers")
 	careersGroup.GET("/", getCareers)
-	authCareersGroup := careersGroup.Group("", middlewares.AdminJWTAuth())
-	authCareersGroup.POST("/", createCareer)
-	authCareersGroup.DELETE("/:careerId", deleteCareer)
+	careersGroup.POST("/", createCareer, middlewares.AdminJWTAuth())
+	careersGroup.DELETE("/:careerId", deleteCareer, middlewares.AdminJWTAuth())
 	// subjectsGroup.GET("/:careerId", getCareerById)
 }
 

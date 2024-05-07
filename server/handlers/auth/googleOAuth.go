@@ -1,4 +1,4 @@
-package handlers
+package auth
 
 import (
 	"crypto/rand"
@@ -7,13 +7,10 @@ import (
 	"fmt"
 	"io"
 	"metrograma/auth"
-	"metrograma/env"
 	"metrograma/models"
 	"metrograma/storage"
 	"net/http"
-	"time"
 
-	"github.com/golang-jwt/jwt"
 	"github.com/gorilla/sessions"
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
@@ -27,13 +24,6 @@ type GoogleEmailData struct {
 	Email         string `json:"email"`
 	EmailVerified bool   `json:"email_verified"`
 	HD            string `json:"hd"`
-}
-
-func authHandlers(e *echo.Group) {
-	e.Any("/auth/google/login", oauthGoogleLogin)
-	e.Any("/auth/google/callback", oauthGoogleCallback)
-
-	e.POST("/auth/login", adminLogin)
 }
 
 func oauthGoogleLogin(c echo.Context) error {
@@ -56,6 +46,10 @@ func oauthGoogleLogin(c echo.Context) error {
 	u := auth.GoogleOauthConfig.AuthCodeURL(oauthState, oauth2.SetAuthURLParam("hd", "unimet.edu.ve"))
 
 	return c.Redirect(http.StatusTemporaryRedirect, u)
+}
+
+func oauthGoogleLogout(c echo.Context) error {
+	return c.NoContent(http.StatusNotImplemented)
 }
 
 func oauthGoogleCallback(c echo.Context) error {
@@ -90,7 +84,7 @@ func oauthGoogleCallback(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Errorf("the email domain %s is not allowed", googleEmailData.HD))
 	}
 
-	_, err = storage.ExistStudent(googleEmailData.Email)
+	dbUser, err := storage.ExistStudent(googleEmailData.Email)
 	if err != nil {
 		if err := storage.CreateSimpleStudent(models.SimpleStudentSigninForm{
 			FirstName:  googleEmailData.GivenName,
@@ -112,7 +106,8 @@ func oauthGoogleCallback(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	sessAuth.Values["user-id"] = googleEmailData.Email
+
+	sessAuth.Values["user-id"] = dbUser.ID
 	if err := sessAuth.Save(c.Request(), c.Response()); err != nil {
 		return err
 	}
@@ -126,36 +121,4 @@ func generateStateOauthCookie() string {
 	state := base64.URLEncoding.EncodeToString(b)
 
 	return state
-}
-
-func adminLogin(c echo.Context) error {
-	var loginForm models.StudentLoginForm
-	if err := c.Bind(&loginForm); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-	}
-
-	if err := c.Validate(loginForm); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-	}
-
-	user, err := storage.LoginStudent(loginForm)
-
-	if err != nil {
-		return echo.NewHTTPError(http.StatusUnauthorized, err.Error())
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"id":  user.ID,
-		"exp": time.Now().Add(time.Hour * time.Duration(24) * time.Duration(30)).Unix(),
-	})
-
-	tokenStr, err := token.SignedString([]byte(env.AdminTokenSigninKey))
-
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
-	}
-
-	return c.JSON(http.StatusOK, map[string]string{
-		"token": tokenStr,
-	})
 }

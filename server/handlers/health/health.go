@@ -1,4 +1,4 @@
-package handlers
+package health
 
 import (
 	"net/http"
@@ -6,7 +6,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func healthHandler(e *echo.Group) {
+func Handlers(e *echo.Group) {
 	e.GET("/health", health)
 }
 

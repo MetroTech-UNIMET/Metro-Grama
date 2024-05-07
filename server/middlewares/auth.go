@@ -15,8 +15,10 @@ func UserSessionAuth(next echo.HandlerFunc) echo.HandlerFunc {
 		if err != nil {
 			return echo.NewHTTPError(http.StatusUnauthorized)
 		}
-		if _, ok := sessAuth.Values["auth"]; !ok {
+		if v, ok := sessAuth.Values["user-id"]; !ok {
 			return echo.NewHTTPError(http.StatusUnauthorized)
+		} else {
+			c.Set("user-id", v)
 		}
 		return next(c)
 	}

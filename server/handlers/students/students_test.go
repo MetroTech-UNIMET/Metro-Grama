@@ -1,4 +1,4 @@
-package handlers
+package students
 
 import (
 	"metrograma/models"
@@ -87,7 +87,7 @@ func TestFailSignin(t *testing.T) {
 		},
 	}
 	for _, s := range students {
-		c, _ := createEchoContextWithJson(t, e, s)
+		c, _ := tools.CreateEchoContextWithJson(t, e, s)
 		err := createStudent(c)
 		assert.Error(t, err)
 	}
@@ -117,12 +117,12 @@ func TestDuplicateSignin(t *testing.T) {
 	}
 	storage.DeleteStudentByEmail(students[0].Email)
 	{
-		c, _ := createEchoContextWithJson(t, e, students[0])
+		c, _ := tools.CreateEchoContextWithJson(t, e, students[0])
 		err := createStudent(c)
 		assert.NoError(t, err)
 	}
 	{
-		c, _ := createEchoContextWithJson(t, e, students[1])
+		c, _ := tools.CreateEchoContextWithJson(t, e, students[1])
 		err := createStudent(c)
 		storage.DeleteStudentByEmail(students[0].Email)
 		assert.Error(t, err)

@@ -4,12 +4,16 @@ import { Subject } from "@/interfaces/Subject";
 export async function getSubjects(
   selectedCareers: string[]
 ): Promise<Graph<Subject>> {
-  const queryParam =
+  const filterParam =
     selectedCareers.length === 0
-      ? "?filter=all"
-      : `?filter=career:${selectedCareers.join(",")}`;
+      ? "all"
+      : `career:${selectedCareers.join(",")}`;
 
-  const response = await axios.get(`/subjects/${queryParam}`);
+  const response = await axios.get("/subjects/", {
+    params: {
+      filter: filterParam,
+    },
+  });
 
   return response.data;
 }

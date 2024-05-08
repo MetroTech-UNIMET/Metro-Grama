@@ -4,7 +4,7 @@ import { NodeStyleIcon } from "@antv/graphin/lib/typings/type";
 
 import { useEffect, useState } from "react";
 import { Subject } from "@/interfaces/Subject";
-import { Option as DropdownOption } from "@ui/multidropdown";
+import { Option as DropdownOption } from "@ui/derived/multidropdown";
 
 import "@antv/graphin-icons/dist/index.css";
 import { useStatusActions } from "@/components/graph/behaviors/StatusActions";
@@ -18,7 +18,7 @@ export default function useSubjectGraph(
 ) {
   const [graph, setGraph] = useState<GraphinData>({ nodes: [], edges: [] });
 
-  const { nodeStatuses: graphStatuses } = useStatusActions();
+  const { nodeStatuses } = useStatusActions();
 
   useEffect(() => {
     if (isLoading || !data) return;
@@ -69,17 +69,15 @@ export default function useSubjectGraph(
         iconLen = iconLen == 0 ? 2 : iconLen > 2 ? iconLen * 0.54 : iconLen;
         const labelOffset = iconLen > 2 ? 10 * 0.52 * iconLen : 10;
 
-        console.log(iconLen, labelOffset)
-
         return {
           id: node.id,
           label: node.data.name,
           data: node,
           status: {
-            viewed: graphStatuses.viewed.includes(node.id),
+            viewed: nodeStatuses.viewed.includes(node.id),
             accesible:
               !nodesWithEdges.has(node.id) ||
-              graphStatuses.accesible.includes(node.id),
+              nodeStatuses.accesible.includes(node.id),
           },
 
           style: {

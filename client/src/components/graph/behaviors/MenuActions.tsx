@@ -11,6 +11,7 @@ import { cn } from "@utils/className";
 import { useSubjectSheet } from "@/components/SubjectSheet";
 import { Subject } from "@/interfaces/Subject";
 import { useStatusActions } from "./StatusActions";
+import { enrollStudent } from "@/api/interactions/enrollApi";
 
 interface MenuNodeProps {
   node: INode | null;
@@ -34,8 +35,18 @@ function MenuNode({ node, close }: MenuNodeProps) {
         {subjectCode} - {subjectName}
       </ListHeader>
       <ListItem
-        onClick={() => {
-          nodeActions.enableViewedNode(node);
+        onClick={async () => {
+          // TODO - Refactorizar logica de no cambiar el state a menos que haya sido exitoso
+          const viewedNodes = Array.from(nodeActions.enableViewedNode(node));
+          try {
+            await enrollStudent("studentId", viewedNodes);
+          } catch (error) {
+            nodeActions.disableViewedNode(node, node.getOutEdges(), true);
+
+            // TODO Toastear error
+            console.log(error);
+          }
+
           close();
         }}
       >

@@ -15,6 +15,7 @@ import { CareerMultiDropdown } from "@components/CareerMultiDropdown";
 
 import { Option } from "@ui/derived/multidropdown";
 import { Spinner } from "@ui/spinner";
+import { Toaster } from "@ui/toaster";
 
 export default function Graph() {
   const [selectedCareers, setSelectedCareers] = useState<Option[]>([]);
@@ -61,6 +62,7 @@ export default function Graph() {
       >
         <SearchPrelations />
         <MenuActions />
+        <Toaster />
       </Graphin>
     </>
   );

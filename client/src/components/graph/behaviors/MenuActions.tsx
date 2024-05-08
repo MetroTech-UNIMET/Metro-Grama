@@ -12,6 +12,7 @@ import { useSubjectSheet } from "@/components/SubjectSheet";
 import { Subject } from "@/interfaces/Subject";
 import { useStatusActions } from "./StatusActions";
 import { enrollStudent } from "@/api/interactions/enrollApi";
+import { useToast } from "@ui/use-toast";
 
 interface MenuNodeProps {
   node: INode | null;
@@ -21,6 +22,7 @@ interface MenuNodeProps {
 function MenuNode({ node, close }: MenuNodeProps) {
   const { selectSubject } = useSubjectSheet();
   const { nodeActions } = useStatusActions();
+  const { toast } = useToast();
 
   if (!node) return null;
 
@@ -43,8 +45,11 @@ function MenuNode({ node, close }: MenuNodeProps) {
           } catch (error) {
             nodeActions.disableViewedNode(node, node.getOutEdges(), true);
 
-            // TODO Toastear error
-            console.log(error);
+            toast({
+              title: "Error al marcar materia vista",
+              description: "Intente de nuevo más tarde",
+              variant: "destructive",
+            });
           }
 
           close();

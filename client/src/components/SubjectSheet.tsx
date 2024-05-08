@@ -6,9 +6,9 @@ import {
   SheetFooter,
   SheetHeader,
   SheetTitle,
-} from "./ui/sheet";
+} from "@ui/sheet";
+import { Badge } from "@ui/badge";
 import { Subject } from "@/interfaces/Subject";
-import { Badge } from "./ui/badge";
 
 interface SubjectSheetContextProps {
   subject: Subject | null;
@@ -95,8 +95,6 @@ function SubjectSheetBody({ subject }: { subject: Subject }) {
               {career}
             </Badge>
           ))}
-
-          
         </section>
       </main>
 

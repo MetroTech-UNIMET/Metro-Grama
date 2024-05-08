@@ -164,7 +164,7 @@ export function StatusActions({ children }: { children: React.ReactNode }) {
 
     changeNodeState(node, [
       { state: "accesible", value: isAccesible },
-      { state: "accesible", value: false },
+      { state: "viewed", value: false },
     ]);
 
     const outNodes = getNodesFromEdges(outEdges, "target");

@@ -16,19 +16,33 @@ import { CareerMultiDropdown } from "@components/CareerMultiDropdown";
 import { Option } from "@ui/derived/multidropdown";
 import { Spinner } from "@ui/spinner";
 import { Toaster } from "@ui/toaster";
+import { useSearchParams } from "react-router-dom";
 
 export default function Graph() {
   const [selectedCareers, setSelectedCareers] = useState<Option[]>([]);
+  const [searchParams, setSearchParams] = useSearchParams({
+    filter: "all",
+  });
+
   // REVIEW - Considerar usar queryKey
   const { data, isLoading, isRefetching, error, refetch } = useQuery<
     Graph<Subject>
   >({
-    queryFn: () => getSubjects(selectedCareers.map((c) => c.value)),
+    queryFn: () => getSubjects(searchParams.get("filter") ?? "all"),
   });
 
   useEffect(() => {
-    refetch();
+    if (selectedCareers.length === 0) {
+      setSearchParams({ filter: "all" });
+    } else {
+      const careers = selectedCareers.map((career) => career.value).join(",");
+      setSearchParams({ filter: `career:${careers}` });
+    }
   }, [selectedCareers]);
+
+  useEffect(() => {
+    refetch();
+  }, [searchParams]);
 
   const { graph } = useSubjectGraph(data, isLoading, selectedCareers);
 

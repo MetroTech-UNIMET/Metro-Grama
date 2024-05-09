@@ -1,7 +1,4 @@
-import { useState, useEffect } from "react";
-import { getSubjects } from "@/api/subjectsAPI";
 import Graphin from "@antv/graphin";
-import { useQuery } from "react-query";
 import { AxiosError } from "axios";
 
 import SearchPrelations from "./behaviors/Search-Prelations";
@@ -9,40 +6,22 @@ import MenuActions from "./behaviors/MenuActions";
 import SideBarGraph from "./SideBarGraph";
 
 import useSubjectGraph from "@/hooks/useSubjectGraph";
-import { Subject } from "@/interfaces/Subject";
 import { ShowAxiosError } from "@components/ShowAxiosError";
 import { CareerMultiDropdown } from "@components/CareerMultiDropdown";
 
-import { Option } from "@ui/derived/multidropdown";
 import { Spinner } from "@ui/spinner";
 import { Toaster } from "@ui/toaster";
-import { useSearchParams } from "react-router-dom";
+import useFecthSubjectByCareer from "@/hooks/use-FecthSubjectByCareer";
 
 export default function Graph() {
-  const [selectedCareers, setSelectedCareers] = useState<Option[]>([]);
-  const [searchParams, setSearchParams] = useSearchParams({
-    filter: "all",
-  });
-
-  // REVIEW - Considerar usar queryKey
-  const { data, isLoading, isRefetching, error, refetch } = useQuery<
-    Graph<Subject>
-  >({
-    queryFn: () => getSubjects(searchParams.get("filter") ?? "all"),
-  });
-
-  useEffect(() => {
-    if (selectedCareers.length === 0) {
-      setSearchParams({ filter: "all" });
-    } else {
-      const careers = selectedCareers.map((career) => career.value).join(",");
-      setSearchParams({ filter: `career:${careers}` });
-    }
-  }, [selectedCareers]);
-
-  useEffect(() => {
-    refetch();
-  }, [searchParams]);
+  const {
+    data,
+    error,
+    isLoading,
+    isRefetching,
+    selectedCareers,
+    setSelectedCareers,
+  } = useFecthSubjectByCareer();
 
   const { graph } = useSubjectGraph(data, isLoading, selectedCareers);
 

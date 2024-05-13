@@ -1,8 +1,6 @@
-import { getCareers } from "@/api/careersApi";
-import { Career } from "@/interfaces/Career";
 import MultipleSelector, { Option } from "@ui/derived/multidropdown";
-import { useQuery } from "react-query";
 import { Spinner } from "@ui/spinner";
+import useFetchCareersOptions from "@/hooks/use-FetchCareersOptions";
 
 interface Props {
   loadingSubjects: boolean;
@@ -17,17 +15,8 @@ export function CareerMultiDropdown({
   value,
   onChange,
   maxSelected = 2,
-}: Props) {  
-  const { data, isLoading, error } = useQuery<Career[]>(
-    ["careers"],
-    getCareers
-  );
-
-  const options =
-    data?.map((career) => ({
-      value: career.id,
-      label: `${career.emoji} ${career.name}`,
-    })) ?? [];
+}: Props) {
+  const { options, isLoading, error } = useFetchCareersOptions();
 
   return (
     <div className="relative max-w-sm w-full">
@@ -43,7 +32,7 @@ export function CareerMultiDropdown({
         }
         showSpinner={loadingSubjects}
         emptyIndicator={
-          isLoading ? (
+          (isLoading && !error) ? (
             <span className="grid place-items-center">
               <Spinner />
             </span>

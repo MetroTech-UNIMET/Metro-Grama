@@ -56,7 +56,7 @@ import (
 // 	return graph, nil
 // }
 
-func getSubjectsQuery(field, value string) (interface{}, error) {
+func getSubjectsQuery(careers string) (interface{}, error) {
 	baseQuery := `SELECT 
 	in as subject, 
 	array::group(out) as careers,
@@ -66,29 +66,25 @@ func getSubjectsQuery(field, value string) (interface{}, error) {
 	GROUP BY subject
 	FETCH subject`
 
-	if value == "all" {
+	if careers == "all" || careers == "" {
 		// TODO - Si es all nisiquiara deberia uasr array:group ni GROUP BY
 		baseQuery = strings.Replace(baseQuery, "$condition", "", 1)
 
 		return db.SurrealDB.Query(baseQuery, nil)
-	}
-
-	switch field {
-	case "career":
-		careers := tools.StringToArray(value)
+	} else {
+		careersArray := tools.StringToArray(careers)
 		baseQuery = strings.Replace(baseQuery, "$condition", "WHERE out IN $careers", 1)
 
 		return db.SurrealDB.Query(baseQuery, map[string][]string{
-			"careers": careers,
+			"careers": careersArray,
 		})
-
 	}
 
-	return nil, fmt.Errorf("invalid field %s", field)
+	return nil, fmt.Errorf("invalid field %s", careers)
 }
 
-func GetSubjects(field, value string) (models.Graph[models.SubjectNode], error) {
-	rows, err := getSubjectsQuery(field, value)
+func GetSubjects(careers string) (models.Graph[models.SubjectNode], error) {
+	rows, err := getSubjectsQuery(careers)
 
 	if err != nil {
 		return models.Graph[models.SubjectNode]{}, err

@@ -7,7 +7,6 @@ import (
 	"metrograma/storage"
 	"metrograma/tools"
 	"net/http"
-	"strings"
 
 	"github.com/labstack/echo/v4"
 )
@@ -28,25 +27,9 @@ func Handlers(e *echo.Group) {
 // }
 
 func getSubjects(c echo.Context) error {
-	filter := c.QueryParam("filter")
+	careers := c.QueryParam("careers")
 
-	field := ""
-	value := ""
-
-	if filter == "all" {
-		field = ""
-		value = "all"
-	} else {
-		found := false
-		field, value, found = strings.Cut(filter, ":")
-
-		if !found {
-			return echo.NewHTTPError(http.StatusBadRequest, "Invalid filter format. Expected 'field:value'.")
-		}
-
-	}
-
-	subjects, err := storage.GetSubjects(field, value)
+	subjects, err := storage.GetSubjects(careers)
 
 	return tools.GetResponse(c, subjects, err)
 }

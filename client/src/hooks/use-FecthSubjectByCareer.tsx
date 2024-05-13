@@ -1,31 +1,65 @@
 import { getSubjects } from "@/api/subjectsAPI";
 import { Subject } from "@/interfaces/Subject";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery } from "react-query";
 import { useSearchParams } from "react-router-dom";
 import { Option } from "@ui/derived/multidropdown";
+import useFetchCareersOptions from "./use-FetchCareersOptions";
 
+
+// TODO - Refactorizar query string para quitar filter y que de una sea career
 export default function useFecthSubjectByCareer() {
   const [selectedCareers, setSelectedCareers] = useState<Option[]>([]);
   const [searchParams, setSearchParams] = useSearchParams({
-    filter: "all",
+    careers: "all",
   });
 
-  // REVIEW - Considerar usar queryKey
+  // TODO -  usar queryKey
   const { data, isLoading, isRefetching, error, refetch } = useQuery<
     Graph<Subject>
   >({
-    queryFn: () => getSubjects(searchParams.get("filter") ?? "all"),
+    // queryKey: [],
+    queryFn: () => getSubjects(searchParams.get("careers") ?? "all"),
   });
 
+  const {
+    options,
+    error: errorCareers,
+    isLoading: loadingCareers,
+  } = useFetchCareersOptions();
+
+  const isFirstRender = useRef(true);
+
   useEffect(() => {
+    if (options.length === 0 || isLoading) return;
+
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+
+      const filter = searchParams.get("filter");
+      if (!filter || !options) return;
+
+      if (filter === "all") {
+        setSelectedCareers([]);
+      } else {
+        const careers = filter.slice(7).split(",");
+
+        const selectedCareers = careers.map((career) => {
+          const option = options.find((option) => option.value === career)!;
+          return option;
+        });
+        setSelectedCareers(selectedCareers);
+      }
+      return;
+    }
+
     if (selectedCareers.length === 0) {
-      setSearchParams({ filter: "all" });
+      setSearchParams({ careers: "all" });
     } else {
       const careers = selectedCareers.map((career) => career.value).join(",");
-      setSearchParams({ filter: `career:${careers}` });
+      setSearchParams({ careers });
     }
-  }, [selectedCareers]);
+  }, [selectedCareers, loadingCareers]);
 
   useEffect(() => {
     refetch();

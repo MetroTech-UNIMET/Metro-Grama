@@ -1,15 +1,14 @@
 package middlewares
 
 import (
-	"metrograma/env"
+	"metrograma/storage"
 	"net/http"
 
 	"github.com/labstack/echo-contrib/session"
-	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
 )
 
-func UserSessionAuth(next echo.HandlerFunc) echo.HandlerFunc {
+func UserAuth(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		sessAuth, err := session.Get("auth", c)
 		if err != nil {
@@ -24,8 +23,32 @@ func UserSessionAuth(next echo.HandlerFunc) echo.HandlerFunc {
 	}
 }
 
-func AdminJWTAuth() echo.MiddlewareFunc {
-	return echojwt.WithConfig(echojwt.Config{
-		SigningKey: env.AdminTokenSigninKey,
-	})
+func AdminAuth(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		sessAuth, err := session.Get("auth", c)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusUnauthorized)
+		}
+		userID, ok := sessAuth.Values["user-id"]
+		if !ok {
+			return echo.NewHTTPError(http.StatusUnauthorized)
+		}
+		userIDStr, ok := userID.(string)
+		if !ok {
+			return echo.NewHTTPError(http.StatusBadRequest)
+		}
+
+		user, err := storage.ExistStudent(userIDStr)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest)
+		}
+
+		if user.Role != "role:admin" {
+			return echo.NewHTTPError(http.StatusUnauthorized)
+		}
+
+		c.Set("user-id", userIDStr)
+
+		return next(c)
+	}
 }

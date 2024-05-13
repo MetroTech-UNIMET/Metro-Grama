@@ -1,13 +1,12 @@
 package auth
 
 import (
-	"metrograma/env"
 	"metrograma/models"
 	"metrograma/storage"
 	"net/http"
-	"time"
 
-	"github.com/golang-jwt/jwt"
+	"github.com/gorilla/sessions"
+	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 )
 
@@ -27,18 +26,20 @@ func adminLogin(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusUnauthorized, err.Error())
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"user-id": user.ID,
-		"exp":     time.Now().Add(time.Hour * time.Duration(24) * time.Duration(30)).Unix(),
-	})
-
-	tokenStr, err := token.SignedString([]byte(env.AdminTokenSigninKey))
-
+	sessAuth, err := session.Get("auth", c)
+	sessAuth.Options = &sessions.Options{
+		Path:     "/",
+		MaxAge:   86400 * 7,
+		HttpOnly: true,
+	}
 	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+		return err
 	}
 
-	return c.JSON(http.StatusOK, map[string]string{
-		"token": tokenStr,
-	})
+	sessAuth.Values["user-id"] = user.ID
+	if err := sessAuth.Save(c.Request(), c.Response()); err != nil {
+		return err
+	}
+
+	return c.NoContent(http.StatusOK)
 }

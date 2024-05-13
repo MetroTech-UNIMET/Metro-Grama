@@ -79,8 +79,6 @@ func getSubjectsQuery(careers string) (interface{}, error) {
 			"careers": careersArray,
 		})
 	}
-
-	return nil, fmt.Errorf("invalid field %s", careers)
 }
 
 func GetSubjects(careers string) (models.Graph[models.SubjectNode], error) {

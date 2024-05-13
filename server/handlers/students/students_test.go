@@ -1,16 +1,16 @@
 package students
 
 import (
+	"metrograma/handlers/internal"
 	"metrograma/models"
 	"metrograma/storage"
-	"metrograma/tools"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestFailSignin(t *testing.T) {
-	e := tools.SetupEcho()
+	e := internal.SetupEcho()
 	students := []models.StudentSigninForm{
 		{
 			FirstName:      "J",
@@ -87,14 +87,14 @@ func TestFailSignin(t *testing.T) {
 		},
 	}
 	for _, s := range students {
-		c, _ := tools.CreateEchoContextWithJson(t, e, s)
+		c, _ := internal.CreateEchoContextWithJson(t, e, s)
 		err := createStudent(c)
 		assert.Error(t, err)
 	}
 }
 
 func TestDuplicateSignin(t *testing.T) {
-	e := tools.SetupEcho()
+	e := internal.SetupEcho()
 	students := []models.StudentSigninForm{
 		{
 			FirstName:      "Jane",
@@ -117,12 +117,12 @@ func TestDuplicateSignin(t *testing.T) {
 	}
 	storage.DeleteStudentByEmail(students[0].Email)
 	{
-		c, _ := tools.CreateEchoContextWithJson(t, e, students[0])
+		c, _ := internal.CreateEchoContextWithJson(t, e, students[0])
 		err := createStudent(c)
 		assert.NoError(t, err)
 	}
 	{
-		c, _ := tools.CreateEchoContextWithJson(t, e, students[1])
+		c, _ := internal.CreateEchoContextWithJson(t, e, students[1])
 		err := createStudent(c)
 		storage.DeleteStudentByEmail(students[0].Email)
 		assert.Error(t, err)

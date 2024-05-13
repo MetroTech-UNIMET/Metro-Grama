@@ -1,8 +1,8 @@
 package models
 
 type StudentLoginForm struct {
-	Email    string `json:"email" validate:"required,unimet_email"`
-	Password string `json:"password" validate:"required,gte=8,lte=40"`
+	Email    string `form:"email" json:"email" validate:"required,unimet_email"`
+	Password string `form:"password" json:"password" validate:"required,gte=8,lte=40"`
 }
 
 type SubjectPassed struct {

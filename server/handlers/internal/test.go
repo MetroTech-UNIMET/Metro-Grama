@@ -1,4 +1,4 @@
-package tools
+package internal
 
 import (
 	"bytes"

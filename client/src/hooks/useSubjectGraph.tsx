@@ -1,13 +1,16 @@
+import { useEffect, useState } from "react";
+import { useQuery } from "react-query";
 import Graphin, { GraphinData } from "@antv/graphin";
 import iconLoader from "@antv/graphin-icons";
 import { NodeStyleIcon } from "@antv/graphin/lib/typings/type";
 
-import { useEffect, useState } from "react";
 import { Subject } from "@/interfaces/Subject";
+
 import { Option as DropdownOption } from "@ui/derived/multidropdown";
+import { useStatusActions } from "@/components/graph/behaviors/StatusActions";
+import { getEnrolledSubjects } from "@/api/interactions/enrollApi";
 
 import "@antv/graphin-icons/dist/index.css";
-import { useStatusActions } from "@/components/graph/behaviors/StatusActions";
 
 const icons = Graphin.registerFontFamily(iconLoader);
 
@@ -16,18 +19,33 @@ export default function useSubjectGraph(
   isLoading: boolean,
   selectedCareers: DropdownOption[]
 ) {
+  const {
+    data: enrolledSubjects,
+    isLoading: isLoadingEnrolledSubjects,
+    error: errorEnrolledSubjects,
+  } = useQuery<string[]>({
+    queryKey: ["enrolledSubjects", "studentId"],
+    queryFn: () => getEnrolledSubjects("studentId"),
+  });
+
   const [graph, setGraph] = useState<GraphinData>({ nodes: [], edges: [] });
 
-  const { nodeStatuses } = useStatusActions();
-
   useEffect(() => {
-    if (isLoading || !data) return;
+    if (isLoading || !data || !enrolledSubjects) return;
+
+    const setEnrolledSubjects = new Set<string>(enrolledSubjects);
 
     const nodesWithEdges = new Set<string>();
+    const relations: Record<string, Set<string>> = {};
 
     const newGraph: GraphinData = {
       edges: data.edges!.map((edge) => {
         nodesWithEdges.add(edge.to);
+
+        if (!relations[edge.from]) {
+          relations[edge.from] = new Set();
+        }
+        relations[edge.from].add(edge.to);
 
         return {
           source: edge.from,
@@ -69,15 +87,27 @@ export default function useSubjectGraph(
         iconLen = iconLen == 0 ? 2 : iconLen > 2 ? iconLen * 0.54 : iconLen;
         const labelOffset = iconLen > 2 ? 10 * 0.52 * iconLen : 10;
 
+        const isEnrolled = setEnrolledSubjects.has(node.id);
+
+        let isAccesible = false;
+        if (!isEnrolled) {
+          setEnrolledSubjects.forEach((subject) => {
+            const subjectRelations = relations[subject];
+
+            if (subjectRelations && subjectRelations.has(node.id)) {
+              isAccesible = true;
+              return;
+            }
+          });
+        }
+
         return {
           id: node.id,
           label: node.data.name,
           data: node,
           status: {
-            viewed: nodeStatuses.viewed.includes(node.id),
-            accesible:
-              !nodesWithEdges.has(node.id) ||
-              nodeStatuses.accesible.includes(node.id),
+            viewed: isEnrolled,
+            accesible: isAccesible,
           },
 
           style: {
@@ -124,7 +154,7 @@ export default function useSubjectGraph(
     };
 
     setGraph(newGraph);
-  }, [data, selectedCareers]);
+  }, [data, selectedCareers, enrolledSubjects]);
 
   return { graph };
 }
@@ -149,10 +179,10 @@ function getNormalIcon(
     icon = "🤝";
     for (let i = 0; i < subject.careers.length; i++) {
       if (i == 0) {
-        icon += "\n\r" + careerEmoji(subject.careers[i]) + " "
-        continue
+        icon += "\n\r" + careerEmoji(subject.careers[i]) + " ";
+        continue;
       }
-      icon += careerEmoji(subject.careers[i]) + " "
+      icon += careerEmoji(subject.careers[i]) + " ";
     }
   } else {
     let career = selectedCareers.find(
@@ -167,7 +197,7 @@ function getNormalIcon(
     }
 
     if (career) {
-      icon = careerEmoji(career.value)
+      icon = careerEmoji(career.value);
     }
   }
 

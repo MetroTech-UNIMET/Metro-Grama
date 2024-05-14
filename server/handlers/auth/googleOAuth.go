@@ -49,6 +49,15 @@ func oauthGoogleLogin(c echo.Context) error {
 }
 
 func oauthGoogleLogout(c echo.Context) error {
+	sessAuth, err := session.Get("auth", c)
+	if err != nil {
+		return err
+	}
+	delete(sessAuth.Values, "user-id")
+	if err := sessAuth.Save(c.Request(), c.Response()); err != nil {
+		return err
+	}
+
 	return c.NoContent(http.StatusNotImplemented)
 }
 
@@ -112,7 +121,7 @@ func oauthGoogleCallback(c echo.Context) error {
 		return err
 	}
 
-	return nil
+	return c.Redirect(http.StatusOK, "/")
 }
 
 func generateStateOauthCookie() string {

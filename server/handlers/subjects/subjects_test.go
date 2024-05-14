@@ -2,6 +2,7 @@ package subjects
 
 import (
 	"encoding/json"
+	"metrograma/handlers/internal"
 	"metrograma/models"
 	"metrograma/storage"
 	"metrograma/tools"
@@ -79,12 +80,12 @@ var subjectMockData = map[SubjectCase]models.SubjectForm{
 }
 
 func TestCreateSubject(t *testing.T) {
-	e := tools.SetupEcho()
+	e := internal.SetupEcho()
 	subjectMock := subjectMockData[SubjectSuccess]
 
 	storage.DeleteSubject(tools.ToID("subject", subjectMock.Code))
 
-	c, rec := tools.CreateEchoContextWithJson(t, e, subjectMock)
+	c, rec := internal.CreateEchoContextWithJson(t, e, subjectMock)
 	err := createSubject(c)
 
 	storage.DeleteSubject(tools.ToID("subject", subjectMock.Code))
@@ -95,7 +96,7 @@ func TestCreateSubject(t *testing.T) {
 }
 
 func TestDuplicateCreateSubject(t *testing.T) {
-	e := tools.SetupEcho()
+	e := internal.SetupEcho()
 	subjectMock := subjectMockData[SubjectSuccess]
 	subjectMock.Code = tools.ToID("subject", subjectMock.Code)
 
@@ -105,7 +106,7 @@ func TestDuplicateCreateSubject(t *testing.T) {
 	err := storage.CreateSubject(subjectMock)
 	assert.NoError(t, err)
 
-	c, _ := tools.CreateEchoContextWithJson(t, e, subjectMock2)
+	c, _ := internal.CreateEchoContextWithJson(t, e, subjectMock2)
 	err = createSubject(c)
 	httpErr := err.(*echo.HTTPError)
 
@@ -116,12 +117,12 @@ func TestDuplicateCreateSubject(t *testing.T) {
 }
 
 func TestCreateSubjectWithNonExistingPrecedesSubjects(t *testing.T) {
-	e := tools.SetupEcho()
+	e := internal.SetupEcho()
 	subjectMock := subjectMockData[SubjectWithNonExistingPrecedesSubjects]
 
 	storage.DeleteSubject(tools.ToID("subject", subjectMock.Code))
 
-	c, _ := tools.CreateEchoContextWithJson(t, e, subjectMock)
+	c, _ := internal.CreateEchoContextWithJson(t, e, subjectMock)
 	err := createSubject(c)
 	httpErr := err.(*echo.HTTPError)
 
@@ -132,12 +133,12 @@ func TestCreateSubjectWithNonExistingPrecedesSubjects(t *testing.T) {
 }
 
 func TestCreateSubjectWithNonExistingCareer(t *testing.T) {
-	e := tools.SetupEcho()
+	e := internal.SetupEcho()
 	subjectMock := subjectMockData[SubjectWithNonExistingCareer]
 
 	storage.DeleteSubject(tools.ToID("subject", subjectMock.Code))
 
-	c, _ := tools.CreateEchoContextWithJson(t, e, subjectMock)
+	c, _ := internal.CreateEchoContextWithJson(t, e, subjectMock)
 	err := createSubject(c)
 
 	httpErr := err.(*echo.HTTPError)
@@ -149,12 +150,12 @@ func TestCreateSubjectWithNonExistingCareer(t *testing.T) {
 }
 
 func TestCreateSubjectWithInvalidBody(t *testing.T) {
-	e := tools.SetupEcho()
+	e := internal.SetupEcho()
 	subjectMock := subjectMockData[SubjectInvalidBody]
 
 	storage.DeleteSubject(tools.ToID("subject", subjectMock.Code))
 
-	c, _ := tools.CreateEchoContextWithJson(t, e, subjectMock)
+	c, _ := internal.CreateEchoContextWithJson(t, e, subjectMock)
 	err := createSubject(c)
 
 	httpErr := err.(*echo.HTTPError)
@@ -229,7 +230,7 @@ var edgesMock = []models.Edge{
 }
 
 func TestBasicSubjectsGraph(t *testing.T) {
-	e := tools.SetupEcho()
+	e := internal.SetupEcho()
 
 	req := httptest.NewRequest(http.MethodGet, "/?filter=all", strings.NewReader(""))
 	rec := httptest.NewRecorder()

@@ -13,7 +13,7 @@ import (
 
 func Handlers(e *echo.Group) {
 	usersGroup := e.Group("/students")
-	usersGroup.POST("/create_user", createStudent, middlewares.AdminJWTAuth())
+	usersGroup.POST("/create_user", createStudent, middlewares.AdminAuth)
 }
 
 func createStudent(c echo.Context) error {

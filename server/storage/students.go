@@ -11,12 +11,28 @@ import (
 	"github.com/surrealdb/surrealdb.go"
 )
 
-var existQuery = "SELECT id, role FROM student WHERE email = $email"
+var existStudentByEmailQuery = "SELECT id, role FROM student WHERE email = $email"
 
-func ExistStudent(email string) (models.MinimalStudent, error) {
-	data, err := db.SurrealDB.Query(existQuery, map[string]string{
+func ExistStudentByEmail(email string) (models.MinimalStudent, error) {
+	data, err := db.SurrealDB.Query(existStudentByEmailQuery, map[string]string{
 		"email": email,
 	})
+
+	user, err := surrealdb.SmartUnmarshal[[]models.MinimalStudent](data, err)
+
+	if err != nil {
+		return models.MinimalStudent{}, err
+	}
+
+	if len(user) == 0 {
+		return models.MinimalStudent{}, fmt.Errorf("incorrect credentials")
+	}
+
+	return user[0], nil
+}
+
+func ExistStudent(id string) (models.MinimalStudent, error) {
+	data, err := db.SurrealDB.Select(id)
 
 	user, err := surrealdb.SmartUnmarshal[[]models.MinimalStudent](data, err)
 

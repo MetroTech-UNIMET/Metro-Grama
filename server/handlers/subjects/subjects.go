@@ -15,7 +15,7 @@ func Handlers(e *echo.Group) {
 	subjectsGroup := e.Group("/subjects")
 	// subjectsGroup.GET("/:career", getSubjectsByCareer)
 	subjectsGroup.GET("/", getSubjects)
-	subjectsGroup.POST("/", createSubject, middlewares.AdminJWTAuth())
+	subjectsGroup.POST("/", createSubject, middlewares.AdminAuth)
 }
 
 // func getSubjectsByCareer(c echo.Context) error {

@@ -89,7 +89,7 @@ func oauthGoogleCallback(c echo.Context) error {
 	googleEmailData := new(GoogleEmailData)
 	json.Unmarshal(data, googleEmailData)
 
-	if googleEmailData.HD != "correo.unimet.edu.ve" {
+	if googleEmailData.HD != "correo.unimet.edu.ve" && googleEmailData.HD != "unimet.edu.ve" {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Errorf("the email domain %s is not allowed", googleEmailData.HD))
 	}
 
@@ -121,7 +121,7 @@ func oauthGoogleCallback(c echo.Context) error {
 		return err
 	}
 
-	return c.Redirect(http.StatusOK, "http://localhost:1403/materias")
+	return c.Redirect(http.StatusPermanentRedirect, "http://localhost:1403/materias")
 }
 
 func generateStateOauthCookie() string {

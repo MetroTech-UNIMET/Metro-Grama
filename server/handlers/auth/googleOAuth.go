@@ -121,7 +121,7 @@ func oauthGoogleCallback(c echo.Context) error {
 		return err
 	}
 
-	return c.Redirect(http.StatusOK, "/")
+	return c.Redirect(http.StatusOK, "http://localhost:1403/materias")
 }
 
 func generateStateOauthCookie() string {

@@ -7,10 +7,12 @@ import {
 import { INode } from "@antv/g6";
 
 import { ListContent, ListHeader, ListItem } from "@ui/list";
-import { enableViewedNode } from "@utils/states/NodeStates";
 import { cn } from "@utils/className";
 import { useSubjectSheet } from "@/components/SubjectSheet";
 import { Subject } from "@/interfaces/Subject";
+import { useStatusActions } from "./StatusActions";
+import { enrollStudent } from "@/api/interactions/enrollApi";
+import { useToast } from "@ui/use-toast";
 
 interface MenuNodeProps {
   node: INode | null;
@@ -19,6 +21,9 @@ interface MenuNodeProps {
 
 function MenuNode({ node, close }: MenuNodeProps) {
   const { selectSubject } = useSubjectSheet();
+  const { nodeActions } = useStatusActions();
+  const { toast } = useToast();
+
   if (!node) return null;
 
   //@ts-ignore
@@ -32,8 +37,21 @@ function MenuNode({ node, close }: MenuNodeProps) {
         {subjectCode} - {subjectName}
       </ListHeader>
       <ListItem
-        onClick={() => {
-          enableViewedNode(node);
+        onClick={async () => {
+          // TODO - Refactorizar logica de no cambiar el state a menos que haya sido exitoso
+          const viewedNodes = Array.from(nodeActions.enableViewedNode(node));
+          try {
+            await enrollStudent("studentId", viewedNodes);
+          } catch (error) {
+            nodeActions.disableViewedNode(node, node.getOutEdges(), true);
+
+            toast({
+              title: "Error al marcar materia vista",
+              description: "Intente de nuevo más tarde",
+              variant: "destructive",
+            });
+          }
+
           close();
         }}
       >
@@ -60,14 +78,13 @@ const longTouchDuration = 1000;
 // TODO - Mejor manejo de posición como si fuera un tooltip
 // TODO - Bloquear el mover el grafo cuando el menu está abierto
 export default function MenuActions() {
-  const { graph,  }: GraphinContextType = useContext(GraphinContext);
+  const { graph }: GraphinContextType = useContext(GraphinContext);
   const [node, setNode] = useState<INode | null>(null);
   const [position, setPosition] = useState({ x: 0, y: 0 });
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-
     async function handleOpenContextMenu(e: IG6GraphEvent) {
       e.preventDefault();
       const { item } = e;

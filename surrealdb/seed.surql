@@ -3,6 +3,7 @@ DELETE career;
 DELETE student;
 DELETE subject;
 DELETE passed;
+DELETE enroll;
 DELETE precede;
 DELETE course;
 DELETE belong;
@@ -38,26 +39,39 @@ DEFINE FIELD name ON subject TYPE string;
 DEFINE INDEX subjectNameIndex ON TABLE subject COLUMNS name UNIQUE;
 
 -- Definir tabla de relacion estudiante -> materia
-DEFINE TABLE passed SCHEMAFULL;
-DEFINE FIELD in ON passed TYPE record<student>;
-DEFINE FIELD out ON passed TYPE record<subject>;
-DEFINE FIELD trimester ON passed TYPE number; 
+DEFINE TABLE enroll SCHEMAFULL;
+DEFINE FIELD in ON enroll TYPE record<student>;
+DEFINE FIELD out ON enroll TYPE record<subject>;
+DEFINE FIELD trimester ON enroll TYPE number
+DEFAULT 1;
+DEFINE FIELD passed ON enroll TYPE bool
+DEFAULT true;
+DEFINE INDEX unique_relationships 
+    ON TABLE enroll 
+    COLUMNS in, out UNIQUE;
 
 -- Definir tabla de relacion studiante -> careera 
 DEFINE TABLE course SCHEMAFULL;
 DEFINE FIELD in ON course TYPE record<student>;
 DEFINE FIELD out ON course TYPE record<career>;
 
+
 -- Definir tabla de relacion careeras -> materias 
 DEFINE TABLE belong SCHEMAFULL;
 DEFINE FIELD in ON belong TYPE record<subject>;
 DEFINE FIELD out ON belong TYPE record<career>;
 DEFINE FIELD trimester ON belong TYPE number;
+DEFINE INDEX unique_relationships 
+    ON TABLE belong 
+    COLUMNS in, out UNIQUE;
 
 -- Definir tabla de relacion materias -> materias 
 DEFINE TABLE precede SCHEMAFULL;
 DEFINE FIELD in ON precede TYPE record<subject>;
 DEFINE FIELD out ON precede TYPE record<subject>;
+DEFINE INDEX unique_relationships 
+    ON TABLE precede 
+    COLUMNS in, out UNIQUE;
 
 -- Popular careeras
 CREATE career:sistemas SET name="Ingeniería de sistemas";

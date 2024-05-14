@@ -3,9 +3,11 @@ import {
   Sheet,
   SheetContent,
   SheetDescription,
+  SheetFooter,
   SheetHeader,
   SheetTitle,
-} from "./ui/sheet";
+} from "@ui/sheet";
+import { Badge } from "@ui/badge";
 import { Subject } from "@/interfaces/Subject";
 
 interface SubjectSheetContextProps {
@@ -39,10 +41,10 @@ export function SubjectSheet({ children }: { children: React.ReactNode }) {
       <Sheet
         open={subject !== null}
         // modal={true}
+        onOpenChange={subject !== null ? () => selectSubject(null) : undefined}
       >
         {children}
       </Sheet>
-      ;
     </SubjectSheetContext.Provider>
   );
 }
@@ -69,14 +71,34 @@ export function SubjectSheetContent() {
 
   return (
     <SheetContent ref={sheetRef}>
-      {subject && (
-        <SheetHeader>
-          <SheetTitle>{subject?.name}</SheetTitle>
-          <SheetDescription>
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam
-          </SheetDescription>
-        </SheetHeader>
-      )}
+      {subject && <SubjectSheetBody subject={subject} />}
     </SheetContent>
+  );
+}
+
+function SubjectSheetBody({ subject }: { subject: Subject }) {
+  return (
+    <>
+      <SheetHeader>
+        <SheetTitle>
+          {subject.name} ({subject.code})
+        </SheetTitle>
+        <SheetDescription>
+          Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam
+        </SheetDescription>
+      </SheetHeader>
+
+      <main className="mt-2">
+        <section className="flex flex-wrap gap-4">
+          {subject.careers.map((career) => (
+            <Badge key={career} className="bg-Unimet-primary-300">
+              {career}
+            </Badge>
+          ))}
+        </section>
+      </main>
+
+      <SheetFooter>chao</SheetFooter>
+    </>
   );
 }

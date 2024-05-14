@@ -1,38 +1,25 @@
-import { getCareers } from "@/api/careersApi";
-import { Career } from "@/interfaces/Career";
-import MultipleSelector, { Option } from "@ui/multidropdown";
-import { useEffect } from "react";
-import { useQuery } from "react-query";
+import MultipleSelector, { Option } from "@ui/derived/multidropdown";
 import { Spinner } from "@ui/spinner";
+import useFetchCareersOptions from "@/hooks/use-FetchCareersOptions";
 
 interface Props {
+  loadingSubjects: boolean;
   value: Option[];
   onChange: (value: Option[]) => void;
   maxSelected?: number;
 }
 
+// FIXME - Width del input no se ajusta al tamaño cuando hay una sola badge
 export function CareerMultiDropdown({
+  loadingSubjects,
   value,
   onChange,
   maxSelected = 2,
 }: Props) {
-  const { data, isLoading, error } = useQuery<Career[]>(
-    ["careers"],
-    getCareers
-  );
-
-  useEffect(() => {
-    // TODO - Change the queryparams
-  }, [value]);
-
-  const options =
-    data?.map((career) => ({
-      value: career.id,
-      label: `${career.emoji} ${career.name}`,
-    })) ?? [];
+  const { options, isLoading, error } = useFetchCareersOptions();
 
   return (
-    <div className="relative max-w-sm ">
+    <div className="relative max-w-sm w-full">
       <MultipleSelector
         value={value}
         onChange={onChange}
@@ -43,8 +30,9 @@ export function CareerMultiDropdown({
             ? "Máximo alcanzado"
             : "Selecciona las carreras que deseas visualizar"
         }
+        showSpinner={loadingSubjects}
         emptyIndicator={
-          isLoading ? (
+          (isLoading && !error) ? (
             <span className="grid place-items-center">
               <Spinner />
             </span>
@@ -62,7 +50,7 @@ export function CareerMultiDropdown({
         inputProps={{
           className: "w-auto",
         }}
-        badgeClassName="bg-blue-300 text-black"
+        badgeClassName="bg-blue-200 hover:bg-blue-300 text-black"
         className="bg-gray-200"
       />
     </div>

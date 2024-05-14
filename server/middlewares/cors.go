@@ -12,6 +12,7 @@ func Cors() echo.MiddlewareFunc {
 		echoMiddleware.CORSConfig{
 			AllowOrigins: []string{"http://localhost:1403"},
 			AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, http.MethodGet, http.MethodPost},
+      AllowCredentials: true,
 		},
 	)
 }

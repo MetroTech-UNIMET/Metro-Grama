@@ -6,6 +6,7 @@ import { Command as CommandPrimitive, useCommandState } from 'cmdk';
 import { useEffect, forwardRef } from 'react';
 import { Badge } from '@ui/badge';
 import { cn } from '@utils/className';
+import { Spinner } from '@ui/spinner';
 
 export interface Option {
   value: string;
@@ -67,6 +68,8 @@ interface MultipleSelectorProps {
     React.ComponentPropsWithoutRef<typeof CommandPrimitive.Input>,
     'value' | 'placeholder' | 'disabled'
   >;
+
+  showSpinner?: boolean;
 }
 
 export interface MultipleSelectorRef {
@@ -169,6 +172,7 @@ const MultipleSelector = React.forwardRef<MultipleSelectorRef, MultipleSelectorP
       triggerSearchOnFocus = false,
       commandProps,
       inputProps,
+      showSpinner = false
     }: MultipleSelectorProps,
     ref: React.Ref<MultipleSelectorRef>,
   ) => {
@@ -410,6 +414,8 @@ const MultipleSelector = React.forwardRef<MultipleSelectorRef, MultipleSelectorP
                 inputProps?.className,
               )}
             />
+
+            <Spinner show={showSpinner} />
           </div>
         </div>
         <div className="relative mt-2">

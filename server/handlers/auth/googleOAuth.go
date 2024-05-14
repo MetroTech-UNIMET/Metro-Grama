@@ -93,7 +93,7 @@ func oauthGoogleCallback(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Errorf("the email domain %s is not allowed", googleEmailData.HD))
 	}
 
-	dbUser, err := storage.ExistStudent(googleEmailData.Email)
+	dbUser, err := storage.ExistStudentByEmail(googleEmailData.Email)
 	if err != nil {
 		if err := storage.CreateSimpleStudent(models.SimpleStudentSigninForm{
 			FirstName:  googleEmailData.GivenName,
@@ -121,7 +121,7 @@ func oauthGoogleCallback(c echo.Context) error {
 		return err
 	}
 
-	return c.Redirect(http.StatusOK, "/")
+	return c.Redirect(http.StatusOK, "http://localhost:1403/materias")
 }
 
 func generateStateOauthCookie() string {

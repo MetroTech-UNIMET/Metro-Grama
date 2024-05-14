@@ -10,7 +10,7 @@ import (
 )
 
 func Handlers(e *echo.Group) {
-	passedGroup := e.Group("/enroll", middlewares.UserSessionAuth)
+	passedGroup := e.Group("/enroll", middlewares.UserAuth)
 
 	passedGroup.POST("/", createPassed)
 }

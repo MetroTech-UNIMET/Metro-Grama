@@ -101,6 +101,7 @@ func oauthGoogleCallback(c echo.Context) error {
 			Email:      googleEmailData.Email,
 			Password:   tok.AccessToken,
 			PictureUrl: googleEmailData.Picture,
+			Verified:   true,
 		}); err != nil {
 			return echo.NewHTTPError(http.StatusConflict, err)
 		}

@@ -13,6 +13,7 @@ import (
 
 func Handlers(e *echo.Group) {
 	usersGroup := e.Group("/students")
+	usersGroup.GET("/profile", studentProfile, middlewares.UserAuth)
 	usersGroup.POST("/create_user", createStudent, middlewares.AdminAuth)
 }
 
@@ -41,4 +42,14 @@ func createStudent(c echo.Context) error {
 	}
 
 	return c.NoContent(http.StatusCreated)
+}
+
+func studentProfile(c echo.Context) error {
+	userID := c.Get("user-id").(string)
+	student, err := storage.GetStudent(userID)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusNotFound)
+	}
+
+	return c.JSON(http.StatusOK, student)
 }

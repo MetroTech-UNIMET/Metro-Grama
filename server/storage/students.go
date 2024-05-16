@@ -34,17 +34,25 @@ func ExistStudentByEmail(email string) (models.MinimalStudent, error) {
 func ExistStudent(id string) (models.MinimalStudent, error) {
 	data, err := db.SurrealDB.Select(id)
 
-	user, err := surrealdb.SmartUnmarshal[[]models.MinimalStudent](data, err)
+	user, err := surrealdb.SmartUnmarshal[models.MinimalStudent](data, err)
 
 	if err != nil {
 		return models.MinimalStudent{}, err
 	}
 
-	if len(user) == 0 {
-		return models.MinimalStudent{}, fmt.Errorf("incorrect credentials")
+	return user, nil
+}
+
+func GetStudent(id string) (models.StudentProfile, error) {
+	data, err := db.SurrealDB.Select(id)
+
+	user, err := surrealdb.SmartUnmarshal[models.StudentProfile](data, err)
+
+	if err != nil {
+		return models.StudentProfile{}, err
 	}
 
-	return user[0], nil
+	return user, nil
 }
 
 var loginQuery = "SELECT id, role FROM student WHERE email = $email AND crypto::bcrypt::compare(password, $password) = true"
@@ -121,6 +129,7 @@ CREATE student SET
 	lastName=$lastName,
 	pictureUrl=$pictureUrl,
 	email=$email,
+	verified=$verified,
 	password=crypto::bcrypt::generate($password);`
 
 func CreateSimpleStudent(user models.SimpleStudentSigninForm) error {
@@ -130,6 +139,7 @@ func CreateSimpleStudent(user models.SimpleStudentSigninForm) error {
 		"pictureUrl": user.PictureUrl,
 		"email":      user.Email,
 		"password":   user.Password,
+		"verified":   user.Verified,
 	}
 
 	data, err := db.SurrealDB.Query(createSimpleUserQuery, queryParams)

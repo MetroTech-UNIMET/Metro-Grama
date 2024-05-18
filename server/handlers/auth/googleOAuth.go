@@ -58,7 +58,7 @@ func oauthGoogleLogout(c echo.Context) error {
 		return err
 	}
 
-	return c.NoContent(http.StatusNotImplemented)
+	return c.NoContent(http.StatusAccepted)
 }
 
 func oauthGoogleCallback(c echo.Context) error {

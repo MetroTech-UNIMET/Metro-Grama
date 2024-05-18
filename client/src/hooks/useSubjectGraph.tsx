@@ -7,33 +7,35 @@ import { NodeStyleIcon } from "@antv/graphin/lib/typings/type";
 import { Subject } from "@/interfaces/Subject";
 
 import { Option as DropdownOption } from "@ui/derived/multidropdown";
-import { useStatusActions } from "@/components/graph/behaviors/StatusActions";
 import { getEnrolledSubjects } from "@/api/interactions/enrollApi";
 
 import "@antv/graphin-icons/dist/index.css";
+import { AxiosError } from "axios";
 
 const icons = Graphin.registerFontFamily(iconLoader);
 
 export default function useSubjectGraph(
   data: Graph<Subject> | undefined,
-  isLoading: boolean,
   selectedCareers: DropdownOption[]
 ) {
   const {
     data: enrolledSubjects,
     isLoading: isLoadingEnrolledSubjects,
     error: errorEnrolledSubjects,
-  } = useQuery<string[]>({
+  } = useQuery<string[], AxiosError>({
     queryKey: ["enrolledSubjects", "studentId"],
-    queryFn: () => getEnrolledSubjects("studentId"),
+    queryFn: () => getEnrolledSubjects(),
   });
 
   const [graph, setGraph] = useState<GraphinData>({ nodes: [], edges: [] });
 
   useEffect(() => {
-    if (isLoading || !data || !enrolledSubjects) return;
-
-    const setEnrolledSubjects = new Set<string>(enrolledSubjects);
+    const setEnrolledSubjects = getSetEnrolledSubjects(
+      enrolledSubjects,
+      errorEnrolledSubjects
+    );
+    
+    if (!data || !setEnrolledSubjects) return;
 
     const nodesWithEdges = new Set<string>();
     const relations: Record<string, Set<string>> = {};
@@ -159,6 +161,16 @@ export default function useSubjectGraph(
   return { graph };
 }
 
+function getSetEnrolledSubjects(
+  enrolledSubjects: string[] | undefined,
+  errorEnrolledSubjects: AxiosError | null
+) {
+  if (errorEnrolledSubjects) {
+    return new Set<string>();
+  }
+
+  return new Set<string>(enrolledSubjects ?? []);
+}
 function careerEmoji(career: string): string {
   switch (career) {
     case "career:quimica":

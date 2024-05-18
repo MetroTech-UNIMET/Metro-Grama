@@ -56,8 +56,8 @@ export default function Graph() {
       >
         <SearchPrelations />
         <MenuActions />
-        <Toaster />
       </Graphin>
+      <Toaster />
     </>
   );
 }

@@ -1,7 +1,9 @@
 import axios from 'axios';
 
+export const baseApiUrl = 'http://localhost:6969/api'; // replace with your server's URL
+
 const instance = axios.create({
-  baseURL: 'http://localhost:6969/api', // replace with your server's URL
+  baseURL: baseApiUrl, // replace with your server's URL
   withCredentials: true,
 });
 

@@ -34,7 +34,7 @@ export default function useSubjectGraph(
       enrolledSubjects,
       errorEnrolledSubjects
     );
-    
+
     if (!data || !setEnrolledSubjects) return;
 
     const nodesWithEdges = new Set<string>();
@@ -93,12 +93,14 @@ export default function useSubjectGraph(
 
         let isAccesible = false;
         if (!isEnrolled) {
-          setEnrolledSubjects.forEach((subject) => {
-            const subjectRelations = relations[subject];
-
-            if (subjectRelations && subjectRelations.has(node.id)) {
-              isAccesible = true;
-              return;
+          Object.entries(relations).forEach(([subject, subjectRelations]) => {
+            if (subjectRelations.has(node.id)) {
+              if (setEnrolledSubjects.has(subject)) {
+                isAccesible = true;
+              } else {
+                isAccesible = false;
+                return;
+              }
             }
           });
         }
@@ -154,6 +156,7 @@ export default function useSubjectGraph(
         };
       }),
     };
+    console.log(setEnrolledSubjects, relations);
 
     setGraph(newGraph);
   }, [data, selectedCareers, enrolledSubjects]);

@@ -10,29 +10,35 @@ import (
 )
 
 func Handlers(e *echo.Group) {
-	passedGroup := e.Group("/enroll", middlewares.UserAuth)
+	enrollGroup := e.Group("/enroll", middlewares.UserAuth)
 
-	passedGroup.POST("/", createPassed)
+	enrollGroup.POST("/", createPassed)
+	enrollGroup.DELETE("/", deletePassed)
+	enrollGroup.GET("/", getEnrolledSubjects)
 }
 
-type RequestBody struct {
-	Token string `json:"token"`
-}
-
-func createPassed(c echo.Context) error {
+func extractData(c echo.Context) (string, []string, error) {
 	userId := c.Get("user-id").(string)
-	fmt.Println("User ID: ", userId)
 
 	var body struct {
 		Subjects []string `json:"subjects"`
 	}
 	if err := c.Bind(&body); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
+		return "", nil, echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
 	}
 
 	subjects := body.Subjects
 	if len(subjects) == 0 {
-		return echo.NewHTTPError(http.StatusBadRequest, "No subjects provided")
+		return "", nil, echo.NewHTTPError(http.StatusBadRequest, "No subjects provided")
+	}
+
+	return userId, subjects, nil
+}
+
+func createPassed(c echo.Context) error {
+	userId, subjects, err := extractData(c)
+	if err != nil {
+		return err
 	}
 
 	if err := interactions.EnrollStudent(userId, subjects); err != nil {
@@ -42,5 +48,34 @@ func createPassed(c echo.Context) error {
 
 	return c.JSON(http.StatusCreated, map[string]string{
 		"message": "You enrolled the subjects successfully",
+	})
+}
+
+func deletePassed(c echo.Context) error {
+	userId, subjects, err := extractData(c)
+	if err != nil {
+		return err
+	}
+
+	if err := interactions.UnenrollStudent(userId, subjects); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	}
+	fmt.Println("Unenrolled the subjects successfully")
+
+	return c.JSON(http.StatusCreated, map[string]string{
+		"message": "You unenrolled the subjects successfully",
+	})
+}
+
+func getEnrolledSubjects(c echo.Context) error {
+	userId := c.Get("user-id").(string)
+
+	subjects, err := interactions.GetEnrolledSubjects(userId)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	}
+
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"subjects": subjects,
 	})
 }

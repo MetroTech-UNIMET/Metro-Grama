@@ -11,8 +11,9 @@ import { cn } from "@utils/className";
 import { useSubjectSheet } from "@/components/SubjectSheet";
 import { Subject } from "@/interfaces/Subject";
 import { useStatusActions } from "./StatusActions";
-import { enrollStudent } from "@/api/interactions/enrollApi";
+import { enrollStudent, unenrollStudent } from "@/api/interactions/enrollApi";
 import { useToast } from "@ui/use-toast";
+import { useAuth } from "@/contexts/AuthenticationContext";
 
 interface MenuNodeProps {
   node: INode | null;
@@ -22,6 +23,7 @@ interface MenuNodeProps {
 function MenuNode({ node, close }: MenuNodeProps) {
   const { selectSubject } = useSubjectSheet();
   const { nodeActions } = useStatusActions();
+  const { student } = useAuth();
   const { toast } = useToast();
 
   if (!node) return null;
@@ -39,16 +41,40 @@ function MenuNode({ node, close }: MenuNodeProps) {
       <ListItem
         onClick={async () => {
           // TODO - Refactorizar logica de no cambiar el state a menos que haya sido exitoso
-          const viewedNodes = Array.from(nodeActions.enableViewedNode(node));
-          try {
-            await enrollStudent("studentId", viewedNodes);
-          } catch (error) {
-            nodeActions.disableViewedNode(node, node.getOutEdges(), true);
+          const { nodes, enabled } = nodeActions.enableViewedNode(node);
+          const viewedNodes = Array.from(nodes);
 
+          const toastSucessTitle = `Materias ${
+            enabled ? "marcadas" : "desmarcadas"
+          } exitosamente`;
+          if (student) {
+            try {
+              if (enabled) {
+                await enrollStudent(viewedNodes);
+              } else {
+                await unenrollStudent(viewedNodes);
+              }
+
+              // TODO - Crear variant sucess
+              toast({
+                title: toastSucessTitle,
+                description: "Sus materias se guardaron en la base de datos",
+              });
+            } catch (error) {
+              nodeActions.disableViewedNode(node, node.getOutEdges(), true);
+
+              toast({
+                title: "Error al marcar materia vista",
+                description: "Intente de nuevo más tarde",
+                variant: "destructive",
+              });
+            }
+          } else {
+            // TODO - Crear variant sucess
             toast({
-              title: "Error al marcar materia vista",
-              description: "Intente de nuevo más tarde",
-              variant: "destructive",
+              title: toastSucessTitle,
+              description:
+                "Si quiere que persista al volver a abrir, inicie sesión",
             });
           }
 

@@ -1,5 +1,5 @@
 import { createContext, useContext, useState } from "react";
-import { INode, IEdge, IGraph } from "@antv/g6";
+import { INode, IEdge } from "@antv/g6";
 import { getNodesFromEdges } from "@/lib/utils/graph";
 
 type nodeCustomState = "accesible" | "viewed";
@@ -13,7 +13,10 @@ interface StatusActionsContextProps {
       node: INode,
       firstNode?: boolean,
       viewedNodes?: Set<string>
-    ) => Set<string>;
+    ) => {
+      nodes: Set<string>;
+      enabled: boolean;
+    };
     disableViewedNode: (
       node: INode,
       outEdges: IEdge[],
@@ -123,14 +126,13 @@ export function StatusActions({ children }: { children: React.ReactNode }) {
     const outEdges = node.getOutEdges();
 
     if (node.hasState("viewed")) {
-      if (firstNode) disableViewedNode(node, outEdges);
-
-      return viewedNodes;
+      if (firstNode)
+        return { nodes: disableViewedNode(node, outEdges), enabled: false };
     }
 
     const nodeId = node.getID();
     if (viewedNodes.has(nodeId)) {
-      return viewedNodes;
+      return { nodes: viewedNodes, enabled: true };
     }
 
     changeNodeState(node, [
@@ -146,22 +148,28 @@ export function StatusActions({ children }: { children: React.ReactNode }) {
     previousNodes.forEach((node) => enableViewedNode(node, false, viewedNodes));
 
     checkAccesible(outEdges);
-    return viewedNodes;
+    return { nodes: viewedNodes, enabled: true };
   }
 
+  // TODO - Esto rrecorre todo el grafo hacia abajo, parar si el nodo xxx
   function disableViewedNode(
     node: INode,
     outEdges: IEdge[],
-    disableInNodes = false
+    disableInNodes = false,
+    disabledNodes: Set<string> = new Set()
   ) {
     const sourceNodes = getNodesFromEdges(node.getInEdges(), "source");
 
+    // TODO - Mejorar la loica de deshabilitar nodos si hay un error
     if (disableInNodes)
       sourceNodes.forEach((node) =>
-        disableViewedNode(node, node.getOutEdges(), true)
+        disableViewedNode(node, node.getOutEdges(), true, disabledNodes)
       );
     const isAccesible = sourceNodes.every((node) => node.hasState("viewed"));
 
+    if (node.hasState("viewed")) {
+      disabledNodes.add(node.getID());
+    } 
     changeNodeState(node, [
       { state: "accesible", value: isAccesible },
       { state: "viewed", value: false },
@@ -169,7 +177,10 @@ export function StatusActions({ children }: { children: React.ReactNode }) {
 
     const outNodes = getNodesFromEdges(outEdges, "target");
 
-    outNodes.forEach((node) => disableViewedNode(node, node.getOutEdges()));
+    outNodes.forEach((node) =>
+      disableViewedNode(node, node.getOutEdges(), disableInNodes, disabledNodes)
+    );
+    return disabledNodes;
   }
 
   function checkAccesible(outEdges: IEdge[]) {

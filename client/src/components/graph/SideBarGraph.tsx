@@ -6,11 +6,11 @@ import {
   DrawerTitle,
   DrawerFooter,
 } from "@ui/drawer";
-import { ButtonLink } from "@ui/link";
-import { Home, Menu } from "lucide-react";
-import { Link, NavLink } from "react-router-dom";
+import { Menu } from "lucide-react";
+import { Link } from "react-router-dom";
 
 import Icono from "@/assets/images/Icono_MetroTech.png";
+import GoogleLogin from "@ui/derived/GoogleLogin";
 
 {
   /* TODO - Considerar controlar el open para que se abra como default */
@@ -18,12 +18,7 @@ import Icono from "@/assets/images/Icono_MetroTech.png";
 export default function SideBarGraph() {
   const noUser = (
     <>
-      <ButtonLink variant="outline" to="/login" className="">
-        Inicia Sesión
-      </ButtonLink>
-      <ButtonLink to="/register" className="">
-        Regístrate
-      </ButtonLink>
+      <GoogleLogin />
     </>
   );
 
@@ -46,7 +41,7 @@ export default function SideBarGraph() {
             Metro-Grama
           </DrawerTitle>
         </DrawerHeader>
-        <div className=" px-4 py-2">hola</div>
+        <div className=" px-4 py-2">Proximamente más funciones...</div>
 
         <DrawerFooter>{noUser}</DrawerFooter>
       </DrawerContent>

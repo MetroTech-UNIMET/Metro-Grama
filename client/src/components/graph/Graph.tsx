@@ -12,6 +12,7 @@ import { CareerMultiDropdown } from "@components/CareerMultiDropdown";
 import { Spinner } from "@ui/spinner";
 import { Toaster } from "@ui/toaster";
 import useFecthSubjectByCareer from "@/hooks/use-FecthSubjectByCareer";
+import GoogleLogin from "@ui/derived/GoogleLogin";
 
 export default function Graph() {
   const {
@@ -23,7 +24,7 @@ export default function Graph() {
     setSelectedCareers,
   } = useFecthSubjectByCareer();
 
-  const { graph } = useSubjectGraph(data, isLoading, selectedCareers);
+  const { graph } = useSubjectGraph(data, selectedCareers);
 
   if (error) return <ShowAxiosError error={error as AxiosError} />;
 
@@ -36,8 +37,8 @@ export default function Graph() {
 
   return (
     <>
-      <div className="fixed flex flex-row gap-4 z-10 w-full pr-12">
-        <SideBarGraph />
+      <div className="fixed flex flex-wrap-reverse flex-row gap-4 z-10 w-full pr-12">
+        <GoogleLogin />
 
         <CareerMultiDropdown
           loadingSubjects={isRefetching}

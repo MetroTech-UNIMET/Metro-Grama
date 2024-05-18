@@ -12,8 +12,9 @@ import { useSubjectSheet } from "@/components/SubjectSheet";
 import { Subject } from "@/interfaces/Subject";
 import { useStatusActions } from "./StatusActions";
 import { enrollStudent, unenrollStudent } from "@/api/interactions/enrollApi";
-import { useToast } from "@ui/use-toast";
+import { toast } from "@ui/use-toast";
 import { useAuth } from "@/contexts/AuthenticationContext";
+import { GoogleLink } from "@ui/link";
 
 interface MenuNodeProps {
   node: INode | null;
@@ -24,7 +25,6 @@ function MenuNode({ node, close }: MenuNodeProps) {
   const { selectSubject } = useSubjectSheet();
   const { nodeActions } = useStatusActions();
   const { student } = useAuth();
-  const { toast } = useToast();
 
   if (!node) return null;
 
@@ -75,6 +75,8 @@ function MenuNode({ node, close }: MenuNodeProps) {
               title: toastSucessTitle,
               description:
                 "Si quiere que persista al volver a abrir, inicie sesión",
+              action: <GoogleLink className="mt-2" />,
+              className: "flex flex-col items-baseline space-x-0",
             });
           }
 

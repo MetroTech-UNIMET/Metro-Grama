@@ -1,7 +1,7 @@
 import { logOutGoogle } from "@/api/authApi";
 import { getStudentProfile } from "@/api/studentsApi";
 import { Student } from "@/interfaces/Student";
-import { useToast } from "@ui/use-toast";
+import { toast } from "@ui/use-toast";
 import { createContext, useContext, useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 
@@ -29,7 +29,6 @@ export default function AuthenticationContext({
   children: React.ReactNode;
 }) {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
 
   const { data, isLoading, error } = useQuery<Student | null>(
     ["students", "profile"],

@@ -32,7 +32,7 @@ export function CareerMultiDropdown({
         }
         showSpinner={loadingSubjects}
         emptyIndicator={
-          (isLoading && !error) ? (
+          isLoading && !error ? (
             <span className="grid place-items-center">
               <Spinner />
             </span>
@@ -44,9 +44,6 @@ export function CareerMultiDropdown({
             </p>
           )
         }
-        commandProps={{
-          className: "absolute z-10 h-auto",
-        }}
         inputProps={{
           className: "w-auto",
         }}

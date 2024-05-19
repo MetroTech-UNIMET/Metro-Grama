@@ -156,7 +156,6 @@ export default function useSubjectGraph(
         };
       }),
     };
-    console.log(setEnrolledSubjects, relations);
 
     setGraph(newGraph);
   }, [data, selectedCareers, enrolledSubjects]);

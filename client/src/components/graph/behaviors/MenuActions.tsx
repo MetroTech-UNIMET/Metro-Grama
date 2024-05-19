@@ -15,6 +15,8 @@ import { enrollStudent, unenrollStudent } from "@/api/interactions/enrollApi";
 import { toast } from "@ui/use-toast";
 import { useAuth } from "@/contexts/AuthenticationContext";
 import { GoogleLink } from "@ui/link";
+import { useMutation } from "react-query";
+import { Button } from "@ui/button";
 
 interface MenuNodeProps {
   node: INode | null;
@@ -26,6 +28,66 @@ function MenuNode({ node, close }: MenuNodeProps) {
   const { nodeActions } = useStatusActions();
   const { student } = useAuth();
 
+  const { graph } = useContext(GraphinContext);
+
+  const enrollMutation = useMutation(
+    (viewedNodes: string[]) => enrollStudent(viewedNodes),
+    {
+      onError: (error, viewedNodes) => {
+        viewedNodes.reverse().forEach((id) => {
+          const node = graph.findById(id) as INode;
+          nodeActions.disableViewedNode(node, node.getOutEdges());
+        });
+
+        toast({
+          title: "Error al marcar materia vista",
+          description: "Intente de nuevo más tarde",
+          variant: "destructive",
+          action: (
+            <Button onClick={() => enrollMutation.mutateAsync(viewedNodes)}>
+              Intente de neuvo
+            </Button>
+          ),
+        });
+      },
+      onSuccess: () => {
+        toast({
+          title: "Materias marcadas exitosamente",
+          description: "Sus materias se guardaron en la base de datos",
+        });
+      },
+    }
+  );
+
+  const unenrollMutation = useMutation(
+    (viewedNodes: string[]) => unenrollStudent(viewedNodes),
+    {
+      onError: (error, viewedNodes) => {
+        viewedNodes.forEach((id) => {
+          const node = graph.findById(id) as INode;
+          nodeActions.enableViewedNode(node);
+        });
+
+        toast({
+          title: "Error al desmarcar materia vista",
+          description: "Intente de nuevo más tarde",
+          variant: "destructive",
+          action: (
+            <Button onClick={() => unenrollMutation.mutateAsync(viewedNodes)}>
+              Intente de neuvo
+            </Button>
+          ),
+        });
+      },
+      onSuccess: () => {
+        toast({
+          title: "Materias desmarcadas exitosamente",
+          description: "Sus materias se guardaron en la base de datos",
+        });
+      },
+    }
+  );
+
   if (!node) return null;
 
   //@ts-ignore
@@ -33,56 +95,35 @@ function MenuNode({ node, close }: MenuNodeProps) {
   //@ts-ignore
   const subjectName = node._cfg?.model?.data.data.name;
 
+  async function markViewed(node: INode) {
+    // TODO - Refactorizar logica de no cambiar el state a menos que haya sido exitoso
+    const { nodes, enabled } = nodeActions.enableViewedNode(node);
+    const viewedNodes = Array.from(nodes);
+
+    if (student) {
+      if (enabled) {
+        await enrollMutation.mutateAsync(viewedNodes);
+      } else {
+        await unenrollMutation.mutateAsync(viewedNodes);
+      }
+    } else {
+      toast({
+        title: `Materias ${enabled ? "marcadas" : "desmarcadas"} exitosamente`,
+        description: "Si quiere que persista al volver a abrir, inicie sesión",
+        action: <GoogleLink className="mt-2" />,
+        className: "flex flex-col items-baseline space-x-0",
+      });
+    }
+
+    close();
+  }
+
   return (
     <ListContent className="max-w-64">
       <ListHeader>
         {subjectCode} - {subjectName}
       </ListHeader>
-      <ListItem
-        onClick={async () => {
-          // TODO - Refactorizar logica de no cambiar el state a menos que haya sido exitoso
-          const { nodes, enabled } = nodeActions.enableViewedNode(node);
-          const viewedNodes = Array.from(nodes);
-
-          const toastSucessTitle = `Materias ${
-            enabled ? "marcadas" : "desmarcadas"
-          } exitosamente`;
-          if (student) {
-            try {
-              if (enabled) {
-                await enrollStudent(viewedNodes);
-              } else {
-                await unenrollStudent(viewedNodes);
-              }
-
-              // TODO - Crear variant sucess
-              toast({
-                title: toastSucessTitle,
-                description: "Sus materias se guardaron en la base de datos",
-              });
-            } catch (error) {
-              nodeActions.disableViewedNode(node, node.getOutEdges(), true);
-
-              toast({
-                title: "Error al marcar materia vista",
-                description: "Intente de nuevo más tarde",
-                variant: "destructive",
-              });
-            }
-          } else {
-            // TODO - Crear variant sucess
-            toast({
-              title: toastSucessTitle,
-              description:
-                "Si quiere que persista al volver a abrir, inicie sesión",
-              action: <GoogleLink className="mt-2" />,
-              className: "flex flex-col items-baseline space-x-0",
-            });
-          }
-
-          close();
-        }}
-      >
+      <ListItem onClick={() => markViewed(node)}>
         {node?.hasState("viewed")
           ? "Desmarcar como materia vista"
           : "Marcar como materia vista"}

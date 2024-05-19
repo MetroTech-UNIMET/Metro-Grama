@@ -17,11 +17,7 @@ interface StatusActionsContextProps {
       nodes: Set<string>;
       enabled: boolean;
     };
-    disableViewedNode: (
-      node: INode,
-      outEdges: IEdge[],
-      disableInNodes?: boolean
-    ) => void;
+    disableViewedNode: (node: INode, outEdges: IEdge[]) => void;
   };
   edgeActions: {};
   graphActions: {};
@@ -145,7 +141,10 @@ export function StatusActions({ children }: { children: React.ReactNode }) {
     const inEdges = node.getInEdges();
 
     const previousNodes = getNodesFromEdges(inEdges, "source");
-    previousNodes.forEach((node) => enableViewedNode(node, false, viewedNodes));
+    previousNodes.forEach(
+      (node) =>
+        !node.hasState("viewed") && enableViewedNode(node, false, viewedNodes)
+    );
 
     checkAccesible(outEdges);
     return { nodes: viewedNodes, enabled: true };
@@ -155,30 +154,35 @@ export function StatusActions({ children }: { children: React.ReactNode }) {
   function disableViewedNode(
     node: INode,
     outEdges: IEdge[],
-    disableInNodes = false,
     disabledNodes: Set<string> = new Set()
   ) {
     const sourceNodes = getNodesFromEdges(node.getInEdges(), "source");
 
-    // TODO - Mejorar la loica de deshabilitar nodos si hay un error
-    if (disableInNodes)
-      sourceNodes.forEach((node) =>
-        disableViewedNode(node, node.getOutEdges(), true, disabledNodes)
-      );
-    const isAccesible = sourceNodes.every((node) => node.hasState("viewed"));
+    const shouldAccesible = sourceNodes.every((node) =>
+      node.hasState("viewed")
+    );
+    const isViewed = node.hasState("viewed");
+    const isAccesible = node.hasState("accesible");
 
-    if (node.hasState("viewed")) {
-      disabledNodes.add(node.getID());
-    } 
+    if (isAccesible && !isViewed) {
+      changeNodeState(node, [
+        { state: "accesible", value: false },
+        { state: "viewed", value: false },
+      ]);
+      return disabledNodes;
+    } else if (!node.hasState("viewed")) {
+      return disabledNodes;
+    }
     changeNodeState(node, [
-      { state: "accesible", value: isAccesible },
+      { state: "accesible", value: shouldAccesible },
       { state: "viewed", value: false },
     ]);
+    disabledNodes.add(node.getID());
 
     const outNodes = getNodesFromEdges(outEdges, "target");
 
     outNodes.forEach((node) =>
-      disableViewedNode(node, node.getOutEdges(), disableInNodes, disabledNodes)
+      disableViewedNode(node, node.getOutEdges(), disabledNodes)
     );
     return disabledNodes;
   }

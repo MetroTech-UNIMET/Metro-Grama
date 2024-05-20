@@ -33,6 +33,7 @@ function MenuNode({ node, close }: MenuNodeProps) {
   const enrollMutation = useMutation(
     (viewedNodes: string[]) => enrollStudent(viewedNodes),
     {
+      //@ts-ignore TODO - Agregar custom error
       onError: (error, viewedNodes) => {
         viewedNodes.reverse().forEach((id) => {
           const node = graph.findById(id) as INode;
@@ -62,6 +63,7 @@ function MenuNode({ node, close }: MenuNodeProps) {
   const unenrollMutation = useMutation(
     (viewedNodes: string[]) => unenrollStudent(viewedNodes),
     {
+      //@ts-ignore TODO - Agregar custom error
       onError: (error, viewedNodes) => {
         viewedNodes.forEach((id) => {
           const node = graph.findById(id) as INode;

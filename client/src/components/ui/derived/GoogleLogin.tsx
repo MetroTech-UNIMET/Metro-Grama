@@ -1,9 +1,8 @@
-import { baseApiUrl } from "@/axiosConfig";
 import { useAuth } from "@/contexts/AuthenticationContext";
 import { AvatarImage } from "@radix-ui/react-avatar";
 import { Avatar, AvatarFallback } from "@ui/avatar";
 import { Button } from "@ui/button";
-import { ButtonLink, GoogleLink } from "@ui/link";
+import { GoogleLink } from "@ui/link";
 import { Spinner } from "@ui/spinner";
 import { LogOutIcon } from "lucide-react";
 
@@ -24,11 +23,7 @@ export default function GoogleLogin() {
           <span>{student.firstName}</span>
         </div>
 
-        <Button
-          onClick={logOut}
-          // to={`${baseApiUrl}/auth/google/logout`}
-          variant={"destructive"}
-        >
+        <Button onClick={logOut} variant={"destructive"}>
           <LogOutIcon />
           Cerrar sesión
         </Button>

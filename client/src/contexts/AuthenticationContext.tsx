@@ -36,8 +36,8 @@ export default function AuthenticationContext({
   );
 
   const logOutMutation = useMutation(logOutGoogle, {
+    //@ts-ignore TODO Considerar mostrar una descripción del error
     onError: (error) => {
-      // REVIEW Considerar mostrar una descripción del error
       toast({
         title: "Error al cerrar sesión",
         variant: "destructive",

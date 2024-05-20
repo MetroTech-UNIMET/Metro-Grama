@@ -46,6 +46,7 @@ type EdgeStatuses = {
   [key in edgeCustomState]: string[];
 };
 
+//@ts-ignore
 interface ClearStateOptions {
   /**
    * An array of states to be set to true.
@@ -111,6 +112,52 @@ export function StatusActions({ children }: { children: React.ReactNode }) {
     setNodeStatuses((prev) => ({
       ...prev,
       ...newNodeStatuses,
+    }));
+  }
+
+  //@ts-ignore
+  function changeEdgeState(
+    edge: IEdge,
+    newState:
+      | {
+          state: edgeCustomState;
+          value: boolean;
+        }
+      | {
+          state: edgeCustomState;
+          value: boolean;
+        }[]
+  ) {
+    if (Array.isArray(newState)) {
+      const newEdgeStatuses: Record<string, string[]> = {};
+
+      newState.forEach(({ state, value }) => {
+        edge.setState(state, value);
+        newEdgeStatuses[state] = value
+          ? [...edgeStatuses[state], edge.getID()]
+          : edgeStatuses[state].filter((id) => id !== edge.getID());
+      });
+
+      setEdgeStatuses((prev) => ({
+        ...prev,
+        ...newEdgeStatuses,
+      }));
+
+      return;
+    }
+
+    const { state, value } = newState;
+    edge.setState(state, value);
+
+    const newEdgeStatuses = {
+      [state]: value
+        ? [...edgeStatuses[state], edge.getID()]
+        : edgeStatuses[state].filter((id) => id !== edge.getID()),
+    };
+
+    setEdgeStatuses((prev) => ({
+      ...prev,
+      ...newEdgeStatuses,
     }));
   }
 

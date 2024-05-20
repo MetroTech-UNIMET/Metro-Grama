@@ -20,7 +20,6 @@ export default function useSubjectGraph(
 ) {
   const {
     data: enrolledSubjects,
-    isLoading: isLoadingEnrolledSubjects,
     error: errorEnrolledSubjects,
   } = useQuery<string[], AxiosError>({
     queryKey: ["enrolledSubjects", "studentId"],
@@ -30,6 +29,11 @@ export default function useSubjectGraph(
   const [graph, setGraph] = useState<GraphinData>({ nodes: [], edges: [] });
 
   useEffect(() => {
+    if (data?.nodes.length === 0) {
+      setGraph({ nodes: [], edges: [] });
+      return;
+    }
+
     const setEnrolledSubjects = getSetEnrolledSubjects(
       enrolledSubjects,
       errorEnrolledSubjects

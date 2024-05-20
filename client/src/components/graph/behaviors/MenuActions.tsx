@@ -45,8 +45,11 @@ function MenuNode({ node, close }: MenuNodeProps) {
           description: "Intente de nuevo más tarde",
           variant: "destructive",
           action: (
-            <Button onClick={() => enrollMutation.mutateAsync(viewedNodes)}>
-              Intente de neuvo
+            <Button
+              onClick={() => enrollMutation.mutateAsync(viewedNodes)}
+              variant="outline"
+            >
+              Intente de nuevo
             </Button>
           ),
         });
@@ -55,6 +58,7 @@ function MenuNode({ node, close }: MenuNodeProps) {
         toast({
           title: "Materias marcadas exitosamente",
           description: "Sus materias se guardaron en la base de datos",
+          variant: "success",
         });
       },
     }
@@ -75,8 +79,11 @@ function MenuNode({ node, close }: MenuNodeProps) {
           description: "Intente de nuevo más tarde",
           variant: "destructive",
           action: (
-            <Button onClick={() => unenrollMutation.mutateAsync(viewedNodes)}>
-              Intente de neuvo
+            <Button
+              onClick={() => unenrollMutation.mutateAsync(viewedNodes)}
+              variant="outline"
+            >
+              Intente de nuevo
             </Button>
           ),
         });

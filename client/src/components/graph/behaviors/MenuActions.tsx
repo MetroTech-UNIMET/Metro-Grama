@@ -92,6 +92,7 @@ function MenuNode({ node, close }: MenuNodeProps) {
         toast({
           title: "Materias desmarcadas exitosamente",
           description: "Sus materias se guardaron en la base de datos",
+          variant: "success",
         });
       },
     }

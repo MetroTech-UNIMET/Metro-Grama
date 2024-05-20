@@ -3,7 +3,7 @@ import { AxiosError } from "axios";
 
 import SearchPrelations from "./behaviors/Search-Prelations";
 import MenuActions from "./behaviors/MenuActions";
-import SideBarGraph from "./SideBarGraph";
+// import SideBarGraph from "./SideBarGraph";
 
 import useSubjectGraph from "@/hooks/useSubjectGraph";
 import { ShowAxiosError } from "@components/ShowAxiosError";
@@ -47,16 +47,27 @@ export default function Graph() {
         />
       </div>
 
-      <Graphin
-        data={graph}
-        style={{
-          backgroundColor: "transparent",
-        }}
-        layout={{ type: "dagre" }}
-      >
-        <SearchPrelations />
-        <MenuActions />
-      </Graphin>
+      {selectedCareers.length === 0 ? (
+        <>
+          <div className="h-full grid place-items-center ">
+            <h1 className="text-4xl text-center">
+              Selecciona una carrera para ver el flujograma
+            </h1>
+          </div>
+        </>
+      ) : (
+        <Graphin
+          data={graph}
+          style={{
+            backgroundColor: "transparent",
+          }}
+          layout={{ type: "dagre"}}
+        >
+          <SearchPrelations />
+          <MenuActions />
+        </Graphin>
+      )}
+
       <Toaster />
     </>
   );

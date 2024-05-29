@@ -1,5 +1,5 @@
 import { Menu } from "lucide-react";
-import Icono from "@/assets/images/Icono_MetroTech.png";
+// import Icono from "@/assets/images/Icono_MetroTech.png";
 import { NavLink } from "react-router-dom";
 import { cn } from "@utils/className";
 import useMediaQuery from "@/hooks/useMediaQuery";

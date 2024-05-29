@@ -1,8 +1,8 @@
 import React from "react";
 import { VariantProps } from "class-variance-authority";
-import { Button, buttonVariants } from "./button";
+import { buttonVariants } from "./button";
 import { cn } from "@utils/className";
-import { Link, LinkProps, NavLink } from "react-router-dom";
+import { Link, LinkProps } from "react-router-dom";
 import { baseApiUrl } from "@/axiosConfig";
 
 export interface LinkComponentProps
@@ -52,11 +52,14 @@ const GoogleSvg = (
   </svg>
 );
 
-export const GoogleLink = () => {
+export const GoogleLink = ({ className = "" }: { className?: string }) => {
   return (
     <Link
       to={`${baseApiUrl}/auth/google/login`}
-      className={cn(buttonVariants({ variant: "outline", className: "gap-4" }))}
+      className={cn(
+        buttonVariants({ variant: "outline", className: "gap-4" }),
+        className
+      )}
     >
       {GoogleSvg}
       Inicia Sesión con Google

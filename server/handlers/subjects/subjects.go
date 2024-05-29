@@ -29,6 +29,13 @@ func Handlers(e *echo.Group) {
 func getSubjects(c echo.Context) error {
 	careers := c.QueryParam("careers")
 
+	if careers == "none" {
+		return c.JSON(http.StatusOK, models.Graph[models.SubjectNode]{
+			Nodes: []models.Node[models.SubjectNode]{},
+			Edges: []models.Edge{},
+		})
+	}
+
 	subjects, err := storage.GetSubjects(careers)
 
 	return tools.GetResponse(c, subjects, err)

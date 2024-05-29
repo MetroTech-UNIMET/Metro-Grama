@@ -20,7 +20,6 @@ export default function useSubjectGraph(
 ) {
   const {
     data: enrolledSubjects,
-    isLoading: isLoadingEnrolledSubjects,
     error: errorEnrolledSubjects,
   } = useQuery<string[], AxiosError>({
     queryKey: ["enrolledSubjects", "studentId"],
@@ -30,11 +29,16 @@ export default function useSubjectGraph(
   const [graph, setGraph] = useState<GraphinData>({ nodes: [], edges: [] });
 
   useEffect(() => {
+    if (data?.nodes.length === 0) {
+      setGraph({ nodes: [], edges: [] });
+      return;
+    }
+
     const setEnrolledSubjects = getSetEnrolledSubjects(
       enrolledSubjects,
       errorEnrolledSubjects
     );
-    
+
     if (!data || !setEnrolledSubjects) return;
 
     const nodesWithEdges = new Set<string>();
@@ -93,12 +97,14 @@ export default function useSubjectGraph(
 
         let isAccesible = false;
         if (!isEnrolled) {
-          setEnrolledSubjects.forEach((subject) => {
-            const subjectRelations = relations[subject];
-
-            if (subjectRelations && subjectRelations.has(node.id)) {
-              isAccesible = true;
-              return;
+          Object.entries(relations).forEach(([subject, subjectRelations]) => {
+            if (subjectRelations.has(node.id)) {
+              if (setEnrolledSubjects.has(subject)) {
+                isAccesible = true;
+              } else {
+                isAccesible = false;
+                return;
+              }
             }
           });
         }

@@ -11,7 +11,7 @@ import useFetchCareersOptions from "./use-FetchCareersOptions";
 export default function useFecthSubjectByCareer() {
   const [selectedCareers, setSelectedCareers] = useState<Option[]>([]);
   const [searchParams, setSearchParams] = useSearchParams({
-    careers: "all",
+    careers: "none",
   });
 
   // TODO -  usar queryKey
@@ -19,12 +19,11 @@ export default function useFecthSubjectByCareer() {
     Graph<Subject>
   >({
     // queryKey: [],
-    queryFn: () => getSubjects(searchParams.get("careers") ?? "all"),
+    queryFn: () => getSubjects(searchParams.get("careers") ?? "none"),
   });
 
   const {
     options,
-    error: errorCareers,
     isLoading: loadingCareers,
   } = useFetchCareersOptions();
 
@@ -36,13 +35,13 @@ export default function useFecthSubjectByCareer() {
     if (isFirstRender.current) {
       isFirstRender.current = false;
 
-      const filter = searchParams.get("filter");
+      const filter = searchParams.get("careers");
       if (!filter || !options) return;
 
-      if (filter === "all") {
+      if (filter === "none") {
         setSelectedCareers([]);
       } else {
-        const careers = filter.slice(7).split(",");
+        const careers = filter.split(",");
 
         const selectedCareers = careers.map((career) => {
           const option = options.find((option) => option.value === career)!;
@@ -54,7 +53,7 @@ export default function useFecthSubjectByCareer() {
     }
 
     if (selectedCareers.length === 0) {
-      setSearchParams({ careers: "all" });
+      setSearchParams({ careers: "none" });
     } else {
       const careers = selectedCareers.map((career) => career.value).join(",");
       setSearchParams({ careers });

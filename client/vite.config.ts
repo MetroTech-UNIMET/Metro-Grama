@@ -15,8 +15,15 @@ export default defineConfig({
       {
         find: "@ui",
         replacement: path.resolve(__dirname, "src/components/ui"),
+      },
+      {
+        find: "@utils",
+        replacement: path.resolve(__dirname, "src/lib/utils"),
       }
     ],
+  },
+  build: {
+    outDir: "../www-build"
   },
   preview: {
     host: "0.0.0.0",

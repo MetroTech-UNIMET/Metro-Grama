@@ -7,7 +7,9 @@
 *.dll
 *.so
 *.dylib
-.env
+*.env
+
+**/www-build
 
 # Test binary, built with `go test -c`
 *.test
@@ -20,3 +22,5 @@
 
 # Go workspace file
 go.work
+
+**/tmp

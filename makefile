@@ -1,5 +1,7 @@
-seed-surrealdb:
-	docker compose start surrealdb_seed
+dev: start-db seed-db
 
-start-surrealdb:
-	docker compose start db
+seed-db:
+	docker compose -f docker-compose.dev.yml up db_seed
+
+start-db:
+	docker compose -f docker-compose.dev.yml up -d

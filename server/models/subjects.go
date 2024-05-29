@@ -1,30 +1,54 @@
 package models
 
+// type SubjectForm struct {
+// 	SubjectName   string   `form:"subjectName"`
+// 	SubjectCode   string   `form:"subjectCode"`
+// 	Trimesters    []uint8  `form:"trimesters"`
+// 	Careers       []string `form:"careers"`
+// 	PrecedesCodes []string `form:"precedesCodes"`
+// }
+
+type SubjectCareer struct {
+	Trimester uint8  `json:"trimester" validate:"required, gte=1,lte=20"`
+	CareerID  string `json:"careerID" validate:"required"`
+}
+
 type SubjectForm struct {
-	SubjectName   string   `form:"subjectName" json:"subjectName"`
-	SubjectCode   string   `form:"subjectCode" json:"subjectCode"`
-	Trimester     uint8    `form:"trimester" json:"trimester"`
-	Careers       []string `form:"careers" json:"careers"`
-	PrecedesCodes []string `form:"precedesCodes" json:"precedesCodes"`
+	Name       string          `json:"name" validate:"required"`
+	Code       string          `json:"code" validate:"required"`
+	Careers    []SubjectCareer `json:"careers" validate:"required"`
+	PrecedesID []string        `json:"precedesID" validate:"required"`
 }
 
 type SubjectNode struct {
-	Code string `json:"code"`
+	Code    string   `json:"code"`
+	Name    string   `json:"name"`
+	Careers []string `json:"careers"`
+}
+
+type SubjectEdge struct {
+	ID   string `json:"id,omitempty"`
 	Name string `json:"name"`
 }
 
-type Subject struct {
-	ID               string        `json:"id,omitempty"`
-	Name             string        `json:"name"`
-	Trimester        uint8         `json:"trimester"`
-	Careers          []string      `json:"careers"`
-	PrecedesSubjects []SubjectBase `json:"precedesSubjects"`
+type SubjectsEdges struct {
+	SubjectEdges []struct {
+		ID   string      `json:"id,omitempty"`
+		From SubjectEdge `json:"in"`
+		To   SubjectEdge `json:"out"`
+	} `json:"edges"`
+
+	SubjectNodes []struct {
+		ID   string `json:"id,omitempty"`
+		Name string `json:"name"`
+	} `json:"nodes"`
 }
 
-type SubjectBase struct {
-	ID               string   `json:"id,omitempty"`
-	Name             string   `json:"name"`
-	Trimester        uint8    `json:"trimester"`
-	Careers          []string `json:"careers"`
-	PrecedesSubjects []string `json:"precedesSubjects"`
+type SubjectsByCareers struct {
+	Careers    []string `json:"careers"`
+	Prelations []string `json:"prelations"`
+	Subject    struct {
+		ID   string `json:"id,omitempty"`
+		Name string `json:"name"`
+	}
 }

@@ -1,46 +1,63 @@
-import { getSubjects } from "@/api/subjectsAPI";
 import Graphin from "@antv/graphin";
-import { MiniMap } from "@antv/graphin-components";
-import { useQuery } from "react-query";
+import { AxiosError } from "axios";
 
 import SearchPrelations from "./behaviors/Search-Prelations";
-// @ts-ignore
 import MenuActions from "./behaviors/MenuActions";
-import useSubectGraph from "@/hooks/useSubectGraph";
+import SideBarGraph from "./SideBarGraph";
+
+import useSubjectGraph from "@/hooks/useSubjectGraph";
+import { ShowAxiosError } from "@components/ShowAxiosError";
+import { CareerMultiDropdown } from "@components/CareerMultiDropdown";
+
+import { Spinner } from "@ui/spinner";
+import { Toaster } from "@ui/toaster";
+import useFecthSubjectByCareer from "@/hooks/use-FecthSubjectByCareer";
+import GoogleLogin from "@ui/derived/GoogleLogin";
 
 export default function Graph() {
+  const {
+    data,
+    error,
+    isLoading,
+    isRefetching,
+    selectedCareers,
+    setSelectedCareers,
+  } = useFecthSubjectByCareer();
 
-  const { data, isLoading, error } = useQuery<Graph<Subject>>(
-    ["subjects", "Ingeniería en Sistemas"],
-    getSubjects
-  );
+  const { graph } = useSubjectGraph(data, selectedCareers);
 
-  if (error) return <div>Error</div>;
+  if (error) return <ShowAxiosError error={error as AxiosError} />;
 
-  if (isLoading || !data) return <div>Loading...</div>;
-  
-  const {graph} = useSubectGraph(data);
+  if (isLoading || !data)
+    return (
+      <div className="h-full grid place-items-center ">
+        <Spinner size="giant" />
+      </div>
+    );
 
   return (
-    <Graphin
-      data={graph}
-      style={{
-        backgroundColor: "transparent",
-      }}
-    >
-      <SearchPrelations />
-      <MenuActions />
-      <MiniMap
-        visible={true}
+    <>
+      <div className="fixed flex flex-wrap-reverse flex-row gap-4 z-10 w-full pr-12">
+        <GoogleLogin />
+
+        <CareerMultiDropdown
+          loadingSubjects={isRefetching}
+          value={selectedCareers}
+          onChange={setSelectedCareers}
+        />
+      </div>
+
+      <Graphin
+        data={graph}
         style={{
-          border: "1px solid #e2e2e2",
-          borderRadius: 4,
+          backgroundColor: "transparent",
         }}
-        options={{
-          className:
-            "fixed bottom-4 right-4 border-2 border-white rounded-lg bg-white",
-        }}
-      />
-    </Graphin>
+        layout={{ type: "dagre" }}
+      >
+        <SearchPrelations />
+        <MenuActions />
+      </Graphin>
+      <Toaster />
+    </>
   );
 }

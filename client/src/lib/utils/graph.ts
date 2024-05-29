@@ -36,6 +36,8 @@ export function clearGraphStates(
   graph: IGraph,
   options: ClearStateOptions = {}
 ) {
+  // REVIEW - Actualmente recorre todos los nodos y aristas para limpiar sus estados
+  // Buscar manera de guardar solo los nodos y aristas que tienen estados
   clearEdgesStates(graph, options);
   clearNodesStates(graph, options);
 }

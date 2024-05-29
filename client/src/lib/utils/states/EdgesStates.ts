@@ -1,7 +1,7 @@
 import { IEdge } from "@antv/g6";
 import { getNodesFromEdges } from "../graph";
 
-type edgeCustomState = "future" | "prelation";
+type edgeCustomState = "future" | "prelation" | "prelation-viewed";
 
 export function markEdgesAsFuture(edges: IEdge[]) {
   highlightEdges(edges, "future");
@@ -15,20 +15,24 @@ export function markEdgesAsFuture(edges: IEdge[]) {
   });
 }
 
-export function markEdgesAsPrelation(edges: IEdge[]) {
-  highlightEdges(edges, "prelation");
+export function markEdgesAsPrelation(edges: IEdge[], prelationViewed = false) {
+  highlightEdges(edges, prelationViewed ? "prelation-viewed" : "prelation");
   const nodes = getNodesFromEdges(edges, "source");
 
   nodes.forEach((node) => {
     const prelations = node.getInEdges();
     node.setState("inactive", false);
 
-    if (prelations.length == 0) {
-      node.setState("start", true);
+    if (prelations.length === 0) {
       return;
     }
 
-    markEdgesAsPrelation(prelations);
+    if (node.hasState("accesible")) {
+      node.setState("start", true);
+      prelationViewed = true;
+    }
+
+    markEdgesAsPrelation(prelations, prelationViewed);
   });
 }
 

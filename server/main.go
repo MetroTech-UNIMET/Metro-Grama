@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"metrograma/auth"
 	"metrograma/db"
 	"metrograma/env"
@@ -24,6 +25,9 @@ func main() {
 	e.Use(session.Middleware(sessions.NewCookieStore([]byte(env.UserTokenSigninKey))))
 	e.Use(middlewares.Cors())
 	e.Use(echoMiddleware.BodyLimit("2M"))
+	e.Use(echoMiddleware.Logger())
+	e.Use(echoMiddleware.Gzip())
+	e.Use(echoMiddleware.Decompress())
 
 	handlers.CreateHandlers(e)
 
@@ -31,6 +35,6 @@ func main() {
 	// Ya el frontend se encargara de manejarlas con react router
 	e.Static("/*", "www-build")
 
-	e.Logger.Fatal(e.Start(":6969"))
+	e.Logger.Fatal(e.Start(fmt.Sprintf(":%s", env.GetDotEnv("PORT"))))
 
 }

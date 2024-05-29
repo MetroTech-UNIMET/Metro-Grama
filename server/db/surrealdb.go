@@ -2,7 +2,7 @@ package db
 
 import (
 	"fmt"
-	"os"
+	"metrograma/env"
 
 	"github.com/surrealdb/surrealdb.go"
 )
@@ -16,17 +16,17 @@ type SurrealErrMsg struct {
 }
 
 func InitSurrealDB() {
-	db, err := surrealdb.New(fmt.Sprintf("ws://%s/rpc", os.Getenv("SURREAL_HOST")))
+	db, err := surrealdb.New(fmt.Sprintf("ws://%s/rpc", env.GetDotEnv("SURREAL_HOST")))
 	if err != nil {
 		panic(err.Error())
 	}
 	if _, err = db.Signin(map[string]interface{}{
-		"user": os.Getenv("SURREAL_USER"),
-		"pass": os.Getenv("SURREAL_PASS"),
+		"user": env.GetDotEnv("SURREAL_USER"),
+		"pass": env.GetDotEnv("SURREAL_PASS"),
 	}); err != nil {
 		panic(err)
 	}
-	if _, err = db.Use(os.Getenv("SURREAL_NS"), os.Getenv("SURREAL_DB")); err != nil {
+	if _, err = db.Use(env.GetDotEnv("SURREAL_NS"), env.GetDotEnv("SURREAL_DB")); err != nil {
 		panic(err)
 	}
 

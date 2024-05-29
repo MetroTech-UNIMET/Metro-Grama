@@ -8,14 +8,12 @@ import (
 )
 
 var UserTokenSigninKey = ""
-var AdminTokenSigninKey = ""
 
 func LoadDotEnv() {
 	if err := godotenv.Load(); err != nil {
 		log.Panicln(err)
 	}
 	UserTokenSigninKey = GetDotEnv("USER_SIGIN_KEY")
-	AdminTokenSigninKey = GetDotEnv("ADMIN_SIGIN_KEY")
 }
 
 func GetDotEnv(key string) string {

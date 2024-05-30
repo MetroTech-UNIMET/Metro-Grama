@@ -10,9 +10,9 @@ import { ShowAxiosError } from "@components/ShowAxiosError";
 import { CareerMultiDropdown } from "@components/CareerMultiDropdown";
 
 import { Spinner } from "@ui/spinner";
-import { Toaster } from "@ui/toaster";
-import useFecthSubjectByCareer from "@/hooks/use-FecthSubjectByCareer";
 import GoogleLogin from "@ui/derived/GoogleLogin";
+
+import useFecthSubjectByCareer from "@/hooks/use-FecthSubjectByCareer";
 
 export default function Graph() {
   const {
@@ -37,7 +37,7 @@ export default function Graph() {
 
   return (
     <>
-      <div className="fixed flex flex-wrap-reverse flex-row gap-4 z-10 w-full pr-12">
+      <div className="fixed flex flex-wrap flex-row gap-4 z-10 w-full pr-12">
         <GoogleLogin />
 
         <CareerMultiDropdown
@@ -61,14 +61,12 @@ export default function Graph() {
           style={{
             backgroundColor: "transparent",
           }}
-          layout={{ type: "dagre"}}
+          layout={{ type: "dagre" }}
         >
           <SearchPrelations />
           <MenuActions />
         </Graphin>
       )}
-
-      <Toaster />
     </>
   );
 }

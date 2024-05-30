@@ -16,7 +16,7 @@ import { toast } from "@ui/use-toast";
 import { useAuth } from "@/contexts/AuthenticationContext";
 import { GoogleLink } from "@ui/link";
 import { useMutation } from "react-query";
-import { Button } from "@ui/button";
+import { ToastAction } from "@ui/toast";
 
 interface MenuNodeProps {
   node: INode | null;
@@ -45,12 +45,12 @@ function MenuNode({ node, close }: MenuNodeProps) {
           description: "Intente de nuevo más tarde",
           variant: "destructive",
           action: (
-            <Button
+            <ToastAction
+              altText="Intente de nuevo"
               onClick={() => enrollMutation.mutateAsync(viewedNodes)}
-              variant="outline"
             >
               Intente de nuevo
-            </Button>
+            </ToastAction>
           ),
         });
       },
@@ -79,12 +79,12 @@ function MenuNode({ node, close }: MenuNodeProps) {
           description: "Intente de nuevo más tarde",
           variant: "destructive",
           action: (
-            <Button
+            <ToastAction
+              altText="Intente de nuevo"
               onClick={() => unenrollMutation.mutateAsync(viewedNodes)}
-              variant="outline"
             >
               Intente de nuevo
-            </Button>
+            </ToastAction>
           ),
         });
       },
@@ -175,7 +175,7 @@ export default function MenuActions() {
     }
 
     function handleNodeTouchStart(e: IG6GraphEvent) {
-      console.log("Touch start");
+      globalBlur();
 
       timerRef.current = setTimeout(() => {
         handleOpenContextMenu(e);
@@ -183,15 +183,21 @@ export default function MenuActions() {
     }
 
     function handleNodeTouchMove(e: IG6GraphEvent) {
-      console.log("Touch move");
+      globalBlur();
+
       clearTimerRef();
       handleNodeTouchStart(e);
     }
 
     function handleNodeTouchEnd() {
-      console.log("Touch end");
+      globalBlur();
+
       clearTimerRef();
       close();
+    }
+
+    function globalBlur() {
+      (document.activeElement as HTMLElement)?.blur();
     }
 
     graph.on("node:contextmenu", handleOpenContextMenu);
@@ -219,7 +225,6 @@ export default function MenuActions() {
     if (timerRef.current) {
       clearTimeout(timerRef.current);
       timerRef.current = null;
-      console.log(timerRef.current);
     }
   }
 

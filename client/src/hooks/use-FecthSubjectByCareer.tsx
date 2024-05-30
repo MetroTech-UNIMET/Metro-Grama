@@ -6,26 +6,26 @@ import { useSearchParams } from "react-router-dom";
 import { Option } from "@ui/derived/multidropdown";
 import useFetchCareersOptions from "./use-FetchCareersOptions";
 
-
-// TODO - Refactorizar query string para quitar filter y que de una sea career
 export default function useFecthSubjectByCareer() {
   const [selectedCareers, setSelectedCareers] = useState<Option[]>([]);
   const [searchParams, setSearchParams] = useSearchParams({
     careers: "none",
   });
 
-  // TODO -  usar queryKey
+  const careers = searchParams.get("careers") ?? "none";
   const { data, isLoading, isRefetching, error, refetch } = useQuery<
     Graph<Subject>
   >({
-    // queryKey: [],
-    queryFn: () => getSubjects(searchParams.get("careers") ?? "none"),
+    queryKey: [
+      "careers",
+      {
+        careers,
+      },
+    ],
+    queryFn: () => getSubjects(careers),
   });
 
-  const {
-    options,
-    isLoading: loadingCareers,
-  } = useFetchCareersOptions();
+  const { options, isLoading: loadingCareers } = useFetchCareersOptions();
 
   const isFirstRender = useRef(true);
 

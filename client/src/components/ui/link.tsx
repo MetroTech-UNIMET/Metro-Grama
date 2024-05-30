@@ -54,8 +54,8 @@ const GoogleSvg = (
 
 export const GoogleLink = ({ className = "" }: { className?: string }) => {
   return (
-    <Link
-      to={`${baseApiUrl}/auth/google/login`}
+    <a
+      href={`${baseApiUrl}/auth/google/login`}
       className={cn(
         buttonVariants({ variant: "outline", className: "gap-4" }),
         className
@@ -63,6 +63,6 @@ export const GoogleLink = ({ className = "" }: { className?: string }) => {
     >
       {GoogleSvg}
       Inicia Sesión con Google
-    </Link>
+    </a>
   );
 };

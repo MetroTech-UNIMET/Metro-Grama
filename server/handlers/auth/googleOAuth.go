@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"metrograma/auth"
+	"metrograma/env"
 	"metrograma/models"
 	"metrograma/storage"
 	"net/http"
@@ -43,7 +44,7 @@ func oauthGoogleLogin(c echo.Context) error {
 		return err
 	}
 
-	u := auth.GoogleOauthConfig.AuthCodeURL(oauthState, oauth2.SetAuthURLParam("hd", "unimet.edu.ve"))
+	u := auth.GoogleOauthConfig.AuthCodeURL(oauthState, oauth2.SetAuthURLParam("hd", "correo.unimet.edu.ve"))
 
 	return c.Redirect(http.StatusTemporaryRedirect, u)
 }
@@ -122,7 +123,7 @@ func oauthGoogleCallback(c echo.Context) error {
 		return err
 	}
 
-	return c.Redirect(http.StatusPermanentRedirect, "http://localhost:1403/materias")
+	return c.Redirect(http.StatusPermanentRedirect, fmt.Sprintf("%s/materias", env.GetDotEnv("FRONTEND_ADDRS")))
 }
 
 func generateStateOauthCookie() string {

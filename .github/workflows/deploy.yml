@@ -1,0 +1,30 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main 
+jobs:
+  deploy_job:
+    runs-on: ubuntu-latest
+    name: build&deploy
+    steps:
+      # To use this repository's private action, you must check out the repository
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install Dependencies
+        run: npm i
+        
+      - name: Build
+        run: npm run build
+
+      - name: deploy file to server
+        uses: wlixcc/SFTP-Deploy-Action@v1.2.4
+        with:
+          username: 'root'
+          server: '${{ secrets.SERVER_IP }}'
+          ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
+          local_path: 'www-build'
+          remote_path: 'home/metrograma/Metro-Grama/www-build'
+          sftpArgs: '-o ConnectTimeout=5'

@@ -62,7 +62,7 @@ export const GoogleLink = ({ className = "" }: { className?: string }) => {
       )}
     >
       {GoogleSvg}
-      Inicia Sesión con Google
+      Inicia sesión con Google
     </a>
   );
 };

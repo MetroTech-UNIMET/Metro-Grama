@@ -4,9 +4,15 @@ import App from "./App";
 import "./index.css";
 
 const rootElement = document.getElementById("root");
-if (!rootElement) throw new Error("nO HAY ROOT");
+if (!rootElement) throw new Error("No hay root");
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 ReactDOM.createRoot(rootElement).render(
   <QueryClientProvider client={queryClient}>

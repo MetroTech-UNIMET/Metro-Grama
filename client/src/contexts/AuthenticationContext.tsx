@@ -2,6 +2,8 @@ import { logOutGoogle } from "@/api/authApi";
 import { getStudentProfile } from "@/api/studentsApi";
 import { Student } from "@/interfaces/Student";
 import { toast } from "@ui/use-toast";
+import { notRetryOnUnauthorized } from "@utils/queries";
+import { AxiosError } from "axios";
 import { createContext, useContext, useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 
@@ -30,9 +32,12 @@ export default function AuthenticationContext({
 }) {
   const queryClient = useQueryClient();
 
-  const { data, isLoading, error } = useQuery<Student | null>(
+  const { data, isLoading, error } = useQuery<Student | null, AxiosError>(
     ["students", "profile"],
-    getStudentProfile
+    getStudentProfile,
+    {
+      retry: notRetryOnUnauthorized,
+    }
   );
 
   const logOutMutation = useMutation(logOutGoogle, {

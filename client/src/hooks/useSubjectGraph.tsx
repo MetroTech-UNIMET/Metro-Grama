@@ -11,6 +11,7 @@ import { getEnrolledSubjects } from "@/api/interactions/enrollApi";
 
 import "@antv/graphin-icons/dist/index.css";
 import { AxiosError } from "axios";
+import { notRetryOnUnauthorized } from "@utils/queries";
 
 const icons = Graphin.registerFontFamily(iconLoader);
 
@@ -18,12 +19,13 @@ export default function useSubjectGraph(
   data: Graph<Subject> | undefined,
   selectedCareers: DropdownOption[]
 ) {
-  const {
-    data: enrolledSubjects,
-    error: errorEnrolledSubjects,
-  } = useQuery<string[], AxiosError>({
+  const { data: enrolledSubjects, error: errorEnrolledSubjects } = useQuery<
+    string[],
+    AxiosError
+  >({
     queryKey: ["enrolledSubjects", "studentId"],
     queryFn: () => getEnrolledSubjects(),
+    retry: notRetryOnUnauthorized,
   });
 
   const [graph, setGraph] = useState<GraphinData>({ nodes: [], edges: [] });

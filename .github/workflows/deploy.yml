@@ -30,4 +30,4 @@ jobs:
           local_path: 'www-build/*'
           remote_path: '/home/metrograma/Metro-Grama/www-build'
           sftpArgs: '-o ConnectTimeout=5'
-          delete_remote_files: true
+          # delete_remote_files: true

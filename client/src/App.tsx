@@ -1,4 +1,8 @@
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import {
+  createBrowserRouter,
+  Navigate,
+  RouterProvider,
+} from "react-router-dom";
 import GraphLayout from "@/layouts/GraphLayout";
 // import BasicLayout from "@/layouts/BasicLayout";
 
@@ -17,9 +21,15 @@ function App() {
     // },
     {
       element: <GraphLayout />,
-      children: [{ path: "/materias", element: <Grafo /> }],
+      children: [
+        { path: "/materias", element: <Grafo /> },
+
+        // FIXME Redirect to materia - Eliminar para poner landing a futuro
+        { path: "/", element: <Navigate to="/materias" /> },
+      ],
     },
   ]);
+
   return (
     <>
       <RouterProvider router={router} />

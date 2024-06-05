@@ -195,7 +195,7 @@ RELATE subject:BPTMI04->precede->subject:BPTMI05;
 RELATE subject:BPTMI06->precede->subject:BPTMI07;
 RELATE subject:FPTSP01->precede->subject:FPTSP26;
 RELATE subject:BPTMI11->precede->subject:FPTSP17;
-RELATE subject:BPTMI03->precede->subject:BPTSP04;
+RELATE subject:BPTSP03->precede->subject:BPTSP04;
 
 RELATE subject:BPTMI05->belong->career:sistemas SET trimester = 7;
 RELATE subject:BPTMI07->belong->career:sistemas SET trimester = 7;

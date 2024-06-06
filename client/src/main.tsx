@@ -13,7 +13,6 @@ const queryClient = new QueryClient({
     },
   },
 });
-console.log(process.env.VITE_API_URL)
 
 ReactDOM.createRoot(rootElement).render(
   <QueryClientProvider client={queryClient}>

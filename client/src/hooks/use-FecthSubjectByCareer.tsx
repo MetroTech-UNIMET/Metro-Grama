@@ -1,7 +1,7 @@
 import { getSubjects } from "@/api/subjectsAPI";
 import { Subject } from "@/interfaces/Subject";
 import { useEffect, useRef, useState } from "react";
-import { useQuery } from "react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
 import useFetchCareersOptions, { CareerOption } from "./use-FetchCareersOptions";
 
@@ -14,9 +14,9 @@ export default function useFecthSubjectByCareer() {
   const careers = searchParams.get("careers") ?? "none";
   const subjectQuery = useQuery<Graph<Subject>>({
     queryKey: [
-      "careers",
+      "subjects",
       {
-        careers,
+        careers: careers === "none" ? [] : careers.split(",").sort()
       },
     ],
     queryFn: () => getSubjects(careers),

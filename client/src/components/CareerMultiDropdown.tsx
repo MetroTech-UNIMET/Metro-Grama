@@ -1,11 +1,13 @@
 import MultipleSelector, { Option } from "@ui/derived/multidropdown";
 import { Spinner } from "@ui/spinner";
-import useFetchCareersOptions from "@/hooks/use-FetchCareersOptions";
+import useFetchCareersOptions, {
+  CareerOption,
+} from "@/hooks/use-FetchCareersOptions";
 
 interface Props {
   loadingSubjects: boolean;
-  value: Option[];
-  onChange: (value: Option[]) => void;
+  value: CareerOption[];
+  onChange: (value: CareerOption[]) => void;
   maxSelected?: number;
 }
 
@@ -22,7 +24,7 @@ export function CareerMultiDropdown({
     <div className="relative max-w-sm w-full">
       <MultipleSelector
         value={value}
-        onChange={onChange}
+        onChange={onChange as (value: Option[]) => void}
         options={options}
         maxSelected={maxSelected}
         placeholder={

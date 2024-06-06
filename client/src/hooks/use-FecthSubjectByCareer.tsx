@@ -3,19 +3,16 @@ import { Subject } from "@/interfaces/Subject";
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "react-query";
 import { useSearchParams } from "react-router-dom";
-import { Option } from "@ui/derived/multidropdown";
-import useFetchCareersOptions from "./use-FetchCareersOptions";
+import useFetchCareersOptions, { CareerOption } from "./use-FetchCareersOptions";
 
 export default function useFecthSubjectByCareer() {
-  const [selectedCareers, setSelectedCareers] = useState<Option[]>([]);
+  const [selectedCareers, setSelectedCareers] = useState<CareerOption[]>([]);
   const [searchParams, setSearchParams] = useSearchParams({
     careers: "none",
   });
 
   const careers = searchParams.get("careers") ?? "none";
-  const { data, isLoading, isRefetching, error, refetch } = useQuery<
-    Graph<Subject>
-  >({
+  const subjectQuery = useQuery<Graph<Subject>>({
     queryKey: [
       "careers",
       {
@@ -30,7 +27,7 @@ export default function useFecthSubjectByCareer() {
   const isFirstRender = useRef(true);
 
   useEffect(() => {
-    if (options.length === 0 || isLoading) return;
+    if (options.length === 0 || subjectQuery.isLoading) return;
 
     if (isFirstRender.current) {
       isFirstRender.current = false;
@@ -44,7 +41,7 @@ export default function useFecthSubjectByCareer() {
         const careers = filter.split(",");
 
         const selectedCareers = careers.map((career) => {
-          const option = options.find((option) => option.value === career)!;
+          const option = options.find((option) => option.query === career)!;
           return option;
         });
         setSelectedCareers(selectedCareers);
@@ -55,21 +52,14 @@ export default function useFecthSubjectByCareer() {
     if (selectedCareers.length === 0) {
       setSearchParams({ careers: "none" });
     } else {
-      const careers = selectedCareers.map((career) => career.value).join(",");
+      const careers = selectedCareers.map((career) => career.query).join(",");
       setSearchParams({ careers });
     }
   }, [selectedCareers, loadingCareers]);
 
   useEffect(() => {
-    refetch();
+    subjectQuery.refetch();
   }, [searchParams]);
 
-  return {
-    data,
-    isLoading,
-    isRefetching,
-    error,
-    selectedCareers,
-    setSelectedCareers,
-  };
+  return { ...subjectQuery, selectedCareers, setSelectedCareers };
 }

@@ -21,6 +21,9 @@ jobs:
         run: npm run build
         working-directory: client
 
+        env:
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+
       - name: deploy file to server
         uses: wlixcc/SFTP-Deploy-Action@v1.2.4
         with:
@@ -32,5 +35,3 @@ jobs:
           sftpArgs: '-o ConnectTimeout=5'
           # delete_remote_files: true
       
-        env:
-          VITE_API_URL: ${{ secrets.VITE_API_URL }}

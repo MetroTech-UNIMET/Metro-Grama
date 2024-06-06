@@ -1,9 +1,11 @@
 import { getSubjects } from "@/api/subjectsAPI";
 import { Subject } from "@/interfaces/Subject";
 import { useEffect, useRef, useState } from "react";
-import { useQuery } from "react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
-import useFetchCareersOptions, { CareerOption } from "./use-FetchCareersOptions";
+import useFetchCareersOptions, {
+  CareerOption,
+} from "./use-FetchCareersOptions";
 
 export default function useFecthSubjectByCareer() {
   const [selectedCareers, setSelectedCareers] = useState<CareerOption[]>([]);
@@ -14,9 +16,9 @@ export default function useFecthSubjectByCareer() {
   const careers = searchParams.get("careers") ?? "none";
   const subjectQuery = useQuery<Graph<Subject>>({
     queryKey: [
-      "careers",
+      "subjects",
       {
-        careers,
+        careers: careers === "none" ? [] : careers.split(",").sort(),
       },
     ],
     queryFn: () => getSubjects(careers),
@@ -27,7 +29,7 @@ export default function useFecthSubjectByCareer() {
   const isFirstRender = useRef(true);
 
   useEffect(() => {
-    if (options.length === 0 || subjectQuery.isLoading) return;
+    if (options.length === 0 || loadingCareers) return;
 
     if (isFirstRender.current) {
       isFirstRender.current = false;
@@ -44,6 +46,7 @@ export default function useFecthSubjectByCareer() {
           const option = options.find((option) => option.query === career)!;
           return option;
         });
+
         setSelectedCareers(selectedCareers);
       }
       return;

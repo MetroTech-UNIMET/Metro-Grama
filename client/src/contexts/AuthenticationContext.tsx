@@ -5,7 +5,7 @@ import { toast } from "@ui/use-toast";
 import { notRetryOnUnauthorized } from "@utils/queries";
 import { AxiosError } from "axios";
 import { createContext, useContext, useEffect, useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 
 interface AuthContextProps {
   student: Student | null;
@@ -32,14 +32,15 @@ export default function AuthenticationContext({
 }) {
   const queryClient = useQueryClient();
 
-  const { data, isLoading, error } = useQuery<Student | null, AxiosError>({
-    queryKey: ["students", "profile"],
-    queryFn: getStudentProfile,
-    retry: notRetryOnUnauthorized,
-  });
+  const { data, isLoading, error } = useQuery<Student | null, AxiosError>(
+    ["students", "profile"],
+    getStudentProfile,
+    {
+      retry: notRetryOnUnauthorized,
+    }
+  );
 
-  const logOutMutation = useMutation({
-    mutationFn: logOutGoogle,
+  const logOutMutation = useMutation(logOutGoogle, {
     //@ts-ignore TODO Considerar mostrar una descripción del error
     onError: (error) => {
       toast({
@@ -49,9 +50,7 @@ export default function AuthenticationContext({
     },
     onSuccess: async () => {
       setStudent(null);
-      return await queryClient.invalidateQueries({
-        queryKey: ["students", "profile"],
-      });
+      return await queryClient.invalidateQueries("students");
     },
   });
 

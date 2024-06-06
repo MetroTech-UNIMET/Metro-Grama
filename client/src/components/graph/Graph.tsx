@@ -9,17 +9,31 @@ import useSubjectGraph from "@/hooks/useSubjectGraph";
 import { ShowAxiosError } from "@components/ShowAxiosError";
 import { CareerMultiDropdown } from "@components/CareerMultiDropdown";
 
+import { Spinner } from "@ui/spinner";
 import GoogleLogin from "@ui/derived/GoogleLogin";
 
 import useFecthSubjectByCareer from "@/hooks/use-FecthSubjectByCareer";
 
 export default function Graph() {
-  const { data, error, isLoading, selectedCareers, setSelectedCareers } =
-    useFecthSubjectByCareer();
+  const {
+    data,
+    error,
+    isLoading,
+    isRefetching,
+    selectedCareers,
+    setSelectedCareers,
+  } = useFecthSubjectByCareer();
 
   const { graph } = useSubjectGraph(data, selectedCareers);
 
   if (error) return <ShowAxiosError error={error as AxiosError} />;
+
+  if (isLoading || !data)
+    return (
+      <div className="h-full grid place-items-center ">
+        <Spinner size="giant" />
+      </div>
+    );
 
   return (
     <>
@@ -27,7 +41,7 @@ export default function Graph() {
         <GoogleLogin />
 
         <CareerMultiDropdown
-          loadingSubjects={isLoading}
+          loadingSubjects={isRefetching}
           value={selectedCareers}
           onChange={setSelectedCareers}
         />

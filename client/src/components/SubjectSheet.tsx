@@ -83,22 +83,22 @@ function SubjectSheetBody({ subject }: { subject: Subject }) {
         <SheetTitle>
           {subject.name} ({subject.code})
         </SheetTitle>
-        <SheetDescription>
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam
-        </SheetDescription>
       </SheetHeader>
 
-      <main className="mt-2">
-        <section className="flex flex-wrap gap-4">
+      <main className="mt-2 space-y-4">
+        <section className="flex flex-wrap gap-4 justify-center">
           {subject.careers.map((career) => (
-            <Badge key={career} className="bg-Unimet-primary-300">
-              {career}
+            <Badge key={career} className="line-clamp-1">
+              {career.split(":")[1]}
             </Badge>
           ))}
         </section>
+
+        <SheetDescription>Proximamente...</SheetDescription>
       </main>
 
-      <SheetFooter>chao</SheetFooter>
+      {/* REVIEW - Considerar poner acciones */}
+      {/* <SheetFooter>Proximamente...</SheetFooter> */}
     </>
   );
 }

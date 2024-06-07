@@ -15,7 +15,7 @@ import { enrollStudent, unenrollStudent } from "@/api/interactions/enrollApi";
 import { toast } from "@ui/use-toast";
 import { useAuth } from "@/contexts/AuthenticationContext";
 import { GoogleLink } from "@ui/link";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation } from "react-query";
 import { ToastAction } from "@ui/toast";
 
 interface MenuNodeProps {
@@ -30,71 +30,73 @@ function MenuNode({ node, close }: MenuNodeProps) {
 
   const { graph } = useContext(GraphinContext);
 
-  const enrollMutation = useMutation({
-    mutationFn: (viewedNodes: string[]) => enrollStudent(viewedNodes),
+  const enrollMutation = useMutation(
+    (viewedNodes: string[]) => enrollStudent(viewedNodes),
+    {
+      //@ts-ignore TODO - Agregar custom error
+      onError: (error, viewedNodes) => {
+        viewedNodes.reverse().forEach((id) => {
+          const node = graph.findById(id) as INode;
+          nodeActions.disableViewedNode(node, node.getOutEdges());
+        });
 
-    //@ts-ignore TODO - Agregar custom error
-    onError: (error, viewedNodes) => {
-      viewedNodes.reverse().forEach((id) => {
-        const node = graph.findById(id) as INode;
-        nodeActions.disableViewedNode(node, node.getOutEdges());
-      });
+        toast({
+          title: "Error al marcar materia vista",
+          description: "Intente de nuevo más tarde",
+          variant: "destructive",
+          action: (
+            <ToastAction
+              altText="Intente de nuevo"
+              onClick={() => enrollMutation.mutateAsync(viewedNodes)}
+            >
+              Intente de nuevo
+            </ToastAction>
+          ),
+        });
+      },
+      onSuccess: () => {
+        toast({
+          title: "Materias marcadas exitosamente",
+          description: "Sus materias se guardaron en la base de datos",
+          variant: "success",
+        });
+      },
+    }
+  );
 
-      toast({
-        title: "Error al marcar materia vista",
-        description: "Intente de nuevo más tarde",
-        variant: "destructive",
-        action: (
-          <ToastAction
-            altText="Intente de nuevo"
-            onClick={() => enrollMutation.mutateAsync(viewedNodes)}
-          >
-            Intente de nuevo
-          </ToastAction>
-        ),
-      });
-    },
-    onSuccess: () => {
-      toast({
-        title: "Materias marcadas exitosamente",
-        description: "Sus materias se guardaron en la base de datos",
-        variant: "success",
-      });
-    },
-  });
+  const unenrollMutation = useMutation(
+    (viewedNodes: string[]) => unenrollStudent(viewedNodes),
+    {
+      //@ts-ignore TODO - Agregar custom error
+      onError: (error, viewedNodes) => {
+        viewedNodes.forEach((id) => {
+          const node = graph.findById(id) as INode;
+          nodeActions.enableViewedNode(node);
+        });
 
-  const unenrollMutation = useMutation({
-    mutationFn: (viewedNodes: string[]) => unenrollStudent(viewedNodes),
-
-    //@ts-ignore TODO - Agregar custom error
-    onError: (error, viewedNodes) => {
-      viewedNodes.forEach((id) => {
-        const node = graph.findById(id) as INode;
-        nodeActions.enableViewedNode(node);
-      });
-
-      toast({
-        title: "Error al desmarcar materia vista",
-        description: "Intente de nuevo más tarde",
-        variant: "destructive",
-        action: (
-          <ToastAction
-            altText="Intente de nuevo"
-            onClick={() => unenrollMutation.mutateAsync(viewedNodes)}
-          >
-            Intente de nuevo
-          </ToastAction>
-        ),
-      });
-    },
-    onSuccess: () => {
-      toast({
-        title: "Materias desmarcadas exitosamente",
-        description: "Sus materias se guardaron en la base de datos",
-        variant: "success",
-      });
-    },
-  });
+        toast({
+          title: "Error al desmarcar materia vista",
+          description: "Intente de nuevo más tarde",
+          variant: "destructive",
+          action: (
+            <ToastAction
+              altText="Intente de nuevo"
+              onClick={() => unenrollMutation.mutateAsync(viewedNodes)}
+            >
+              Intente de nuevo
+            </ToastAction>
+          ),
+        });
+      },
+      onSuccess: () => {
+        toast({
+          title: "Materias desmarcadas exitosamente",
+          description: "Sus materias se guardaron en la base de datos",
+          variant: "success",
+        });
+      },
+    }
+  );
 
   if (!node) return null;
 

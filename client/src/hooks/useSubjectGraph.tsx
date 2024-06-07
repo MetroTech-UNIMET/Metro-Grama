@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery } from "react-query";
 import Graphin, { GraphinData } from "@antv/graphin";
 import iconLoader from "@antv/graphin-icons";
 import { NodeStyleIcon } from "@antv/graphin/lib/typings/type";

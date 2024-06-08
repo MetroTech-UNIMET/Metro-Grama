@@ -7,6 +7,7 @@ import (
 	"metrograma/env"
 	"metrograma/handlers"
 	"metrograma/middlewares"
+	"strings"
 
 	"github.com/gorilla/sessions"
 	"github.com/labstack/echo-contrib/session"
@@ -29,7 +30,9 @@ func main() {
 	e.Use(echoMiddleware.Gzip())
 	e.Use(echoMiddleware.Decompress())
 	e.Use(echoMiddleware.StaticWithConfig(echoMiddleware.StaticConfig{
-		Skipper: nil,
+		Skipper: func(c echo.Context) bool {
+			return strings.HasPrefix(c.Path(), "/api")
+		},
 		// Root directory from where the static content is served.
 		Root: "www-build",
 		// Index file for serving a directory.
@@ -44,10 +47,6 @@ func main() {
 	}))
 
 	handlers.CreateHandlers(e)
-
-	// Servir el frontend ya compilado en todas las rutas no tomadas
-	// Ya el frontend se encargara de manejarlas con react router
-	e.Static("/*", "www-build")
 
 	e.Logger.Fatal(e.Start(fmt.Sprintf(":%s", env.GetDotEnv("PORT"))))
 

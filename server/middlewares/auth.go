@@ -14,11 +14,22 @@ func UserAuth(next echo.HandlerFunc) echo.HandlerFunc {
 		if err != nil {
 			return echo.NewHTTPError(http.StatusUnauthorized)
 		}
-		if v, ok := sessAuth.Values["user-id"]; !ok {
+		userID, ok := sessAuth.Values["user-id"]
+		if !ok {
 			return echo.NewHTTPError(http.StatusUnauthorized)
-		} else {
-			c.Set("user-id", v)
 		}
+		userIDStr, ok := userID.(string)
+		if !ok {
+			return echo.NewHTTPError(http.StatusBadRequest)
+		}
+
+		user, err := storage.ExistStudent(userIDStr)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest)
+		}
+
+		c.Set("user-id", user.ID)
+
 		return next(c)
 	}
 }
@@ -47,7 +58,7 @@ func AdminAuth(next echo.HandlerFunc) echo.HandlerFunc {
 			return echo.NewHTTPError(http.StatusUnauthorized)
 		}
 
-		c.Set("user-id", userIDStr)
+		c.Set("user-id", user.ID)
 
 		return next(c)
 	}

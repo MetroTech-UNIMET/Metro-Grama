@@ -91,25 +91,13 @@ export default function useSubjectGraph(
       //@ts-ignore
       nodes: data.nodes!.map((node) => {
         const icon = getNormalIcon(node.data, selectedCareers);
-        let iconLen = icon.value!.replace(/\s/g, "").length;
-        iconLen = iconLen == 0 ? 2 : iconLen > 2 ? iconLen * 0.54 : iconLen;
-        const labelOffset = iconLen > 2 ? 10 * 0.52 * iconLen : 10;
+        const [labelOffset, iconLen] = getCustomIconProps(icon);
 
-        const isEnrolled = setEnrolledSubjects.has(node.id);
-
-        let isAccesible = false;
-        if (!isEnrolled) {
-          Object.entries(relations).forEach(([subject, subjectRelations]) => {
-            if (subjectRelations.has(node.id)) {
-              if (setEnrolledSubjects.has(subject)) {
-                isAccesible = true;
-              } else {
-                isAccesible = false;
-                return;
-              }
-            }
-          });
-        }
+        const [isEnrolled, isAccesible] = getNodeStatus(
+          node,
+          setEnrolledSubjects,
+          relations
+        );
 
         return {
           id: node.id,
@@ -163,6 +151,7 @@ export default function useSubjectGraph(
       }),
     };
 
+    console.log(relations);
     setGraph(newGraph);
   }, [data, selectedCareers, enrolledSubjects]);
 
@@ -189,6 +178,12 @@ function careerEmoji(career: string): string {
   return "";
 }
 
+/**
+ * Returns the NodeStyleIcon for a given subject and selected careers.
+ * @param subject - The subject object.
+ * @param selectedCareers - The selected careers as DropdownOptions.
+ * @returns The NodeStyleIcon object.
+ */
 function getNormalIcon(
   subject: Subject,
   selectedCareers: DropdownOption[]
@@ -223,9 +218,56 @@ function getNormalIcon(
 
   return {
     size: 25,
-    fill: "green",
     type: "text",
     fontFamily: "graphin",
     value: icon,
   };
+}
+
+/**
+ * Calculates the custom icon properties based on the provided NodeStyleIcon.
+ * @param icon - The NodeStyleIcon object.
+ * @returns An array containing the label offset and icon length.
+ */
+function getCustomIconProps(icon: NodeStyleIcon) {
+  let iconLen = icon.value!.replace(/\s/g, "").length;
+  iconLen = iconLen == 0 ? 2 : iconLen > 2 ? iconLen * 0.54 : iconLen;
+  const labelOffset = iconLen > 2 ? 10 * 0.52 * iconLen : 10;
+
+  return [labelOffset, iconLen];
+}
+
+
+/**
+ * Determines the status of a node in the subject graph.
+ *
+ * @param node - The node to determine the status for.
+ * @param setEnrolledSubjects - A set of enrolled subjects.
+ * @param relations - A record of subject relations.
+ * @returns An array containing two boolean values: [isEnrolled, isAccessible].
+ */
+function getNodeStatus(
+  node: Node4j<Subject>,
+  setEnrolledSubjects: Set<string>,
+  relations: Record<string, Set<string>>
+) {
+  const isEnrolled = setEnrolledSubjects.has(node.id);
+  if (isEnrolled) {
+    return [true, false];
+  }
+
+  let isAccesible = false;
+  for (let [subject, subjectRelations] of Object.entries(relations)) {
+    if (subjectRelations.has(node.id)) {
+      if (setEnrolledSubjects.has(subject)) {
+        isAccesible = true;
+      } else {
+        isAccesible = false;
+      }
+      return [false, isAccesible];
+    }
+  }
+
+  // Son los nodos iniciales
+  return [false, true];
 }

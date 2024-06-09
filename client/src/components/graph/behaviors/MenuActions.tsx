@@ -187,11 +187,11 @@ export default function MenuActions() {
       handleNodeTouchStart(e);
     }
 
-    function handleNodeTouchEnd() {
+    function handleNodeTouchEnd(shouldClose = false) {
       globalBlur();
 
       clearTimerRef();
-      close();
+      if (shouldClose) close();
     }
 
     function globalBlur() {
@@ -205,7 +205,10 @@ export default function MenuActions() {
     graph.on("node:touchend", handleNodeTouchEnd);
 
     graph.on("canvas:click", close);
-    graph.on("canvas:touchstart", handleNodeTouchEnd);
+    graph.on("canvas:drag", () => handleNodeTouchEnd(true));
+    graph.on("canvas:touchstart", close);
+
+    window.addEventListener("touchend", () => handleNodeTouchEnd(false));
 
     return () => {
       graph.off("node:contextmenu", handleOpenContextMenu);
@@ -214,8 +217,11 @@ export default function MenuActions() {
       graph.off("node:touchmove", handleNodeTouchMove);
       graph.off("node:touchend", handleNodeTouchEnd);
 
-      graph.off("canvas:click", close);
-      graph.off("canvas:touchstart", handleNodeTouchEnd);
+      graph.off("canvas:click", handleNodeTouchEnd);
+      graph.off("canvas:drag", () => handleNodeTouchEnd(true));
+      graph.off("canvas:touchstart", close);
+
+      window.removeEventListener("touchend", () => handleNodeTouchEnd(false));
     };
   }, []);
 

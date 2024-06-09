@@ -205,7 +205,7 @@ export default function MenuActions() {
     graph.on("node:touchend", handleNodeTouchEnd);
 
     graph.on("canvas:click", close);
-    graph.on("canvas:drag", () => handleNodeTouchEnd(true));
+    graph.on("canvas:drag", close);
     graph.on("canvas:touchstart", close);
 
     window.addEventListener("touchend", () => handleNodeTouchEnd(false));
@@ -218,7 +218,7 @@ export default function MenuActions() {
       graph.off("node:touchend", handleNodeTouchEnd);
 
       graph.off("canvas:click", handleNodeTouchEnd);
-      graph.off("canvas:drag", () => handleNodeTouchEnd(true));
+      graph.off("canvas:drag", close);
       graph.off("canvas:touchstart", close);
 
       window.removeEventListener("touchend", () => handleNodeTouchEnd(false));

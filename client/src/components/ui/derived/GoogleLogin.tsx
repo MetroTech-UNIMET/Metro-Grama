@@ -9,8 +9,6 @@ import { LogOutIcon } from "lucide-react";
 export default function GoogleLogin() {
   const { student, loadingAuth, logOut } = useAuth();
 
-  console.log(student, loadingAuth);
-
   if (loadingAuth) return <AvatarSkeleton />;
 
   if (student) {

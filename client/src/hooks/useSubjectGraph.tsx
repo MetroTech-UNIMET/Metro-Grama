@@ -111,6 +111,8 @@ export default function useSubjectGraph(
           style: {
             icon: icon,
             keyshape: {
+              fill: "white",
+              stroke: "#5B8FF9",
               size: 22.5 * iconLen,
             },
             label: {
@@ -151,7 +153,6 @@ export default function useSubjectGraph(
       }),
     };
 
-    console.log(relations);
     setGraph(newGraph);
   }, [data, selectedCareers, enrolledSubjects]);
 
@@ -236,7 +237,6 @@ function getCustomIconProps(icon: NodeStyleIcon) {
 
   return [labelOffset, iconLen];
 }
-
 
 /**
  * Determines the status of a node in the subject graph.

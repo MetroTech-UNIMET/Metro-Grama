@@ -15,20 +15,14 @@ import GoogleLogin from "@ui/derived/GoogleLogin";
 import useFecthSubjectByCareer from "@/hooks/use-FecthSubjectByCareer";
 
 export default function Graph() {
-  const {
-    data,
-    error,
-    isLoading,
-    isRefetching,
-    selectedCareers,
-    setSelectedCareers,
-  } = useFecthSubjectByCareer();
+  const { data, error, isLoading, selectedCareers, setSelectedCareers } =
+    useFecthSubjectByCareer();
 
   const { graph } = useSubjectGraph(data, selectedCareers);
 
   if (error) return <ShowAxiosError error={error as AxiosError} />;
 
-  if (isLoading || !data)
+  if (!data && graph.nodes.length === 0)
     return (
       <div className="h-full grid place-items-center ">
         <Spinner size="giant" />
@@ -41,7 +35,7 @@ export default function Graph() {
         <GoogleLogin />
 
         <CareerMultiDropdown
-          loadingSubjects={isRefetching}
+          loadingSubjects={isLoading}
           value={selectedCareers}
           onChange={setSelectedCareers}
         />

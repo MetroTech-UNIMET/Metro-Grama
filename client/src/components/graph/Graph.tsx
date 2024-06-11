@@ -1,4 +1,4 @@
-import Graphin from "@antv/graphin";
+import Graphin, {Behaviors} from "@antv/graphin";
 import { AxiosError } from "axios";
 
 import SearchPrelations from "./behaviors/Search-Prelations";
@@ -13,6 +13,8 @@ import { Spinner } from "@ui/spinner";
 import GoogleLogin from "@ui/derived/GoogleLogin";
 
 import useFecthSubjectByCareer from "@/hooks/use-FecthSubjectByCareer";
+
+const {Hoverable} = Behaviors
 
 export default function Graph() {
   const { data, error, isLoading, selectedCareers, setSelectedCareers } =
@@ -59,6 +61,8 @@ export default function Graph() {
         >
           <SearchPrelations />
           <MenuActions />
+          <Hoverable bindType="node" />
+
         </Graphin>
       )}
     </>

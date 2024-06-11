@@ -19,6 +19,8 @@ export default function useSubjectGraph(
   data: Graph<Subject> | undefined,
   selectedCareers: DropdownOption[]
 ) {
+  const [graph, setGraph] = useState<GraphinData>({ nodes: [], edges: [] });
+
   const { data: enrolledSubjects, error: errorEnrolledSubjects } = useQuery<
     string[],
     AxiosError
@@ -27,8 +29,6 @@ export default function useSubjectGraph(
     queryFn: () => getEnrolledSubjects(),
     retry: notRetryOnUnauthorized,
   });
-
-  const [graph, setGraph] = useState<GraphinData>({ nodes: [], edges: [] });
 
   useEffect(() => {
     if (data?.nodes.length === 0) {
@@ -93,6 +93,8 @@ export default function useSubjectGraph(
         const icon = getNormalIcon(node.data, selectedCareers);
         const [labelOffset, iconLen] = getCustomIconProps(icon);
 
+        const nodeSize = 22.5 * iconLen;
+
         const [isEnrolled, isAccesible] = getNodeStatus(
           node,
           setEnrolledSubjects,
@@ -113,7 +115,7 @@ export default function useSubjectGraph(
             keyshape: {
               fill: "white",
               stroke: "#5B8FF9",
-              size: 22.5 * iconLen,
+              size: nodeSize,
             },
             label: {
               value: node.data.name,
@@ -122,6 +124,25 @@ export default function useSubjectGraph(
               fontSize: 12,
             },
             status: {
+              hover: {
+                halo: {
+                  animate: {
+                    attrs: (ratio: number) => {
+                      const startR = nodeSize - 15;
+                      const diff = 6;
+
+                      return {
+                        r: startR + diff * ratio,
+                        opacity: 0.5 + 0.5 * ratio,
+                      };
+                    },
+                    duration: 200,
+                    easing: "easeCubic",
+                    delay: 0,
+                    repeat: false,
+                  },
+                },
+              },
               start: {
                 halo: {
                   visible: true,

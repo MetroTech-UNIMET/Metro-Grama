@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"fmt"
 	"metrograma/storage"
 	"net/http"
 
@@ -18,14 +19,15 @@ func UserAuth(next echo.HandlerFunc) echo.HandlerFunc {
 		if !ok {
 			return echo.NewHTTPError(http.StatusUnauthorized)
 		}
+		fmt.Println(userID)
 		userIDStr, ok := userID.(string)
 		if !ok {
-			return echo.NewHTTPError(http.StatusBadRequest)
+			return echo.NewHTTPError(http.StatusUnauthorized)
 		}
 
 		user, err := storage.ExistStudent(userIDStr)
 		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest)
+			return echo.NewHTTPError(http.StatusUnauthorized)
 		}
 
 		c.Set("user-id", user.ID)
@@ -46,12 +48,12 @@ func AdminAuth(next echo.HandlerFunc) echo.HandlerFunc {
 		}
 		userIDStr, ok := userID.(string)
 		if !ok {
-			return echo.NewHTTPError(http.StatusBadRequest)
+			return echo.NewHTTPError(http.StatusUnauthorized)
 		}
 
 		user, err := storage.ExistStudent(userIDStr)
 		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest)
+			return echo.NewHTTPError(http.StatusUnauthorized)
 		}
 
 		if user.Role != "role:admin" {

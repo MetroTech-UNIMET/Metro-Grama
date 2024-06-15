@@ -1,9 +1,5 @@
 import { useContext, useEffect, useRef, useState } from "react";
-import {
-  GraphinContext,
-  IG6GraphEvent,
-  GraphinContextType,
-} from "@antv/graphin";
+import { GraphinContext, IG6GraphEvent } from "@antv/graphin";
 import { INode } from "@antv/g6";
 
 import { ListContent, ListHeader, ListItem } from "@ui/list";
@@ -153,9 +149,8 @@ const longTouchDuration = 1000;
 
 // REVIEW - Considerar hacer focus en el nodo al abrir el menu
 // TODO - Mejor manejo de posición como si fuera un tooltip
-// TODO - Bloquear el mover el grafo cuando el menu está abierto
 export default function MenuActions() {
-  const { graph }: GraphinContextType = useContext(GraphinContext);
+  const { graph } = useContext(GraphinContext);
   const [node, setNode] = useState<INode | null>(null);
   const [position, setPosition] = useState({ x: 0, y: 0 });
 
@@ -194,8 +189,9 @@ export default function MenuActions() {
       if (shouldClose) close();
     }
 
-    function globalBlur() {
-      (document.activeElement as HTMLElement)?.blur();
+    function close_Blur() {
+      globalBlur();
+      close();
     }
 
     graph.on("node:contextmenu", handleOpenContextMenu);
@@ -204,11 +200,13 @@ export default function MenuActions() {
     graph.on("node:touchmove", handleNodeTouchMove);
     graph.on("node:touchend", handleNodeTouchEnd);
 
-    graph.on("canvas:click", close);
-    graph.on("canvas:drag", close);
-    graph.on("canvas:touchstart", close);
+    graph.on("canvas:click", close_Blur);
+    graph.on("canvas:drag", close_Blur);
+    graph.on("canvas:touchstart", close_Blur);
 
-    window.addEventListener("touchend", () => handleNodeTouchEnd(false));
+    // document.addEventListener("click", globalClickCloseMenu);
+    // TODO - Add event listener on zoom to close
+    // TODO - Add event listener on element not in graph to close
 
     return () => {
       graph.off("node:contextmenu", handleOpenContextMenu);
@@ -220,8 +218,6 @@ export default function MenuActions() {
       graph.off("canvas:click", handleNodeTouchEnd);
       graph.off("canvas:drag", close);
       graph.off("canvas:touchstart", close);
-
-      window.removeEventListener("touchend", () => handleNodeTouchEnd(false));
     };
   }, []);
 
@@ -249,4 +245,9 @@ export default function MenuActions() {
       <MenuNode node={node} close={close} />
     </div>
   );
+}
+function globalBlur() {
+  console.log(document.activeElement);
+
+  (document.activeElement as HTMLElement)?.blur();
 }

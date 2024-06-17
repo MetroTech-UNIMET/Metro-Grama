@@ -29,8 +29,7 @@ interface StatusActionsContextProps<NodeStatusObject = Subject> {
     };
     disableViewedNode: (node: INode, outEdges: IEdge[]) => void;
   };
-  changeNodeState: (nodeState: NodeState) => void;
-  changeNodesState: (nodesState: NodeState[]) => void;
+  changeNodeState: (nodeState: NodeState | NodeState[]) => void;
 
   edgeActions: {};
   graphActions: {};
@@ -66,26 +65,19 @@ export function StatusActions({ children }: { children: React.ReactNode }) {
     viewed: new Map(),
   });
 
-  function changeNodeState(nodeState: NodeState) {
+  function changeNodeState(nodeState: NodeState | NodeState[]) {
     const newNodeStatuses: Record<
       nodeCustomState,
       Map<string, Subject>
     > = nodeStatuses;
 
-    calculateNewState(nodeState, newNodeStatuses);
-
-    setNodeStatuses(newNodeStatuses);
-  }
-
-  function changeNodesState(nodesState: NodeState[]) {
-    const newNodeStatuses: Record<
-      nodeCustomState,
-      Map<string, Subject>
-    > = nodeStatuses;
-
-    nodesState.forEach((nodeState) => {
+    if (Array.isArray(nodeState)) {
+      nodeState.forEach((state) => {
+        calculateNewState(state, newNodeStatuses);
+      });
+    } else {
       calculateNewState(nodeState, newNodeStatuses);
-    });
+    }
 
     setNodeStatuses(newNodeStatuses);
   }
@@ -100,7 +92,6 @@ export function StatusActions({ children }: { children: React.ReactNode }) {
 
     changeNodeState({ node, newState: { state: "viewed", value: true } });
 
-    // REVIEW - Nodos repetidos
     enableChildrenNodes(node, viewedNodes);
     checkAccesible(outEdges);
 
@@ -115,7 +106,6 @@ export function StatusActions({ children }: { children: React.ReactNode }) {
 
     const previousNodes = getNodesFromEdges(inEdges, "source");
     previousNodes.forEach((node) => {
-      // REVIEW - Fijarme bien en esto
       if (node.hasState("viewed")) return;
 
       changeNodeState({ node, newState: { state: "viewed", value: true } });
@@ -176,13 +166,15 @@ export function StatusActions({ children }: { children: React.ReactNode }) {
     const nodesToCheck = getNodesFromEdges(outEdges, "target");
 
     nodesToCheck.forEach((node) => {
-      const isViewed = nodeStatuses.viewed.has(node.getID());
+      // REVIEW - En un futuro comparar cual forma es más rápida
+      const isViewed = node.hasState("viewed");
+      // nodeStatuses.viewed.has(node.getID());
       if (isViewed) return;
 
       const sourceNodes = getNodesFromEdges(node.getInEdges(), "source");
 
       const sourceNodesViewed = sourceNodes.every((node) =>
-        nodeStatuses.viewed.has(node.getID())
+        node.hasState("viewed")
       );
 
       if (!sourceNodesViewed) return;
@@ -205,7 +197,6 @@ export function StatusActions({ children }: { children: React.ReactNode }) {
           disableViewedNode,
         },
         changeNodeState,
-        changeNodesState,
 
         edgeActions: {},
         graphActions: {},

@@ -14,7 +14,7 @@ interface Props {
 export default function UpdateNodeStatusOnGraphChange({ graphData }: Props) {
   const { graph } = useContext(GraphinContext);
 
-  const { changeNodeState, changeNodesState } = useStatusActions();
+  const { changeNodeState } = useStatusActions();
 
   useEffect(() => {
     const nodesState: {
@@ -35,7 +35,7 @@ export default function UpdateNodeStatusOnGraphChange({ graphData }: Props) {
       });
     });
 
-    changeNodesState(nodesState);
+    changeNodeState(nodesState);
   }, [graphData]);
 
   return null;

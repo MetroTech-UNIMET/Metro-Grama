@@ -29,13 +29,8 @@ interface StatusActionsContextProps<NodeStatusObject = Subject> {
     };
     disableViewedNode: (node: INode, outEdges: IEdge[]) => void;
   };
-  changeNodeState: (node: INode, newState: newNodeState) => void;
-  changeNodesState: (
-    nodesState: {
-      node: INode;
-      newState: newNodeState;
-    }[]
-  ) => void;
+  changeNodeState: (nodeState: NodeState) => void;
+  changeNodesState: (nodesState: NodeState[]) => void;
 
   edgeActions: {};
   graphActions: {};
@@ -57,221 +52,82 @@ export function useStatusActions() {
 }
 
 type NodeStatuses<T> = {
-  [key in nodeCustomState]: T[];
-};
-
-type NodeStatusesExperiment<T> = {
   [key in nodeCustomState]: Map<string, T>;
 };
 
-//@ts-ignore
-interface ClearStateOptions {
-  /**
-   * An array of states to be set to true.
-   */
-  statesToTrue?: string[];
-  /**
-   * An array of states to be ignored (not cleared).
-   */
-  statesToIgnore?: string[];
+interface NodeState {
+  node: INode;
+  newState: newNodeState;
 }
 
 export function StatusActions({ children }: { children: React.ReactNode }) {
   const [nodeStatuses, setNodeStatuses] = useState<NodeStatuses<Subject>>({
-    accesible: [],
-    viewed: [],
-  });
-
-  const [experimentStatus, setExperimentStatus] = useState<
-    NodeStatusesExperiment<Subject>
-  >({
     accesible: new Map(),
     viewed: new Map(),
   });
 
-  function changeNodeState(node: INode, newState: newNodeState) {
-    const subject = (node.getModel().data as Node4j<Subject>).data;
-
-    if (Array.isArray(newState)) {
-      const newNodeStatuses: Record<string, Subject[]> = {};
-
-      newState.forEach(({ state, value }) => {
-        node.setState(state, value);
-        newNodeStatuses[state] = value
-          ? [...nodeStatuses[state], subject]
-          : nodeStatuses[state].filter((n) => n.code !== subject.code);
-      });
-
-      setNodeStatuses((prev) => ({
-        ...prev,
-        ...newNodeStatuses,
-      }));
-
-      return;
-    }
-
-    const { state, value } = newState;
-    node.setState(state, value);
-
-    const newNodeStatuses = {
-      [state]: value
-        ? [...nodeStatuses[state], subject]
-        : nodeStatuses[state].filter((n) => n.code !== subject.code),
-    };
-
-    setNodeStatuses((prev) => ({
-      ...prev,
-      ...newNodeStatuses,
-    }));
-  }
-
-  function changeNodesState(
-    nodesState: {
-      node: INode;
-      newState: newNodeState;
-    }[]
-  ) {
+  function changeNodeState(nodeState: NodeState) {
     const newNodeStatuses: Record<
       nodeCustomState,
       Map<string, Subject>
-    > = experimentStatus;
+    > = nodeStatuses;
 
-    nodesState.forEach(({ node, newState }) => {
-      const subject = (node.getModel().data as Node4j<Subject>).data;
-      const nodeId = node.getID();
+    calculateNewState(nodeState, newNodeStatuses);
 
-      if (Array.isArray(newState)) {
-        newState.forEach(({ state, value }) => {
-          node.setState(state, value);
+    setNodeStatuses(newNodeStatuses);
+  }
 
-          if (value) {
-            newNodeStatuses[state].set(nodeId, subject);
-          } else {
-            newNodeStatuses[state].delete(nodeId);
-          }
-        });
+  function changeNodesState(nodesState: NodeState[]) {
+    const newNodeStatuses: Record<
+      nodeCustomState,
+      Map<string, Subject>
+    > = nodeStatuses;
 
-        return;
-      }
-
-      const { state, value } = newState;
-      node.setState(state, value);
-
-      if (value) {
-        newNodeStatuses[state].set(nodeId, subject);
-      } else {
-        newNodeStatuses[state].delete(nodeId);
-      }
+    nodesState.forEach((nodeState) => {
+      calculateNewState(nodeState, newNodeStatuses);
     });
 
-    setExperimentStatus(newNodeStatuses);
+    setNodeStatuses(newNodeStatuses);
   }
 
   function enableViewedNode(node: INode) {
+    const outEdges = node.getOutEdges();
+
     if (node.hasState("viewed")) {
       return { nodes: disableViewedNode(node, outEdges), enabled: false };
     }
+    const viewedNodes = new Set<string>().add(node.getID());
 
-    const nodesState: {
-      node: INode;
-      newState: newNodeState;
-    }[] = [
-      {
-        node,
-        newState: [
-          { state: "accesible", value: false },
-          { state: "viewed", value: true },
-        ],
-      },
-    ];
+    changeNodeState({ node, newState: { state: "viewed", value: true } });
 
     // REVIEW - Nodos repetidos
-    nodesState.push(...enableChildrenNodes(node));
-
-    changeNodesState(nodesState);
-    console.log("Debug", nodesState);
+    enableChildrenNodes(node, viewedNodes);
+    checkAccesible(outEdges);
 
     return {
-      nodes: new Set(nodesState.map((n) => n.node.getID())),
+      nodes: viewedNodes,
       enabled: true,
     };
   }
 
-  function enableChildrenNodes(
-    currentNode: INode,
-    nodesState: {
-      node: INode;
-      newState: newNodeState;
-    }[] = []
-  ) {
+  function enableChildrenNodes(currentNode: INode, viewedNodes: Set<string>) {
     const inEdges = currentNode.getInEdges();
-    
+
     const previousNodes = getNodesFromEdges(inEdges, "source");
     previousNodes.forEach((node) => {
+      // REVIEW - Fijarme bien en esto
       if (node.hasState("viewed")) return;
-      
+
+      changeNodeState({ node, newState: { state: "viewed", value: true } });
+      viewedNodes.add(node.getID());
+
+      enableChildrenNodes(node, viewedNodes);
+
       const outEdges = node.getOutEdges();
-      nodesState.push({
-        node,
-        newState: [
-          { state: "accesible", value: false },
-          { state: "viewed", value: true },
-        ],
-      });
-
-      if (node.getID() === "subject:FBTMM01") {
-        // debugger;
-      }
-
-      enableChildrenNodes(node, nodesState);
-      nodesState.push(...checkAccesible2(outEdges, nodesState));
+      checkAccesible(outEdges);
     });
-
-    return nodesState;
   }
 
-  function disableViewedNode2(
-    node: INode,
-    outEdges: IEdge[],
-    nodesState: {
-      node: INode;
-      newState: newNodeState;
-    }[]
-  ) {
-    const sourceNodes = getNodesFromEdges(node.getInEdges(), "source");
-
-    const shouldAccesible = sourceNodes.every((node) =>
-      node.hasState("viewed")
-    );
-
-    const isViewed = node.hasState("viewed");
-    const isAccesible = node.hasState("accesible");
-
-    if (isAccesible && !isViewed) {
-      changeNodeState(node, [
-        { state: "accesible", value: false },
-        { state: "viewed", value: false },
-      ]);
-      return disabledNodes;
-    } else if (!node.hasState("viewed")) {
-      return disabledNodes;
-    }
-
-    changeNodeState(node, [
-      { state: "accesible", value: shouldAccesible },
-      { state: "viewed", value: false },
-    ]);
-    disabledNodes.add(node.getID());
-
-    const outNodes = getNodesFromEdges(outEdges, "target");
-
-    outNodes.forEach((node) =>
-      disableViewedNode(node, node.getOutEdges(), disabledNodes)
-    );
-    return disabledNodes;
-  }
-
-  // TODO - Esto rrecorre todo el grafo hacia abajo, parar si el nodo xxx
   function disableViewedNode(
     node: INode,
     outEdges: IEdge[],
@@ -282,23 +138,30 @@ export function StatusActions({ children }: { children: React.ReactNode }) {
     const shouldAccesible = sourceNodes.every((node) =>
       node.hasState("viewed")
     );
+
     const isViewed = node.hasState("viewed");
     const isAccesible = node.hasState("accesible");
 
     if (isAccesible && !isViewed) {
-      changeNodeState(node, [
-        { state: "accesible", value: false },
-        { state: "viewed", value: false },
-      ]);
+      changeNodeState({
+        node,
+        newState: [
+          { state: "accesible", value: false },
+          { state: "viewed", value: false },
+        ],
+      });
       return disabledNodes;
     } else if (!node.hasState("viewed")) {
       return disabledNodes;
     }
 
-    changeNodeState(node, [
-      { state: "accesible", value: shouldAccesible },
-      { state: "viewed", value: false },
-    ]);
+    changeNodeState({
+      node,
+      newState: [
+        { state: "accesible", value: shouldAccesible },
+        { state: "viewed", value: false },
+      ],
+    });
     disabledNodes.add(node.getID());
 
     const outNodes = getNodesFromEdges(outEdges, "target");
@@ -309,43 +172,28 @@ export function StatusActions({ children }: { children: React.ReactNode }) {
     return disabledNodes;
   }
 
-  function checkAccesible2(
-    outEdges: IEdge[],
-    nodesState: {
-      node: INode;
-      newState: newNodeState;
-    }[]
-  ) {
+  function checkAccesible(outEdges: IEdge[]) {
     const nodesToCheck = getNodesFromEdges(outEdges, "target");
 
     nodesToCheck.forEach((node) => {
+      const isViewed = nodeStatuses.viewed.has(node.getID());
+      if (isViewed) return;
+
       const sourceNodes = getNodesFromEdges(node.getInEdges(), "source");
 
-      // const sourceNodesViewed = sourceNodes.every((node) =>
-      //   node.hasState("viewed")
-      // );
-
-      // FIXME - Race condition, en vez de pedir nodesState, pedir un objeto parecido a experimentStatus en los parametros.
       const sourceNodesViewed = sourceNodes.every((node) =>
-        // experimentStatus.viewed.has(node.getID())
-        nodesState.some(
-          (n) =>
-            n.node.getID() === node.getID() &&
-            n.newState.some((s) => s.state === "viewed" && s.value)
-        )
+        nodeStatuses.viewed.has(node.getID())
       );
-      const isViewed = node.hasState("viewed");
 
-      if (sourceNodesViewed && !isViewed) {
-        nodesState.push({
-          node,
-          newState: [{ state: "accesible", value: true }],
-        });
-        checkAccesible2(node.getOutEdges(), nodesState);
-      }
+      if (!sourceNodesViewed) return;
+
+      changeNodeState({
+        node,
+        newState: { state: "accesible", value: true },
+      });
+
+      checkAccesible(node.getOutEdges());
     });
-
-    return nodesState;
   }
 
   return (
@@ -366,4 +214,46 @@ export function StatusActions({ children }: { children: React.ReactNode }) {
       {children}
     </StatusActionsContext.Provider>
   );
+}
+
+function calculateNewState(
+  { node, newState }: NodeState,
+  newNodeStatuses: Record<nodeCustomState, Map<string, Subject>>
+) {
+  const subject = (node.getModel().data as Node4j<Subject>).data;
+  const nodeId = node.getID();
+
+  if (Array.isArray(newState)) {
+    newState.forEach(({ state, value }) => {
+      setNewNodeState(node, nodeId, subject, { state, value }, newNodeStatuses);
+    });
+
+    return;
+  }
+
+  setNewNodeState(node, nodeId, subject, newState, newNodeStatuses);
+
+  return newNodeStatuses;
+}
+
+function setNewNodeState(
+  node: INode,
+  nodeId: string,
+  data: Subject,
+  {
+    state,
+    value,
+  }: {
+    state: nodeCustomState;
+    value: boolean;
+  },
+  nodeStatuses: Record<nodeCustomState, Map<string, Subject>>
+) {
+  node.setState(state, value);
+
+  if (value) {
+    nodeStatuses[state].set(nodeId, data);
+  } else {
+    nodeStatuses[state].delete(nodeId);
+  }
 }

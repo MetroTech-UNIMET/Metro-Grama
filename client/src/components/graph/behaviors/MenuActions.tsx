@@ -247,7 +247,5 @@ export default function MenuActions() {
   );
 }
 function globalBlur() {
-  console.log(document.activeElement);
-
   (document.activeElement as HTMLElement)?.blur();
 }

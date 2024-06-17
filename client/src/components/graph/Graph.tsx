@@ -13,6 +13,7 @@ import { Spinner } from "@ui/spinner";
 import GoogleLogin from "@ui/derived/GoogleLogin";
 
 import useFecthSubjectByCareer from "@/hooks/use-FecthSubjectByCareer";
+import UpdateNodeStatusOnGraphChange from "./behaviors/Update-Node-Status-OnGraphChange";
 
 const {Hoverable} = Behaviors
 
@@ -63,6 +64,7 @@ export default function Graph() {
           <MenuActions />
           <Hoverable bindType="node" />
 
+          <UpdateNodeStatusOnGraphChange graphData={graph} />
         </Graphin>
       )}
     </>

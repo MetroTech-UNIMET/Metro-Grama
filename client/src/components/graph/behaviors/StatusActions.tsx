@@ -1,13 +1,23 @@
 import { createContext, useContext, useState } from "react";
 import { INode, IEdge } from "@antv/g6";
 import { getNodesFromEdges } from "@/lib/utils/graph";
+import { Subject } from "@/interfaces/Subject";
 
-type nodeCustomState = "accesible" | "viewed";
-type edgeCustomState = "future" | "prelation" | "prelation-viewed";
+export type nodeCustomState = "accesible" | "viewed";
+export type edgeCustomState = "future" | "prelation" | "prelation-viewed";
 
-interface StatusActionsContextProps {
-  nodeStatuses: NodeStatuses;
-  edgeStatuses: EdgeStatuses;
+export type newNodeState =
+  | {
+      state: nodeCustomState;
+      value: boolean;
+    }
+  | {
+      state: nodeCustomState;
+      value: boolean;
+    }[];
+
+interface StatusActionsContextProps<NodeStatusObject = Subject> {
+  nodeStatuses: NodeStatuses<NodeStatusObject>;
   nodeActions: {
     enableViewedNode: (
       node: INode,
@@ -19,6 +29,8 @@ interface StatusActionsContextProps {
     };
     disableViewedNode: (node: INode, outEdges: IEdge[]) => void;
   };
+  changeNodeState: (nodeState: NodeState | NodeState[]) => void;
+
   edgeActions: {};
   graphActions: {};
 }
@@ -38,166 +50,74 @@ export function useStatusActions() {
   return statusActionsContext;
 }
 
-type NodeStatuses = {
-  [key in nodeCustomState]: string[];
+export type NodeStatuses<T> = {
+  [key in nodeCustomState]: Map<string, T>;
 };
 
-type EdgeStatuses = {
-  [key in edgeCustomState]: string[];
-};
-
-//@ts-ignore
-interface ClearStateOptions {
-  /**
-   * An array of states to be set to true.
-   */
-  statesToTrue?: string[];
-  /**
-   * An array of states to be ignored (not cleared).
-   */
-  statesToIgnore?: string[];
+interface NodeState {
+  node: INode;
+  newState: newNodeState;
 }
 
 export function StatusActions({ children }: { children: React.ReactNode }) {
-  const [nodeStatuses, setNodeStatuses] = useState<NodeStatuses>({
-    accesible: [],
-    viewed: [],
+  const [nodeStatuses, setNodeStatuses] = useState<NodeStatuses<Subject>>({
+    accesible: new Map(),
+    viewed: new Map(),
   });
 
-  const [edgeStatuses, setEdgeStatuses] = useState<EdgeStatuses>({
-    future: [],
-    prelation: [],
-    "prelation-viewed": [],
-  });
+  function changeNodeState(nodeState: NodeState | NodeState[]) {
+    const newNodeStatuses: Record<
+      nodeCustomState,
+      Map<string, Subject>
+    > = nodeStatuses;
 
-  function changeNodeState(
-    node: INode,
-    newState:
-      | {
-          state: nodeCustomState;
-          value: boolean;
-        }
-      | {
-          state: nodeCustomState;
-          value: boolean;
-        }[]
-  ) {
-    if (Array.isArray(newState)) {
-      const newNodeStatuses: Record<string, string[]> = {};
-
-      newState.forEach(({ state, value }) => {
-        node.setState(state, value);
-        newNodeStatuses[state] = value
-          ? [...nodeStatuses[state], node.getID()]
-          : nodeStatuses[state].filter((id) => id !== node.getID());
+    if (Array.isArray(nodeState)) {
+      nodeState.forEach((state) => {
+        calculateNewState(state, newNodeStatuses);
       });
-
-      setNodeStatuses((prev) => ({
-        ...prev,
-        ...newNodeStatuses,
-      }));
-
-      return;
+    } else {
+      calculateNewState(nodeState, newNodeStatuses);
     }
 
-    const { state, value } = newState;
-    node.setState(state, value);
-
-    const newNodeStatuses = {
-      [state]: value
-        ? [...nodeStatuses[state], node.getID()]
-        : nodeStatuses[state].filter((id) => id !== node.getID()),
-    };
-
-    setNodeStatuses((prev) => ({
-      ...prev,
-      ...newNodeStatuses,
-    }));
+    setNodeStatuses(newNodeStatuses);
   }
 
-  //@ts-ignore
-  function changeEdgeState(
-    edge: IEdge,
-    newState:
-      | {
-          state: edgeCustomState;
-          value: boolean;
-        }
-      | {
-          state: edgeCustomState;
-          value: boolean;
-        }[]
-  ) {
-    if (Array.isArray(newState)) {
-      const newEdgeStatuses: Record<string, string[]> = {};
-
-      newState.forEach(({ state, value }) => {
-        edge.setState(state, value);
-        newEdgeStatuses[state] = value
-          ? [...edgeStatuses[state], edge.getID()]
-          : edgeStatuses[state].filter((id) => id !== edge.getID());
-      });
-
-      setEdgeStatuses((prev) => ({
-        ...prev,
-        ...newEdgeStatuses,
-      }));
-
-      return;
-    }
-
-    const { state, value } = newState;
-    edge.setState(state, value);
-
-    const newEdgeStatuses = {
-      [state]: value
-        ? [...edgeStatuses[state], edge.getID()]
-        : edgeStatuses[state].filter((id) => id !== edge.getID()),
-    };
-
-    setEdgeStatuses((prev) => ({
-      ...prev,
-      ...newEdgeStatuses,
-    }));
-  }
-
-  function enableViewedNode(
-    node: INode,
-    firstNode = true,
-    viewedNodes: Set<string> = new Set()
-  ) {
+  function enableViewedNode(node: INode) {
     const outEdges = node.getOutEdges();
 
     if (node.hasState("viewed")) {
-      if (firstNode)
-        return { nodes: disableViewedNode(node, outEdges), enabled: false };
+      return { nodes: disableViewedNode(node, outEdges), enabled: false };
     }
+    const viewedNodes = new Set<string>().add(node.getID());
 
-    const nodeId = node.getID();
-    if (viewedNodes.has(nodeId)) {
-      return { nodes: viewedNodes, enabled: true };
-    }
+    changeNodeState({ node, newState: { state: "viewed", value: true } });
 
-    changeNodeState(node, [
-      { state: "accesible", value: false },
-      { state: "viewed", value: true },
-    ]);
-
-    viewedNodes.add(nodeId);
-
-    const inEdges = node.getInEdges();
-
-    const previousNodes = getNodesFromEdges(inEdges, "source");
-    previousNodes.forEach(
-      (node) =>
-        !node.hasState("viewed") && enableViewedNode(node, false, viewedNodes)
-    );
-
+    enableChildrenNodes(node, viewedNodes);
     checkAccesible(outEdges);
-    return { nodes: viewedNodes, enabled: true };
+
+    return {
+      nodes: viewedNodes,
+      enabled: true,
+    };
   }
 
-  // TODO - Esto rrecorre todo el grafo hacia abajo, parar si el nodo xxx
+  function enableChildrenNodes(currentNode: INode, viewedNodes: Set<string>) {
+    const inEdges = currentNode.getInEdges();
+
+    const previousNodes = getNodesFromEdges(inEdges, "source");
+    previousNodes.forEach((node) => {
+      if (node.hasState("viewed")) return;
+
+      changeNodeState({ node, newState: { state: "viewed", value: true } });
+      viewedNodes.add(node.getID());
+
+      enableChildrenNodes(node, viewedNodes);
+
+      const outEdges = node.getOutEdges();
+      checkAccesible(outEdges);
+    });
+  }
+
   function disableViewedNode(
     node: INode,
     outEdges: IEdge[],
@@ -208,22 +128,30 @@ export function StatusActions({ children }: { children: React.ReactNode }) {
     const shouldAccesible = sourceNodes.every((node) =>
       node.hasState("viewed")
     );
+
     const isViewed = node.hasState("viewed");
     const isAccesible = node.hasState("accesible");
 
     if (isAccesible && !isViewed) {
-      changeNodeState(node, [
-        { state: "accesible", value: false },
-        { state: "viewed", value: false },
-      ]);
+      changeNodeState({
+        node,
+        newState: [
+          { state: "accesible", value: false },
+          { state: "viewed", value: false },
+        ],
+      });
       return disabledNodes;
     } else if (!node.hasState("viewed")) {
       return disabledNodes;
     }
-    changeNodeState(node, [
-      { state: "accesible", value: shouldAccesible },
-      { state: "viewed", value: false },
-    ]);
+
+    changeNodeState({
+      node,
+      newState: [
+        { state: "accesible", value: shouldAccesible },
+        { state: "viewed", value: false },
+      ],
+    });
     disabledNodes.add(node.getID());
 
     const outNodes = getNodesFromEdges(outEdges, "target");
@@ -238,39 +166,38 @@ export function StatusActions({ children }: { children: React.ReactNode }) {
     const nodesToCheck = getNodesFromEdges(outEdges, "target");
 
     nodesToCheck.forEach((node) => {
+      // REVIEW - En un futuro comparar cual forma es más rápida
+      const isViewed = node.hasState("viewed");
+      // nodeStatuses.viewed.has(node.getID());
+      if (isViewed) return;
+
       const sourceNodes = getNodesFromEdges(node.getInEdges(), "source");
 
-      if (
-        sourceNodes.every((node) => node.hasState("viewed")) &&
-        !node.hasState("viewed")
-      ) {
-        changeNodeState(node, { state: "accesible", value: true });
-      }
+      const sourceNodesViewed = sourceNodes.every((node) =>
+        node.hasState("viewed")
+      );
+
+      if (!sourceNodesViewed) return;
+
+      changeNodeState({
+        node,
+        newState: { state: "accesible", value: true },
+      });
+
+      checkAccesible(node.getOutEdges());
     });
   }
-
-  // function clearGraphStates(graph: IGraph, options: ClearStateOptions = {}) {
-  //   clearEdgesStates(graph, options);
-  //   clearNodesStates(graph, options);
-  // }
-
-  // function clearEdgesStates(graph: IGraph, options: ClearStateOptions) {
-  //   throw new Error("Function not implemented.");
-  // }
-
-  // function clearNodesStates(graph: IGraph, options: ClearStateOptions) {
-  //   throw new Error("Function not implemented.");
-  // }
 
   return (
     <StatusActionsContext.Provider
       value={{
         nodeStatuses,
-        edgeStatuses,
         nodeActions: {
           enableViewedNode,
           disableViewedNode,
         },
+        changeNodeState,
+
         edgeActions: {},
         graphActions: {},
       }}
@@ -278,4 +205,46 @@ export function StatusActions({ children }: { children: React.ReactNode }) {
       {children}
     </StatusActionsContext.Provider>
   );
+}
+
+function calculateNewState(
+  { node, newState }: NodeState,
+  newNodeStatuses: Record<nodeCustomState, Map<string, Subject>>
+) {
+  const subject = (node.getModel().data as Node4j<Subject>).data;
+  const nodeId = node.getID();
+
+  if (Array.isArray(newState)) {
+    newState.forEach(({ state, value }) => {
+      setNewNodeState(node, nodeId, subject, { state, value }, newNodeStatuses);
+    });
+
+    return;
+  }
+
+  setNewNodeState(node, nodeId, subject, newState, newNodeStatuses);
+
+  return newNodeStatuses;
+}
+
+function setNewNodeState(
+  node: INode,
+  nodeId: string,
+  data: Subject,
+  {
+    state,
+    value,
+  }: {
+    state: nodeCustomState;
+    value: boolean;
+  },
+  nodeStatuses: Record<nodeCustomState, Map<string, Subject>>
+) {
+  node.setState(state, value);
+
+  if (value) {
+    nodeStatuses[state].set(nodeId, data);
+  } else {
+    nodeStatuses[state].delete(nodeId);
+  }
 }

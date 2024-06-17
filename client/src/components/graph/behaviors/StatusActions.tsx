@@ -50,7 +50,7 @@ export function useStatusActions() {
   return statusActionsContext;
 }
 
-type NodeStatuses<T> = {
+export type NodeStatuses<T> = {
   [key in nodeCustomState]: Map<string, T>;
 };
 

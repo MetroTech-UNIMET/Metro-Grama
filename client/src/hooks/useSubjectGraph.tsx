@@ -12,6 +12,10 @@ import { getEnrolledSubjects } from "@/api/interactions/enrollApi";
 import "@antv/graphin-icons/dist/index.css";
 import { AxiosError } from "axios";
 import { notRetryOnUnauthorized } from "@utils/queries";
+import {
+  NodeStatuses,
+  useStatusActions,
+} from "@components/graph/behaviors/StatusActions";
 
 const icons = Graphin.registerFontFamily(iconLoader);
 
@@ -20,6 +24,8 @@ export default function useSubjectGraph(
   selectedCareers: DropdownOption[]
 ) {
   const [graph, setGraph] = useState<GraphinData>({ nodes: [], edges: [] });
+
+  const { nodeStatuses } = useStatusActions();
 
   const { data: enrolledSubjects, error: errorEnrolledSubjects } = useQuery<
     string[],
@@ -98,7 +104,8 @@ export default function useSubjectGraph(
         const [isEnrolled, isAccesible] = getNodeStatus(
           node,
           setEnrolledSubjects,
-          relations
+          relations,
+          nodeStatuses
         );
 
         return {
@@ -265,13 +272,21 @@ function getCustomIconProps(icon: NodeStyleIcon) {
  * @param node - The node to determine the status for.
  * @param setEnrolledSubjects - A set of enrolled subjects.
  * @param relations - A record of subject relations.
+ * @param nodeStatuses - Responsible from maintaining the node status across different career fetchers.
  * @returns An array containing two boolean values: [isEnrolled, isAccessible].
  */
 function getNodeStatus(
   node: Node4j<Subject>,
   setEnrolledSubjects: Set<string>,
-  relations: Record<string, Set<string>>
+  relations: Record<string, Set<string>>,
+  nodeStatuses: NodeStatuses<Subject>
 ) {
+  if (nodeStatuses.viewed.has(node.id)) {
+    return [true, false];
+  } else if (nodeStatuses.accesible.has(node.id)) {
+    return [false, true];
+  }
+
   const isEnrolled = setEnrolledSubjects.has(node.id);
   if (isEnrolled) {
     return [true, false];

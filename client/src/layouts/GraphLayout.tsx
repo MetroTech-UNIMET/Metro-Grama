@@ -6,7 +6,7 @@ export default function GraphLayout() {
     <>
       <main
         className="bg-gradient-to-b from-primary-900 to-[#1D1B32]
-      text-UI-white w-screen h-screen p-8"
+      text-UI-white h-svh p-8"
       >
         <AuthenticationContext>
           <Outlet />

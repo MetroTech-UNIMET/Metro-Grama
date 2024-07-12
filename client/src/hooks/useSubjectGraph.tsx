@@ -44,7 +44,8 @@ export default function useSubjectGraph(
 
     const setEnrolledSubjects = getSetEnrolledSubjects(
       enrolledSubjects,
-      errorEnrolledSubjects
+      errorEnrolledSubjects,
+      nodeStatuses
     );
 
     if (!data || !setEnrolledSubjects) return;
@@ -189,10 +190,15 @@ export default function useSubjectGraph(
 
 function getSetEnrolledSubjects(
   enrolledSubjects: string[] | undefined,
-  errorEnrolledSubjects: AxiosError | null
+  errorEnrolledSubjects: AxiosError | null,
+  nodeStatuses: NodeStatuses<Subject>
 ) {
+  // If there is an error fetching the enrolled subjects,
+  // we will use the viewed subjects from the context.
   if (errorEnrolledSubjects) {
-    return new Set<string>();
+    const enrrolledSubjects = new Set<string>(nodeStatuses.viewed.keys());
+
+    return enrrolledSubjects;
   }
 
   return new Set<string>(enrolledSubjects ?? []);

@@ -3,7 +3,7 @@ import { StatusActions } from "@/components/graph/behaviors/StatusActions";
 
 import { SubjectSheet, SubjectSheetContent } from "@components/SubjectSheet";
 
-function Grafo() {
+export default function Grafo() {
   return (
     <>
       <StatusActions>
@@ -13,9 +13,6 @@ function Grafo() {
           <SubjectSheetContent />
         </SubjectSheet>
       </StatusActions>
-      {/* <ReactQueryDevtools initialIsOpen={false} /> */}
     </>
   );
 }
-
-export default Grafo;

@@ -1,4 +1,4 @@
-import Graphin, {Behaviors} from "@antv/graphin";
+import Graphin, { Behaviors } from "@antv/graphin";
 import { AxiosError } from "axios";
 
 import SearchPrelations from "./behaviors/Search-Prelations";
@@ -14,8 +14,9 @@ import GoogleLogin from "@ui/derived/GoogleLogin";
 
 import useFecthSubjectByCareer from "@/hooks/use-FecthSubjectByCareer";
 import UpdateNodeStatusOnGraphChange from "./behaviors/Update-Node-Status-OnGraphChange";
+import CreditsMenu from "./behaviors/CreditsMenu";
 
-const {Hoverable} = Behaviors
+const { Hoverable } = Behaviors;
 
 export default function Graph() {
   const { data, error, isLoading, selectedCareers, setSelectedCareers } =
@@ -35,6 +36,8 @@ export default function Graph() {
   return (
     <>
       <div className="fixed flex flex-wrap flex-row gap-4 z-10 w-full pr-12">
+        {/* <SideBarGraph /> */}
+        
         <GoogleLogin />
 
         <CareerMultiDropdown
@@ -57,12 +60,14 @@ export default function Graph() {
           data={graph}
           style={{
             backgroundColor: "transparent",
+            position: "relative",
           }}
           layout={{ type: "dagre" }}
         >
           <SearchPrelations />
           <MenuActions />
           <Hoverable bindType="node" />
+          <CreditsMenu />
 
           <UpdateNodeStatusOnGraphChange graphData={graph} />
         </Graphin>

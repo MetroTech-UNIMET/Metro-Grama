@@ -37,7 +37,7 @@ export default function Graph() {
     <>
       <div className="fixed flex flex-wrap flex-row gap-4 z-10 w-full pr-12">
         {/* <SideBarGraph /> */}
-        
+
         <GoogleLogin />
 
         <CareerMultiDropdown
@@ -56,21 +56,23 @@ export default function Graph() {
           </div>
         </>
       ) : (
-        <Graphin
-          data={graph}
-          style={{
-            backgroundColor: "transparent",
-            position: "relative",
-          }}
-          layout={{ type: "dagre" }}
-        >
-          <SearchPrelations />
-          <MenuActions />
-          <Hoverable bindType="node" />
-          <CreditsMenu />
+        <div className="overflow-hidden h-full">
+          <Graphin
+            data={graph}
+            style={{
+              backgroundColor: "transparent",
+              position: "relative",
+            }}
+            layout={{ type: "dagre" }}
+          >
+            <SearchPrelations />
+            <MenuActions />
+            <Hoverable bindType="node" />
+            <CreditsMenu />
 
-          <UpdateNodeStatusOnGraphChange graphData={graph} />
-        </Graphin>
+            <UpdateNodeStatusOnGraphChange graphData={graph} />
+          </Graphin>
+        </div>
       )}
     </>
   );

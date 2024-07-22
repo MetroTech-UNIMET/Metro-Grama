@@ -12,6 +12,10 @@ import { getEnrolledSubjects } from "@/api/interactions/enrollApi";
 import "@antv/graphin-icons/dist/index.css";
 import { AxiosError } from "axios";
 import { notRetryOnUnauthorized } from "@utils/queries";
+import {
+  NodeStatuses,
+  useStatusActions,
+} from "@components/graph/behaviors/StatusActions";
 
 const icons = Graphin.registerFontFamily(iconLoader);
 
@@ -19,6 +23,10 @@ export default function useSubjectGraph(
   data: Graph<Subject> | undefined,
   selectedCareers: DropdownOption[]
 ) {
+  const [graph, setGraph] = useState<GraphinData>({ nodes: [], edges: [] });
+
+  const { nodeStatuses } = useStatusActions();
+
   const { data: enrolledSubjects, error: errorEnrolledSubjects } = useQuery<
     string[],
     AxiosError
@@ -28,8 +36,6 @@ export default function useSubjectGraph(
     retry: notRetryOnUnauthorized,
   });
 
-  const [graph, setGraph] = useState<GraphinData>({ nodes: [], edges: [] });
-
   useEffect(() => {
     if (data?.nodes.length === 0) {
       setGraph({ nodes: [], edges: [] });
@@ -38,7 +44,8 @@ export default function useSubjectGraph(
 
     const setEnrolledSubjects = getSetEnrolledSubjects(
       enrolledSubjects,
-      errorEnrolledSubjects
+      errorEnrolledSubjects,
+      nodeStatuses
     );
 
     if (!data || !setEnrolledSubjects) return;
@@ -91,25 +98,16 @@ export default function useSubjectGraph(
       //@ts-ignore
       nodes: data.nodes!.map((node) => {
         const icon = getNormalIcon(node.data, selectedCareers);
-        let iconLen = icon.value!.replace(/\s/g, "").length;
-        iconLen = iconLen == 0 ? 2 : iconLen > 2 ? iconLen * 0.54 : iconLen;
-        const labelOffset = iconLen > 2 ? 10 * 0.52 * iconLen : 10;
+        const [labelOffset, iconLen] = getCustomIconProps(icon);
 
-        const isEnrolled = setEnrolledSubjects.has(node.id);
+        const nodeSize = 22.5 * iconLen;
 
-        let isAccesible = false;
-        if (!isEnrolled) {
-          Object.entries(relations).forEach(([subject, subjectRelations]) => {
-            if (subjectRelations.has(node.id)) {
-              if (setEnrolledSubjects.has(subject)) {
-                isAccesible = true;
-              } else {
-                isAccesible = false;
-                return;
-              }
-            }
-          });
-        }
+        const [isEnrolled, isAccesible] = getNodeStatus(
+          node,
+          setEnrolledSubjects,
+          relations,
+          nodeStatuses
+        );
 
         return {
           id: node.id,
@@ -123,7 +121,9 @@ export default function useSubjectGraph(
           style: {
             icon: icon,
             keyshape: {
-              size: 22.5 * iconLen,
+              fill: "white",
+              stroke: "#5B8FF9",
+              size: nodeSize,
             },
             label: {
               value: node.data.name,
@@ -132,6 +132,25 @@ export default function useSubjectGraph(
               fontSize: 12,
             },
             status: {
+              hover: {
+                halo: {
+                  animate: {
+                    attrs: (ratio: number) => {
+                      const startR = nodeSize - 15;
+                      const diff = 6;
+
+                      return {
+                        r: startR + diff * ratio,
+                        opacity: 0.5 + 0.5 * ratio,
+                      };
+                    },
+                    duration: 200,
+                    easing: "easeCubic",
+                    delay: 0,
+                    repeat: false,
+                  },
+                },
+              },
               start: {
                 halo: {
                   visible: true,
@@ -171,10 +190,15 @@ export default function useSubjectGraph(
 
 function getSetEnrolledSubjects(
   enrolledSubjects: string[] | undefined,
-  errorEnrolledSubjects: AxiosError | null
+  errorEnrolledSubjects: AxiosError | null,
+  nodeStatuses: NodeStatuses<Subject>
 ) {
+  // If there is an error fetching the enrolled subjects,
+  // we will use the viewed subjects from the context.
   if (errorEnrolledSubjects) {
-    return new Set<string>();
+    const enrrolledSubjects = new Set<string>(nodeStatuses.viewed.keys());
+
+    return enrrolledSubjects;
   }
 
   return new Set<string>(enrolledSubjects ?? []);
@@ -189,6 +213,12 @@ function careerEmoji(career: string): string {
   return "";
 }
 
+/**
+ * Returns the NodeStyleIcon for a given subject and selected careers.
+ * @param subject - The subject object.
+ * @param selectedCareers - The selected careers as DropdownOptions.
+ * @returns The NodeStyleIcon object.
+ */
 function getNormalIcon(
   subject: Subject,
   selectedCareers: DropdownOption[]
@@ -223,9 +253,63 @@ function getNormalIcon(
 
   return {
     size: 25,
-    fill: "green",
     type: "text",
     fontFamily: "graphin",
     value: icon,
   };
+}
+
+/**
+ * Calculates the custom icon properties based on the provided NodeStyleIcon.
+ * @param icon - The NodeStyleIcon object.
+ * @returns An array containing the label offset and icon length.
+ */
+function getCustomIconProps(icon: NodeStyleIcon) {
+  let iconLen = icon.value!.replace(/\s/g, "").length;
+  iconLen = iconLen == 0 ? 2 : iconLen > 2 ? iconLen * 0.54 : iconLen;
+  const labelOffset = iconLen > 2 ? 10 * 0.52 * iconLen : 10;
+
+  return [labelOffset, iconLen];
+}
+
+/**
+ * Determines the status of a node in the subject graph.
+ *
+ * @param node - The node to determine the status for.
+ * @param setEnrolledSubjects - A set of enrolled subjects.
+ * @param relations - A record of subject relations.
+ * @param nodeStatuses - Responsible from maintaining the node status across different career fetchers.
+ * @returns An array containing two boolean values: [isEnrolled, isAccessible].
+ */
+function getNodeStatus(
+  node: Node4j<Subject>,
+  setEnrolledSubjects: Set<string>,
+  relations: Record<string, Set<string>>,
+  nodeStatuses: NodeStatuses<Subject>
+) {
+  if (nodeStatuses.viewed.has(node.id)) {
+    return [true, false];
+  } else if (nodeStatuses.accesible.has(node.id)) {
+    return [false, true];
+  }
+
+  const isEnrolled = setEnrolledSubjects.has(node.id);
+  if (isEnrolled) {
+    return [true, false];
+  }
+
+  let isAccesible = false;
+  for (let [subject, subjectRelations] of Object.entries(relations)) {
+    if (subjectRelations.has(node.id)) {
+      if (setEnrolledSubjects.has(subject)) {
+        isAccesible = true;
+      } else {
+        isAccesible = false;
+      }
+      return [false, isAccesible];
+    }
+  }
+
+  // Son los nodos iniciales
+  return [false, true];
 }

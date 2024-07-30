@@ -2,15 +2,15 @@ import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Graphin, { GraphinData } from "@antv/graphin";
 import iconLoader from "@antv/graphin-icons";
-import { NodeStyleIcon } from "@antv/graphin/lib/typings/type";
+import type { NodeStyleIcon } from "@antv/graphin/lib/typings/type";
 
-import { Subject } from "@/interfaces/Subject";
+import type { Subject } from "@/interfaces/Subject";
 
-import { Option as DropdownOption } from "@ui/derived/multidropdown";
+import type { Option as DropdownOption } from "@ui/derived/multidropdown";
 import { getEnrolledSubjects } from "@/api/interactions/enrollApi";
 
 import "@antv/graphin-icons/dist/index.css";
-import { AxiosError } from "axios";
+import type { AxiosError } from "axios";
 import { notRetryOnUnauthorized } from "@utils/queries";
 import {
   NodeStatuses,
@@ -25,7 +25,7 @@ export default function useSubjectGraph(
 ) {
   const [graph, setGraph] = useState<GraphinData>({ nodes: [], edges: [] });
 
-  const { nodeStatuses } = useStatusActions();
+  const { nodeStatuses, setSubjectWithCredits } = useStatusActions();
 
   const { data: enrolledSubjects, error: errorEnrolledSubjects } = useQuery<
     string[],
@@ -52,6 +52,8 @@ export default function useSubjectGraph(
 
     const nodesWithEdges = new Set<string>();
     const relations: Record<string, Set<string>> = {};
+
+    const subjectWithCredits: Subject[] = [];
 
     const newGraph: GraphinData = {
       edges: data.edges!.map((edge) => {
@@ -108,6 +110,10 @@ export default function useSubjectGraph(
           relations,
           nodeStatuses
         );
+
+        if (node.data.credits + node.data.BPCredits > 0) {
+          subjectWithCredits.push(node.data);
+        }
 
         return {
           id: node.id,
@@ -182,6 +188,7 @@ export default function useSubjectGraph(
       }),
     };
 
+    setSubjectWithCredits(subjectWithCredits);
     setGraph(newGraph);
   }, [data, selectedCareers, enrolledSubjects]);
 
@@ -310,6 +317,11 @@ function getNodeStatus(
     }
   }
 
-  // Son los nodos iniciales
-  return [false, true];
+  // Son los nodos iniciales (no tienen prelaciones)
+  if (node.data.BPCredits === 0 && node.data.credits === 0) {
+    //Necesitan un mínimo de créditos para ser vistos
+    return [false, true];
+  } else {
+    return [false, false];
+  }
 }

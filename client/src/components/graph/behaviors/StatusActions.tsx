@@ -31,6 +31,9 @@ interface StatusActionsContextProps<NodeStatusObject = Subject> {
   };
   changeNodeState: (nodeState: NodeState | NodeState[]) => void;
 
+  subjectWithCredits: Subject[];
+  setSubjectWithCredits: React.Dispatch<React.SetStateAction<Subject[]>>;
+
   edgeActions: {};
   graphActions: {};
 }
@@ -64,6 +67,7 @@ export function StatusActions({ children }: { children: React.ReactNode }) {
     accesible: new Map(),
     viewed: new Map(),
   });
+  const [subjectWithCredits, setSubjectWithCredits] = useState<Subject[]>([]);
 
   function changeNodeState(nodeState: NodeState | NodeState[]) {
     const newNodeStatuses: Record<
@@ -79,7 +83,10 @@ export function StatusActions({ children }: { children: React.ReactNode }) {
       calculateNewState(nodeState, newNodeStatuses);
     }
 
-    setNodeStatuses(newNodeStatuses);
+    setNodeStatuses({
+      accesible: new Map(newNodeStatuses.accesible),
+      viewed: new Map(newNodeStatuses.viewed),
+    });
   }
 
   function enableViewedNode(node: INode) {
@@ -93,7 +100,9 @@ export function StatusActions({ children }: { children: React.ReactNode }) {
     changeNodeState({ node, newState: { state: "viewed", value: true } });
 
     enableChildrenNodes(node, viewedNodes);
-    checkAccesible(outEdges);
+
+    const nodesToCheck = getNodesFromEdges(outEdges, "target");
+    nodesToCheck.forEach((node) => checkAccesible(node));
 
     return {
       nodes: viewedNodes,
@@ -114,7 +123,8 @@ export function StatusActions({ children }: { children: React.ReactNode }) {
       enableChildrenNodes(node, viewedNodes);
 
       const outEdges = node.getOutEdges();
-      checkAccesible(outEdges);
+      const nodesToCheck = getNodesFromEdges(outEdges, "target");
+      nodesToCheck.forEach((node) => checkAccesible(node));
     });
   }
 
@@ -162,30 +172,29 @@ export function StatusActions({ children }: { children: React.ReactNode }) {
     return disabledNodes;
   }
 
-  function checkAccesible(outEdges: IEdge[]) {
-    const nodesToCheck = getNodesFromEdges(outEdges, "target");
+  function checkAccesible(nodeToCheck: INode) {
+    // REVIEW - En un futuro comparar cual forma es más rápida
+    const isViewed = nodeToCheck.hasState("viewed");
+    // nodeStatuses.viewed.has(node.getID());
+    if (isViewed) return;
 
-    nodesToCheck.forEach((node) => {
-      // REVIEW - En un futuro comparar cual forma es más rápida
-      const isViewed = node.hasState("viewed");
-      // nodeStatuses.viewed.has(node.getID());
-      if (isViewed) return;
+    const sourceNodes = getNodesFromEdges(nodeToCheck.getInEdges(), "source");
 
-      const sourceNodes = getNodesFromEdges(node.getInEdges(), "source");
+    const sourceNodesViewed = sourceNodes.every((node) =>
+      node.hasState("viewed")
+    );
 
-      const sourceNodesViewed = sourceNodes.every((node) =>
-        node.hasState("viewed")
-      );
+    if (!sourceNodesViewed) return;
 
-      if (!sourceNodesViewed) return;
-
-      changeNodeState({
-        node,
-        newState: { state: "accesible", value: true },
-      });
-
-      checkAccesible(node.getOutEdges());
+    changeNodeState({
+      node: nodeToCheck,
+      newState: { state: "accesible", value: true },
     });
+
+    // REVIEW - Antes se llamaba recursivamente, pero ahora creo que es innecesario
+    // const outEdges = nodeToCheck.getOutEdges();
+    // const nodesToCheck = getNodesFromEdges(outEdges, "target");
+    // nodesToCheck.forEach((node) => checkAccesible(node));
   }
 
   return (
@@ -197,6 +206,9 @@ export function StatusActions({ children }: { children: React.ReactNode }) {
           disableViewedNode,
         },
         changeNodeState,
+
+        subjectWithCredits,
+        setSubjectWithCredits,
 
         edgeActions: {},
         graphActions: {},

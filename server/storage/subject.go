@@ -118,7 +118,6 @@ func GetSubjects(careers string) (models.Graph[models.SubjectNode], error) {
 	// 		})
 	// 	}
 	// }
-
 	subjectSet := make(map[string]bool, len(subjectsByCareers))
 	for i, subjectByCareer := range subjectsByCareers {
 		subject := subjectByCareer.Subject
@@ -127,11 +126,14 @@ func GetSubjects(careers string) (models.Graph[models.SubjectNode], error) {
 		nodes[i] = models.Node[models.SubjectNode]{
 			ID: subject.ID,
 			Data: models.SubjectNode{
-				Code:    subject.ID[len("subject:"):],
-				Name:    subject.Name,
-				Careers: subjectByCareer.Careers,
+				Code:      subject.ID[len("subject:"):],
+				Name:      subject.Name,
+				Careers:   subjectByCareer.Careers,
+				Credits:   subject.Credits,
+				BPCredits: subject.BPCredits,
 			},
 		}
+		fmt.Println(subject.ID)
 
 	}
 	for _, subjectByCareer := range subjectsByCareers {

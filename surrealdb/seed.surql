@@ -36,6 +36,8 @@ DEFINE INDEX studentEmailIndex ON TABLE student COLUMNS email UNIQUE;
 -- Definir esquema de materias
 DEFINE TABLE subject SCHEMAFULL;
 DEFINE FIELD name ON subject TYPE string;
+DEFINE FIELD credits ON subject TYPE number DEFAULT 0;
+DEFINE FIELD BPCredits ON subject TYPE number DEFAULT 0;
 DEFINE INDEX subjectNameIndex ON TABLE subject COLUMNS name UNIQUE;
 
 -- Definir tabla de relacion estudiante -> materia
@@ -237,9 +239,9 @@ RELATE subject:FPTSP20->belong->career:sistemas SET trimester = 9;
 RELATE subject:FPTMI21->belong->career:sistemas SET trimester = 9;
 
 -- Trimestre 10
-CREATE subject:FPTEN23 SET name="Sistemas de Redes";
-CREATE subject:FPTSP27 SET name="Análisis de Datos";
-CREATE subject:FPTSP23 SET name="Sistemas de Apoyo";
+CREATE subject:FPTEN23 SET name="Sistemas de Redes", BPCredits = 57; 
+CREATE subject:FPTSP27 SET name="Análisis de Datos", BPCredits = 57; 
+CREATE subject:FPTSP23 SET name="Sistemas de Apoyo", BPCredits = 57; 
 
 RELATE subject:BPTFI02->precede->subject:FPTEN23;
 RELATE subject:BPTMI07->precede->subject:FPTSP27;
@@ -250,9 +252,9 @@ RELATE subject:FPTSP27->belong->career:sistemas SET trimester = 10;
 RELATE subject:FPTSP23->belong->career:sistemas SET trimester = 10;
 
 -- Trimestre 11
-CREATE subject:FPTSP18 SET name="Seguridad de la información";
-CREATE subject:FPTSP11 SET name="Gerencia de Proyectos TIC";
-CREATE subject:FPTSP25 SET name="Computación Emergente";
+CREATE subject:FPTSP18 SET name="Seguridad de la información", BPCredits = 57; 
+CREATE subject:FPTSP11 SET name="Gerencia de Proyectos TIC", BPCredits = 57; 
+CREATE subject:FPTSP25 SET name="Computación Emergente", BPCredits = 57; 
 CREATE subject:FPTEN27 SET name="Robótica Indurstrial";
 
 RELATE subject:FPTEN23->precede->subject:FPTSP18;
@@ -266,9 +268,9 @@ RELATE subject:FPTSP25->belong->career:sistemas SET trimester=11;
 RELATE subject:FPTEN27->belong->career:sistemas SET trimester=11;
 
 -- Trimestre 12
-CREATE subject:FPTSP14 SET name="Proyecto de Ingeniería";
-CREATE subject:FPTSP15 SET name="Ingeniería Económica";
-CREATE subject:FPTCS16 SET name="Ingeniería Ambiental";
+CREATE subject:FPTSP14 SET name="Proyecto de Ingeniería", credits = 150, BPCredits = 57; 
+CREATE subject:FPTSP15 SET name="Ingeniería Económica", credits = 150, BPCredits = 57; 
+CREATE subject:FPTCS16 SET name="Ingeniería Ambiental", credits = 150, BPCredits = 57; 
 
 RELATE subject:FPTSP14->belong->career:sistemas SET trimester=12;
 RELATE subject:FPTSP15->belong->career:sistemas SET trimester=12;

@@ -1,8 +1,10 @@
 import Graphin, { Behaviors } from "@antv/graphin";
-import { AxiosError } from "axios";
+import type { AxiosError } from "axios";
 
 import SearchPrelations from "./behaviors/Search-Prelations";
 import MenuActions from "./behaviors/MenuActions";
+import UpdateNodeStatusOnGraphChange from "./behaviors/Update-Node-Status-OnGraphChange";
+import CreditsMenu from "./behaviors/CreditsMenu";
 // import SideBarGraph from "./SideBarGraph";
 
 import useSubjectGraph from "@/hooks/useSubjectGraph";
@@ -13,8 +15,6 @@ import { Spinner } from "@ui/spinner";
 import GoogleLogin from "@ui/derived/GoogleLogin";
 
 import useFecthSubjectByCareer from "@/hooks/use-FecthSubjectByCareer";
-import UpdateNodeStatusOnGraphChange from "./behaviors/Update-Node-Status-OnGraphChange";
-import CreditsMenu from "./behaviors/CreditsMenu";
 
 const { Hoverable } = Behaviors;
 
@@ -33,7 +33,7 @@ export default function Graph() {
       </div>
     );
 
-  return (
+    return (
     <>
       <div className="fixed flex flex-wrap flex-row gap-4 z-10 w-full pr-12">
         {/* <SideBarGraph /> */}

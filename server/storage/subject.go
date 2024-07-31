@@ -133,9 +133,8 @@ func GetSubjects(careers string) (models.Graph[models.SubjectNode], error) {
 				BPCredits: subject.BPCredits,
 			},
 		}
-		fmt.Println(subject.ID)
-
 	}
+	
 	for _, subjectByCareer := range subjectsByCareers {
 		subject := subjectByCareer.Subject
 

@@ -7,7 +7,7 @@ import UpdateNodeStatusOnGraphChange from "./behaviors/Update-Node-Status-OnGrap
 import CreditsMenu from "./behaviors/CreditsMenu";
 // import SideBarGraph from "./SideBarGraph";
 
-import useSubjectGraph from "@/hooks/useSubjectGraph";
+import useSubjectGraph from "@/hooks/useSubjectGraph/useSubjectGraph";
 import { ShowAxiosError } from "@components/ShowAxiosError";
 import { CareerMultiDropdown } from "@components/CareerMultiDropdown";
 

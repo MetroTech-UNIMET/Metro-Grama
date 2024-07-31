@@ -50,52 +50,59 @@ export default function useSubjectGraph(
 
     if (!data || !setEnrolledSubjects) return;
 
-    const nodesWithEdges = new Set<string>();
+    // Record the prelations of each subject.
     const relations: Record<string, Set<string>> = {};
+    // Record the number of dependencies each subject has.
+    const subjectDependencyCount: Record<string, number> = {};
+
+    const edges = data.edges!.map((edge) => {
+      if (!relations[edge.from]) {
+        relations[edge.from] = new Set();
+      }
+      relations[edge.from].add(edge.to);
+
+      if (!subjectDependencyCount[edge.to]) {
+        subjectDependencyCount[edge.to] = 0;
+      }
+      subjectDependencyCount[edge.to] += 1;
+
+      return {
+        source: edge.from,
+        target: edge.to,
+        style: {
+          status: {
+            prelation: {
+              keyshape: {
+                stroke: "blue",
+              },
+              halo: {
+                fill: "#ddd",
+                visible: true,
+              },
+            },
+            "prelation-viewed": {
+              keyshape: {
+                stroke: "blue",
+              },
+            },
+            future: {
+              keyshape: {
+                stroke: "red",
+              },
+              halo: {
+                fill: "#ddd",
+                visible: true,
+              },
+            },
+          },
+        },
+      };
+    });
 
     const subjectWithCredits: Subject[] = [];
 
     const newGraph: GraphinData = {
-      edges: data.edges!.map((edge) => {
-        nodesWithEdges.add(edge.to);
-
-        if (!relations[edge.from]) {
-          relations[edge.from] = new Set();
-        }
-        relations[edge.from].add(edge.to);
-
-        return {
-          source: edge.from,
-          target: edge.to,
-          style: {
-            status: {
-              prelation: {
-                keyshape: {
-                  stroke: "blue",
-                },
-                halo: {
-                  fill: "#ddd",
-                  visible: true,
-                },
-              },
-              "prelation-viewed": {
-                keyshape: {
-                  stroke: "blue",
-                },
-              },
-              future: {
-                keyshape: {
-                  stroke: "red",
-                },
-                halo: {
-                  fill: "#ddd",
-                  visible: true,
-                },
-              },
-            },
-          },
-        };
-      }),
+      edges,
 
       //@ts-ignore
       nodes: data.nodes!.map((node) => {
@@ -104,10 +111,13 @@ export default function useSubjectGraph(
 
         const nodeSize = 22.5 * iconLen;
 
+        const dependecyCount = subjectDependencyCount[node.id] ?? 0;
+
         const [isEnrolled, isAccesible] = getNodeStatus(
           node,
           setEnrolledSubjects,
           relations,
+          dependecyCount,
           nodeStatuses
         );
 
@@ -283,45 +293,90 @@ function getCustomIconProps(icon: NodeStyleIcon) {
  * Determines the status of a node in the subject graph.
  *
  * @param node - The node to determine the status for.
- * @param setEnrolledSubjects - A set of enrolled subjects.
- * @param relations - A record of subject relations.
+ * @param enrolledSubjects - A set of enrolled subjects.
+ * @param subjectRelations - A record of subject relations.
+ * @param dependencyCount - The number of dependencies the node has.
  * @param nodeStatuses - Responsible from maintaining the node status across different career fetchers.
  * @returns An array containing two boolean values: [isEnrolled, isAccessible].
  */
 function getNodeStatus(
   node: Node4j<Subject>,
-  setEnrolledSubjects: Set<string>,
-  relations: Record<string, Set<string>>,
+  enrolledSubjects: Set<string>,
+  subjectRelations: Record<string, Set<string>>,
+  dependencyCount: number,
   nodeStatuses: NodeStatuses<Subject>
 ) {
-  if (nodeStatuses.viewed.has(node.id)) {
+  if (isNodeViewed(node.id, nodeStatuses)) {
     return [true, false];
-  } else if (nodeStatuses.accesible.has(node.id)) {
+  }
+
+  if (isNodeAccessible(node.id, nodeStatuses)) {
     return [false, true];
   }
 
-  const isEnrolled = setEnrolledSubjects.has(node.id);
-  if (isEnrolled) {
+  if (isNodeEnrolled(node.id, enrolledSubjects)) {
     return [true, false];
-  }
-
-  let isAccesible = false;
-  for (let [subject, subjectRelations] of Object.entries(relations)) {
-    if (subjectRelations.has(node.id)) {
-      if (setEnrolledSubjects.has(subject)) {
-        isAccesible = true;
-      } else {
-        isAccesible = false;
-      }
-      return [false, isAccesible];
-    }
   }
 
   // Son los nodos iniciales (no tienen prelaciones)
-  if (node.data.BPCredits === 0 && node.data.credits === 0) {
-    //Necesitan un mínimo de créditos para ser vistos
-    return [false, true];
-  } else {
-    return [false, false];
+  if (dependencyCount === 0) {
+    if (isInitialNodeFreeFromCredits(node)) {
+      return [false, true];
+    } else {
+      return [false, false];
+    }
   }
+
+  const isAccessible = checkDependencies(
+    node.id,
+    enrolledSubjects,
+    subjectRelations,
+    dependencyCount
+  );
+  return [false, isAccessible];
+}
+
+function isNodeViewed(
+  nodeId: string,
+  nodeStatuses: NodeStatuses<Subject>
+): boolean {
+  return nodeStatuses.viewed.has(nodeId);
+}
+
+function isNodeAccessible(
+  nodeId: string,
+  nodeStatuses: NodeStatuses<Subject>
+): boolean {
+  return nodeStatuses.accesible.has(nodeId);
+}
+
+function isNodeEnrolled(
+  nodeId: string,
+  enrolledSubjects: Set<string>
+): boolean {
+  return enrolledSubjects.has(nodeId);
+}
+
+function isInitialNodeFreeFromCredits(node: Node4j<Subject>): boolean {
+  return node.data.BPCredits === 0 && node.data.credits === 0;
+}
+
+function checkDependencies(
+  nodeId: string,
+  enrolledSubjects: Set<string>,
+  subjectRelations: Record<string, Set<string>>,
+  dependencyCount: number
+): boolean {
+  let dependenciesViewed = 0;
+
+  for (const [subject, relations] of Object.entries(subjectRelations)) {
+    if (relations.has(nodeId) && enrolledSubjects.has(subject)) {
+      dependenciesViewed++;
+      if (dependenciesViewed >= dependencyCount) {
+        return true;
+      }
+    }
+  }
+
+  return false;
 }

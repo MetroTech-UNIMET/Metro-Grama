@@ -1,11 +1,12 @@
-import { getSubjects } from "@/api/subjectsAPI";
-import { Subject } from "@/interfaces/Subject";
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
-import useFetchCareersOptions, {
-  CareerOption,
-} from "./use-FetchCareersOptions";
+
+import useFetchCareersOptions from "./use-FetchCareersOptions";
+import { getSubjects } from "@/api/subjectsAPI";
+
+import type { Subject } from "@/interfaces/Subject";
+import type { CareerOption } from "./use-FetchCareersOptions";
 
 export default function useFecthSubjectByCareer() {
   const [selectedCareers, setSelectedCareers] = useState<CareerOption[]>([]);

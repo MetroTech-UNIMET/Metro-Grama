@@ -1,6 +1,8 @@
 import { useEffect, useMemo } from "react";
-import { useStatusActions } from "../../../components/graph/behaviors/StatusActions";
-import { Subject } from "@/interfaces/Subject";
+
+import { useStatusActions } from "@components/graph/behaviors/StatusActions";
+
+import type { Subject } from "@/interfaces/Subject";
 import type { IGraph, INode } from "@antv/g6";
 
 export default function useCountCredits(graph: IGraph) {

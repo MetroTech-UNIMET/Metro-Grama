@@ -53,7 +53,6 @@ export default function useSubjectGraph(
 
     if (!data || !setEnrolledSubjects || !getNodeStyle) return;
 
-    console.log(getNodeStyle);
     // Record the prelations of each subject.
     const subjectRelations: Record<string, Set<string>> = {};
     // Record the number of dependencies each subject has.

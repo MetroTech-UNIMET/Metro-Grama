@@ -1,18 +1,22 @@
-import { useContext, useEffect, useRef, useState } from "react";
-import { GraphinContext, IG6GraphEvent } from "@antv/graphin";
-import { INode } from "@antv/g6";
+import { useEffect, useRef, useState } from "react";
 
-import { ListContent, ListHeader, ListItem } from "@ui/list";
 import { cn } from "@utils/className";
 import { useSubjectSheet } from "@/components/SubjectSheet";
-import { Subject } from "@/interfaces/Subject";
 import { useStatusActions } from "./StatusActions";
 import { enrollStudent, unenrollStudent } from "@/api/interactions/enrollApi";
-import { toast } from "@ui/use-toast";
+
 import { useAuth } from "@/contexts/AuthenticationContext";
+import { useLazyGraphinContext } from "@/hooks/lazy-loading/use-LazyGraphin";
+
+import { ListContent, ListHeader, ListItem } from "@ui/list";
+import { toast } from "@ui/use-toast";
 import { GoogleLink } from "@ui/link";
 import { useMutation } from "@tanstack/react-query";
 import { ToastAction } from "@ui/toast";
+
+import type { INode } from "@antv/g6";
+import type { Subject } from "@/interfaces/Subject";
+import type { IG6GraphEvent } from "@antv/graphin";
 
 interface MenuNodeProps {
   node: INode | null;
@@ -24,7 +28,7 @@ function MenuNode({ node, close }: MenuNodeProps) {
   const { nodeActions } = useStatusActions();
   const { student } = useAuth();
 
-  const { graph } = useContext(GraphinContext);
+  const graphinContext = useLazyGraphinContext();
 
   const enrollMutation = useMutation({
     mutationFn: (viewedNodes: string[]) => enrollStudent(viewedNodes),
@@ -32,6 +36,9 @@ function MenuNode({ node, close }: MenuNodeProps) {
     //@ts-ignore TODO - Agregar custom error
     onError: (error, viewedNodes) => {
       viewedNodes.reverse().forEach((id) => {
+        if (!graphinContext) return;
+        const { graph } = graphinContext;
+
         const node = graph.findById(id) as INode;
         nodeActions.disableViewedNode(node, node.getOutEdges());
       });
@@ -65,6 +72,9 @@ function MenuNode({ node, close }: MenuNodeProps) {
     //@ts-ignore TODO - Agregar custom error
     onError: (error, viewedNodes) => {
       viewedNodes.forEach((id) => {
+        if (!graphinContext) return;
+        const { graph } = graphinContext;
+
         const node = graph.findById(id) as INode;
         nodeActions.enableViewedNode(node);
       });
@@ -150,13 +160,17 @@ const longTouchDuration = 1000;
 // REVIEW - Considerar hacer focus en el nodo al abrir el menu
 // TODO - Mejor manejo de posición como si fuera un tooltip
 export default function MenuActions() {
-  const { graph } = useContext(GraphinContext);
+  const graphinContext = useLazyGraphinContext();
+
   const [node, setNode] = useState<INode | null>(null);
   const [position, setPosition] = useState({ x: 0, y: 0 });
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
+    if (!graphinContext) return;
+    const { graph } = graphinContext;
+
     async function handleOpenContextMenu(e: IG6GraphEvent) {
       e.preventDefault();
       const { item } = e;
@@ -219,7 +233,7 @@ export default function MenuActions() {
       graph.off("canvas:drag", close);
       graph.off("canvas:touchstart", close);
     };
-  }, []);
+  }, [graphinContext]);
 
   function clearTimerRef() {
     if (timerRef.current) {

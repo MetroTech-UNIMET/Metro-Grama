@@ -1,22 +1,27 @@
-import { GraphinContext, GraphinData } from "@antv/graphin";
-import { useContext, useEffect } from "react";
+import { useEffect } from "react";
 import {
   newNodeState,
   nodeCustomState,
   useStatusActions,
 } from "./StatusActions";
-import { INode } from "@antv/g6-core";
+
+import type { GraphinData } from "@antv/graphin";
+import type { INode } from "@antv/g6-core";
+import { useLazyGraphinContext } from "@/hooks/lazy-loading/use-LazyGraphin";
 
 interface Props {
   graphData: GraphinData;
 }
 
 export default function UpdateNodeStatusOnGraphChange({ graphData }: Props) {
-  const { graph } = useContext(GraphinContext);
-
+  const graphinContext = useLazyGraphinContext();
   const { changeNodeState } = useStatusActions();
 
   useEffect(() => {
+    if (!graphinContext) return;
+
+    const { graph } = graphinContext;
+
     const nodesState: {
       node: INode;
       newState: newNodeState;
@@ -36,7 +41,7 @@ export default function UpdateNodeStatusOnGraphChange({ graphData }: Props) {
     });
 
     changeNodeState(nodesState);
-  }, [graphData]);
+  }, [graphinContext, graphData]);
 
   return null;
 }

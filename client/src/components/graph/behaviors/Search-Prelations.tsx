@@ -1,18 +1,24 @@
-import { GraphinContext, IG6GraphEvent } from "@antv/graphin";
-import { useContext, useEffect } from "react";
-import { INode } from "@antv/g6";
+import { useEffect } from "react";
+
 import { clearGraphStates } from "@utils/graph";
 import {
   markEdgesAsFuture,
   markEdgesAsPrelation,
 } from "@utils/states/EdgesStates";
+import { useLazyGraphinContext } from "@/hooks/lazy-loading/use-LazyGraphin";
 
-const statesToIgnore = ["viewed", "accesible", "normal"];
+import type { INode } from "@antv/g6";
+import type { IG6GraphEvent } from "@antv/graphin";
+
+const statesToIgnore = ["viewed", "accesible"];
 
 export default function SearchPrelations() {
-  const { graph } = useContext(GraphinContext);
+  const graphinContext = useLazyGraphinContext();
 
   useEffect(() => {
+    if (!graphinContext) return;
+    const { graph } = graphinContext;
+
     function handleClick(e: IG6GraphEvent) {
       const node = e.item as INode;
       if (!node._cfg) return;
@@ -42,23 +48,23 @@ export default function SearchPrelations() {
     return () => {
       graph.off("node:click", handleClick);
       graph.off("canvas:click", () => {
-        clearGraphStates(graph), { statesToIgnore: ["viewed", "accesible"] };
+        clearGraphStates(graph), { statesToIgnore };
       });
       graph.off("node:touchstart", handleClick);
       graph.off("canvas:touchstart", () => {
-        clearGraphStates(graph, { statesToIgnore: ["viewed", "accesible"] });
+        clearGraphStates(graph, { statesToIgnore });
       });
     };
-  }, []);
-
-  function selectEdges(node: INode) {
-    const prelations = node.getInEdges();
-
-    const future = node.getOutEdges();
-
-    markEdgesAsFuture(future);
-    markEdgesAsPrelation(prelations);
-  }
+  }, [graphinContext]);
 
   return null;
+}
+
+function selectEdges(node: INode) {
+  const prelations = node.getInEdges();
+
+  const future = node.getOutEdges();
+
+  markEdgesAsFuture(future);
+  markEdgesAsPrelation(prelations);
 }

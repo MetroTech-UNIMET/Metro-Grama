@@ -1,22 +1,20 @@
-import Graphin, { Behaviors } from "@antv/graphin";
-import type { AxiosError } from "axios";
-
 import SearchPrelations from "./behaviors/Search-Prelations";
 import MenuActions from "./behaviors/MenuActions";
 import UpdateNodeStatusOnGraphChange from "./behaviors/Update-Node-Status-OnGraphChange";
 import CreditsMenu from "./behaviors/CreditsMenu";
 // import SideBarGraph from "./SideBarGraph";
 
-import useSubjectGraph from "@/hooks/useSubjectGraph/useSubjectGraph";
 import { ShowAxiosError } from "@components/ShowAxiosError";
 import { CareerMultiDropdown } from "@components/CareerMultiDropdown";
 
 import { Spinner } from "@ui/spinner";
 import GoogleLogin from "@ui/derived/GoogleLogin";
 
+import useSubjectGraph from "@/hooks/useSubjectGraph/useSubjectGraph";
 import useFecthSubjectByCareer from "@/hooks/use-FecthSubjectByCareer";
+import useLazyGraphin from "@/hooks/lazy-loading/use-LazyGraphin";
 
-const { Hoverable } = Behaviors;
+import type { AxiosError } from "axios";
 
 export default function Graph() {
   const { data, error, isLoading, selectedCareers, setSelectedCareers } =
@@ -24,16 +22,23 @@ export default function Graph() {
 
   const { graph } = useSubjectGraph(data, selectedCareers);
 
-  if (error) return <ShowAxiosError error={error as AxiosError} />;
+  const { graphinImport, error: graphinError } = useLazyGraphin();
 
-  if (!data && graph.nodes.length === 0)
+  if (error) return <ShowAxiosError error={error as AxiosError} />;
+  if (graphinError) return <ShowAxiosError error={graphinError as AxiosError} />;
+
+  if (!data || !graphinImport){
     return (
       <div className="h-full grid place-items-center ">
         <Spinner size="giant" />
       </div>
     );
+  }
 
-    return (
+  const { Graphin, Behaviors } = graphinImport;
+  const { Hoverable } = Behaviors;
+
+  return (
     <>
       <div className="fixed flex flex-wrap flex-row gap-4 z-10 w-full pr-12">
         {/* <SideBarGraph /> */}
@@ -65,13 +70,14 @@ export default function Graph() {
             }}
             layout={{ type: "dagre" }}
           >
+            <Hoverable bindType="node" />
             <SearchPrelations />
             <MenuActions />
-            <Hoverable bindType="node" />
             <CreditsMenu />
 
             <UpdateNodeStatusOnGraphChange graphData={graph} />
           </Graphin>
+          
         </div>
       )}
     </>

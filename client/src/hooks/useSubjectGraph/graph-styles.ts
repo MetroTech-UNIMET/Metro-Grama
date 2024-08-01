@@ -1,4 +1,3 @@
-import { useQuery } from "@tanstack/react-query";
 
 import { getNormalIcon, getCustomIconProps } from "./functions";
 
@@ -7,6 +6,7 @@ import type { Option as DropdownOption } from "@ui/derived/multidropdown";
 import { useCallback } from "react";
 
 import "@antv/graphin-icons/dist/index.css";
+import useLazyGraphIcons from "../lazy-loading/use-LazyGraphIcons";
 
 export const edgeStyle = {
   status: {
@@ -37,17 +37,7 @@ export const edgeStyle = {
 };
 
 export function useNodeStyle(selectedCareers: DropdownOption[]) {
-  const { data: icons, ...query } = useQuery({
-    queryKey: ["icons"],
-    queryFn: async () => {
-      const { registerFontFamily } = await import("@antv/graphin");
-
-      const iconLoader = (await import("@antv/graphin-icons")).default;
-
-      const icons = registerFontFamily(iconLoader);
-      return icons;
-    },
-  });
+  const { icons, ...query } = useLazyGraphIcons();
 
   const getNodeStyle = useCallback(
     function getNodeStyle(node: Node4j<Subject>) {

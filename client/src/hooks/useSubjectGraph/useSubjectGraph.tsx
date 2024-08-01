@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { GraphinData } from "@antv/graphin";
 
+import type { GraphinData } from "@antv/graphin";
 import type { AxiosError } from "axios";
 import type { Subject } from "@/interfaces/Subject";
 import type { Option as DropdownOption } from "@ui/derived/multidropdown";
@@ -18,7 +18,7 @@ import {
   isInitialNodeFreeFromCredits,
   checkDependencies,
 } from "./functions";
-import { edgeStyle, getNodeStyle } from "./graph-styles";
+import { edgeStyle, useNodeStyle } from "./graph-styles";
 
 export default function useSubjectGraph(
   data: Graph<Subject> | undefined,
@@ -37,6 +37,8 @@ export default function useSubjectGraph(
     retry: notRetryOnUnauthorized,
   });
 
+  const { getNodeStyle } = useNodeStyle(selectedCareers);
+
   useEffect(() => {
     if (data?.nodes.length === 0) {
       setGraph({ nodes: [], edges: [] });
@@ -49,8 +51,9 @@ export default function useSubjectGraph(
       nodeStatuses
     );
 
-    if (!data || !setEnrolledSubjects) return;
+    if (!data || !setEnrolledSubjects || !getNodeStyle) return;
 
+    console.log(getNodeStyle);
     // Record the prelations of each subject.
     const subjectRelations: Record<string, Set<string>> = {};
     // Record the number of dependencies each subject has.
@@ -102,14 +105,14 @@ export default function useSubjectGraph(
             accesible: isAccesible,
           },
 
-          style: getNodeStyle(node, selectedCareers),
+          style: getNodeStyle(node),
         };
       }),
     };
 
     setSubjectWithCredits(subjectWithCredits);
     setGraph(newGraph);
-  }, [data, selectedCareers, enrolledSubjects]);
+  }, [data, selectedCareers, enrolledSubjects, getNodeStyle]);
 
   return { graph };
 }

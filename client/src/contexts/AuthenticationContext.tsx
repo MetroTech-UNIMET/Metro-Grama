@@ -62,7 +62,6 @@ export default function AuthenticationContext({
 
   useEffect(() => {
     setStudent(data ?? null);
-    console.log(data);
   }, [data]);
 
   const value = {

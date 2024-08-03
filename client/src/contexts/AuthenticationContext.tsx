@@ -1,11 +1,14 @@
-import { logOutGoogle } from "@/api/authApi";
-import { getStudentProfile } from "@/api/studentsApi";
-import { Student } from "@/interfaces/Student";
-import { toast } from "@ui/use-toast";
-import { notRetryOnUnauthorized } from "@utils/queries";
-import { AxiosError } from "axios";
 import { createContext, useContext, useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
+import { logOutGoogle } from "@/api/authApi";
+import { getStudentProfile } from "@/api/studentsApi";
+
+import { toast } from "@ui/use-toast";
+import { notRetryOnUnauthorized } from "@utils/queries";
+
+import type { AxiosError } from "axios";
+import type { Student } from "@/interfaces/Student";
 
 interface AuthContextProps {
   student: Student | null;
@@ -59,6 +62,7 @@ export default function AuthenticationContext({
 
   useEffect(() => {
     setStudent(data ?? null);
+    console.log(data);
   }, [data]);
 
   const value = {

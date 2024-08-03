@@ -1,7 +1,6 @@
 import axios from "@/axiosConfig";
 
 export async function enrollStudent(subjects: string[]) {
-  // throw new Error("Not implemented");
   return await axios.post("/enroll/", {
     subjects,
   });

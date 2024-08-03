@@ -1,5 +1,5 @@
 import axios from "@/axiosConfig";
-import { Subject } from "@/interfaces/Subject";
+import type { Subject } from "@/interfaces/Subject";
 
 export async function getSubjects(
   careerParam: string

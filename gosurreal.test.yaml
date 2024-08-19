@@ -1,0 +1,9 @@
+database:
+    name: test 
+    namespace: test 
+    password: root
+    user: root 
+endpoint: ws://localhost:8000/rpc
+folders:
+    events: surrealdb/events
+    migrations: surrealdb/migrations

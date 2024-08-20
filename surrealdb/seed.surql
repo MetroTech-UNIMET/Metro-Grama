@@ -14,6 +14,8 @@ DELETE belong;
 -- no esta en los teclados. Por eso que esta el field del nombre
 DEFINE TABLE career SCHEMAFULL;
 DEFINE FIELD name ON career TYPE string;
+DEFINE FIELD electivesTrimesters on career type array<number> default [];
+DEFINE FIELD emoji on career type string;
 DEFINE INDEX careerNameIndex ON TABLE career COLUMNS name UNIQUE;
 
 -- Roles
@@ -76,8 +78,8 @@ DEFINE INDEX unique_relationships
     COLUMNS in, out UNIQUE;
 
 -- Popular careeras
-CREATE career:sistemas SET name="Ingeniería de sistemas";
-CREATE career:quimica SET name="Ingeniería quimica";
+CREATE career:sistemas SET name="Ingeniería de sistemas", emoji="💾";
+CREATE career:quimica SET name="Ingeniería quimica", emoji="🧪";
 
 -- Popular careeras
 -- Trimestre 1

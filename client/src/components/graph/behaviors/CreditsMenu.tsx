@@ -19,12 +19,23 @@ export default function CreditsMenu() {
       className={cn(
         "scale-100 absolute right-0 top-1/2 -translate-y-1/2 transition-all duration-1000 ",
         {
-          "translate-x-80": !open,
+          "translate-x-full": !open,
         }
       )}
     >
-      <div className="bg-UI-white h-full text-black rounded-md w-80 transition-all duration-1000 ">
-        {credits} {BPCredits}
+      <div
+        className="bg-UI-white h-full text-black rounded-md w-full max-w-[20rem]
+        px-4 py-2"
+      >
+        <section className="flex gap-2 flex-wrap">
+          <span className="font-medium bg-gray-200 p-1 rounded-md w-fit">
+            Creditos: <span className="font-normal ">{credits}</span>
+          </span>
+          <span className="font-medium bg-gray-200 p-1 rounded-md w-fit">
+            Creditos BP: <span className="font-normal">{BPCredits}</span>
+          </span>
+        </section>
+
         <button
           className="bg-UI-white p-2 rounded-l-md  h-10 
               fixed top-1/2 -translate-y-1/2 left-0 -translate-x-10"

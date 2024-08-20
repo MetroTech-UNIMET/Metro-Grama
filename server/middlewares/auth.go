@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"metrograma/models"
 	"metrograma/storage"
 	"net/http"
 
@@ -10,22 +11,9 @@ import (
 
 func UserAuth(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		sessAuth, err := session.Get("auth", c)
+		user, err := getUserFromSession(c)
 		if err != nil {
-			return echo.NewHTTPError(http.StatusUnauthorized)
-		}
-		userID, ok := sessAuth.Values["user-id"]
-		if !ok {
-			return echo.NewHTTPError(http.StatusUnauthorized)
-		}
-		userIDStr, ok := userID.(string)
-		if !ok {
-			return echo.NewHTTPError(http.StatusBadRequest)
-		}
-
-		user, err := storage.ExistStudent(userIDStr)
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest)
+			return err
 		}
 
 		c.Set("user-id", user.ID)
@@ -36,22 +24,9 @@ func UserAuth(next echo.HandlerFunc) echo.HandlerFunc {
 
 func AdminAuth(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		sessAuth, err := session.Get("auth", c)
+		user, err := getUserFromSession(c)
 		if err != nil {
-			return echo.NewHTTPError(http.StatusUnauthorized)
-		}
-		userID, ok := sessAuth.Values["user-id"]
-		if !ok {
-			return echo.NewHTTPError(http.StatusUnauthorized)
-		}
-		userIDStr, ok := userID.(string)
-		if !ok {
-			return echo.NewHTTPError(http.StatusBadRequest)
-		}
-
-		user, err := storage.ExistStudent(userIDStr)
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest)
+			return err
 		}
 
 		if user.Role != "role:admin" {
@@ -62,4 +37,26 @@ func AdminAuth(next echo.HandlerFunc) echo.HandlerFunc {
 
 		return next(c)
 	}
+}
+
+func getUserFromSession(c echo.Context) (*models.MinimalStudent, error) {
+	sessAuth, err := session.Get("auth", c)
+	if err != nil {
+		return nil, echo.NewHTTPError(http.StatusUnauthorized)
+	}
+	userID, ok := sessAuth.Values["user-id"]
+	if !ok {
+		return nil, echo.NewHTTPError(http.StatusUnauthorized)
+	}
+	userIDStr, ok := userID.(string)
+	if !ok {
+		return nil, echo.NewHTTPError(http.StatusBadRequest)
+	}
+
+	user, err := storage.ExistStudent(userIDStr)
+	if err != nil {
+		return nil, echo.NewHTTPError(http.StatusBadRequest)
+	}
+
+	return &user, nil
 }

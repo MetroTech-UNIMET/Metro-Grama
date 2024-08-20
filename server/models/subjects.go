@@ -33,19 +33,6 @@ type SubjectEdge struct {
 	Name string `json:"name"`
 }
 
-type SubjectsEdges struct {
-	SubjectEdges []struct {
-		ID   string      `json:"id,omitempty"`
-		From SubjectEdge `json:"in"`
-		To   SubjectEdge `json:"out"`
-	} `json:"edges"`
-
-	SubjectNodes []struct {
-		ID   string `json:"id,omitempty"`
-		Name string `json:"name"`
-	} `json:"nodes"`
-}
-
 type SubjectsByCareers struct {
 	Careers    []string `json:"careers"`
 	Prelations []string `json:"prelations"`

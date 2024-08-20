@@ -2,6 +2,7 @@ import type { Subject } from "@/interfaces/Subject";
 import type { NodeStyleIcon } from "@antv/graphin/lib/typings/type";
 import type { NodeStatuses } from "@components/graph/behaviors/StatusActions";
 import type { Option as DropdownOption } from "@ui/derived/multidropdown";
+import type { Career } from "@/interfaces/Career";
 
 export function careerEmoji(career: string): string {
   switch (career) {
@@ -21,18 +22,20 @@ export function careerEmoji(career: string): string {
  */
 export function getNormalIcon(
   subject: Subject,
-  selectedCareers: DropdownOption[]
+  selectedCareers: DropdownOption[],
+  careers?: Career[]
 ): NodeStyleIcon {
   let icon = "";
-
+  
   if (subject.careers.length > 1) {
     icon = "🤝";
     for (let i = 0; i < subject.careers.length; i++) {
+      const emoji =  careers?.find((c) => c.id === subject.careers[i])?.emoji ?? "🛠️"
       if (i == 0) {
-        icon += "\n\r" + careerEmoji(subject.careers[i]) + " ";
+        icon += "\n\r" + emoji + " ";
         continue;
       }
-      icon += careerEmoji(subject.careers[i]) + " ";
+      icon += emoji + " ";
     }
   } else {
     let career = selectedCareers.find(
@@ -45,9 +48,9 @@ export function getNormalIcon(
       };
       career = c;
     }
-
+    
     if (career) {
-      icon = careerEmoji(career.value);
+      icon = careers?.find((c) => c.id === career.value)?.emoji ?? "🛠️"
     }
   }
 

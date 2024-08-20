@@ -1,13 +1,9 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
-import type { GraphinData } from "@antv/graphin";
-import type { AxiosError } from "axios";
-import type { Subject } from "@/interfaces/Subject";
-import type { Option as DropdownOption } from "@ui/derived/multidropdown";
-import type { NodeStatuses } from "@components/graph/behaviors/StatusActions";
 
 import { getEnrolledSubjects } from "@/api/interactions/enrollApi";
+import { getCareers } from "@/api/careersApi";
 import { notRetryOnUnauthorized } from "@utils/queries";
 import { useStatusActions } from "@components/graph/behaviors/StatusActions";
 
@@ -20,10 +16,21 @@ import {
 } from "./functions";
 import { edgeStyle, useNodeStyle } from "./graph-styles";
 
+import type { GraphinData } from "@antv/graphin";
+import type { AxiosError } from "axios";
+import type { Subject } from "@/interfaces/Subject";
+import type { Option as DropdownOption } from "@ui/derived/multidropdown";
+import type { NodeStatuses } from "@components/graph/behaviors/StatusActions";
+import type { Career } from "@/interfaces/Career";
+
 export default function useSubjectGraph(
   data: Graph<Subject> | undefined,
   selectedCareers: DropdownOption[]
 ) {
+  const { data: careers } = useQuery<Career[]>({
+    queryKey: ["careers"],
+    queryFn: getCareers,
+  });
   const [graph, setGraph] = useState<GraphinData>({ nodes: [], edges: [] });
 
   const { nodeStatuses, setSubjectWithCredits } = useStatusActions();
@@ -37,7 +44,7 @@ export default function useSubjectGraph(
     retry: notRetryOnUnauthorized,
   });
 
-  const { getNodeStyle } = useNodeStyle(selectedCareers);
+  const { getNodeStyle } = useNodeStyle(selectedCareers, careers);
 
   useEffect(() => {
     if (data?.nodes.length === 0) {

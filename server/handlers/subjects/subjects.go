@@ -13,9 +13,10 @@ import (
 
 func Handlers(e *echo.Group) {
 	subjectsGroup := e.Group("/subjects")
-	// subjectsGroup.GET("/:career", getSubjectsByCareer)
-	subjectsGroup.GET("/", getSubjects)
+	subjectsGroup.GET("/", getSubjects, middlewares.AdminAuth)
+	subjectsGroup.GET("/graph/", getSubjectsGraph)
 	subjectsGroup.POST("/", createSubject, middlewares.AdminAuth)
+	// subjectsGroup.GET("/:career", getSubjectsByCareer)
 }
 
 // func getSubjectsByCareer(c echo.Context) error {
@@ -29,6 +30,14 @@ func Handlers(e *echo.Group) {
 func getSubjects(c echo.Context) error {
 	careers := c.QueryParam("careers")
 
+	subjects, err := storage.GetSubjects(careers)
+
+	return tools.GetResponse(c, subjects, err)
+}
+
+func getSubjectsGraph(c echo.Context) error {
+	careers := c.QueryParam("careers")
+
 	if careers == "none" {
 		return c.JSON(http.StatusOK, models.Graph[models.SubjectNode]{
 			Nodes: []models.Node[models.SubjectNode]{},
@@ -36,7 +45,7 @@ func getSubjects(c echo.Context) error {
 		})
 	}
 
-	subjects, err := storage.GetSubjects(careers)
+	subjects, err := storage.GetSubjectsGraph(careers)
 
 	return tools.GetResponse(c, subjects, err)
 }
@@ -57,8 +66,7 @@ func createSubject(c echo.Context) error {
 	}
 
 	for _, c := range subjectForm.Careers {
-		err := tools.ExistRecord(c.CareerID)
-		if err != nil {
+		if err := tools.ExistRecord(c.CareerID); err != nil {
 			return echo.NewHTTPError(http.StatusNotFound, fmt.Sprintf("Precedes subject `%s` not found", c.CareerID))
 		}
 	}

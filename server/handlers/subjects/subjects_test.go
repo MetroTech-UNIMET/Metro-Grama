@@ -236,7 +236,7 @@ func TestBasicSubjectsGraph(t *testing.T) {
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 
-	err := getSubjects(c)
+	err := getSubjectsGraph(c)
 
 	if assert.NoError(t, err) {
 		graph := new(models.Graph[models.SubjectNode])

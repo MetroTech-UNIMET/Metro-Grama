@@ -56,7 +56,7 @@ import (
 // 	return graph, nil
 // }
 
-func getSubjectsQuery(careers string) (interface{}, error) {
+func useGetSubjectsQuery(careers string) (interface{}, error) {
 	baseQuery := `SELECT 
 	in as subject, 
 	array::group(out) as careers,
@@ -81,8 +81,61 @@ func getSubjectsQuery(careers string) (interface{}, error) {
 	}
 }
 
-func GetSubjects(careers string) (models.Graph[models.SubjectNode], error) {
-	rows, err := getSubjectsQuery(careers)
+const getSubjectsQueryTemplate = `SELECT id as code, name,BPCredits, credits, 
+    id->belong.out as careers
+    FROM subject
+    {{if .CareersNotEmpty}}
+    WHERE array::intersect(id->belong.out, $careers) != []
+    {{end}}`
+
+func GetSubjects(careers string) ([]models.SubjectNode, error) {
+	careersArray := []string{}
+	if careers != "none" {
+		careersArray = tools.StringToArray(careers)
+	}
+	careersNotEmpty := len(careersArray) > 0
+
+	// Create a new template and parse the letter into it.
+	tmpl, err := template.New("query").Parse(getSubjectsQueryTemplate)
+	if err != nil {
+		return []models.SubjectNode{}, err
+	}
+
+	// Execute the template with the data.
+	var queryBuffer bytes.Buffer
+	err = tmpl.Execute(&queryBuffer, struct {
+		CareersNotEmpty bool
+	}{
+		CareersNotEmpty: careersNotEmpty,
+	})
+	if err != nil {
+		return []models.SubjectNode{}, err
+	}
+
+	query := queryBuffer.String()
+
+	rows, err := db.SurrealDB.Query(query, map[string][]string{
+		"careers": careersArray,
+	})
+
+	if err != nil {
+		return []models.SubjectNode{}, err
+	}
+
+	subjects, err := surrealdb.SmartUnmarshal[[]models.SubjectNode](rows, err)
+
+	if err != nil {
+		return []models.SubjectNode{}, err
+	} else if len(subjects) == 0 {
+		return []models.SubjectNode{}, fmt.Errorf("there is no subjects belonging to this careers")
+	}
+
+	return subjects, nil
+
+}
+
+func GetSubjectsGraph(careers string) (models.Graph[models.SubjectNode], error) {
+	rows, err := useGetSubjectsQuery(careers)
 
 	if err != nil {
 		return models.Graph[models.SubjectNode]{}, err
@@ -134,7 +187,7 @@ func GetSubjects(careers string) (models.Graph[models.SubjectNode], error) {
 			},
 		}
 	}
-	
+
 	for _, subjectByCareer := range subjectsByCareers {
 		subject := subjectByCareer.Subject
 

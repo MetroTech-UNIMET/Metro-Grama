@@ -5,6 +5,11 @@ export interface Student {
   firstName: string
   lastName: string
   pictureUrl: string
-  role: string
+  role: UserRole
   created: string
+}
+
+export enum UserRole {
+  user = "role:user",
+  admin = "role:admin"
 }

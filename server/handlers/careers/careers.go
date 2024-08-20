@@ -1,6 +1,7 @@
 package careers
 
 import (
+	"fmt"
 	"metrograma/middlewares"
 	"metrograma/models"
 	"metrograma/storage"
@@ -14,6 +15,7 @@ func Handlers(e *echo.Group) {
 	careersGroup := e.Group("/careers")
 	careersGroup.GET("/", getCareers)
 	careersGroup.POST("/", createCareer, middlewares.AdminAuth)
+	careersGroup.POST("/prueba/", createCareer2)
 	careersGroup.DELETE("/:careerId", deleteCareer, middlewares.AdminAuth)
 	// subjectsGroup.GET("/:careerId", getCareerById)
 }
@@ -43,6 +45,37 @@ func createCareer(c echo.Context) error {
 	}
 
 	return nil
+}
+
+func createCareer2(c echo.Context) error {
+	var careerForm models.CareerForm2
+	if err := c.Bind(&careerForm); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	if len(careerForm.Name) >= 5 {
+		careerForm.ID_Name = careerForm.Name[len(careerForm.Name)-5:]
+	} else {
+		return echo.NewHTTPError(http.StatusBadRequest, "career name must have at least 5 characters")
+	}
+
+	if err := c.Validate(careerForm); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	careerID := tools.ToID("career", careerForm.ID_Name)
+	if err := tools.ExistRecord(careerID); err == nil {
+		fmt.Println(careerID, err)
+		return echo.NewHTTPError(http.StatusConflict, fmt.Errorf("career with id '%s' already exists", careerID))
+	}
+
+	if err := storage.CreateCareer2(careerForm); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	}
+
+	return c.JSON(http.StatusCreated, map[string]string{
+		"message": "The career was created successfully",
+	})
 }
 
 type deleteCareerParam struct {

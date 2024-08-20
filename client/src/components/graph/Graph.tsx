@@ -27,7 +27,7 @@ export default function Graph() {
   if (error) return <ShowAxiosError error={error as AxiosError} />;
   if (graphinError) return <ShowAxiosError error={graphinError as AxiosError} />;
 
-  if (!data || !graphinImport){
+  if ((!data && graph.nodes.length === 0) || !graphinImport){
     return (
       <div className="h-full grid place-items-center ">
         <Spinner size="giant" />

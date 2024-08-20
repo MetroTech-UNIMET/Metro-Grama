@@ -6,3 +6,8 @@ export async function getCareers(): Promise<Career[]> {
 
   return response.data;
 }
+
+export async function createCareers(data: any) {
+  console.log(data)
+  return await axios.post("/careers/prueba/", data);
+}

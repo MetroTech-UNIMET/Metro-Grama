@@ -78,8 +78,9 @@ export function OnlyAdmin({ children }: { children: React.ReactNode }) {
   const { student } = useAuth();
 
   if (student?.role !== UserRole.admin) {
+    // TODO - Mejor manejo de sin autorización
     return null;
   }
 
-  return <AuthenticationContext>{children}</AuthenticationContext>;
+  return children
 }

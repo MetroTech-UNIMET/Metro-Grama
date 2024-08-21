@@ -1,14 +1,17 @@
 import { Outlet } from "react-router-dom";
 
-import  { OnlyAdmin } from "@/contexts/AuthenticationContext";
+import AuthenticationContext, { OnlyAdmin } from "@/contexts/AuthenticationContext";
 import { Toaster } from "@ui/toaster";
 
 export default function AdminLayout() {
   return (
     <>
-      <OnlyAdmin>
+      <AuthenticationContext>
+        <OnlyAdmin>
+
         <Outlet />
-      </OnlyAdmin>
+        </OnlyAdmin>
+      </AuthenticationContext>
       <Toaster />
     </>
   );

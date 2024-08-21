@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
 
 import useFetchCareersOptions from "./use-FetchCareersOptions";
-import { getSubjects } from "@/api/subjectsAPI";
+import { getSubjectsGraph } from "@/api/subjectsAPI";
 
 import type { Subject } from "@/interfaces/Subject";
 import type { CareerOption } from "./use-FetchCareersOptions";
@@ -17,12 +17,12 @@ export default function useFecthSubjectByCareer() {
   const careers = searchParams.get("careers") ?? "none";
   const subjectQuery = useQuery<Graph<Subject>>({
     queryKey: [
-      "subjects",
+      "subjects", "graph",
       {
         careers: careers === "none" ? [] : careers.split(",").sort(),
       },
     ],
-    queryFn: () => getSubjects(careers),
+    queryFn: () => getSubjectsGraph(careers),
   });
 
   const { options, isLoading: loadingCareers } = useFetchCareersOptions();

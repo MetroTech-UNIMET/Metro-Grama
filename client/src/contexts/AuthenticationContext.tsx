@@ -8,7 +8,7 @@ import { toast } from "@ui/use-toast";
 import { notRetryOnUnauthorized } from "@utils/queries";
 
 import type { AxiosError } from "axios";
-import type { Student } from "@/interfaces/Student";
+import { UserRole, type Student } from "@/interfaces/Student";
 
 interface AuthContextProps {
   student: Student | null;
@@ -72,4 +72,14 @@ export default function AuthenticationContext({
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
+export function OnlyAdmin({ children }: { children: React.ReactNode }) {
+  const { student } = useAuth();
+
+  if (student?.role !== UserRole.admin) {
+    return null;
+  }
+
+  return <AuthenticationContext>{children}</AuthenticationContext>;
 }

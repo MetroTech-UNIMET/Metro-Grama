@@ -31,22 +31,26 @@ export default function useFecthSubjectByCareer() {
 
   useEffect(() => {
     if (options.length === 0 || loadingCareers) return;
-
+    
     if (isFirstRender.current) {
       isFirstRender.current = false;
-
+      
       const filter = searchParams.get("careers");
       if (!filter || !options) return;
-
+      
       if (filter === "none") {
         setSelectedCareers([]);
       } else {
         const careers = filter.split(",");
-
-        const selectedCareers = careers.map((career) => {
-          const option = options.find((option) => option.query === career)!;
-          return option;
-        });
+        
+        const selectedCareers = careers.reduce<CareerOption[]>((acc, career) => {
+          const option = options.find((option) => option.query === career);
+          const exists = acc.find((accOption) => accOption.query === career);
+          if (option && !exists) 
+            acc.push(option);
+          
+          return acc;
+        }, []);
 
         setSelectedCareers(selectedCareers);
       }

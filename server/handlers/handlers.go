@@ -13,7 +13,7 @@ import (
 
 func CreateHandlers(e *echo.Echo) {
 	apiGroup := e.Group("/api")
-	apiGroup.GET("*", func(c echo.Context) error {
+	apiGroup.Any("*", func(c echo.Context) error {
 		return echo.ErrNotFound
 	})
 	health.Handlers(apiGroup)

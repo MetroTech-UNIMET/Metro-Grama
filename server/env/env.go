@@ -7,6 +7,7 @@ import (
 	"github.com/joho/godotenv"
 )
 
+var IsProduction = false
 var UserTokenSigninKey = ""
 
 func LoadDotEnv() {
@@ -14,6 +15,10 @@ func LoadDotEnv() {
 		log.Panicln(err)
 	}
 	UserTokenSigninKey = GetDotEnv("USER_SIGIN_KEY")
+
+	if val := os.Getenv("MODE"); val == "Production" {
+		IsProduction = true
+	}
 }
 
 func GetDotEnv(key string) string {

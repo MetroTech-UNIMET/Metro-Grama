@@ -34,8 +34,11 @@ func oauthGoogleLogin(c echo.Context) error {
 	}
 	sess.Options = &sessions.Options{
 		Path:     "/",
-		MaxAge:   86400 * 7,
+		MaxAge:   60 * 5,
 		HttpOnly: true,
+	}
+	if env.IsProduction {
+		sess.Options.Secure = true
 	}
 	oauthState := generateStateOauthCookie()
 
@@ -106,6 +109,8 @@ func oauthGoogleCallback(c echo.Context) error {
 		}); err != nil {
 			return echo.NewHTTPError(http.StatusConflict, err)
 		}
+
+		dbUser, _ = storage.ExistStudentByEmail(googleEmailData.Email)
 	}
 
 	sessAuth, err := session.Get("auth", c)
@@ -114,6 +119,11 @@ func oauthGoogleCallback(c echo.Context) error {
 		MaxAge:   86400 * 7,
 		HttpOnly: true,
 	}
+	if env.IsProduction {
+		sessAuth.Options.SameSite = http.SameSiteStrictMode
+		sessAuth.Options.Secure = true
+	}
+
 	if err != nil {
 		return err
 	}

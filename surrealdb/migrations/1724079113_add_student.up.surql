@@ -1,0 +1,10 @@
+DEFINE TABLE student SCHEMAFULL;
+DEFINE FIELD firstName ON student TYPE string;
+DEFINE FIELD lastName ON student TYPE string;
+DEFINE FIELD email ON student TYPE string ASSERT string::is::email($value);
+DEFINE FIELD pictureUrl ON student TYPE string;
+DEFINE FIELD password ON student TYPE string;
+DEFINE FIELD verified ON student TYPE bool DEFAULT false;
+DEFINE FIELD role ON student TYPE record<role> DEFAULT role:user;
+DEFINE FIELD created ON student DEFAULT time::now() READONLY;
+DEFINE INDEX studentEmailIndex ON TABLE student COLUMNS email UNIQUE;

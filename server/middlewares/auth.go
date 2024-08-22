@@ -50,12 +50,12 @@ func getUserFromSession(c echo.Context) (*models.MinimalStudent, error) {
 	}
 	userIDStr, ok := userID.(string)
 	if !ok {
-		return nil, echo.NewHTTPError(http.StatusBadRequest)
+		return nil, echo.NewHTTPError(http.StatusUnauthorized)
 	}
 
 	user, err := storage.ExistStudent(userIDStr)
 	if err != nil {
-		return nil, echo.NewHTTPError(http.StatusBadRequest)
+		return nil, echo.NewHTTPError(http.StatusUnauthorized)
 	}
 
 	return &user, nil

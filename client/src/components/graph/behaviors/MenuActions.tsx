@@ -26,7 +26,7 @@ interface MenuNodeProps {
 function MenuNode({ node, close }: MenuNodeProps) {
   const { selectSubject } = useSubjectSheet();
   const { nodeActions } = useStatusActions();
-  const { student } = useAuth();
+  const { user } = useAuth();
 
   const graphinContext = useLazyGraphinContext();
 
@@ -114,7 +114,7 @@ function MenuNode({ node, close }: MenuNodeProps) {
     const { nodes, enabled } = nodeActions.enableViewedNode(node);
     const viewedNodes = Array.from(nodes);
 
-    if (student) {
+    if (user) {
       if (enabled) {
         await enrollMutation.mutateAsync(viewedNodes);
       } else {

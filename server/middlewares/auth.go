@@ -39,7 +39,7 @@ func AdminAuth(next echo.HandlerFunc) echo.HandlerFunc {
 	}
 }
 
-func getUserFromSession(c echo.Context) (*models.MinimalStudent, error) {
+func getUserFromSession(c echo.Context) (*models.MinimalUser, error) {
 	sessAuth, err := session.Get("auth", c)
 	if err != nil {
 		return nil, echo.NewHTTPError(http.StatusUnauthorized)
@@ -53,7 +53,7 @@ func getUserFromSession(c echo.Context) (*models.MinimalStudent, error) {
 		return nil, echo.NewHTTPError(http.StatusUnauthorized)
 	}
 
-	user, err := storage.ExistStudent(userIDStr)
+	user, err := storage.ExistUser(userIDStr)
 	if err != nil {
 		return nil, echo.NewHTTPError(http.StatusUnauthorized)
 	}

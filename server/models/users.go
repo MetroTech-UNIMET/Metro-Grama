@@ -2,7 +2,7 @@ package models
 
 import "time"
 
-type StudentLoginForm struct {
+type UserLoginForm struct {
 	Email    string `form:"email" json:"email" validate:"required,unimet_email"`
 	Password string `form:"password" json:"password" validate:"required,gte=8,lte=40"`
 }
@@ -22,7 +22,7 @@ type StudentSigninForm struct {
 	PictureUrl     string          `json:"pictureUrl" validate:"required"`
 }
 
-type SimpleStudentSigninForm struct {
+type SimpleUserSigninForm struct {
 	FirstName  string `json:"firstName" validate:"required,gte=3,lte=40"`
 	LastName   string `json:"lastName" validate:"required,gte=3,lte=40"`
 	Email      string `json:"email" validate:"required,unimet_email"`
@@ -31,12 +31,12 @@ type SimpleStudentSigninForm struct {
 	Verified   bool   `json:"verified" validate:"required"`
 }
 
-type MinimalStudent struct {
+type MinimalUser struct {
 	ID   string `json:"id"`
 	Role string `json:"role"`
 }
 
-type StudentProfile struct {
+type UserProfile struct {
 	ID         string    `json:"id"`
 	Role       string    `json:"role"`
 	FirstName  string    `json:"firstName" `

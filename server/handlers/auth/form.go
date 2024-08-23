@@ -11,7 +11,7 @@ import (
 )
 
 func adminLogin(c echo.Context) error {
-	var loginForm models.StudentLoginForm
+	var loginForm models.UserLoginForm
 	if err := c.Bind(&loginForm); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
@@ -20,7 +20,7 @@ func adminLogin(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	user, err := storage.LoginStudent(loginForm)
+	user, err := storage.LoginUser(loginForm)
 
 	if err != nil {
 		return echo.NewHTTPError(http.StatusUnauthorized, err.Error())

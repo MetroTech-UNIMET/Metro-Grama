@@ -97,9 +97,9 @@ func oauthGoogleCallback(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Errorf("the email domain %s is not allowed", googleEmailData.HD))
 	}
 
-	dbUser, err := storage.ExistStudentByEmail(googleEmailData.Email)
+	dbUser, err := storage.ExistUserByEmail(googleEmailData.Email)
 	if err != nil {
-		if err := storage.CreateSimpleStudent(models.SimpleStudentSigninForm{
+		if err := storage.CreateSimpleUser(models.SimpleUserSigninForm{
 			FirstName:  googleEmailData.GivenName,
 			LastName:   googleEmailData.FamilyName,
 			Email:      googleEmailData.Email,
@@ -110,7 +110,7 @@ func oauthGoogleCallback(c echo.Context) error {
 			return echo.NewHTTPError(http.StatusConflict, err)
 		}
 
-		dbUser, _ = storage.ExistStudentByEmail(googleEmailData.Email)
+		dbUser, _ = storage.ExistUserByEmail(googleEmailData.Email)
 	}
 
 	sessAuth, err := session.Get("auth", c)

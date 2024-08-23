@@ -2,16 +2,16 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { logOutGoogle } from "@/api/authApi";
-import { getStudentProfile } from "@/api/studentsApi";
+import { getUserProfile } from "@/api/usersApi";
 
 import { toast } from "@ui/use-toast";
 import { notRetryOnUnauthorized } from "@utils/queries";
 
 import type { AxiosError } from "axios";
-import { UserRole, type Student } from "@/interfaces/Student";
+import { UserRole, type User } from "@/interfaces/User";
 
 interface AuthContextProps {
-  student: Student | null;
+  user: User | null;
   loadingAuth: boolean;
   errorAuth: unknown;
 
@@ -35,9 +35,9 @@ export default function AuthenticationContext({
 }) {
   const queryClient = useQueryClient();
 
-  const { data, isLoading, error } = useQuery<Student | null, AxiosError>({
-    queryKey: ["students", "profile"],
-    queryFn: getStudentProfile,
+  const { data, isLoading, error } = useQuery<User | null, AxiosError>({
+    queryKey: ["users", "profile"],
+    queryFn: getUserProfile,
     retry: notRetryOnUnauthorized,
   });
 
@@ -51,21 +51,21 @@ export default function AuthenticationContext({
       });
     },
     onSuccess: async () => {
-      setStudent(null);
+      setUser(null);
       return await queryClient.invalidateQueries({
-        queryKey: ["students", "profile"],
+        queryKey: ["users", "profile"],
       });
     },
   });
 
-  const [student, setStudent] = useState<Student | null>(null);
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    setStudent(data ?? null);
+    setUser(data ?? null);
   }, [data]);
 
   const value = {
-    student,
+    user,
     loadingAuth: isLoading,
     errorAuth: error,
     logOut: logOutMutation.mutate,
@@ -75,9 +75,9 @@ export default function AuthenticationContext({
 }
 
 export function OnlyAdmin({ children }: { children: React.ReactNode }) {
-  const { student } = useAuth();
+  const { user } = useAuth();
 
-  if (student?.role !== UserRole.admin) {
+  if (user?.role !== UserRole.admin) {
     // TODO - Mejor manejo de sin autorización
     return null;
   }

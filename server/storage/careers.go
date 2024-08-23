@@ -32,43 +32,6 @@ func GetCareerById(careerId string) {}
 
 var createCareerQuery = `
 BEGIN TRANSACTION;
-CREATE $careerID SET name=$careerName;
-{{ range $i, $c := .Subjects }}
-RELATE $subjectID{{$i}}->belong->$careerID SET trimester = $trimester{{$i}};
-{{end}}
-COMMIT TRANSACTION;	
-`
-
-func CreateCareer(careerForm models.CareerForm) error {
-	t, err := template.New("query").Parse(createCareerQuery)
-	if err != nil {
-		return err
-	}
-	var query bytes.Buffer
-	err = t.Execute(&query, careerForm)
-	if err != nil {
-		return err
-	}
-
-	queryParams := map[string]interface{}{
-		"careerID":   tools.ToID("career", careerForm.ID_Name),
-		"careerName": careerForm.Name,
-	}
-
-	for i, c := range careerForm.Subjects {
-		queryParams[fmt.Sprintf("subjectID%d", i)] = c.ID
-		queryParams[fmt.Sprintf("trimester%d", i)] = c.Trimester
-	}
-
-	data, err := db.SurrealDB.Query(query.String(), queryParams)
-	if err != nil {
-		return err
-	}
-	return tools.GetSurrealErrorMsgs(data)
-}
-
-var createCareerQuery2 = `
-BEGIN TRANSACTION;
 CREATE $careerID SET name=$careerName, emoji=$emoji, electivesTrimesters=$electivesTrimesters;
 
 {{ range $i, $subjectsByTrimester := .Subjects }}
@@ -86,8 +49,8 @@ RELATE $subjectID{{$i}}_{{$j}}->belong->$careerID SET trimester = $trimester{{$i
 COMMIT TRANSACTION;	
 `
 
-func CreateCareer2(careerForm models.CareerForm2) error {
-	t, err := template.New("query").Parse(createCareerQuery2)
+func CreateCareer(careerForm models.CareerForm) error {
+	t, err := template.New("query").Parse(createCareerQuery)
 	if err != nil {
 		return err
 	}
@@ -120,7 +83,7 @@ func CreateCareer2(careerForm models.CareerForm2) error {
 	return tools.GetSurrealErrorMsgs(data)
 }
 
-func processCareerForm(careerForm models.CareerForm2, electivesTrimesters []int, queryParams map[string]interface{}) error {
+func processCareerForm(careerForm models.CareerForm, electivesTrimesters []int, queryParams map[string]interface{}) error {
 	subjectPresence := make(map[string]bool)
 	var wg sync.WaitGroup
 	var syncQueryParams sync.Map   // Use sync.Map for concurrent access
@@ -137,7 +100,7 @@ func processCareerForm(careerForm models.CareerForm2, electivesTrimesters []int,
 			}
 
 			wg.Add(1)
-			go func(i, j int, careerSubject *models.CareerSubject2) {
+			go func(i, j int, careerSubject *models.CareerSubject) {
 				defer wg.Done()
 
 				id := tools.ToID("subject", careerSubject.Code)

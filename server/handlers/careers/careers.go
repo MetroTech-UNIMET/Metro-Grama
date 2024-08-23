@@ -15,7 +15,6 @@ func Handlers(e *echo.Group) {
 	careersGroup := e.Group("/careers")
 	careersGroup.GET("/", getCareers)
 	careersGroup.POST("/", createCareer, middlewares.AdminAuth)
-	careersGroup.POST("/prueba/", createCareer2)
 	careersGroup.DELETE("/:careerId", deleteCareer, middlewares.AdminAuth)
 	// subjectsGroup.GET("/:careerId", getCareerById)
 }
@@ -28,27 +27,6 @@ func getCareers(c echo.Context) error {
 
 func createCareer(c echo.Context) error {
 	var careerForm models.CareerForm
-	if err := c.Bind(&careerForm); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-	}
-
-	if err := c.Validate(careerForm); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-	}
-
-	if err := tools.ExistRecord(tools.ToID("career", careerForm.ID_Name)); err == nil {
-		return echo.NewHTTPError(http.StatusConflict, "career already exist")
-	}
-
-	if err := storage.CreateCareer(careerForm); err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
-	}
-
-	return nil
-}
-
-func createCareer2(c echo.Context) error {
-	var careerForm models.CareerForm2
 	if err := c.Bind(&careerForm); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
@@ -69,7 +47,7 @@ func createCareer2(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusConflict, fmt.Errorf("career with id '%s' already exists", careerID))
 	}
 
-	if err := storage.CreateCareer2(careerForm); err != nil {
+	if err := storage.CreateCareer(careerForm); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 

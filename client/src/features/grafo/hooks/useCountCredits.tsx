@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from "react";
 
-import { useStatusActions } from "@components/graph/behaviors/StatusActions";
+import { useStatusActions } from "@/features/grafo/behaviors/StatusActions";
 
 import type { Subject } from "@/interfaces/Subject";
 import type { IGraph, INode } from "@antv/g6";

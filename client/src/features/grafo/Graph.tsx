@@ -10,7 +10,7 @@ import { CareerMultiDropdown } from "@components/CareerMultiDropdown";
 import { Spinner } from "@ui/spinner";
 import GoogleLogin from "@ui/derived/GoogleLogin";
 
-import useSubjectGraph from "@/hooks/useSubjectGraph/useSubjectGraph";
+import useSubjectGraph from "@/features/grafo/hooks/useSubjectGraph/useSubjectGraph";
 import useFecthSubjectByCareer from "@/hooks/use-FecthSubjectByCareer";
 import useLazyGraphin from "@/hooks/lazy-loading/use-LazyGraphin";
 

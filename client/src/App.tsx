@@ -14,9 +14,9 @@ import AdminLayout from "@/layouts/AdminLayout";
 // import Login from "@/features/login-register/Login";
 
 const CreateCareer = lazy(
-  () => import("@/features/admin/careers/CreateCareer")
+  () => import("@/pages/admin/careers/CreateCareer")
 );
-const Grafo = lazy(() => import("@/features/grafo/Grafo"));
+const Grafo = lazy(() => import("@/pages/Home"));
 
 function App() {
   const router = createBrowserRouter([

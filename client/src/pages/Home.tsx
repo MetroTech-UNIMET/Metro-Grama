@@ -1,7 +1,7 @@
-import Graph from "@/components/graph/Graph";
-import { StatusActions } from "@/components/graph/behaviors/StatusActions";
+import Graph from "@/features/grafo/Graph";
+import { StatusActions } from "@/features/grafo/behaviors/StatusActions";
 
-import { SubjectSheet, SubjectSheetContent } from "@components/SubjectSheet";
+import { SubjectSheet, SubjectSheetContent } from "@/features/grafo/SubjectSheet";
 
 export default function Grafo() {
   return (

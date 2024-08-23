@@ -27,8 +27,13 @@ import { Button } from "@ui/button";
 
 import type { CreateCareerFormType } from "./schema";
 
+interface Props {
+  mode: "create" | "edit";
+  data?: CreateCareerFormType;
+}
+
 // TODO - Transiciones entre los pasos
-export default function CreateCareer() {
+export default function CareerForm({}: Props) {
   const {
     options: [prelationsOptions, codeOptions],
     query,

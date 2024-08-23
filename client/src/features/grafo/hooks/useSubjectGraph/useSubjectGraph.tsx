@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getEnrolledSubjects } from "@/api/interactions/enrollApi";
 import { getCareers } from "@/api/careersApi";
 import { notRetryOnUnauthorized } from "@utils/queries";
-import { useStatusActions } from "@components/graph/behaviors/StatusActions";
+import { useStatusActions } from "@/features/grafo/behaviors/StatusActions";
 
 import {
   isNodeViewed,
@@ -20,7 +20,7 @@ import type { GraphinData } from "@antv/graphin";
 import type { AxiosError } from "axios";
 import type { Subject } from "@/interfaces/Subject";
 import type { Option as DropdownOption } from "@ui/derived/multidropdown";
-import type { NodeStatuses } from "@components/graph/behaviors/StatusActions";
+import type { NodeStatuses } from "@/features/grafo/behaviors/StatusActions";
 import type { Career } from "@/interfaces/Career";
 
 export default function useSubjectGraph(

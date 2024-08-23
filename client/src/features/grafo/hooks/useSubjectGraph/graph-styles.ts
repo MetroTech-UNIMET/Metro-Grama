@@ -1,7 +1,7 @@
 import { useCallback } from "react";
 
 import { getNormalIcon, getCustomIconProps } from "./functions";
-import useLazyGraphIcons from "../lazy-loading/use-LazyGraphIcons";
+import useLazyGraphIcons from "../../../../hooks/lazy-loading/use-LazyGraphIcons";
 
 import type { Subject } from "@/interfaces/Subject";
 import type { Option as DropdownOption } from "@ui/derived/multidropdown";

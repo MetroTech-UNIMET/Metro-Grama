@@ -1,6 +1,6 @@
 import type { Subject } from "@/interfaces/Subject";
 import type { NodeStyleIcon } from "@antv/graphin/lib/typings/type";
-import type { NodeStatuses } from "@components/graph/behaviors/StatusActions";
+import type { NodeStatuses } from "@/features/grafo/behaviors/StatusActions";
 import type { Option as DropdownOption } from "@ui/derived/multidropdown";
 import type { Career } from "@/interfaces/Career";
 

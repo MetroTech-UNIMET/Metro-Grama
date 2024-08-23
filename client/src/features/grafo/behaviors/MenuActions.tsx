@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import { cn } from "@utils/className";
-import { useSubjectSheet } from "@/components/SubjectSheet";
+import { useSubjectSheet } from "@/features/grafo/SubjectSheet";
 import { useStatusActions } from "./StatusActions";
 import { enrollStudent, unenrollStudent } from "@/api/interactions/enrollApi";
 

@@ -1,15 +1,15 @@
 -- Step 1: Create a new table named `user` with the same structure as `student`
 DEFINE TABLE user SCHEMAFULL;
 
-DEFINE FIELD firstName ON student TYPE string;
-DEFINE FIELD lastName ON student TYPE string;
-DEFINE FIELD email ON student TYPE string ASSERT string::is::email($value);
-DEFINE FIELD pictureUrl ON student TYPE string;
-DEFINE FIELD password ON student TYPE string;
-DEFINE FIELD verified ON student TYPE bool DEFAULT false;
-DEFINE FIELD role ON student TYPE record<role> DEFAULT role:user;
-DEFINE FIELD created ON student DEFAULT time::now() READONLY;
-DEFINE INDEX studentEmailIndex ON TABLE student COLUMNS email UNIQUE;
+DEFINE FIELD firstName ON user TYPE string;
+DEFINE FIELD lastName ON user TYPE string;
+DEFINE FIELD email ON user TYPE string ASSERT string::is::email($value);
+DEFINE FIELD pictureUrl ON user TYPE string;
+DEFINE FIELD password ON user TYPE string;
+DEFINE FIELD verified ON user TYPE bool DEFAULT false;
+DEFINE FIELD role ON user TYPE record<role> DEFAULT role:user;
+DEFINE FIELD created ON user DEFAULT time::now() READONLY;
+DEFINE INDEX studentEmailIndex ON TABLE user COLUMNS email UNIQUE;
 
 -- Step 2: Migrate data from `student` to `user`
 INSERT INTO user SELECT * FROM student;

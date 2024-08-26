@@ -8,6 +8,13 @@ package models
 // 	PrecedesCodes []string `form:"precedesCodes"`
 // }
 
+type Subject struct {
+	ID        string `json:"id,omitempty"`
+	Name      string `json:"name"`
+	Credits   uint8  `json:"credits"`
+	BPCredits uint8  `json:"BPCredits"`
+}
+
 type SubjectCareer struct {
 	Trimester uint8  `json:"trimester" validate:"required, gte=1,lte=20"`
 	CareerID  string `json:"careerID" validate:"required"`
@@ -36,10 +43,5 @@ type SubjectEdge struct {
 type SubjectsByCareers struct {
 	Careers    []string `json:"careers"`
 	Prelations []string `json:"prelations"`
-	Subject    struct {
-		ID        string `json:"id,omitempty"`
-		Name      string `json:"name"`
-		Credits   uint8  `json:"credits"`
-		BPCredits uint8  `json:"BPCredits"`
-	}
+	Subject    Subject
 }

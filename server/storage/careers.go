@@ -28,7 +28,89 @@ func GetCareers() ([]models.CareerNode, error) {
 	return careers, nil
 }
 
-func GetCareerById(careerId string) {}
+func GetCareerWithSubjectsById(careerId string) (any, error) {
+	type SubjectComplex struct {
+		Subject    models.Subject `json:"subject"`
+		Trimester  int            `json:"trimester"`
+		Prelations []string       `json:"prelations"`
+	}
+
+	type CareerWithSubjectsResponse struct {
+		models.Career
+		Subjects []SubjectComplex `json:"subjects"`
+	}
+
+	rows, err := db.SurrealDB.Query(`
+LET $subjects = SELECT 
+    in as subject, 
+    trimester as trimester, 
+    in<-precede.in as prelations
+    FROM belong
+    where out == $id
+	ORDER BY trimester
+    FETCH subject;
+
+SELECT *, $subjects FROM ONLY $id; 
+`, map[string]interface{}{"id": careerId})
+
+	if err != nil {
+		return models.CareerWithSubjects{}, fmt.Errorf("error getting career: %v", err)
+	}
+
+	rowsArray, ok := rows.([]any)
+	// return rows, nil
+	if !ok {
+		return models.CareerWithSubjects{}, fmt.Errorf("unexpected result format: rows is not an array")
+	}
+
+	if len(rowsArray) < 2 {
+		return models.CareerWithSubjects{}, fmt.Errorf("unexpected result format: data has less than 2 elements")
+	}
+
+	resultRow := rowsArray[1].(map[string]any)["result"]
+	careerWithSubjectsResponse, err := surrealdb.SmartUnmarshal[CareerWithSubjectsResponse](resultRow, err)
+
+	if err != nil {
+		return models.CareerWithSubjects{}, fmt.Errorf("error fetching career: %v", err)
+	}
+
+	careerWithSubjects := models.CareerWithSubjects{
+		CareerNode: models.CareerNode{
+			ID:    careerWithSubjectsResponse.ID,
+			Name:  careerWithSubjectsResponse.Name,
+			Emoji: careerWithSubjectsResponse.Emoji,
+		},
+		Subjects: [][]*models.CareerSubjectWithoutType{},
+	}
+
+	careersCurrentTrimester := make([]*models.CareerSubjectWithoutType, 0)
+
+	for index, subjectComplex := range careerWithSubjectsResponse.Subjects {
+		subject := models.CareerSubjectWithoutType{
+			Name:      subjectComplex.Subject.Name,
+			Code:      subjectComplex.Subject.ID,
+			Credits:   subjectComplex.Subject.Credits,
+			BPCredits: subjectComplex.Subject.BPCredits,
+			// Trimester:  subjectComplex.Trimester,
+			Prelations: subjectComplex.Prelations,
+		}
+		newTrimester := (index != 0 && subjectComplex.Trimester != careerWithSubjectsResponse.Subjects[index-1].Trimester) ||
+			index == len(careerWithSubjectsResponse.Subjects)-1
+
+		if newTrimester {
+			for len(careersCurrentTrimester) < 5 {
+				careersCurrentTrimester = append(careersCurrentTrimester, nil)
+			}
+
+			careerWithSubjects.Subjects = append(careerWithSubjects.Subjects, careersCurrentTrimester)
+			careersCurrentTrimester = []*models.CareerSubjectWithoutType{&subject}
+		} else {
+			careersCurrentTrimester = append(careersCurrentTrimester, &subject)
+		}
+	}
+
+	return careerWithSubjects, nil
+}
 
 var createCareerQuery = `
 BEGIN TRANSACTION;
@@ -40,7 +122,7 @@ CREATE $careerID SET name=$careerName, emoji=$emoji, electivesTrimesters=$electi
       {{ continue }}
     {{ end }}
     {{ if eq $subject.SubjectType "new" }}
-CREATE $subjectID{{$i}}_{{$j}} SET name=$subjectName{{$i}}_{{$j}}, credits=$subjectCredits{{$i}}_{{$j}}, bpCredits=$subjectBpCredits{{$i}}_{{$j}};
+CREATE $subjectID{{$i}}_{{$j}} SET name=$subjectName{{$i}}_{{$j}}, credits=$subjectCredits{{$i}}_{{$j}}, BPCredits=$subjectBpCredits{{$i}}_{{$j}};
     {{ end }}
 RELATE $subjectID{{$i}}_{{$j}}->belong->$careerID SET trimester = $trimester{{$i}};
   {{ end }}

@@ -13,3 +13,11 @@ export function notRetryOnUnauthorized<T>(
 
   return failureCount < maxRetries;
 }
+
+export function idToSurrealId(id: string, table: string) {
+  return `${table}:${id}`;
+}
+
+export function surrealIdToId(surrealId: string) {
+  return surrealId.split(":")[1];
+}

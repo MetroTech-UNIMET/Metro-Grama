@@ -15,9 +15,9 @@ func Handlers(e *echo.Group) {
 	careersGroup := e.Group("/careers")
 	careersGroup.GET("/", getCareers)
 	careersGroup.POST("/", createCareer, middlewares.AdminAuth)
-	careersGroup.GET("/withSubjects/:careerId", getCareerWithSubjectsById)
 	careersGroup.DELETE("/:careerId", deleteCareer, middlewares.AdminAuth)
-	// subjectsGroup.GET("/:careerId", getCareerById)
+
+	careersGroup.GET("/withSubjects/:careerId", getCareerWithSubjectsById)
 }
 
 func getCareers(c echo.Context) error {
@@ -57,17 +57,6 @@ func createCareer(c echo.Context) error {
 	})
 }
 
-func getCareerWithSubjectsById(c echo.Context) error {
-	careerId := c.Param("careerId")
-	if careerId == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "careerId is required")
-	}
-
-	career, err := storage.GetCareerWithSubjectsById(careerId)
-
-	return tools.GetResponse(c, career, err)
-}
-
 type deleteCareerParam struct {
 	ID       string `param:"careerId" validate:"required"`
 	Subjects bool   `query:"subjects"`
@@ -87,4 +76,15 @@ func deleteCareer(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 	return nil
+}
+
+func getCareerWithSubjectsById(c echo.Context) error {
+	careerId := c.Param("careerId")
+	if careerId == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "careerId is required")
+	}
+
+	career, err := storage.GetCareerWithSubjectsById(careerId)
+
+	return tools.GetResponse(c, career, err)
 }

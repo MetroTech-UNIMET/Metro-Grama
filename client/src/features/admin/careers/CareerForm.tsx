@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { DevTool } from "@hookform/devtools";
@@ -13,10 +14,12 @@ import {
 } from "./schema";
 
 import useFormStep from "@/hooks/useFormStep";
+import useFormSubmit from "@/hooks/useFormSubmit";
 import useSubjectOptions from "./hooks/useSubjectOptions";
-import { createCareers } from "@/api/careersApi";
+
 import { forEachPromiseAll } from "@utils/promises";
-import { toast } from "@ui/use-toast";
+import { surrealIdToId } from "@utils/queries";
+import { onCreate, onEdit } from "./functions";
 
 import StepsNavigator from "./StepsNavigator";
 import SubjectInput from "./SubjectInput";
@@ -25,15 +28,16 @@ import { FloatingLabelInputField } from "@ui/derived/floating-label-input";
 import { Form } from "@ui/form";
 import { Button } from "@ui/button";
 
-import type { CreateCareerFormType } from "./schema";
+import type { CreateCareerFormType, CreateSubjectType } from "./schema";
+import type { CareerWithSubjects } from "@/interfaces/Career";
 
 interface Props {
   mode: "create" | "edit";
-  data?: CreateCareerFormType;
+  data?: CareerWithSubjects;
 }
 
 // TODO - Transiciones entre los pasos
-export default function CareerForm({}: Props) {
+export default function CareerForm({ mode, data }: Props) {
   const {
     options: [prelationsOptions, codeOptions],
     query,
@@ -47,40 +51,66 @@ export default function CareerForm({}: Props) {
     defaultValues: defaultCreateCareerValues,
   });
 
-  const { currentStep, next, previous, jumpTo, jumpToFirstErrorStep } =
-    useFormStep({
-      steps: steps,
-      trigger: form.trigger,
-      handleSubmit: form.handleSubmit(onSubmit, onInvalid),
-      onPageChange,
-    });
+  useEffect(() => {
+    if (!data) return;
 
-  // REVIEW - Considerar no enviar id unico y crearlo en go
-  function onSubmit(data: CreateCareerFormType) {
-    console.log("Se hizo submit");
-    if (!validateOnSubmit(data)) return;
+    const subjectsById: Record<string, string> = {};
 
-    const newData = {
-      ...data,
-      subjects: data.subjects.map((trimester) =>
-        trimester.map((subject) => {
-          if (subject.subjectType === "elective") {
-            return undefined;
-          }
-          return {
-            ...subject,
-            prelations: subject.prelations.map((prelation) => prelation.value),
+    const defaultData: CreateCareerFormType = {
+      emoji: data.emoji,
+      name: data.name,
+      subjects: data.subjects.map((subjects) =>
+        subjects.map((subject) => {
+          if (!subject)
+            return {
+              subjectType: "elective",
+              code: "",
+              name: "",
+              prelations: [],
+            };
+
+          subjectsById[subject.code] = subject.name;
+
+          const createSubject: CreateSubjectType = {
+            subjectType: "existing",
+            code: surrealIdToId(subject.code),
+            name: subject.name,
+            credits: subject.credits,
+            BPCredits: subject.BPCredits,
+            prelations: subject.prelations.map((prelation) => ({
+              value: prelation,
+              label: subjectsById[prelation],
+            })),
           };
+
+          return createSubject;
         })
       ),
     };
+    console.log(defaultData, subjectsById);
 
-    createCareers(newData);
-  }
+    form.reset(defaultData);
+  }, [data]);
 
+  const {onSubmit} = useFormSubmit({
+    mode,
+    onCreate,
+    onEdit
+  })
+  
   async function onInvalid() {
     await jumpToFirstErrorStep();
   }
+  const formSubmit = form.handleSubmit(onSubmit, onInvalid);
+
+  const { currentStep, next, previous, jumpTo, jumpToFirstErrorStep } =
+    useFormStep({
+      steps,
+      trigger: form.trigger,
+      handleSubmit: formSubmit,
+      onPageChange,
+    });
+
 
   // REVIEW - Hay veces que no se ejecuta
   async function onPageChange(prevPage: number, nextPage: number) {
@@ -158,12 +188,11 @@ export default function CareerForm({}: Props) {
     )
   );
 
-  console.log(form.formState.errors);
 
   return (
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit(onSubmit, onInvalid)}
+        onSubmit={formSubmit}
         className="p-16 bg-background"
       >
         <StepsNavigator
@@ -222,33 +251,4 @@ export default function CareerForm({}: Props) {
       </form>
     </Form>
   );
-}
-
-// TODO - Validar que prelations solo sea hacia atrás
-function validateOnSubmit(data: CreateCareerFormType) {
-  // TODO - Hacerlo más efiiciente con fors
-  const allCodes = data.subjects
-    .flat()
-    .map((subject) => subject.code)
-    .filter((code) => code !== undefined);
-  const repeatedCodes = allCodes.filter(
-    (code, index) => allCodes.indexOf(code) !== index
-  );
-
-  if (repeatedCodes.length > 0) {
-    const message =
-      repeatedCodes.length > 1
-        ? `Los códigos ${repeatedCodes.join(", ")} están repetidos`
-        : `El código ${repeatedCodes[0]} está repetido`;
-
-    toast({
-      title: "Códigos repetidos",
-      description: message,
-      variant: "destructive",
-    });
-
-    return false;
-  }
-
-  return true;
 }

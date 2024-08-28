@@ -117,13 +117,12 @@ function SubjectInput({
                             subject.BPCredits,
                             setValueOption
                           );
-                          
                         }}
                         onValueChange={(value) => {
                           const setValueOption = {
                             shouldTouch: true,
                             shouldValidate: true,
-                          }
+                          };
                           if (typeof value === "string") {
                             if (usingExistingSubject === false) return;
                             setUsingExistingSubject(false);
@@ -179,6 +178,8 @@ function SubjectInput({
                             trigger(`${subjectName}.name`);
                             trigger(`${subjectName}.credits`);
                             trigger(`${subjectName}.BPCredits`);
+                          } else {
+                            setValue(`${subjectName}.code`, "");
                           }
                         }}
                         size="sm"

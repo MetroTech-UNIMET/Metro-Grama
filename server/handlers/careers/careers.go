@@ -18,6 +18,7 @@ func Handlers(e *echo.Group) {
 	careersGroup.DELETE("/:careerId", deleteCareer, middlewares.AdminAuth)
 
 	careersGroup.GET("/withSubjects/:careerId", getCareerWithSubjectsById)
+	careersGroup.PATCH("/withSubjects/:careerId", updateCareerWithSubjects, middlewares.AdminAuth)
 }
 
 func getCareers(c echo.Context) error {
@@ -27,7 +28,7 @@ func getCareers(c echo.Context) error {
 }
 
 func createCareer(c echo.Context) error {
-	var careerForm models.CareerForm
+	var careerForm models.CareerCreateForm
 	if err := c.Bind(&careerForm); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
@@ -75,6 +76,29 @@ func deleteCareer(c echo.Context) error {
 	if err := storage.DeleteCareer(target.ID, target.Subjects); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
+	return nil
+}
+
+type updateCareerWithSubjectsParam struct {
+	OldCareer     models.CareerWithSubjects `json:"oldCareer" validate:"required"`
+	NewCareerForm models.CareerUpdateForm   `json:"newCareer" validate:"required"`
+}
+
+func updateCareerWithSubjects(c echo.Context) error {
+	var target updateCareerWithSubjectsParam
+	if err := c.Bind(&target); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	if err := c.Validate(target); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	if err := storage.UpdateCareerWithSubjects(target.OldCareer, target.NewCareerForm); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	}
+
+	// TODO - Add status code
 	return nil
 }
 

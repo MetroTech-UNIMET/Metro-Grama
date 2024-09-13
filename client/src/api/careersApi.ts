@@ -13,9 +13,11 @@ export async function createCareer(data: any) {
   return await axios.post("/careers/", data);
 }
 
-// TODO - Hacer endpoint
-export async function updateCareer(data: any) {
-  return await axios.put("/careers/", data);
+export async function updateCareer(oldCareer: CareerWithSubjects, newCareer: any) {
+  return await axios.patch(`/careers/withSubjects/${oldCareer.id}`, {
+    oldCareer,
+    newCareer
+  });
 }
 
 export async function getCompleteCareer(id?: string): Promise<CareerWithSubjects> {

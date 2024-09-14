@@ -64,8 +64,6 @@ export default function CareerForm({ mode, data }: Props) {
           if (!subject)
             return {
               subjectType: "elective",
-              code: "",
-              name: "",
               prelations: [],
             };
 
@@ -78,7 +76,7 @@ export default function CareerForm({ mode, data }: Props) {
             credits: subject.credits,
             BPCredits: subject.BPCredits,
             prelations: subject.prelations.map((prelation) => ({
-              value: prelation,
+              value: surrealIdToId(prelation),
               label: subjectsById[prelation],
             })),
           };
@@ -87,7 +85,6 @@ export default function CareerForm({ mode, data }: Props) {
         })
       ),
     };
-    console.log(defaultData, subjectsById);
 
     form.reset(defaultData);
   }, [data]);

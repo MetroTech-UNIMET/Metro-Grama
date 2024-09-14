@@ -174,6 +174,9 @@ export default function CareerForm({ mode, data }: Props) {
                       subjectIndex
                     ]
                   }
+                  initialExistingSubject={
+                    mode === "edit"
+                  }
                   isSubjectElective={
                     form.watch(
                       `subjects.${trimesterIndex}.${subjectIndex}.subjectType`

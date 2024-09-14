@@ -44,9 +44,11 @@ interface Props {
   loadingSubjects: boolean;
 
   isSubjectElective: boolean;
+  initialExistingSubject?: boolean;
   error: SubjectErrors;
 }
 
+// FIXME - Al hacer tab en Autocomplete con un codigo existente, no la selecciona sino que es como si fuera materia nueva
 // FIXME - Problemas de re-render cuando se seleccio un codigo -> Afecta a otras materias
 // FIXME - Cuando el codigo no existe y lo demás estaba disabled, al hacer focus focusea el switch
 // y no el nombre
@@ -61,11 +63,12 @@ function SubjectInput({
   prelationOptions,
   loadingSubjects,
 
+  initialExistingSubject = false,
   isSubjectElective,
   error,
 }: Props) {
   const subjectName = `subjects.${trimesterIndex}.${subjectIndex}` as const;
-  const [usingExistingSubject, setUsingExistingSubject] = useState(false);
+  const [usingExistingSubject, setUsingExistingSubject] = useState(initialExistingSubject);
 
   //  onMouseLeave={handleTooltipClose}
   // TODO - Mejorar responsive
@@ -83,7 +86,7 @@ function SubjectInput({
                     <FormControl>
                       <AutoComplete
                         placeholder="Código"
-                        options={codeOptions as any}
+                        options={codeOptions as Option[]}
                         emptyMessage={"No hay materias para escoger"}
                         listRelativeContainerClassName="z-[99]"
                         isLoading={loadingSubjects}
@@ -122,6 +125,7 @@ function SubjectInput({
                           const setValueOption = {
                             shouldTouch: true,
                             shouldValidate: true,
+                            shouldDirty: true,
                           };
                           if (typeof value === "string") {
                             if (usingExistingSubject === false) return;

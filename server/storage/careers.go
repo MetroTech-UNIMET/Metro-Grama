@@ -310,26 +310,37 @@ UPDATE $career.ID MERGE $career;
 
 FOR $subject in $subjectsCodesToUnrelate {
     let $from = $subject.Code;
-    let $to = $career.ID;
-    RELATE $from ->belong-> $to set trimester=$subject.Trimester;
+    DELETE $from->belong WHERE out=$career.ID;
 };
 
-FOR $subject in $subjectsToCreate {
+FOR $subject in $completeSubjectsToCreate {
 	CREATE $subject.Code CONTENT $subject;
-}
+};
 
 FOR $subject in $subjectsToRelate {
-	RELATE $subject.Code->belong->$career.ID SET trimester=$subject.Trimester;
+	let $from = $subject.Code;
+    let $to = $career.ID;
+    
+    RELATE $from->belong->$to set trimester=$subject.Trimester;
 };
 
 FOR $subject in $completeSubjectsToUpdate {
-	UPDATE $subject.Code MERGE $subject;
+    let $subjectCode = $subject.code;
+	UPDATE $subject.code MERGE $subject;
+    
+    FOR $prelationCode in $subject.prelationsToCreate {
+        RELATE $prelationCode->precede->$subjectCode;
+    };
+
+     FOR $prelationCode in $subject.prelationsToUndo {
+          DELETE $prelationCode->precede WHERE out=$subjectCode;
+    };
 };
 
 COMMIT TRANSACTION;
 `
 
-func UpdateCareerWithSubjects(oldCareer models.CareerWithSubjects, newCareerForm models.CareerUpdateForm) error {
+func UpdateCareerWithSubjects(oldCareer models.CareerWithSubjects, newCareerForm models.CareerUpdateForm) any {
 	subjectsToUpdate, subjectsToRelate, subjectsToUnrelate, subjectsToCreate :=
 		compareForms(oldCareer, newCareerForm)
 
@@ -370,11 +381,43 @@ func UpdateCareerWithSubjects(oldCareer models.CareerWithSubjects, newCareerForm
 	}
 	queryParams["completeSubjectsToCreate"] = completeSubjectsToCreate
 
-	completeSubjectsToUpdate := []models.UpdateCareerSubject{}
+	type ExtendedUpdateCareerSubject struct {
+		models.UpdateCareerSubject
+		PrelationsToUndo   []string `json:"prelationsToUndo"`
+		PrelationsToCreate []string `json:"prelationsToCreate"`
+	}
+
+	completeSubjectsToUpdate := []ExtendedUpdateCareerSubject{}
 	for _, positions := range subjectsToUpdate {
 		newSubject := *newCareerForm.Subjects[positions[0]][positions[1]]
+		oldSubject := *oldCareer.Subjects[positions[0]][positions[1]]
 
-		completeSubjectsToUpdate = append(completeSubjectsToUpdate, newSubject)
+		prelationsToUndo := []string{}
+		prelationsToCreate := []string{}
+
+		if len(newSubject.Prelations) > 0 {
+			for _, newPrelation := range newSubject.Prelations {
+				completeId := tools.ToID("subject", newPrelation)
+				if !tools.Contains(oldSubject.Prelations, completeId) {
+					prelationsToCreate = append(prelationsToCreate, completeId)
+				}
+			}
+
+			for _, oldPrelation := range oldSubject.Prelations {
+				if !tools.Contains(newSubject.Prelations, tools.FromID(oldPrelation)) {
+					prelationsToUndo = append(prelationsToUndo, oldPrelation)
+				}
+			}
+		}
+
+		newSubject.Prelations = nil
+		extendedSubject := ExtendedUpdateCareerSubject{
+			UpdateCareerSubject: newSubject,
+			PrelationsToUndo:    prelationsToUndo,
+			PrelationsToCreate:  prelationsToCreate,
+		}
+
+		completeSubjectsToUpdate = append(completeSubjectsToUpdate, extendedSubject)
 	}
 	queryParams["completeSubjectsToUpdate"] = completeSubjectsToUpdate
 

@@ -28,19 +28,19 @@ type CreateCareerSubject struct {
 }
 
 type CareerUpdateForm struct {
-	Name     string                               `json:"name"`
-	Emoji    string                               `json:"emoji"`
-	Subjects map[int]map[int]*UpdateCareerSubject `json:"subjects"`
+	Name     string                               `json:"name,omitempty"`
+	Emoji    string                               `json:"emoji,omitempty"`
+	Subjects map[int]map[int]*UpdateCareerSubject `json:"subjects,omitempty"`
 }
 
+// REVIEW - Considerar usar omitEmpty
 type UpdateCareerSubject struct {
-	Code      string `json:"code" validate:"required"`
-	Name      string `json:"name"`
-	Credits   uint8  `json:"credits" validate:"gte=0,lte=150"`
-	BPCredits uint8  `json:"BPCredits" validate:"gte=0,lte=150"`
-	// Prelations  []string `json:"prelations" validate:"dive,required"`
-	Prelations  []string `json:"prelations"`
-	SubjectType string   `json:"subjectType" validate:"oneof=elective existing new"`
+	Code        string   `json:"code" validate:"required"`
+	Name        string   `json:"name,omitempty"`
+	Credits     uint8    `json:"credits,omitempty" validate:"gte=0,lte=150"`
+	BPCredits   uint8    `json:"BPCredits,omitempty" validate:"gte=0,lte=150"`
+	Prelations  []string `json:"prelations,omitempty"`
+	SubjectType string   `json:"subjectType,omitempty" validate:"oneof=elective existing new"`
 }
 
 type CareerSubjectWithoutType struct {

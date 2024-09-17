@@ -1,10 +1,12 @@
 import { createCareer, updateCareer } from "@/api/careersApi";
 import { toast } from "@ui/use-toast";
+import { getDirtyNestedFields } from "@utils/forms";
+import { idToSurrealId } from "@utils/queries";
 
 import type { CreateCareerFormType } from "./schema";
+import type { ArrayToObject, DirtyFields } from "@utils/forms";
+import type { CareerWithSubjects } from "@/interfaces/Career";
 
-// TODO - Ver como muevo esto para el toast de useFormSubmit
-// TODO - Validar que prelations solo sea hacia atrás
 function validateOnSubmit(data: CreateCareerFormType) {
   const allCodes: string[] = [];
   for (let trimester of data.subjects) {
@@ -61,7 +63,6 @@ function validateOnSubmit(data: CreateCareerFormType) {
   return true;
 }
 
-// REVIEW - Considerar no enviar id unico y crearlo en go
 export async function onCreate(data: CreateCareerFormType) {
   if (!validateOnSubmit(data)) throw new Error("Datos inválidos");
 
@@ -76,7 +77,7 @@ export async function onCreate(data: CreateCareerFormType) {
 
 export async function onEdit(
   orinalData: CareerWithSubjects,
-data: CreateCareerFormType,
+  data: CreateCareerFormType,
   dirtyFields: DirtyFields<CreateCareerFormType>
 ) {
   if (Object.keys(dirtyFields).length === 0)
@@ -111,8 +112,7 @@ data: CreateCareerFormType,
   };
 }
 
-
-function transformData(data: CreateCareerFormType) {
+function transformCreateData(data: CreateCareerFormType) {
   return {
     ...data,
     subjects: data.subjects.map((trimester) =>
@@ -127,4 +127,36 @@ function transformData(data: CreateCareerFormType) {
       })
     ),
   };
+}
+
+function transformEditData(
+  data: Partial<ArrayToObject<CreateCareerFormType, "prelations">>
+) {
+  if (!data.subjects) return data;
+
+  const transformedData: {
+    emoji?: string;
+    name?: string;
+    subjects: Record<string, Record<string, any>>;
+  } = { ...data, subjects: {} };
+
+  Object.entries(data.subjects).forEach(([trimesterIndex, trimester]) => {
+    transformedData.subjects[trimesterIndex] = {};
+
+    Object.entries(trimester).forEach(([subjectIndex, subject]) => {
+      if (subject.subjectType === "elective") {
+        transformedData.subjects[trimesterIndex][subjectIndex] = null;
+      } else {
+        transformedData.subjects[trimesterIndex][subjectIndex] = {
+          ...subject,
+          code: subject.code
+            ? idToSurrealId(subject.code, "subject")
+            : undefined,
+          prelations: subject.prelations?.map((prelation) => prelation.value),
+        };
+      }
+    });
+  });
+
+  return transformedData;
 }

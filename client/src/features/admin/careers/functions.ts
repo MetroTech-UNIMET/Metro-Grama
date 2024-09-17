@@ -6,11 +6,39 @@ import type { CreateCareerFormType } from "./schema";
 // TODO - Ver como muevo esto para el toast de useFormSubmit
 // TODO - Validar que prelations solo sea hacia atrás
 function validateOnSubmit(data: CreateCareerFormType) {
-  // TODO - Hacerlo más efiiciente con fors
-  const allCodes = data.subjects
-    .flat()
-    .map((subject) => subject.code)
-    .filter((code) => code !== undefined);
+  const allCodes: string[] = [];
+  for (let trimester of data.subjects) {
+    for (let subject of trimester) {
+      if (subject.subjectType === "elective" || !subject.code) {
+        continue;
+      }
+
+      for (let prelation of subject.prelations) {
+        if (prelation.value === subject.code) {
+          toast({
+            title: "Relaciones inválidas",
+            description: `La materia : ${subject.name}" no puede tener una relación consigo misma`,
+            variant: "destructive",
+          });
+          return false;
+        }
+
+        if (!allCodes.includes(prelation.value)) {
+          toast({
+            title: "Relaciones inválidas",
+            description: `En la materia "${subject.name}", la prelación "${prelation.label}" no está presente en trimestres anteriores`,
+            variant: "destructive",
+            duration: 7 * 1000,
+          });
+
+          return false;
+        }
+      }
+
+      allCodes.push(subject.code);
+    }
+  }
+
   const repeatedCodes = allCodes.filter(
     (code, index) => allCodes.indexOf(code) !== index
   );

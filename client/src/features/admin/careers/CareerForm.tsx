@@ -1,7 +1,7 @@
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { type SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { DevTool } from "@hookform/devtools";
+// import { DevTool } from "@hookform/devtools";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 
 import {
@@ -14,12 +14,12 @@ import {
 } from "./schema";
 
 import useFormStep from "@/hooks/useFormStep";
-import useFormSubmit from "@/hooks/useFormSubmit";
 import useSubjectOptions from "./hooks/useSubjectOptions";
 
 import { forEachPromiseAll } from "@utils/promises";
 import { surrealIdToId } from "@utils/queries";
 import { onCreate, onEdit } from "./functions";
+import { toast } from "@ui/use-toast";
 
 import StepsNavigator from "./StepsNavigator";
 import SubjectInput from "./SubjectInput";
@@ -89,12 +89,38 @@ export default function CareerForm({ mode, data }: Props) {
     form.reset(defaultData);
   }, [data]);
 
-  const {onSubmit} = useFormSubmit({
-    mode,
-    onCreate,
-    onEdit
-  })
-  
+  const onSubmit: SubmitHandler<CreateCareerFormType> = async (formData) => {
+    let toastInfo = {};
+    try {
+      if (mode === "create") {
+        toastInfo = await onCreate(formData);
+      } else {
+        if (!data) return;
+
+        console.log(form.formState.touchedFields);
+        const editResult = await onEdit(
+          data,
+          formData,
+          form.formState.dirtyFields
+        );
+        if (!editResult) return;
+
+        toastInfo = editResult;
+      }
+
+      toast({
+        variant: "success",
+        ...toastInfo,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error!",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
   async function onInvalid() {
     await jumpToFirstErrorStep();
   }
@@ -107,7 +133,6 @@ export default function CareerForm({ mode, data }: Props) {
       handleSubmit: formSubmit,
       onPageChange,
     });
-
 
   // REVIEW - Hay veces que no se ejecuta
   async function onPageChange(prevPage: number, nextPage: number) {
@@ -186,13 +211,9 @@ export default function CareerForm({ mode, data }: Props) {
     )
   );
 
-
   return (
     <Form {...form}>
-      <form
-        onSubmit={formSubmit}
-        className="p-16 bg-background"
-      >
+      <form onSubmit={formSubmit} className="p-16 bg-background">
         <StepsNavigator
           jumpTo={jumpTo}
           steps={steps}

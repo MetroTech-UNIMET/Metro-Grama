@@ -74,14 +74,41 @@ export async function onCreate(data: CreateCareerFormType) {
   };
 }
 
-export async function onEdit(data: CreateCareerFormType) {
-  if (!validateOnSubmit(data))  throw new Error("Invalid data");;
+export async function onEdit(
+  orinalData: CareerWithSubjects,
+data: CreateCareerFormType,
+  dirtyFields: DirtyFields<CreateCareerFormType>
+) {
+  if (Object.keys(dirtyFields).length === 0)
+    throw new Error(
+      "Para poder modificar, tiene que realizar un cambio en el formulario"
+    );
 
-  const newData = transformData(data);
+  if (!validateOnSubmit(data)) return false;
 
-  // TODO update
-  await updateCareer(newData);
-  return `Career ${data.name} updated successfully`;
+  dirtyFields?.subjects?.forEach((subjectTrimester, trimester) => {
+    subjectTrimester?.forEach((subjectDirty, index) => {
+      if (dirtyFields.subjects?.[trimester][index]) {
+        dirtyFields.subjects[trimester][index] = {
+          code: true,
+          ...subjectDirty,
+        };
+      }
+    });
+  });
+
+  const filtered = getDirtyNestedFields(data, dirtyFields) as Partial<
+    ArrayToObject<CreateCareerFormType, "prelations">
+  >;
+
+  const transformed = transformEditData(filtered);
+
+  await updateCareer(orinalData, transformed);
+
+  return {
+    title: "Carrera actualizada",
+    description: `La carrera "${data.name}" ha sido actualizada exitosamente`,
+  };
 }
 
 

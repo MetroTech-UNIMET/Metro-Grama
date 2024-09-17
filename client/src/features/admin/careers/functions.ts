@@ -63,12 +63,15 @@ function validateOnSubmit(data: CreateCareerFormType) {
 
 // REVIEW - Considerar no enviar id unico y crearlo en go
 export async function onCreate(data: CreateCareerFormType) {
-  if (!validateOnSubmit(data)) throw new Error("Invalid data");
+  if (!validateOnSubmit(data)) throw new Error("Datos inválidos");
 
-  const newData = transformData(data);
+  const newData = transformCreateData(data);
 
   await createCareer(newData);
-  return `Career ${data.name} created successfully`;
+  return {
+    title: "Carrera creada",
+    description: `La carrera "${data.name}" ha sido creada exitosamente`,
+  };
 }
 
 export async function onEdit(data: CreateCareerFormType) {

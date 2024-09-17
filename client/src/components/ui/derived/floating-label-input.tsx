@@ -93,6 +93,7 @@ function FloatingLabelInputField<T extends FieldValues>({
                   {
                     "bg-destructive/10 border-destructive": hasError,
                     "bg-success/10 border-success": isSuccessful,
+                    "opacity-60": props.readOnly
                   },
                   className
                 )}
@@ -116,6 +117,7 @@ function FloatingLabelInputField<T extends FieldValues>({
                   "-translate-y-4 scale-75": props.placeholder,
                   "peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-4":
                     !props.placeholder,
+                    "opacity-60": props.readOnly
                 },
                 labelClassName
               )}

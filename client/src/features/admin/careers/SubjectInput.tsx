@@ -44,7 +44,7 @@ interface Props {
   loadingSubjects: boolean;
 
   isSubjectElective: boolean;
-  initialExistingSubject?: boolean;
+  isModeEdit?: boolean;
   error: SubjectErrors;
 }
 
@@ -63,12 +63,12 @@ function SubjectInput({
   prelationOptions,
   loadingSubjects,
 
-  initialExistingSubject = false,
+  isModeEdit = false,
   isSubjectElective,
   error,
 }: Props) {
   const subjectName = `subjects.${trimesterIndex}.${subjectIndex}` as const;
-  const [usingExistingSubject, setUsingExistingSubject] = useState(initialExistingSubject);
+  const [usingExistingSubject, setUsingExistingSubject] = useState(isModeEdit);
 
   //  onMouseLeave={handleTooltipClose}
   // TODO - Mejorar responsive
@@ -162,7 +162,7 @@ function SubjectInput({
                 id={`${subjectName}.name`}
                 label="Nombre de la materia"
                 containerClassname="w-ful  h-full"
-                readOnly={usingExistingSubject}
+                readOnly={usingExistingSubject && !isModeEdit}
                 disabled={isSubjectElective}
               />
 
@@ -204,7 +204,7 @@ function SubjectInput({
                 min={0}
                 max={150}
                 containerClassname="max-w-[10rem] w-full h-full"
-                readOnly={usingExistingSubject}
+                readOnly={usingExistingSubject && !isModeEdit}
                 disabled={isSubjectElective}
               />
 
@@ -216,7 +216,7 @@ function SubjectInput({
                 min={0}
                 max={150}
                 containerClassname="max-w-[11rem] w-full h-full"
-                readOnly={usingExistingSubject}
+                readOnly={usingExistingSubject && !isModeEdit}
                 disabled={isSubjectElective}
               />
 

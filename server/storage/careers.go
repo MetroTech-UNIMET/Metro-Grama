@@ -309,8 +309,7 @@ BEGIN TRANSACTION;
 UPDATE $career.ID MERGE $career;
 
 FOR $subject in $subjectsCodesToUnrelate {
-    let $from = $subject.Code;
-    DELETE $from->belong WHERE out=$career.ID;
+    DELETE $subject->belong WHERE out=$career.ID;
 };
 
 FOR $subject in $completeSubjectsToCreate {

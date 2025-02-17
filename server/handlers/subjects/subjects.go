@@ -9,8 +9,10 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
 )
 
+// TODO - Testar (se puede omitir el middleware)
 func Handlers(e *echo.Group) {
 	subjectsGroup := e.Group("/subjects")
 	subjectsGroup.GET("/", getSubjects, middlewares.AdminAuth)
@@ -46,7 +48,6 @@ func getSubjectsGraph(c echo.Context) error {
 	}
 
 	subjects, err := storage.GetSubjectsGraph(careers)
-
 	return tools.GetResponse(c, subjects, err)
 }
 
@@ -60,20 +61,22 @@ func createSubject(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	subjectForm.Code = tools.ToID("subject", subjectForm.Code)
-	if err := tools.ExistRecord(subjectForm.Code); err == nil {
+	codeId := surrealModels.NewRecordID("subject", subjectForm.Code)
+	if err := tools.ExistRecord(codeId); err == nil {
 		return echo.NewHTTPError(http.StatusConflict, "Already exist")
 	}
 
 	for _, c := range subjectForm.Careers {
-		if err := tools.ExistRecord(c.CareerID); err != nil {
+		if err := tools.ExistRecord(
+			*surrealModels.ParseRecordID(c.CareerID),
+		); err != nil {
 			return echo.NewHTTPError(http.StatusNotFound, fmt.Sprintf("Precedes subject `%s` not found", c.CareerID))
 		}
 	}
 
 	// Sacar las materias que preceden
 	for _, p := range subjectForm.PrecedesID {
-		err := tools.ExistRecord(p)
+		err := tools.ExistRecord(*surrealModels.ParseRecordID(p))
 		if err != nil {
 			return echo.NewHTTPError(http.StatusNotFound, fmt.Sprintf("Precedes subject `%s` not found", p))
 		}

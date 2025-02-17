@@ -1,6 +1,22 @@
 package models
 
-import "time"
+import (
+	"time"
+
+	surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
+)
+
+type UserEntity struct {
+	ID        surrealModels.RecordID `json:"id"`
+	Role      string                 `json:"role"`
+	FirstName string                 `json:"firstName"`
+	LastName  string                 `json:"lastName"`
+	Email     string                 `json:"email"`
+	// CareerID   surrealModels.RecordID `json:"careerID"`
+	PictureUrl string    `json:"pictureUrl"`
+	Created    time.Time `json:"created"`
+	Verified   bool      `json:"verified"`
+}
 
 type UserLoginForm struct {
 	Email    string `form:"email" json:"email" validate:"required,unimet_email"`
@@ -34,16 +50,4 @@ type SimpleUserSigninForm struct {
 type MinimalUser struct {
 	ID   string `json:"id"`
 	Role string `json:"role"`
-}
-
-type UserProfile struct {
-	ID         string    `json:"id"`
-	Role       string    `json:"role"`
-	FirstName  string    `json:"firstName" `
-	LastName   string    `json:"lastName" `
-	Email      string    `json:"email" `
-	CareerID   *string   `json:"careerID" `
-	PictureUrl string    `json:"pictureUrl" `
-	Created    time.Time `json:"created"`
-	Verified   bool      `json:"verified"`
 }

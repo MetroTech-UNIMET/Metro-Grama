@@ -30,7 +30,8 @@ export function getNormalIcon(
   if (subject.careers.length > 1) {
     icon = "🤝";
     for (let i = 0; i < subject.careers.length; i++) {
-      const emoji =  careers?.find((c) => c.id === subject.careers[i])?.emoji ?? "🛠️"
+      
+      const emoji =  careers?.find((c) => c.id.ID === subject.careers[i].ID)?.emoji ?? "🛠️"
       if (i == 0) {
         icon += "\n\r" + emoji + " ";
         continue;
@@ -38,20 +39,12 @@ export function getNormalIcon(
       icon += emoji + " ";
     }
   } else {
-    let career = selectedCareers.find(
-      (option) => option.value === subject.careers[0]
+    const career = selectedCareers.find(
+      (option) => option.query === `${subject.careers[0].Table}:${subject.careers[0].ID}`
     );
-    if (career == undefined) {
-      var c: DropdownOption = {
-        value: subject.careers[0],
-        label: subject.careers[0],
-      };
-      career = c;
-    }
     
-    if (career) {
-      icon = careers?.find((c) => c.id === career.value)?.emoji ?? "🛠️"
-    }
+    icon = careers?.find((c) => c.name === career?.value)?.emoji ?? "🛠️"
+    
   }
 
   return {

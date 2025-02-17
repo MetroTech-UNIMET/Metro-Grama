@@ -17,7 +17,7 @@ export default function useFetchCareersOptions() {
     data?.map((career) => ({
       value: career.name,
       label: `${career.emoji} ${career.name}`,
-      query: career.id,
+      query: `${career.id.Table}:${career.id.ID}`,
     })) ?? [];
 
   return {

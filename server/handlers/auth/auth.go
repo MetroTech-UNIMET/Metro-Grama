@@ -4,6 +4,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+// TODO - Testear
 func Handlers(e *echo.Group) {
 	e.Any("/auth/google/login", oauthGoogleLogin)
 	e.Any("/auth/google/callback", oauthGoogleCallback)

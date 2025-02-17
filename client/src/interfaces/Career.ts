@@ -1,7 +1,8 @@
 import type { Subject } from "./Subject";
+import type { Id } from "./surrealDb";
 
 export interface Career {
-  id: string;
+  id: Id;
   name: string;
   emoji: string;
 }

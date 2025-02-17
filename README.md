@@ -40,7 +40,7 @@ En este modo tendras que instalar las dependencias en tu computadora
 
    - Corre el siguiente comando: `surreal start -A --log debug --user root --pass root file:directorio_donde_quieres_el_archivo.db`
 
-     - Escoge el directorio que prefieras Ej: `surreal start -A --log debug --user root --pass root file:D:\`
+     - Escoge el directorio que prefieras Ej: `surreal start -A --log debug rocksdb:D:\`
 
 3. ejecutar el fichero semilla `seed.surql`
 

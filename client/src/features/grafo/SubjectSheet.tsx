@@ -88,8 +88,8 @@ function SubjectSheetBody({ subject }: { subject: Subject }) {
       <main className="mt-2 space-y-4">
         <section className="flex flex-wrap gap-4 justify-center">
           {subject.careers.map((career) => (
-            <Badge key={career} className="line-clamp-1">
-              {career.split(":")[1]}
+            <Badge key={career.ID} className="line-clamp-1">
+              {career.ID}
             </Badge>
           ))}
         </section>

@@ -9,6 +9,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+// TODO - Testear
 func Handlers(e *echo.Group) {
 	enrollGroup := e.Group("/enroll", middlewares.UserAuth)
 

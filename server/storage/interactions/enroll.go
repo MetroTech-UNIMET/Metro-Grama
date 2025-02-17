@@ -5,12 +5,14 @@ import (
 	"metrograma/tools"
 
 	"github.com/surrealdb/surrealdb.go"
+	surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
 )
 
+// FIXME - Quitar any
 func EnrollStudent(studentId string, subjects []string) error {
-	data, err := db.SurrealDB.Query("RELATE $studentId -> enroll -> $subjectsId", map[string]interface{}{
-		"studentId":  studentId,
-		"subjectsId": subjects,
+	data, err := surrealdb.Query[any](db.SurrealDB, "RELATE $studentId -> enroll -> $subjectsId", map[string]interface{}{
+		"studentId":  surrealModels.NewRecordID("student", studentId),
+		"subjectsId": tools.ToIdArray(subjects),
 	})
 
 	if err != nil {
@@ -20,9 +22,9 @@ func EnrollStudent(studentId string, subjects []string) error {
 }
 
 func UnenrollStudent(studentId string, subjects []string) error {
-	data, err := db.SurrealDB.Query("DELETE $studentId->enroll WHERE out in $subjectsId", map[string]interface{}{
-		"studentId":  studentId,
-		"subjectsId": subjects,
+	data, err := surrealdb.Query[any](db.SurrealDB, "DELETE $studentId->enroll WHERE out in $subjectsId", map[string]any{
+		"studentId":  surrealModels.NewRecordID("student", studentId),
+		"subjectsId": tools.ToIdArray(subjects),
 	})
 
 	if err != nil {
@@ -31,28 +33,17 @@ func UnenrollStudent(studentId string, subjects []string) error {
 	return tools.GetSurrealErrorMsgs(data)
 }
 
-func GetEnrolledSubjects(studentId string) ([]string, error) {
-	rows, err := db.SurrealDB.Query("SELECT out from enroll WHERE in == $studentId and passed == true", map[string]interface{}{
-		"studentId": studentId,
+func GetEnrolledSubjects(studentId string) ([]surrealModels.RecordID, error) {
+
+	query, err := surrealdb.Query[[]surrealModels.RecordID](db.SurrealDB, "SELECT VALUE out from enroll WHERE in == $studentId and passed == true", map[string]any{
+		"studentId": surrealModels.NewRecordID("student", studentId),
 	})
 
 	if err != nil {
-		return nil, err
-	}
-	type Subject struct {
-		Out string `json:"out"`
+		return []surrealModels.RecordID{}, err
 	}
 
-	subjects, err := surrealdb.SmartUnmarshal[[]Subject](rows, err)
+	subjects := (*query)[0].Result
 
-	if err != nil {
-		return []string{}, err
-	}
-
-	subjectList := make([]string, len(subjects))
-	for i, subject := range subjects {
-		subjectList[i] = subject.Out
-	}
-
-	return subjectList, nil
+	return subjects, nil
 }

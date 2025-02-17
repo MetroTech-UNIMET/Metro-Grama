@@ -5,7 +5,6 @@ import (
 	"metrograma/handlers/internal"
 	"metrograma/models"
 	"metrograma/storage"
-	"metrograma/tools"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -13,6 +12,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
+	surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
 )
 
 type SubjectCase int
@@ -83,12 +83,12 @@ func TestCreateSubject(t *testing.T) {
 	e := internal.SetupEcho()
 	subjectMock := subjectMockData[SubjectSuccess]
 
-	storage.DeleteSubject(tools.ToID("subject", subjectMock.Code))
+	storage.DeleteSubject(surrealModels.NewRecordID("subject", subjectMock.Code))
 
 	c, rec := internal.CreateEchoContextWithJson(t, e, subjectMock)
 	err := createSubject(c)
 
-	storage.DeleteSubject(tools.ToID("subject", subjectMock.Code))
+	storage.DeleteSubject(surrealModels.NewRecordID("subject", subjectMock.Code))
 
 	if assert.NoError(t, err) {
 		assert.Equal(t, http.StatusCreated, rec.Code)
@@ -98,9 +98,9 @@ func TestCreateSubject(t *testing.T) {
 func TestDuplicateCreateSubject(t *testing.T) {
 	e := internal.SetupEcho()
 	subjectMock := subjectMockData[SubjectSuccess]
-	subjectMock.Code = tools.ToID("subject", subjectMock.Code)
+	codeId := surrealModels.NewRecordID("subject", subjectMock.Code)
 
-	storage.DeleteSubject(subjectMock.Code)
+	storage.DeleteSubject(codeId)
 
 	subjectMock2 := subjectMock
 	err := storage.CreateSubject(subjectMock)
@@ -110,7 +110,7 @@ func TestDuplicateCreateSubject(t *testing.T) {
 	err = createSubject(c)
 	httpErr := err.(*echo.HTTPError)
 
-	storage.DeleteSubject(subjectMock.Code)
+	storage.DeleteSubject(codeId)
 
 	assert.Error(t, err, "Create subject must fail")
 	assert.Equal(t, http.StatusConflict, httpErr.Code)
@@ -120,13 +120,13 @@ func TestCreateSubjectWithNonExistingPrecedesSubjects(t *testing.T) {
 	e := internal.SetupEcho()
 	subjectMock := subjectMockData[SubjectWithNonExistingPrecedesSubjects]
 
-	storage.DeleteSubject(tools.ToID("subject", subjectMock.Code))
+	storage.DeleteSubject(surrealModels.NewRecordID("subject", subjectMock.Code))
 
 	c, _ := internal.CreateEchoContextWithJson(t, e, subjectMock)
 	err := createSubject(c)
 	httpErr := err.(*echo.HTTPError)
 
-	storage.DeleteSubject(tools.ToID("subject", subjectMock.Code))
+	storage.DeleteSubject(surrealModels.NewRecordID("subject", subjectMock.Code))
 
 	assert.Error(t, err, "Create subject must fail")
 	assert.Equal(t, httpErr.Code, http.StatusNotFound, err)
@@ -136,14 +136,14 @@ func TestCreateSubjectWithNonExistingCareer(t *testing.T) {
 	e := internal.SetupEcho()
 	subjectMock := subjectMockData[SubjectWithNonExistingCareer]
 
-	storage.DeleteSubject(tools.ToID("subject", subjectMock.Code))
+	storage.DeleteSubject(surrealModels.NewRecordID("subject", subjectMock.Code))
 
 	c, _ := internal.CreateEchoContextWithJson(t, e, subjectMock)
 	err := createSubject(c)
 
 	httpErr := err.(*echo.HTTPError)
 
-	storage.DeleteSubject(tools.ToID("subject", subjectMock.Code))
+	storage.DeleteSubject(surrealModels.NewRecordID("subject", subjectMock.Code))
 
 	assert.Error(t, err, "Create subject must fail")
 	assert.Equal(t, httpErr.Code, http.StatusNotFound, err)
@@ -153,14 +153,14 @@ func TestCreateSubjectWithInvalidBody(t *testing.T) {
 	e := internal.SetupEcho()
 	subjectMock := subjectMockData[SubjectInvalidBody]
 
-	storage.DeleteSubject(tools.ToID("subject", subjectMock.Code))
+	storage.DeleteSubject(surrealModels.NewRecordID("subject", subjectMock.Code))
 
 	c, _ := internal.CreateEchoContextWithJson(t, e, subjectMock)
 	err := createSubject(c)
 
 	httpErr := err.(*echo.HTTPError)
 
-	storage.DeleteSubject(tools.ToID("subject", subjectMock.Code))
+	storage.DeleteSubject(surrealModels.NewRecordID("subject", subjectMock.Code))
 
 	assert.Error(t, err, "Create subject must fail")
 	assert.Equal(t, httpErr.Code, http.StatusBadRequest, err)

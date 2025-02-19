@@ -29,7 +29,7 @@ func AdminAuth(next echo.HandlerFunc) echo.HandlerFunc {
 			return err
 		}
 
-		if user.Role != "role:admin" {
+		if user.Role.ID != "admin" {
 			return echo.NewHTTPError(http.StatusUnauthorized)
 		}
 

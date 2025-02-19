@@ -48,6 +48,6 @@ type SimpleUserSigninForm struct {
 }
 
 type MinimalUser struct {
-	ID   string `json:"id"`
-	Role string `json:"role"`
+	ID   surrealModels.RecordID `json:"id"`
+	Role surrealModels.RecordID `json:"role"`
 }

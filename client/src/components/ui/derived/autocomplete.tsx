@@ -20,6 +20,7 @@ import { Skeleton } from "@ui/skeleton";
 import { cn } from "@utils/className";
 
 import type { Option } from "./multidropdown";
+import { filterIgnoringAccents } from "@utils/filters";
 
 export interface AutoCompleteProps
   extends Omit<InputHTMLAttributes<HTMLInputElement>, "value" | "onSelect"> {
@@ -155,7 +156,12 @@ export default function AutoComplete({
   );
 
   return (
-    <CommandPrimitive onKeyDown={handleKeyDown} className="h-full">
+    <CommandPrimitive onKeyDown={handleKeyDown} className="h-full" filter={(
+      value, search
+    ) => {
+      const present = filterIgnoringAccents(value, search);
+      return present ? 1 : 0;
+    }}>
       <div className="h-full">
         <CommandInput
           ref={inputRef}
@@ -165,7 +171,7 @@ export default function AutoComplete({
           onFocus={() => setOpen(true)}
           placeholder={placeholder}
           disabled={disabled}
-          className={cn("text-base h-full ", className)}
+          className={cn("text-base h-full", className)}
           inputWrapperClassName={cn("h-full", inputWrapperClassName)}
         />
       </div>

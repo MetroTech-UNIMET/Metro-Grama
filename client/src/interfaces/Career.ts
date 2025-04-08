@@ -8,7 +8,7 @@ export interface Career {
 }
 
 type SubjectWithPrelations = Omit<Subject, 'careers'> & {
-  prelations: string[];
+  prelations: Id[];
 }
 
 export interface CareerWithSubjects extends Career {

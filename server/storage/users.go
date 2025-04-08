@@ -29,7 +29,7 @@ func ExistUserByEmail(email string) (models.MinimalUser, error) {
 	return user[0], nil
 }
 
-func ExistUser(id string) (models.MinimalUser, error) {
+func ExistUser(id surrealModels.RecordID) (models.MinimalUser, error) {
 	user, err := surrealdb.Select[models.MinimalUser](db.SurrealDB, id)
 
 	if err != nil {
@@ -39,10 +39,9 @@ func ExistUser(id string) (models.MinimalUser, error) {
 	return *user, nil
 }
 
-func GetUser(id string) (models.UserEntity, error) {
-	user, err := surrealdb.Select[models.UserEntity, surrealModels.RecordID](db.SurrealDB, surrealModels.NewRecordID("user", id))
+func GetUser(id surrealModels.RecordID) (models.UserEntity, error) {
+	user, err := surrealdb.Select[models.UserEntity](db.SurrealDB, id)
 
-	fmt.Println(user)
 	if err != nil {
 		return models.UserEntity{}, err
 	}

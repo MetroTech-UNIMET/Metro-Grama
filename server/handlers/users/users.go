@@ -2,12 +2,15 @@ package users
 
 import (
 	"metrograma/middlewares"
+
 	"metrograma/storage"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	"github.com/surrealdb/surrealdb.go/pkg/models"
 )
 
+// FIXME - Profile no sirve
 func Handlers(e *echo.Group) {
 	usersGroup := e.Group("/users")
 	usersGroup.GET("/profile", userProfile, middlewares.UserAuth)
@@ -42,8 +45,11 @@ func Handlers(e *echo.Group) {
 // }
 
 func userProfile(c echo.Context) error {
-	userID := c.Get("user-id").(string)
-	student, err := storage.GetUser(userID)
+	userID := c.Get("user-id")
+	if userID == nil {
+		return echo.NewHTTPError(http.StatusUnauthorized)
+	}
+	student, err := storage.GetUser(userID.(models.RecordID))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusNotFound)
 	}

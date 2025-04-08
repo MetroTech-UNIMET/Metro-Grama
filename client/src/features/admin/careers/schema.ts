@@ -66,9 +66,9 @@ const subjectSchema = z
   });
 
 export const createCareerSchema = z.object({
-  name: z
-    .string()
-    .min(5, { message: "El nombre de la carrera debe tener mínimo 5 caracteres" }),
+  name: z.string().min(5, {
+    message: "El nombre de la carrera debe tener mínimo 5 caracteres",
+  }),
   emoji: z
     .string()
     .regex(
@@ -77,6 +77,12 @@ export const createCareerSchema = z.object({
         message: "El emoji no es válido",
       }
     ),
+  id: z
+    .string()
+    .min(5, { message: "El id de la carrera debe tener mínimo 5 caracteres" })
+    .max(10, {
+      message: "El id de la carrera debe tener máximo 10 caracteres",
+    }),
   subjects: z.array(
     z.array(subjectSchema).length(numberOfSubjectsByTrimester, {
       message: "Cada trimestre debe tener exactamente 5 materias",
@@ -87,6 +93,7 @@ export const createCareerSchema = z.object({
 export const defaultCreateCareerValues: CreateCareerFormType = {
   name: "",
   emoji: "",
+  id: "",
   subjects: Array.from({ length: numberOfTrimesters }, () =>
     Array.from({ length: numberOfSubjectsByTrimester }, () => ({
       code: "",
@@ -99,21 +106,21 @@ export const defaultCreateCareerValues: CreateCareerFormType = {
   ),
 };
 
-const [trimesterSteps, groupedFieldNames] = generateSteps(numberOfTrimesters, numberOfSubjectsByTrimester)
+const [trimesterSteps, groupedFieldNames] = generateSteps(
+  numberOfTrimesters,
+  numberOfSubjectsByTrimester
+);
 
-export { groupedFieldNames }
+export { groupedFieldNames };
 export const steps: Step<CreateCareerFormType>[] = [
   {
     id: "Carrera",
-    fields: ["name", "emoji"],
+    fields: ["name", "emoji", "id"],
   },
   ...trimesterSteps,
 ];
 
-function validateNonElective(
-  data:CreateSubjectType,
-  ctx: z.RefinementCtx
-) {
+function validateNonElective(data: CreateSubjectType, ctx: z.RefinementCtx) {
   if (!data.code) {
     ctx.addIssue({
       message: "El código de la materia es obligatorio",
@@ -167,11 +174,13 @@ function generateSteps(
   numberOfTrimesters: number,
   numberOfSubjectsByTrimester: number
 ) {
-  type CreateCareerPath = Path<CreateCareerFormType>
+  type CreateCareerPath = Path<CreateCareerFormType>;
 
   const steps: Step<CreateCareerFormType>[] = [];
-  const groupedNames: Record<`subjects.${number}.${number}`, Readonly<CreateCareerPath[]>>[] = []
-
+  const groupedNames: Record<
+    `subjects.${number}.${number}`,
+    Readonly<CreateCareerPath[]>
+  >[] = [];
 
   for (
     let trimesterIndex = 0;
@@ -198,8 +207,8 @@ function generateSteps(
 
       subjectGroup[subjectName] = subjectFields;
     }
-    
-    groupedNames.push(subjectGroup)
+
+    groupedNames.push(subjectGroup);
     steps.push({
       id: trimesterIndex + 1,
       fields,

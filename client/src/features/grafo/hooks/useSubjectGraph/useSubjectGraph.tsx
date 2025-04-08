@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
-
 import { getEnrolledSubjects } from "@/api/interactions/enrollApi";
 import { getCareers } from "@/api/careersApi";
 import { notRetryOnUnauthorized } from "@utils/queries";
@@ -40,7 +39,7 @@ export default function useSubjectGraph(
     AxiosError
   >({
     queryKey: ["enrolledSubjects", "studentId"],
-    queryFn: () => getEnrolledSubjects(),
+    queryFn: getEnrolledSubjects,
     retry: notRetryOnUnauthorized,
   });
 

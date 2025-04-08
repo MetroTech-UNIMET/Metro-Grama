@@ -9,9 +9,9 @@ import (
 )
 
 // FIXME - Quitar any
-func EnrollStudent(studentId string, subjects []string) error {
+func EnrollStudent(studentId surrealModels.RecordID, subjects []string) error {
 	data, err := surrealdb.Query[any](db.SurrealDB, "RELATE $studentId -> enroll -> $subjectsId", map[string]interface{}{
-		"studentId":  surrealModels.NewRecordID("student", studentId),
+		"studentId":  studentId,
 		"subjectsId": tools.ToIdArray(subjects),
 	})
 
@@ -21,9 +21,9 @@ func EnrollStudent(studentId string, subjects []string) error {
 	return tools.GetSurrealErrorMsgs(data)
 }
 
-func UnenrollStudent(studentId string, subjects []string) error {
+func UnenrollStudent(studentId surrealModels.RecordID, subjects []string) error {
 	data, err := surrealdb.Query[any](db.SurrealDB, "DELETE $studentId->enroll WHERE out in $subjectsId", map[string]any{
-		"studentId":  surrealModels.NewRecordID("student", studentId),
+		"studentId":  studentId,
 		"subjectsId": tools.ToIdArray(subjects),
 	})
 
@@ -33,14 +33,13 @@ func UnenrollStudent(studentId string, subjects []string) error {
 	return tools.GetSurrealErrorMsgs(data)
 }
 
-func GetEnrolledSubjects(studentId string) ([]surrealModels.RecordID, error) {
-
-	query, err := surrealdb.Query[[]surrealModels.RecordID](db.SurrealDB, "SELECT VALUE out from enroll WHERE in == $studentId and passed == true", map[string]any{
-		"studentId": surrealModels.NewRecordID("student", studentId),
+func GetEnrolledSubjects(studentId surrealModels.RecordID) ([]string, error) {
+	query, err := surrealdb.Query[[]string](db.SurrealDB, "SELECT VALUE <string> out from enroll WHERE in == $studentId and passed == true", map[string]any{
+		"studentId": studentId,
 	})
 
 	if err != nil {
-		return []surrealModels.RecordID{}, err
+		return []string{}, err
 	}
 
 	subjects := (*query)[0].Result

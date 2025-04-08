@@ -81,8 +81,7 @@ export function OnlyAdmin({ children }: { children: React.ReactNode }) {
     // TODO - Mejor manejo de sin autorización
     return <>No hay usuario </>;
   
-
-  if (user?.role !== UserRole.admin) 
+  if (user?.role.ID !== UserRole.admin) 
     // TODO - Mejor manejo de sin autorización
     return <>El rol no es el correcto </>;
   

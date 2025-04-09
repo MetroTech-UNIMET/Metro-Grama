@@ -9,6 +9,7 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
 )
 
 func Handlers(e *echo.Group) {
@@ -18,7 +19,7 @@ func Handlers(e *echo.Group) {
 	careersGroup.DELETE("/:careerId", deleteCareer, middlewares.AdminAuth)
 
 	careersGroup.GET("/withSubjects/:careerId", getCareerWithSubjectsById)
-	careersGroup.PATCH("/withSubjects/:careerId", updateCareerWithSubjects, middlewares.AdminAuth)
+	// careersGroup.PATCH("/withSubjects/:careerId", updateCareerWithSubjects, middlewares.AdminAuth)
 }
 
 func getCareers(c echo.Context) error {
@@ -27,23 +28,18 @@ func getCareers(c echo.Context) error {
 	return tools.GetResponse(c, careers, err)
 }
 
+// TODO - Testear
 func createCareer(c echo.Context) error {
 	var careerForm models.CareerCreateForm
 	if err := c.Bind(&careerForm); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	if len(careerForm.Name) >= 5 {
-		careerForm.ID_Name = careerForm.Name[len(careerForm.Name)-5:]
-	} else {
-		return echo.NewHTTPError(http.StatusBadRequest, "career name must have at least 5 characters")
-	}
-
 	if err := c.Validate(careerForm); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	careerID := tools.ToID("career", careerForm.ID_Name)
+	careerID := surrealModels.NewRecordID("career", careerForm.Id)
 	if err := tools.ExistRecord(careerID); err == nil {
 		fmt.Println(careerID, err)
 		return echo.NewHTTPError(http.StatusConflict, fmt.Errorf("career with id '%s' already exists", careerID))
@@ -59,10 +55,10 @@ func createCareer(c echo.Context) error {
 }
 
 type deleteCareerParam struct {
-	ID       string `param:"careerId" validate:"required"`
-	Subjects bool   `query:"subjects"`
+	ID string `param:"careerId" validate:"required"`
 }
 
+// TODO - Testear
 func deleteCareer(c echo.Context) error {
 	var target deleteCareerParam
 	if err := c.Bind(&target); err != nil {
@@ -73,34 +69,34 @@ func deleteCareer(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	if err := storage.DeleteCareer(target.ID, target.Subjects); err != nil {
+	if err := storage.DeleteCareer(target.ID); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 	return nil
 }
 
-type updateCareerWithSubjectsParam struct {
-	OldCareer     models.CareerWithSubjects `json:"oldCareer" validate:"required"`
-	NewCareerForm models.CareerUpdateForm   `json:"newCareer" validate:"required"`
-}
+// type updateCareerWithSubjectsParam struct {
+// 	OldCareer     models.CareerWithSubjects `json:"oldCareer" validate:"required"`
+// 	NewCareerForm models.CareerUpdateForm   `json:"newCareer" validate:"required"`
+// }
 
-func updateCareerWithSubjects(c echo.Context) error {
-	var target updateCareerWithSubjectsParam
-	if err := c.Bind(&target); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-	}
+// func updateCareerWithSubjects(c echo.Context) error {
+// 	var target updateCareerWithSubjectsParam
+// 	if err := c.Bind(&target); err != nil {
+// 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+// 	}
 
-	if err := c.Validate(target); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-	}
+// 	if err := c.Validate(target); err != nil {
+// 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+// 	}
 
-	if err := storage.UpdateCareerWithSubjects(target.OldCareer, target.NewCareerForm); err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err)
-	}
+// 	if err := storage.UpdateCareerWithSubjects(target.OldCareer, target.NewCareerForm); err != nil {
+// 		return echo.NewHTTPError(http.StatusInternalServerError, err)
+// 	}
 
-	// TODO - Add status code
-	return nil
-}
+// 	// TODO - Add status code
+// 	return nil
+// }
 
 func getCareerWithSubjectsById(c echo.Context) error {
 	careerId := c.Param("careerId")

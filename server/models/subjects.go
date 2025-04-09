@@ -1,5 +1,7 @@
 package models
 
+import surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
+
 // type SubjectForm struct {
 // 	SubjectName   string   `form:"subjectName"`
 // 	SubjectCode   string   `form:"subjectCode"`
@@ -8,11 +10,11 @@ package models
 // 	PrecedesCodes []string `form:"precedesCodes"`
 // }
 
-type Subject struct {
-	ID        string `json:"id,omitempty"`
-	Name      string `json:"name"`
-	Credits   uint8  `json:"credits"`
-	BPCredits uint8  `json:"BPCredits"`
+type SubjectEntity struct {
+	ID        surrealModels.RecordID `json:"id,omitempty"`
+	Name      string                 `json:"name"`
+	Credits   uint8                  `json:"credits"`
+	BPCredits uint8                  `json:"BPCredits"`
 }
 
 type SubjectCareer struct {
@@ -28,11 +30,11 @@ type SubjectForm struct {
 }
 
 type SubjectNode struct {
-	Code      string   `json:"code"`
-	Name      string   `json:"name"`
-	Careers   []string `json:"careers"`
-	Credits   uint8    `json:"credits"`
-	BPCredits uint8    `json:"BPCredits"`
+	Code      string                   `json:"code"`
+	Name      string                   `json:"name"`
+	Careers   []surrealModels.RecordID `json:"careers"`
+	Credits   uint8                    `json:"credits"`
+	BPCredits uint8                    `json:"BPCredits"`
 }
 
 type SubjectEdge struct {
@@ -41,7 +43,7 @@ type SubjectEdge struct {
 }
 
 type SubjectsByCareers struct {
-	Careers    []string `json:"careers"`
-	Prelations []string `json:"prelations"`
-	Subject    Subject
+	Careers    []surrealModels.RecordID `json:"careers"`
+	Prelations []surrealModels.RecordID `json:"prelations"`
+	Subject    SubjectEntity
 }

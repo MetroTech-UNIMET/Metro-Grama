@@ -7,69 +7,64 @@ import (
 	"metrograma/tools"
 
 	"github.com/surrealdb/surrealdb.go"
+	surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
 )
 
 var existUserByEmailQuery = "SELECT id, role FROM user WHERE email = $email"
 
 func ExistUserByEmail(email string) (models.MinimalUser, error) {
-	data, err := db.SurrealDB.Query(existUserByEmailQuery, map[string]string{
+	result, err := surrealdb.Query[[]models.MinimalUser](db.SurrealDB, existUserByEmailQuery, map[string]any{
 		"email": email,
 	})
-
-	user, err := surrealdb.SmartUnmarshal[[]models.MinimalUser](data, err)
 
 	if err != nil {
 		return models.MinimalUser{}, err
 	}
 
-	if len(user) == 0 {
+	if len(*result) == 0 {
 		return models.MinimalUser{}, fmt.Errorf("incorrect credentials")
 	}
+	user := (*result)[0].Result
 
 	return user[0], nil
 }
 
-func ExistUser(id string) (models.MinimalUser, error) {
-	data, err := db.SurrealDB.Select(id)
-
-	user, err := surrealdb.SmartUnmarshal[models.MinimalUser](data, err)
+func ExistUser(id surrealModels.RecordID) (models.MinimalUser, error) {
+	user, err := surrealdb.Select[models.MinimalUser](db.SurrealDB, id)
 
 	if err != nil {
 		return models.MinimalUser{}, err
 	}
 
-	return user, nil
+	return *user, nil
 }
 
-func GetUser(id string) (models.UserProfile, error) {
-	data, err := db.SurrealDB.Select(id)
-
-	user, err := surrealdb.SmartUnmarshal[models.UserProfile](data, err)
+func GetUser(id surrealModels.RecordID) (models.UserEntity, error) {
+	user, err := surrealdb.Select[models.UserEntity](db.SurrealDB, id)
 
 	if err != nil {
-		return models.UserProfile{}, err
+		return models.UserEntity{}, err
 	}
 
-	return user, nil
+	return *user, nil
 }
 
 var loginQuery = "SELECT id, role FROM user WHERE email = $email AND crypto::bcrypt::compare(password, $password) = true"
 
 func LoginUser(login models.UserLoginForm) (models.MinimalUser, error) {
-	data, err := db.SurrealDB.Query(loginQuery, map[string]string{
+	result, err := surrealdb.Query[[]models.MinimalUser](db.SurrealDB, loginQuery, map[string]any{
 		"email":    login.Email,
 		"password": login.Password,
 	})
-
-	user, err := surrealdb.SmartUnmarshal[[]models.MinimalUser](data, err)
 
 	if err != nil {
 		return models.MinimalUser{}, err
 	}
 
-	if len(user) == 0 {
+	if len(*result) == 0 {
 		return models.MinimalUser{}, fmt.Errorf("incorrect credentials")
 	}
+	user := (*result)[0].Result
 
 	return user[0], nil
 }
@@ -121,18 +116,19 @@ func LoginUser(login models.UserLoginForm) (models.MinimalUser, error) {
 // 	}
 // 	return tools.GetSurrealErrorMsgs(data)
 // }
+// REVIEW - Fin review
 
-var createSimpleUserQuery = `
-CREATE user SET
-	firstName=$firstName,
-	lastName=$lastName,
-	pictureUrl=$pictureUrl,
-	email=$email,
-	verified=$verified,
-	password=crypto::bcrypt::generate($password);`
+// var createSimpleUserQuery = `
+// CREATE user SET
+// 	firstName=$firstName,
+// 	lastName=$lastName,
+// 	pictureUrl=$pictureUrl,
+// 	email=$email,
+// 	verified=$verified,
+// 	password=crypto::bcrypt::generate($password);`
 
 func CreateSimpleUser(user models.SimpleUserSigninForm) error {
-	queryParams := map[string]interface{}{
+	queryParams := map[string]any{
 		"firstName":  user.FirstName,
 		"lastName":   user.LastName,
 		"pictureUrl": user.PictureUrl,
@@ -141,20 +137,24 @@ func CreateSimpleUser(user models.SimpleUserSigninForm) error {
 		"verified":   user.Verified,
 	}
 
-	data, err := db.SurrealDB.Query(createSimpleUserQuery, queryParams)
+	data, err := surrealdb.Create[models.UserEntity](db.SurrealDB, surrealModels.Table("user"), queryParams)
+
+	// data, err := db.SurrealDB.Query(createSimpleUserQuery, queryParams)
 	if err != nil {
 		return err
 	}
-	return tools.GetSurrealErrorMsgs(data)
+	return tools.GetSurrealErrorMsgs(*data)
 }
 
 func DeleteUserByEmail(email string) error {
-	data, err := db.SurrealDB.Query("DELETE user WHERE email = $email;", map[string]string{
+	result, err := surrealdb.Query[[]models.MinimalUser](db.SurrealDB, "DELETE user WHERE email = $email;", map[string]any{
 		"email": email,
 	})
 	if err != nil {
 		return err
 	}
+
+	data := (*result)[0].Result
 
 	return tools.GetSurrealErrorMsgs(data)
 }

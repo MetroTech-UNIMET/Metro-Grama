@@ -10,44 +10,57 @@ import (
 	"text/template"
 
 	"github.com/surrealdb/surrealdb.go"
+	surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
 )
 
-func GetCareers() ([]models.CareerNode, error) {
-	rows, err := db.SurrealDB.Query("SELECT * FROM career", nil)
+// TODO IMPORTANT - En general el tema de los ID string no se ha aareglado
+
+func GetCareers() ([]models.CareerEntity, error) {
+	careers, err := surrealdb.Select[[]models.CareerEntity](db.SurrealDB, surrealModels.Table("career"))
 
 	if err != nil {
-		return []models.CareerNode{}, fmt.Errorf("error getting careers: %v", err)
+		return []models.CareerEntity{}, fmt.Errorf("error fetching careers: %v", err)
 	}
 
-	careers, err := surrealdb.SmartUnmarshal[[]models.CareerNode](rows, err)
-
-	if err != nil {
-		return []models.CareerNode{}, fmt.Errorf("error fetching careers: %v", err)
-	}
-
-	return careers, nil
+	return *careers, nil
 }
 
 var createCareerQuery = `
 BEGIN TRANSACTION;
-CREATE $careerID SET name=$careerName, emoji=$emoji, electivesTrimesters=$electivesTrimesters;
 
-{{ range $i, $subjectsByTrimester := .Subjects }}
-  {{ range $j, $subject := $subjectsByTrimester }}
-	{{ if not $subject }}
-      {{ continue }}
-    {{ end }}
-    {{ if eq $subject.SubjectType "new" }}
-CREATE $subjectID{{$i}}_{{$j}} SET name=$subjectName{{$i}}_{{$j}}, credits=$subjectCredits{{$i}}_{{$j}}, BPCredits=$subjectBpCredits{{$i}}_{{$j}};
-    {{ end }}
-RELATE $subjectID{{$i}}_{{$j}}->belong->$careerID SET trimester = $trimester{{$i}};
-  {{ end }}
-{{ end }}
+LET $careerID = <record<career>> $career.ID;
+CREATE $careerID CONTENT $career;
 
-COMMIT TRANSACTION;	
+FOR $i IN 0..=array::len($subjects) {
+    LET $subjectsByTrimester = $subjects[$i];
+    FOR $j IN 0..=array::len($subjectsByTrimester) {
+        LET $subject = $subjectsByTrimester[$j];
+        IF $subject == NONE {
+            continue;
+        };
+
+        LET $subjectID = type::thing('subject', $subject.code);
+
+        IF $subject.subjectType = "new" {
+            CREATE $subjectID CONTENT $subject;
+        };
+        RELATE $subjectID->belong->$careerID SET trimester = $i + 1;
+
+        FOR $prelation in $subject.prelations {
+            LET $prelationID = type::thing('subject', $prelation);
+
+            IF (SELECT * FROM ONLY $prelationID->precede->$subjectID) {
+                RELATE $prelationID->precede->$subjectID;
+            };
+        };
+    };
+};
+
+COMMIT TRANSACTION;
 `
 
-func CreateCareer(careerForm models.CareerCreateForm) error {
+// TODO - Testear
+func CreateCareer(careerForm models.CareerCreateForm) any {
 	t, err := template.New("query").Parse(createCareerQuery)
 	if err != nil {
 		return err
@@ -59,31 +72,38 @@ func CreateCareer(careerForm models.CareerCreateForm) error {
 		return err
 	}
 
-	queryParams := map[string]interface{}{
-		"careerID":            tools.ToID("career", careerForm.ID_Name),
-		"careerName":          careerForm.Name,
-		"emoji":               careerForm.Emoji,
-		"electivesTrimesters": []int{},
-	}
-	var electivesTrimesters []int
+	electivesTrimesters := []int{}
 
-	processErr := processCareerForm(careerForm, electivesTrimesters, queryParams)
+	processErr := processCareerForm(careerForm, electivesTrimesters)
 	if processErr != nil {
 		return processErr
 	}
+	queryParams := map[string]any{
+		"career": map[string]any{
+			"ID":                  surrealModels.NewRecordID("career", careerForm.Id),
+			"name":                careerForm.Name,
+			"emoji":               careerForm.Emoji,
+			"electivesTrimesters": electivesTrimesters,
+		},
+		"subjects": careerForm.Subjects,
+	}
 
-	data, err := db.SurrealDB.Query(query.String(), queryParams)
+	fmt.Println(queryParams)
+	// TODO - Encontrar el tipo adecuado
+	data, err := surrealdb.Query[any](db.SurrealDB, query.String(), queryParams)
 	if err != nil {
 		return err
 	}
 	return tools.GetSurrealErrorMsgs(data)
+	// return queryParams
 }
 
-func processCareerForm(careerForm models.CareerCreateForm, electivesTrimesters []int, queryParams map[string]interface{}) error {
+func processCareerForm(careerForm models.CareerCreateForm, electivesTrimesters []int) error {
 	subjectPresence := make(map[string]bool)
 	var wg sync.WaitGroup
-	var syncQueryParams sync.Map   // Use sync.Map for concurrent access
 	errChan := make(chan error, 1) // Buffered channel to handle errors
+	// ctx, cancel := context.WithCancel(context.Background())
+	// defer cancel()
 
 	for i, subjectsByTrimester := range careerForm.Subjects {
 		trimester := i + 1
@@ -99,48 +119,51 @@ func processCareerForm(careerForm models.CareerCreateForm, electivesTrimesters [
 			go func(i, j int, careerSubject *models.CreateCareerSubject) {
 				defer wg.Done()
 
-				id := tools.ToID("subject", careerSubject.Code)
-				subjectKey := fmt.Sprintf("subjectID%d_%d", i, j)
+				// select {
+				// case <-ctx.Done():
+				// 	return
+				// default:
+				// }
 
-				syncQueryParams.Store(subjectKey, id)
-				syncQueryParams.Store(fmt.Sprintf("trimester%d", i), trimester)
+				id := surrealModels.NewRecordID("subject", careerSubject.Code)
 
 				err := tools.ExistRecord(id)
+				// if i == 7 {
+				// 	fmt.Println(id)
+				// }
 
 				if careerSubject.SubjectType == "new" {
 					if err == nil {
+						fmt.Printf("subject %s already exists \n", careerSubject.Code)
 						errChan <- fmt.Errorf("subject %s already exists", careerSubject.Code)
+						// cancel()
 						return
-						// return fmt.Errorf("subject %s already exists", careerSubject.Code)
 					}
-
-					syncQueryParams.Store(subjectKey, id)
-					syncQueryParams.Store(fmt.Sprintf("subjectName%d_%d", i, j), careerSubject.Name)
-					syncQueryParams.Store(fmt.Sprintf("subjectCredits%d_%d", i, j), careerSubject.Credits)
-					syncQueryParams.Store(fmt.Sprintf("subjectBpCredits%d_%d", i, j), careerSubject.BPCredits)
 				} else if careerSubject.SubjectType == "existing" {
 					if err != nil {
+						fmt.Printf("subject %s does not exist \n", careerSubject.Code)
 						errChan <- fmt.Errorf("subject %s does not exist", careerSubject.Code)
+						// cancel()
 						return
-						// return fmt.Errorf("subject %s does not exist", careerSubject.Code)
 					}
 				}
 				for _, subjectPrelation := range careerSubject.Prelations {
-					if present, exists := subjectPresence[subjectPrelation]; !exists || !present {
-						errChan <- fmt.Errorf("the prelation subject code %s for the subject %s does not exist", subjectPrelation, careerSubject.Code)
+					if present, exists := subjectPresence[subjectPrelation.String()]; !exists || !present {
+						fmt.Printf("the prelation subject code %s for the subject %s does not exist \n", subjectPrelation, careerSubject.Code)
+						errChan <- fmt.Errorf("the prelation subject code '%s' for the subject '%s' does not exist", subjectPrelation, careerSubject.Code)
+						// cancel()
 						return
-						// return fmt.Errorf("the prelation subject code %s for the subject %s does not exist", subjectPrelation, careerSubject.Code)
 					}
 				}
 
 				trimesterSubjects = append(trimesterSubjects, careerSubject.Code)
 			}(i, j, careerSubject)
-
 		}
 
 		wg.Wait()
 		select {
 		case err := <-errChan:
+			fmt.Println("err", err)
 			return err
 		default:
 		}
@@ -148,35 +171,27 @@ func processCareerForm(careerForm models.CareerCreateForm, electivesTrimesters [
 		for _, subjectID := range trimesterSubjects {
 			subjectPresence[subjectID] = true
 		}
+		fmt.Println(subjectPresence, "\n")
 	}
 
-	syncQueryParams.Range(func(key, value interface{}) bool {
-		queryParams[key.(string)] = value
-		return true
-	})
-	queryParams["electivesTrimesters"] = electivesTrimesters
 	return nil
 }
 
-// REVIEW - Comparar si la versión paralela es más eficiente que la secuencial
-// func processCareerForm(careerForm models.CareerForm2, electivesTrimesters []int, queryParams map[string]interface{}) error {
+// // REVIEW - Comparar si la versión paralela es más eficiente que la secuencial
+// func processCareerForm2(careerForm models.CareerCreateForm, electivesTrimesters []int) error {
 // 	subjectPresence := make(map[string]bool)
 
 // 	for i, subjectsByTrimester := range careerForm.Subjects {
 // 		trimester := i + 1
 // 		var trimesterSubjects []string
 
-// 		for j, careerSubject := range subjectsByTrimester {
+// 		for _, careerSubject := range subjectsByTrimester {
 // 			if careerSubject == nil {
 // 				electivesTrimesters = append(electivesTrimesters, trimester)
 // 				continue
 // 			}
 
 // 			id := tools.ToID("subject", careerSubject.Code)
-// 			subjectKey := fmt.Sprintf("subjectID%d_%d", i, j)
-
-// 			queryParams[subjectKey] = id
-// 			queryParams[fmt.Sprintf("trimester%d", i)] = trimester
 
 // 			err := tools.ExistRecord(id)
 
@@ -185,10 +200,6 @@ func processCareerForm(careerForm models.CareerCreateForm, electivesTrimesters [
 // 					return fmt.Errorf("subject %s already exists", careerSubject.Code)
 // 				}
 
-// 				queryParams[subjectKey] = id
-// 				queryParams[fmt.Sprintf("subjectName%d_%d", i, j)] = careerSubject.Name
-// 				queryParams[fmt.Sprintf("subjectCredits%d_%d", i, j)] = careerSubject.Credits
-// 				queryParams[fmt.Sprintf("subjectBpCredits%d_%d", i, j)] = careerSubject.BPCredits
 // 			} else if careerSubject.SubjectType == "existing" {
 // 				if err != nil {
 // 					return fmt.Errorf("subject %s does not exist", careerSubject.Code)
@@ -207,69 +218,55 @@ func processCareerForm(careerForm models.CareerCreateForm, electivesTrimesters [
 // 			subjectPresence[subjectID] = true
 // 		}
 // 	}
-// 	queryParams["electivesTrimesters"] = electivesTrimesters
 // 	return nil
 // }
 
-func DeleteCareer(careerID string, deleteRelatedSubjects bool) error {
-	if !deleteRelatedSubjects {
-		_, err := db.SurrealDB.Delete(careerID)
-		return err
-	}
-	return nil
+// TODO - Testear
+func DeleteCareer(careerID string) error {
+	_, err := surrealdb.Delete[surrealModels.RecordID](db.SurrealDB, careerID)
+	return err
 }
 
-func GetCareerWithSubjectsById(careerId string) (models.CareerWithSubjects, error) {
+func GetCareerWithSubjectsById(careerId string) (any, error) {
 	type SubjectComplex struct {
-		Subject    models.Subject `json:"subject"`
-		Trimester  int            `json:"trimester"`
-		Prelations []string       `json:"prelations"`
+		Subject    models.SubjectEntity     `json:"subject"`
+		Trimester  int                      `json:"trimester"`
+		Prelations []surrealModels.RecordID `json:"prelations"`
 	}
 
 	type CareerWithSubjectsResponse struct {
-		models.Career
+		models.CareerEntity
 		Subjects []SubjectComplex `json:"subjects"`
 	}
 
-	rows, err := db.SurrealDB.Query(`
-LET $subjects = SELECT 
-    in as subject, 
-    trimester as trimester, 
+	// TODO - Utilizar un GROUP BY para evitar el calculo de abajo
+	rows, err := surrealdb.Query[CareerWithSubjectsResponse](db.SurrealDB, `
+LET $subjects = SELECT
+    in as subject,
+    trimester as trimester,
     in<-precede.in as prelations
     FROM belong
     where out == $id
 	ORDER BY trimester
     FETCH subject;
 
-SELECT *, $subjects FROM ONLY $id; 
-`, map[string]interface{}{"id": careerId})
+SELECT *, $subjects FROM ONLY $id;
+`, map[string]any{"id": surrealModels.NewRecordID("career", "sistemas")})
 
 	if err != nil {
 		return models.CareerWithSubjects{}, fmt.Errorf("error getting career: %v", err)
 	}
 
-	rowsArray, ok := rows.([]any)
-	// return rows, nil
-	if !ok {
-		return models.CareerWithSubjects{}, fmt.Errorf("unexpected result format: rows is not an array")
-	}
+	careerWithSubjectsResponse := (*rows)[1].Result
 
-	if len(rowsArray) < 2 {
-		return models.CareerWithSubjects{}, fmt.Errorf("unexpected result format: data has less than 2 elements")
-	}
-
-	resultRow := rowsArray[1].(map[string]any)["result"]
-	careerWithSubjectsResponse, err := surrealdb.SmartUnmarshal[CareerWithSubjectsResponse](resultRow, err)
-
-	if err != nil {
-		return models.CareerWithSubjects{}, fmt.Errorf("error fetching career: %v", err)
-	}
+	// return careerWithSubjectsResponse, nil
 
 	careerWithSubjects := models.CareerWithSubjects{
-		CareerNode: models.CareerNode{
-			ID:    careerWithSubjectsResponse.ID,
-			Name:  careerWithSubjectsResponse.Name,
-			Emoji: careerWithSubjectsResponse.Emoji,
+		CareerEntity: models.CareerEntity{
+			ID:                  careerWithSubjectsResponse.ID,
+			Name:                careerWithSubjectsResponse.Name,
+			Emoji:               careerWithSubjectsResponse.Emoji,
+			ElectivesTrimesters: careerWithSubjectsResponse.ElectivesTrimesters,
 		},
 		Subjects: [][]*models.CareerSubjectWithoutType{},
 	}
@@ -278,11 +275,10 @@ SELECT *, $subjects FROM ONLY $id;
 
 	for index, subjectComplex := range careerWithSubjectsResponse.Subjects {
 		subject := models.CareerSubjectWithoutType{
-			Name:      subjectComplex.Subject.Name,
-			Code:      subjectComplex.Subject.ID,
-			Credits:   subjectComplex.Subject.Credits,
-			BPCredits: subjectComplex.Subject.BPCredits,
-			// Trimester:  subjectComplex.Trimester,
+			Name:       subjectComplex.Subject.Name,
+			Code:       subjectComplex.Subject.ID.String(),
+			Credits:    subjectComplex.Subject.Credits,
+			BPCredits:  subjectComplex.Subject.BPCredits,
 			Prelations: subjectComplex.Prelations,
 		}
 		newTrimester := (index != 0 && subjectComplex.Trimester != careerWithSubjectsResponse.Subjects[index-1].Trimester) ||
@@ -303,172 +299,175 @@ SELECT *, $subjects FROM ONLY $id;
 	return careerWithSubjects, nil
 }
 
-var updateCareerQuery = `
-BEGIN TRANSACTION;
+// var updateCareerQuery = `
+// BEGIN TRANSACTION;
 
-UPDATE $career.ID MERGE $career;
+// UPDATE $career.ID MERGE $career;
 
-FOR $subject in $subjectsCodesToUnrelate {
-    let $from = $subject.Code;
-    DELETE $from->belong WHERE out=$career.ID;
-};
+// FOR $subject in $subjectsCodesToUnrelate {
+//     DELETE $subject->belong WHERE out=$career.ID;
+// };
 
-FOR $subject in $completeSubjectsToCreate {
-	CREATE $subject.Code CONTENT $subject;
-};
+// FOR $subject in $completeSubjectsToCreate {
+// 	CREATE $subject.Code CONTENT $subject;
+// };
 
-FOR $subject in $subjectsToRelate {
-	let $from = $subject.Code;
-    let $to = $career.ID;
-    
-    RELATE $from->belong->$to set trimester=$subject.Trimester;
-};
+// FOR $subject in $subjectsToRelate {
+// 	let $from = $subject.Code;
+//     let $to = $career.ID;
 
-FOR $subject in $completeSubjectsToUpdate {
-    let $subjectCode = $subject.code;
-	UPDATE $subject.code MERGE $subject;
-    
-    FOR $prelationCode in $subject.prelationsToCreate {
-        RELATE $prelationCode->precede->$subjectCode;
-    };
+//     RELATE $from->belong->$to set trimester=$subject.Trimester;
+// };
 
-     FOR $prelationCode in $subject.prelationsToUndo {
-          DELETE $prelationCode->precede WHERE out=$subjectCode;
-    };
-};
+// FOR $subject in $completeSubjectsToUpdate {
+//     let $subjectCode = $subject.code;
+// 	UPDATE $subject.code MERGE $subject;
 
-COMMIT TRANSACTION;
-`
+//     FOR $prelationCode in $subject.prelationsToCreate {
+//         RELATE $prelationCode->precede->$subjectCode;
+//     };
 
-func UpdateCareerWithSubjects(oldCareer models.CareerWithSubjects, newCareerForm models.CareerUpdateForm) any {
-	subjectsToUpdate, subjectsToRelate, subjectsToUnrelate, subjectsToCreate :=
-		compareForms(oldCareer, newCareerForm)
+//      FOR $prelationCode in $subject.prelationsToUndo {
+//           DELETE $prelationCode->precede WHERE out=$subjectCode;
+//     };
+// };
 
-	queryParams := map[string]any{
-		"career": map[string]string{
-			"ID":    oldCareer.ID,
-			"Name":  newCareerForm.Name,
-			"Emoji": newCareerForm.Emoji,
-		},
-	}
+// COMMIT TRANSACTION;
+// `
 
-	subjectsCodesToUnrelate := []string{}
-	for _, positions := range subjectsToUnrelate {
-		oldCode := oldCareer.Subjects[positions[0]][positions[1]].Code
+// func UpdateCareerWithSubjects(oldCareer models.CareerWithSubjects, newCareerForm models.CareerUpdateForm) any {
+// 	subjectsToUpdate, subjectsToRelate, subjectsToUnrelate, subjectsToCreate :=
+// 		compareForms(oldCareer, newCareerForm)
 
-		subjectsCodesToUnrelate = append(subjectsCodesToUnrelate, oldCode)
-	}
-	queryParams["subjectsCodesToUnrelate"] = subjectsCodesToUnrelate
+// 	queryParams := map[string]any{
+// 		"career": map[string]string{
+// 			"ID":    oldCareer.ID,
+// 			"Name":  newCareerForm.Name,
+// 			"Emoji": newCareerForm.Emoji,
+// 		},
+// 	}
 
-	subjectsToRelateUpdate := []any{}
-	for _, positions := range subjectsToRelate {
-		newCode := newCareerForm.Subjects[positions[0]][positions[1]].Code
+// 	subjectsCodesToUnrelate := []string{}
+// 	for _, positions := range subjectsToUnrelate {
+// 		oldCode := oldCareer.Subjects[positions[0]][positions[1]].Code
 
-		trimester := positions[0] + 1
+// 		subjectsCodesToUnrelate = append(subjectsCodesToUnrelate, oldCode)
+// 	}
+// 	queryParams["subjectsCodesToUnrelate"] = subjectsCodesToUnrelate
 
-		subjectsToRelateUpdate = append(subjectsToRelateUpdate, map[string]any{
-			"Code":      newCode,
-			"Trimester": trimester,
-		})
-	}
-	queryParams["subjectsToRelate"] = subjectsToRelateUpdate
+// 	subjectsToRelateUpdate := []any{}
+// 	for _, positions := range subjectsToRelate {
+// 		newCode := newCareerForm.Subjects[positions[0]][positions[1]].Code
 
-	completeSubjectsToCreate := []models.UpdateCareerSubject{}
-	for _, positions := range subjectsToCreate {
-		newSubject := *newCareerForm.Subjects[positions[0]][positions[1]]
+// 		trimester := positions[0] + 1
 
-		completeSubjectsToCreate = append(completeSubjectsToCreate, newSubject)
-	}
-	queryParams["completeSubjectsToCreate"] = completeSubjectsToCreate
+// 		subjectsToRelateUpdate = append(subjectsToRelateUpdate, map[string]any{
+// 			"Code":      newCode,
+// 			"Trimester": trimester,
+// 		})
+// 	}
+// 	queryParams["subjectsToRelate"] = subjectsToRelateUpdate
 
-	type ExtendedUpdateCareerSubject struct {
-		models.UpdateCareerSubject
-		PrelationsToUndo   []string `json:"prelationsToUndo"`
-		PrelationsToCreate []string `json:"prelationsToCreate"`
-	}
+// 	completeSubjectsToCreate := []models.UpdateCareerSubject{}
+// 	for _, positions := range subjectsToCreate {
+// 		newSubject := *newCareerForm.Subjects[positions[0]][positions[1]]
 
-	completeSubjectsToUpdate := []ExtendedUpdateCareerSubject{}
-	for _, positions := range subjectsToUpdate {
-		newSubject := *newCareerForm.Subjects[positions[0]][positions[1]]
-		oldSubject := *oldCareer.Subjects[positions[0]][positions[1]]
+// 		completeSubjectsToCreate = append(completeSubjectsToCreate, newSubject)
+// 	}
+// 	queryParams["completeSubjectsToCreate"] = completeSubjectsToCreate
 
-		prelationsToUndo := []string{}
-		prelationsToCreate := []string{}
+// 	type ExtendedUpdateCareerSubject struct {
+// 		models.UpdateCareerSubject
+// 		PrelationsToUndo   []string `json:"prelationsToUndo"`
+// 		PrelationsToCreate []string `json:"prelationsToCreate"`
+// 	}
 
-		if len(newSubject.Prelations) > 0 {
-			for _, newPrelation := range newSubject.Prelations {
-				completeId := tools.ToID("subject", newPrelation)
-				if !tools.Contains(oldSubject.Prelations, completeId) {
-					prelationsToCreate = append(prelationsToCreate, completeId)
-				}
-			}
+// 	completeSubjectsToUpdate := []ExtendedUpdateCareerSubject{}
+// 	for _, positions := range subjectsToUpdate {
+// 		newSubject := *newCareerForm.Subjects[positions[0]][positions[1]]
+// 		oldSubject := *oldCareer.Subjects[positions[0]][positions[1]]
 
-			for _, oldPrelation := range oldSubject.Prelations {
-				if !tools.Contains(newSubject.Prelations, tools.FromID(oldPrelation)) {
-					prelationsToUndo = append(prelationsToUndo, oldPrelation)
-				}
-			}
-		}
+// 		prelationsToUndo := []string{}
+// 		prelationsToCreate := []string{}
 
-		newSubject.Prelations = nil
-		extendedSubject := ExtendedUpdateCareerSubject{
-			UpdateCareerSubject: newSubject,
-			PrelationsToUndo:    prelationsToUndo,
-			PrelationsToCreate:  prelationsToCreate,
-		}
+// 		if len(newSubject.Prelations) > 0 {
+// 			for _, newPrelation := range newSubject.Prelations {
+// 				completeId := tools.ToID("subject", newPrelation)
+// 				if !tools.Contains(oldSubject.Prelations, completeId) {
+// 					prelationsToCreate = append(prelationsToCreate, completeId)
+// 				}
+// 			}
 
-		completeSubjectsToUpdate = append(completeSubjectsToUpdate, extendedSubject)
-	}
-	queryParams["completeSubjectsToUpdate"] = completeSubjectsToUpdate
+// 			for _, oldPrelation := range oldSubject.Prelations {
+// 				if !tools.Contains(newSubject.Prelations, tools.FromID(oldPrelation)) {
+// 					prelationsToUndo = append(prelationsToUndo, oldPrelation)
+// 				}
+// 			}
+// 		}
 
-	data, err := db.SurrealDB.Query(updateCareerQuery, queryParams)
-	if err != nil {
-		return err
-	}
-	return tools.GetSurrealErrorMsgs(data)
-}
+// 		newSubject.Prelations = nil
+// 		extendedSubject := ExtendedUpdateCareerSubject{
+// 			UpdateCareerSubject: newSubject,
+// 			PrelationsToUndo:    prelationsToUndo,
+// 			PrelationsToCreate:  prelationsToCreate,
+// 		}
 
-func compareForms(oldCareer models.CareerWithSubjects, newCareerForm models.CareerUpdateForm) ([][2]int, [][2]int, [][2]int, [][2]int) {
-	subjectsToUpdate := [][2]int{}
-	subjectsToRelate := [][2]int{}
-	subjectsToUnrelate := [][2]int{}
-	subjectsToCreate := [][2]int{}
+// 		completeSubjectsToUpdate = append(completeSubjectsToUpdate, extendedSubject)
+// 	}
+// 	queryParams["completeSubjectsToUpdate"] = completeSubjectsToUpdate
 
-	oldSubjectsPresence := make(map[string][2]int)
-	newSubjectsPresence := make(map[string][2]int)
+// 	fmt.Println(queryParams)
+// 	data, err := db.SurrealDB.Query(updateCareerQuery, queryParams)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	return tools.GetSurrealErrorMsgs(data)
+// }
 
-	for trimester, subjectsByTrimester := range newCareerForm.Subjects {
-		for index, newSubject := range subjectsByTrimester {
-			oldSubject := oldCareer.Subjects[trimester][index]
+// func compareForms(oldCareer models.CareerWithSubjects, newCareerForm models.CareerUpdateForm) ([][2]int, [][2]int, [][2]int, [][2]int) {
+// 	subjectsToUpdate := [][2]int{}
+// 	subjectsToRelate := [][2]int{}
+// 	subjectsToUnrelate := [][2]int{}
+// 	subjectsToCreate := [][2]int{}
 
-			if oldSubject != nil {
-				oldSubjectsPresence[oldSubject.Code] = [2]int{trimester, index}
-			}
+// 	oldSubjectsPresence := make(map[string][2]int)
+// 	newSubjectsPresence := make(map[string][2]int)
 
-			if newSubject != nil {
-				newSubjectsPresence[newSubject.Code] = [2]int{trimester, index}
-			}
-		}
-	}
+// 	for trimester, subjectsByTrimester := range newCareerForm.Subjects {
+// 		for index, newSubject := range subjectsByTrimester {
+// 			oldSubject := oldCareer.Subjects[trimester][index]
 
-	for oldSubjectCode, oldPositions := range oldSubjectsPresence {
-		if newPositions, exists := newSubjectsPresence[oldSubjectCode]; exists {
-			subjectsToUpdate = append(subjectsToUpdate, newPositions)
-		} else {
-			subjectsToUnrelate = append(subjectsToUnrelate, oldPositions)
-		}
+// 			if oldSubject != nil {
+// 				oldSubjectsPresence[oldSubject.Code] = [2]int{trimester, index}
+// 			}
 
-		delete(newSubjectsPresence, oldSubjectCode)
-	}
+// 			if newSubject != nil {
+// 				newSubjectsPresence[newSubject.Code] = [2]int{trimester, index}
+// 			}
+// 		}
+// 	}
 
-	for _, newPositions := range newSubjectsPresence {
-		subject := newCareerForm.Subjects[newPositions[0]][newPositions[1]]
-		if subject.SubjectType == "new" {
-			subjectsToCreate = append(subjectsToCreate, newPositions)
-		}
+// 	for oldSubjectCode, oldPositions := range oldSubjectsPresence {
+// 		if newPositions, exists := newSubjectsPresence[oldSubjectCode]; exists {
+// 			subjectsToUpdate = append(subjectsToUpdate, newPositions)
+// 		} else {
+// 			subjectsToUnrelate = append(subjectsToUnrelate, oldPositions)
+// 		}
 
-		subjectsToRelate = append(subjectsToRelate, newPositions)
-	}
+// 		delete(newSubjectsPresence, oldSubjectCode)
+// 	}
 
-	return subjectsToUpdate, subjectsToRelate, subjectsToUnrelate, subjectsToCreate
-}
+// 	for _, newPositions := range newSubjectsPresence {
+// 		subject := newCareerForm.Subjects[newPositions[0]][newPositions[1]]
+// 		if subject.SubjectType == "new" {
+// 			subjectsToCreate = append(subjectsToCreate, newPositions)
+// 		}
+
+// 		// REVIEW Estoy asumiendo que todo RELATE también va a ser un UPDATE
+// 		subjectsToUpdate = append(subjectsToUpdate, newPositions)
+
+// 		subjectsToRelate = append(subjectsToRelate, newPositions)
+// 	}
+
+// 	return subjectsToUpdate, subjectsToRelate, subjectsToUnrelate, subjectsToCreate
+// }

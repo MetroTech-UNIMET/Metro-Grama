@@ -1,15 +1,17 @@
+import type { Id } from "./surrealDb"
+
 export interface User {
-  id: string
+  id: Id
   careerID: string
   email: string
   firstName: string
   lastName: string
   pictureUrl: string
-  role: UserRole
+  role: Id<UserRole>
   created: string
 }
 
 export enum UserRole {
-  user = "role:user",
-  admin = "role:admin"
+  user = "user",
+  admin = "admin"
 }

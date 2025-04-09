@@ -77,10 +77,14 @@ export default function AuthenticationContext({
 export function OnlyAdmin({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
 
-  if (user?.role !== UserRole.admin) {
+  if(!user) 
     // TODO - Mejor manejo de sin autorización
-    return null;
-  }
+    return <>No hay usuario </>;
+  
+  if (user?.role.ID !== UserRole.admin) 
+    // TODO - Mejor manejo de sin autorización
+    return <>El rol no es el correcto </>;
+  
 
   return children
 }

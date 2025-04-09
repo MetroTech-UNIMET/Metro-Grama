@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { type SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-// import { DevTool } from "@hookform/devtools";
+import { DevTool } from "@hookform/devtools";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 
 import {
@@ -17,7 +17,6 @@ import useFormStep from "@/hooks/useFormStep";
 import useSubjectOptions from "./hooks/useSubjectOptions";
 
 import { forEachPromiseAll } from "@utils/promises";
-import { surrealIdToId } from "@utils/queries";
 import { onCreate, onEdit } from "./functions";
 import { toast } from "@ui/use-toast";
 
@@ -59,6 +58,7 @@ export default function CareerForm({ mode, data }: Props) {
     const defaultData: CreateCareerFormType = {
       emoji: data.emoji,
       name: data.name,
+      id: data.id.ID,
       subjects: data.subjects.map((subjects) =>
         subjects.map((subject) => {
           if (!subject)
@@ -67,17 +67,19 @@ export default function CareerForm({ mode, data }: Props) {
               prelations: [],
             };
 
-          subjectsById[subject.code] = subject.name;
+          // FIXME - Hacer que el codigo sea un objeto Id
+          subjectsById[subject.code.split(":")[1]] = subject.name;
 
           const createSubject: CreateSubjectType = {
             subjectType: "existing",
-            code: surrealIdToId(subject.code),
+            // FIXME - Hacer que el codigo sea un objeto Id
+            code: subject.code.split(":")[1],
             name: subject.name,
             credits: subject.credits,
             BPCredits: subject.BPCredits,
-            prelations: subject.prelations.map((prelation) => ({
-              value: surrealIdToId(prelation),
-              label: subjectsById[prelation],
+            prelations: subject.prelations.map(({ ID }) => ({
+              value: ID,
+              label: subjectsById[ID] ?? "Materia no encontrada",
             })),
           };
 
@@ -121,8 +123,9 @@ export default function CareerForm({ mode, data }: Props) {
     }
   };
 
-  async function onInvalid() {
+  async function onInvalid(error: any) {
     await jumpToFirstErrorStep();
+    console.log("hola", error);
   }
   const formSubmit = form.handleSubmit(onSubmit, onInvalid);
 
@@ -233,6 +236,14 @@ export default function CareerForm({ mode, data }: Props) {
             />
 
             <FloatingLabelInputField
+              name="id"
+              label="Identificador"
+              containerClassname="max-w-[6.5rem]"
+              showErrors={true}
+              readOnly={mode === "edit"}
+            />
+
+            <FloatingLabelInputField
               name="emoji"
               label="Emoji"
               containerClassname=" max-w-16"
@@ -263,7 +274,7 @@ export default function CareerForm({ mode, data }: Props) {
           disabled={form.formState.isSubmitting}
         >
           <Spinner className="text-white" show={form.formState.isSubmitting} />
-          Crear Carrera
+          {mode === "edit" ? "Editar" : "Crear"} Carrera
         </Button>
 
         {/* <DevTool control={form.control} /> */}

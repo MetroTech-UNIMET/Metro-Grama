@@ -57,15 +57,16 @@ function generateOptions(
 
   subjects.forEach((subject) => {
     const code = subject.code.split(":")[1];
+    const label = `(${code}) - ${subject.name}`
 
     prelationsOptions.push({
-      label: subject.name,
+      label,
       value: code,
     });
 
     if (isSubject(subject))
       codeOptions.push({
-        label: `(${code}) - ${subject.name}`,
+        label,
         value: code,
         subject,
       });

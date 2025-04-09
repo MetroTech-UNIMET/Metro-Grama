@@ -128,7 +128,7 @@ func oauthGoogleCallback(c echo.Context) error {
 		return err
 	}
 
-	sessAuth.Values["user-id"] = dbUser.ID
+	sessAuth.Values["user-id"] = dbUser.ID.ID
 	if err := sessAuth.Save(c.Request(), c.Response()); err != nil {
 		return err
 	}

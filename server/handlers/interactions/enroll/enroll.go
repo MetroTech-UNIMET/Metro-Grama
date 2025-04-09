@@ -7,8 +7,10 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	"github.com/surrealdb/surrealdb.go/pkg/models"
 )
 
+// TODO - Testear
 func Handlers(e *echo.Group) {
 	enrollGroup := e.Group("/enroll", middlewares.UserAuth)
 
@@ -17,22 +19,30 @@ func Handlers(e *echo.Group) {
 	enrollGroup.GET("/", getEnrolledSubjects)
 }
 
-func extractData(c echo.Context) (string, []string, error) {
-	userId := c.Get("user-id").(string)
+func extractData(c echo.Context) (*models.RecordID, []string, error) {
+	userId := c.Get("user-id")
+	if userId == nil {
+		return nil, nil, echo.NewHTTPError(http.StatusUnauthorized)
+	}
 
 	var body struct {
 		Subjects []string `json:"subjects"`
 	}
 	if err := c.Bind(&body); err != nil {
-		return "", nil, echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
+		return nil, nil, echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
 	}
 
 	subjects := body.Subjects
 	if len(subjects) == 0 {
-		return "", nil, echo.NewHTTPError(http.StatusBadRequest, "No subjects provided")
+		return nil, nil, echo.NewHTTPError(http.StatusBadRequest, "No subjects provided")
 	}
 
-	return userId, subjects, nil
+	userID, ok := userId.(models.RecordID)
+	if !ok {
+		return nil, nil, echo.NewHTTPError(http.StatusUnauthorized, "Invalid user ID")
+	}
+
+	return &userID, subjects, nil
 }
 
 func createPassed(c echo.Context) error {
@@ -41,7 +51,7 @@ func createPassed(c echo.Context) error {
 		return err
 	}
 
-	if err := interactions.EnrollStudent(userId, subjects); err != nil {
+	if err := interactions.EnrollStudent(*userId, subjects); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 	fmt.Println("Enrolled the subjects successfully")
@@ -57,7 +67,7 @@ func deletePassed(c echo.Context) error {
 		return err
 	}
 
-	if err := interactions.UnenrollStudent(userId, subjects); err != nil {
+	if err := interactions.UnenrollStudent(*userId, subjects); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 	fmt.Println("Unenrolled the subjects successfully")
@@ -68,7 +78,7 @@ func deletePassed(c echo.Context) error {
 }
 
 func getEnrolledSubjects(c echo.Context) error {
-	userId := c.Get("user-id").(string)
+	userId := c.Get("user-id").(models.RecordID)
 
 	subjects, err := interactions.GetEnrolledSubjects(userId)
 	if err != nil {

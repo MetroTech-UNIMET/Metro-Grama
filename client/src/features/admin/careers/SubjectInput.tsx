@@ -97,7 +97,7 @@ function SubjectInput({
                           "bg-success/10 border-success":
                             !fieldState.invalid && fieldState.isTouched,
                         })}
-                        customOnSelectLabeling={(option) => option.value}
+                        // customOnSelectLabeling={(option) => option.value}
                         onSelect={(option) => {
                           const subject: Subject = (option as any).subject;
                           const setValueOption = {

@@ -7,6 +7,7 @@ import (
 
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
+	surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
 )
 
 func UserAuth(next echo.HandlerFunc) echo.HandlerFunc {
@@ -29,7 +30,7 @@ func AdminAuth(next echo.HandlerFunc) echo.HandlerFunc {
 			return err
 		}
 
-		if user.Role != "role:admin" {
+		if user.Role.ID != "admin" {
 			return echo.NewHTTPError(http.StatusUnauthorized)
 		}
 
@@ -53,7 +54,7 @@ func getUserFromSession(c echo.Context) (*models.MinimalUser, error) {
 		return nil, echo.NewHTTPError(http.StatusUnauthorized)
 	}
 
-	user, err := storage.ExistUser(userIDStr)
+	user, err := storage.ExistUser(surrealModels.NewRecordID("user", userIDStr))
 	if err != nil {
 		return nil, echo.NewHTTPError(http.StatusUnauthorized)
 	}

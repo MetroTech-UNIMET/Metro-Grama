@@ -4,6 +4,9 @@ import (
 	"errors"
 	"metrograma/db"
 	"strings"
+
+	"github.com/surrealdb/surrealdb.go"
+	"github.com/surrealdb/surrealdb.go/pkg/models"
 )
 
 func GetSurrealErrorMsgs(data interface{}) error {
@@ -26,10 +29,25 @@ func GetSurrealErrorMsgs(data interface{}) error {
 	return nil
 }
 
-func ExistRecord(id string) error {
-	_, err := db.SurrealDB.Select(id)
+func ExistRecord(id models.RecordID) error {
+	_, err := surrealdb.Select[any](db.SurrealDB, id)
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+func StringToIdArray(value string) []models.RecordID {
+	values := strings.Split(value, ",")
+
+	return ToIdArray(values)
+}
+
+func ToIdArray(value []string) []models.RecordID {
+	recordIDs := make([]models.RecordID, len(value))
+
+	for i, v := range value {
+		recordIDs[i] = *models.ParseRecordID(v)
+	}
+	return recordIDs
 }

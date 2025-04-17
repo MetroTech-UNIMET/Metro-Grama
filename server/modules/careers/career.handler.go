@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"metrograma/middlewares"
 	"metrograma/models"
-	"metrograma/storage"
+	"metrograma/modules/careers/services"
 	"metrograma/tools"
 	"net/http"
 
@@ -23,8 +23,7 @@ func Handlers(e *echo.Group) {
 }
 
 func getCareers(c echo.Context) error {
-	careers, err := storage.GetCareers()
-
+	careers, err := services.GetCareers()
 	return tools.GetResponse(c, careers, err)
 }
 
@@ -45,7 +44,7 @@ func createCareer(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusConflict, fmt.Errorf("career with id '%s' already exists", careerID))
 	}
 
-	if err := storage.CreateCareer(careerForm); err != nil {
+	if err := services.CreateCareer(careerForm); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 
@@ -69,7 +68,7 @@ func deleteCareer(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	if err := storage.DeleteCareer(target.ID); err != nil {
+	if err := services.DeleteCareer(target.ID); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 	return nil
@@ -104,7 +103,6 @@ func getCareerWithSubjectsById(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "careerId is required")
 	}
 
-	career, err := storage.GetCareerWithSubjectsById(careerId)
-
+	career, err := services.GetCareerWithSubjectsById(careerId)
 	return tools.GetResponse(c, career, err)
 }

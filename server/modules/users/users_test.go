@@ -4,10 +4,8 @@ import (
 	"testing"
 )
 
-// REVIEW - Revisar cuando se haga el createStudent
-
 func TestFailSignin(t *testing.T) {
-	// e := internal.SetupEcho()
+	// e := testutils.SetupEcho()
 	// users := []models.StudentSigninForm{
 	// 	{
 	// 		FirstName:      "J",
@@ -84,14 +82,14 @@ func TestFailSignin(t *testing.T) {
 	// 	},
 	// }
 	// for _, s := range users {
-	// 	c, _ := internal.CreateEchoContextWithJson(t, e, s)
+	// 	c, _ := testutils.CreateEchoContextWithJson(t, e, s)
 	// 	err := createStudent(c)
 	// 	assert.Error(t, err)
 	// }
 }
 
 func TestDuplicateSignin(t *testing.T) {
-	// e := internal.SetupEcho()
+	// e := testutils.SetupEcho()
 	// users := []models.StudentSigninForm{
 	// 	{
 	// 		FirstName:      "Jane",
@@ -112,16 +110,16 @@ func TestDuplicateSignin(t *testing.T) {
 	// 		SubjectsPassed: []models.SubjectPassed{},
 	// 	},
 	// }
-	// storage.DeleteUserByEmail(users[0].Email)
+	// services.DeleteUserByEmail(users[0].Email)
 	// {
-	// 	c, _ := internal.CreateEchoContextWithJson(t, e, users[0])
+	// 	c, _ := testutils.CreateEchoContextWithJson(t, e, users[0])
 	// 	err := createStudent(c)
 	// 	assert.NoError(t, err)
 	// }
 	// {
-	// 	c, _ := internal.CreateEchoContextWithJson(t, e, users[1])
+	// 	c, _ := testutils.CreateEchoContextWithJson(t, e, users[1])
 	// 	err := createStudent(c)
-	// 	storage.DeleteUserByEmail(users[0].Email)
+	// 	services.DeleteUserByEmail(users[0].Email)
 	// 	assert.Error(t, err)
 	// }
-}
+} 

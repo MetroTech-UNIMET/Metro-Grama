@@ -1,12 +1,12 @@
 package handlers
 
 import (
-	"metrograma/handlers/auth"
-	"metrograma/handlers/careers"
 	"metrograma/handlers/health"
-	"metrograma/handlers/interactions/enroll"
-	"metrograma/handlers/subjects"
-	"metrograma/handlers/users"
+	"metrograma/modules/auth"
+	"metrograma/modules/careers"
+	"metrograma/modules/interactions"
+	"metrograma/modules/subjects"
+	"metrograma/modules/users"
 
 	"github.com/labstack/echo/v4"
 )
@@ -21,5 +21,5 @@ func CreateHandlers(e *echo.Echo) {
 	careers.Handlers(apiGroup)
 	users.Handlers(apiGroup)
 	auth.Handlers(apiGroup)
-	enroll.Handlers(apiGroup)
+	interactions.Handlers(apiGroup)
 }

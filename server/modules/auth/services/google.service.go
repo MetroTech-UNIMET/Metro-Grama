@@ -1,4 +1,4 @@
-package auth
+package services
 
 import (
 	"crypto/rand"
@@ -27,7 +27,7 @@ type GoogleEmailData struct {
 	HD            string `json:"hd"`
 }
 
-func oauthGoogleLogin(c echo.Context) error {
+func OauthGoogleLogin(c echo.Context) error {
 	sess, err := session.Get("session", c)
 	if err != nil {
 		return err
@@ -52,7 +52,7 @@ func oauthGoogleLogin(c echo.Context) error {
 	return c.Redirect(http.StatusTemporaryRedirect, u)
 }
 
-func oauthGoogleLogout(c echo.Context) error {
+func OauthGoogleLogout(c echo.Context) error {
 	sessAuth, err := session.Get("auth", c)
 	if err != nil {
 		return err
@@ -65,7 +65,7 @@ func oauthGoogleLogout(c echo.Context) error {
 	return c.NoContent(http.StatusAccepted)
 }
 
-func oauthGoogleCallback(c echo.Context) error {
+func OauthGoogleCallback(c echo.Context) error {
 	sess, err := session.Get("session", c)
 	if err != nil {
 		return err
@@ -140,6 +140,27 @@ func generateStateOauthCookie() string {
 	b := make([]byte, 16)
 	rand.Read(b)
 	state := base64.URLEncoding.EncodeToString(b)
-
 	return state
+} 
+
+
+func GetGoogleUserInfo(client *http.Client) (*GoogleEmailData, error) {
+	email, err := client.Get("https://www.googleapis.com/oauth2/v3/userinfo")
+	if err != nil {
+		return nil, err
+	}
+	defer email.Body.Close()
+	data, _ := io.ReadAll(email.Body)
+
+	googleEmailData := new(GoogleEmailData)
+	if err := json.Unmarshal(data, googleEmailData); err != nil {
+		return nil, err
+	}
+
+	if googleEmailData.HD != "correo.unimet.edu.ve" && googleEmailData.HD != "unimet.edu.ve" {
+		return nil, fmt.Errorf("the email domain %s is not allowed", googleEmailData.HD)
+	}
+
+	return googleEmailData, nil
 }
+

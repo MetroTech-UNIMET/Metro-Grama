@@ -2,13 +2,21 @@ package auth
 
 import (
 	"metrograma/models"
-	"metrograma/storage"
+	"metrograma/modules/auth/services"
+	authCrudServices "metrograma/modules/auth/services/crud"
 	"net/http"
 
 	"github.com/gorilla/sessions"
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 )
+
+func Handlers(e *echo.Group) {
+	e.Any("/auth/google/login", services.OauthGoogleLogin)
+	e.Any("/auth/google/callback", services.OauthGoogleCallback)
+	e.Any("/auth/google/logout", services.OauthGoogleLogout)
+	e.POST("/auth/admin/login", adminLogin)
+}
 
 func adminLogin(c echo.Context) error {
 	var loginForm models.UserLoginForm
@@ -19,9 +27,8 @@ func adminLogin(c echo.Context) error {
 	if err := c.Validate(loginForm); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-
-	user, err := storage.LoginUser(loginForm)
-
+	
+	user, err := authCrudServices.LoginUser(loginForm)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusUnauthorized, err.Error())
 	}
@@ -43,3 +50,7 @@ func adminLogin(c echo.Context) error {
 
 	return c.NoContent(http.StatusOK)
 }
+
+
+
+

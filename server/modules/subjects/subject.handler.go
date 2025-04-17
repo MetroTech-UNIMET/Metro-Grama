@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"metrograma/middlewares"
 	"metrograma/models"
-	"metrograma/storage"
+	"metrograma/modules/subjects/services"
 	"metrograma/tools"
 	"net/http"
 
@@ -12,28 +12,16 @@ import (
 	surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
 )
 
-// TODO - Testar (se puede omitir el middleware)
 func Handlers(e *echo.Group) {
 	subjectsGroup := e.Group("/subjects")
 	subjectsGroup.GET("/", getSubjects, middlewares.AdminAuth)
 	subjectsGroup.GET("/graph/", getSubjectsGraph)
 	subjectsGroup.POST("/", createSubject, middlewares.AdminAuth)
-	// subjectsGroup.GET("/:career", getSubjectsByCareer)
 }
-
-// func getSubjectsByCareer(c echo.Context) error {
-// 	career := c.Param("career")
-
-// 	subjects, err := storage.GetSubjectByCareer(career)
-
-// 	return tools.GetResponse(c, subjects, err)
-// }
 
 func getSubjects(c echo.Context) error {
 	careers := c.QueryParam("careers")
-
-	subjects, err := storage.GetSubjects(careers)
-
+	subjects, err := services.GetSubjects(careers)
 	return tools.GetResponse(c, subjects, err)
 }
 
@@ -47,7 +35,7 @@ func getSubjectsGraph(c echo.Context) error {
 		})
 	}
 
-	subjects, err := storage.GetSubjectsGraph(careers)
+	subjects, err := services.GetSubjectsGraph(careers)
 	return tools.GetResponse(c, subjects, err)
 }
 
@@ -74,7 +62,6 @@ func createSubject(c echo.Context) error {
 		}
 	}
 
-	// Sacar las materias que preceden
 	for _, p := range subjectForm.PrecedesID {
 		err := tools.ExistRecord(*surrealModels.ParseRecordID(p))
 		if err != nil {
@@ -82,9 +69,9 @@ func createSubject(c echo.Context) error {
 		}
 	}
 
-	if err := storage.CreateSubject(subjectForm); err != nil {
+	if err := services.CreateSubject(subjectForm); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 
 	return c.NoContent(http.StatusCreated)
-}
+} 

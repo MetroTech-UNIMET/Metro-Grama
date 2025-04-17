@@ -3,14 +3,13 @@ package enroll
 import (
 	"fmt"
 	"metrograma/middlewares"
-	"metrograma/storage/interactions"
+	"metrograma/modules/interactions/enroll/services"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
 	"github.com/surrealdb/surrealdb.go/pkg/models"
 )
 
-// TODO - Testear
 func Handlers(e *echo.Group) {
 	enrollGroup := e.Group("/enroll", middlewares.UserAuth)
 
@@ -51,7 +50,7 @@ func createPassed(c echo.Context) error {
 		return err
 	}
 
-	if err := interactions.EnrollStudent(*userId, subjects); err != nil {
+	if err := services.EnrollStudent(*userId, subjects); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 	fmt.Println("Enrolled the subjects successfully")
@@ -67,7 +66,7 @@ func deletePassed(c echo.Context) error {
 		return err
 	}
 
-	if err := interactions.UnenrollStudent(*userId, subjects); err != nil {
+	if err := services.UnenrollStudent(*userId, subjects); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 	fmt.Println("Unenrolled the subjects successfully")
@@ -80,7 +79,7 @@ func deletePassed(c echo.Context) error {
 func getEnrolledSubjects(c echo.Context) error {
 	userId := c.Get("user-id").(models.RecordID)
 
-	subjects, err := interactions.GetEnrolledSubjects(userId)
+	subjects, err := services.GetEnrolledSubjects(userId)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
@@ -88,4 +87,4 @@ func getEnrolledSubjects(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"subjects": subjects,
 	})
-}
+} 

@@ -2,9 +2,9 @@ package subjects
 
 import (
 	"encoding/json"
-	"metrograma/handlers/internal"
 	"metrograma/models"
-	"metrograma/storage"
+	"metrograma/modules/subjects/services"
+	"metrograma/testutils"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -80,15 +80,15 @@ var subjectMockData = map[SubjectCase]models.SubjectForm{
 }
 
 func TestCreateSubject(t *testing.T) {
-	e := internal.SetupEcho()
+	e := testutils.SetupEcho()
 	subjectMock := subjectMockData[SubjectSuccess]
 
-	storage.DeleteSubject(surrealModels.NewRecordID("subject", subjectMock.Code))
+	services.DeleteSubject(surrealModels.NewRecordID("subject", subjectMock.Code))
 
-	c, rec := internal.CreateEchoContextWithJson(t, e, subjectMock)
+	c, rec := testutils.CreateEchoContextWithJson(t, e, subjectMock)
 	err := createSubject(c)
 
-	storage.DeleteSubject(surrealModels.NewRecordID("subject", subjectMock.Code))
+	services.DeleteSubject(surrealModels.NewRecordID("subject", subjectMock.Code))
 
 	if assert.NoError(t, err) {
 		assert.Equal(t, http.StatusCreated, rec.Code)
@@ -96,71 +96,71 @@ func TestCreateSubject(t *testing.T) {
 }
 
 func TestDuplicateCreateSubject(t *testing.T) {
-	e := internal.SetupEcho()
+	e := testutils.SetupEcho()
 	subjectMock := subjectMockData[SubjectSuccess]
 	codeId := surrealModels.NewRecordID("subject", subjectMock.Code)
 
-	storage.DeleteSubject(codeId)
+	services.DeleteSubject(codeId)
 
 	subjectMock2 := subjectMock
-	err := storage.CreateSubject(subjectMock)
+	err := services.CreateSubject(subjectMock)
 	assert.NoError(t, err)
 
-	c, _ := internal.CreateEchoContextWithJson(t, e, subjectMock2)
+	c, _ := testutils.CreateEchoContextWithJson(t, e, subjectMock2)
 	err = createSubject(c)
 	httpErr := err.(*echo.HTTPError)
 
-	storage.DeleteSubject(codeId)
+	services.DeleteSubject(codeId)
 
 	assert.Error(t, err, "Create subject must fail")
 	assert.Equal(t, http.StatusConflict, httpErr.Code)
 }
 
 func TestCreateSubjectWithNonExistingPrecedesSubjects(t *testing.T) {
-	e := internal.SetupEcho()
+	e := testutils.SetupEcho()
 	subjectMock := subjectMockData[SubjectWithNonExistingPrecedesSubjects]
 
-	storage.DeleteSubject(surrealModels.NewRecordID("subject", subjectMock.Code))
+	services.DeleteSubject(surrealModels.NewRecordID("subject", subjectMock.Code))
 
-	c, _ := internal.CreateEchoContextWithJson(t, e, subjectMock)
+	c, _ := testutils.CreateEchoContextWithJson(t, e, subjectMock)
 	err := createSubject(c)
 	httpErr := err.(*echo.HTTPError)
 
-	storage.DeleteSubject(surrealModels.NewRecordID("subject", subjectMock.Code))
+	services.DeleteSubject(surrealModels.NewRecordID("subject", subjectMock.Code))
 
 	assert.Error(t, err, "Create subject must fail")
 	assert.Equal(t, httpErr.Code, http.StatusNotFound, err)
 }
 
 func TestCreateSubjectWithNonExistingCareer(t *testing.T) {
-	e := internal.SetupEcho()
+	e := testutils.SetupEcho()
 	subjectMock := subjectMockData[SubjectWithNonExistingCareer]
 
-	storage.DeleteSubject(surrealModels.NewRecordID("subject", subjectMock.Code))
+	services.DeleteSubject(surrealModels.NewRecordID("subject", subjectMock.Code))
 
-	c, _ := internal.CreateEchoContextWithJson(t, e, subjectMock)
+	c, _ := testutils.CreateEchoContextWithJson(t, e, subjectMock)
 	err := createSubject(c)
 
 	httpErr := err.(*echo.HTTPError)
 
-	storage.DeleteSubject(surrealModels.NewRecordID("subject", subjectMock.Code))
+	services.DeleteSubject(surrealModels.NewRecordID("subject", subjectMock.Code))
 
 	assert.Error(t, err, "Create subject must fail")
 	assert.Equal(t, httpErr.Code, http.StatusNotFound, err)
 }
 
 func TestCreateSubjectWithInvalidBody(t *testing.T) {
-	e := internal.SetupEcho()
+	e := testutils.SetupEcho()
 	subjectMock := subjectMockData[SubjectInvalidBody]
 
-	storage.DeleteSubject(surrealModels.NewRecordID("subject", subjectMock.Code))
+	services.DeleteSubject(surrealModels.NewRecordID("subject", subjectMock.Code))
 
-	c, _ := internal.CreateEchoContextWithJson(t, e, subjectMock)
+	c, _ := testutils.CreateEchoContextWithJson(t, e, subjectMock)
 	err := createSubject(c)
 
 	httpErr := err.(*echo.HTTPError)
 
-	storage.DeleteSubject(surrealModels.NewRecordID("subject", subjectMock.Code))
+	services.DeleteSubject(surrealModels.NewRecordID("subject", subjectMock.Code))
 
 	assert.Error(t, err, "Create subject must fail")
 	assert.Equal(t, httpErr.Code, http.StatusBadRequest, err)
@@ -230,7 +230,7 @@ var edgesMock = []models.Edge{
 }
 
 func TestBasicSubjectsGraph(t *testing.T) {
-	e := internal.SetupEcho()
+	e := testutils.SetupEcho()
 
 	req := httptest.NewRequest(http.MethodGet, "/?filter=all", strings.NewReader(""))
 	rec := httptest.NewRecorder()
@@ -253,4 +253,4 @@ func TestBasicSubjectsGraph(t *testing.T) {
 		}
 		assert.Equal(t, matchs, len(edgesMock))
 	}
-}
+} 

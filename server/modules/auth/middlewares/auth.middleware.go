@@ -2,8 +2,9 @@ package middlewares
 
 import (
 	"metrograma/models"
-	"metrograma/modules/auth/services"
 	"net/http"
+
+	crudServices "metrograma/modules/auth/services/crud"
 
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
@@ -54,7 +55,7 @@ func getUserFromSession(c echo.Context) (*models.MinimalUser, error) {
 		return nil, echo.NewHTTPError(http.StatusUnauthorized)
 	}
 
-	user, err := services.ExistUser(surrealModels.NewRecordID("user", userIDStr))
+	user, err := crudServices.ExistUser(surrealModels.NewRecordID("user", userIDStr))
 	if err != nil {
 		return nil, echo.NewHTTPError(http.StatusUnauthorized)
 	}

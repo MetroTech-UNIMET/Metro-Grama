@@ -2,7 +2,7 @@ package enroll
 
 import (
 	"fmt"
-	"metrograma/middlewares"
+	authMiddlewares "metrograma/modules/auth/middlewares"
 	"metrograma/modules/interactions/enroll/services"
 	"net/http"
 
@@ -11,7 +11,7 @@ import (
 )
 
 func Handlers(e *echo.Group) {
-	enrollGroup := e.Group("/enroll", middlewares.UserAuth)
+	enrollGroup := e.Group("/enroll", authMiddlewares.UserAuth)
 
 	enrollGroup.POST("/", createPassed)
 	enrollGroup.DELETE("/", deletePassed)

@@ -1,7 +1,7 @@
 package users
 
 import (
-	"metrograma/middlewares"
+	authMiddlewares "metrograma/modules/auth/middlewares"
 	"metrograma/modules/users/services"
 	"net/http"
 
@@ -11,7 +11,7 @@ import (
 
 func Handlers(e *echo.Group) {
 	usersGroup := e.Group("/users")
-	usersGroup.GET("/profile", userProfile, middlewares.UserAuth)
+	usersGroup.GET("/profile", userProfile, authMiddlewares.UserAuth)
 	// usersGroup.POST("/create_user", createStudent, middlewares.AdminAuth)
 }
 

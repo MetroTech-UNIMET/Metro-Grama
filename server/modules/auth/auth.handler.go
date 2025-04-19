@@ -3,7 +3,6 @@ package auth
 import (
 	"metrograma/models"
 	"metrograma/modules/auth/services"
-	authCrudServices "metrograma/modules/auth/services/crud"
 	"net/http"
 
 	"github.com/gorilla/sessions"
@@ -28,7 +27,7 @@ func adminLogin(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 	
-	user, err := authCrudServices.LoginUser(loginForm)
+	authResult, err := services.LoginUser(loginForm)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusUnauthorized, err.Error())
 	}
@@ -43,7 +42,7 @@ func adminLogin(c echo.Context) error {
 		return err
 	}
 
-	sessAuth.Values["user-id"] = user.ID
+	sessAuth.Values["user-id"] = authResult.User.ID
 	if err := sessAuth.Save(c.Request(), c.Response()); err != nil {
 		return err
 	}

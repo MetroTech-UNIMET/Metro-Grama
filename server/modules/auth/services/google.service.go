@@ -9,7 +9,6 @@ import (
 	"metrograma/auth"
 	"metrograma/env"
 	"metrograma/models"
-	"metrograma/storage"
 	"net/http"
 
 	"github.com/gorilla/sessions"
@@ -97,23 +96,22 @@ func OauthGoogleCallback(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Errorf("the email domain %s is not allowed", googleEmailData.HD))
 	}
 
-	dbUser, err := storage.ExistUserByEmail(googleEmailData.Email)
-	if err != nil {
-		if err := storage.CreateSimpleUser(models.SimpleUserSigninForm{
-			FirstName:  googleEmailData.GivenName,
-			LastName:   googleEmailData.FamilyName,
-			Email:      googleEmailData.Email,
-			Password:   tok.AccessToken,
-			PictureUrl: googleEmailData.Picture,
-			Verified:   true,
-		}); err != nil {
-			return echo.NewHTTPError(http.StatusConflict, err)
-		}
+	registerResult, err := RegisterUser(models.SimpleUserSigninForm{
+		FirstName:  googleEmailData.GivenName,
+		LastName:   googleEmailData.FamilyName,
+		Email:      googleEmailData.Email,
+		Password:   tok.AccessToken,
+		PictureUrl: googleEmailData.Picture,
+	})
 
-		dbUser, _ = storage.ExistUserByEmail(googleEmailData.Email)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusConflict, err)
 	}
 
 	sessAuth, err := session.Get("auth", c)
+	if err != nil {
+		return err
+	}
 	sessAuth.Options = &sessions.Options{
 		Path:     "/",
 		MaxAge:   86400 * 7,
@@ -124,16 +122,12 @@ func OauthGoogleCallback(c echo.Context) error {
 		sessAuth.Options.Secure = true
 	}
 
-	if err != nil {
-		return err
-	}
-
-	sessAuth.Values["user-id"] = dbUser.ID.ID
+	sessAuth.Values["user-id"] = registerResult.User.ID.ID
 	if err := sessAuth.Save(c.Request(), c.Response()); err != nil {
 		return err
 	}
 
-	return c.Redirect(http.StatusPermanentRedirect, fmt.Sprintf("%s/materias", env.GetDotEnv("FRONTEND_ADDRS")))
+	return c.Redirect(http.StatusPermanentRedirect, registerResult.RedirectPath)
 }
 
 func generateStateOauthCookie() string {
@@ -163,4 +157,3 @@ func GetGoogleUserInfo(client *http.Client) (*GoogleEmailData, error) {
 
 	return googleEmailData, nil
 }
-

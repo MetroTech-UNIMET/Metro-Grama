@@ -43,6 +43,7 @@ type SimpleUserSigninForm struct {
 	Password   string `json:"password" validate:"required,gte=8,lte=40"`
 	PictureUrl string `json:"pictureUrl" validate:"required"`
 	Verified   bool   `json:"verified" validate:"required"`
+	Role       string `json:"role" validate:"required"`
 }
 
 type MinimalUser struct {

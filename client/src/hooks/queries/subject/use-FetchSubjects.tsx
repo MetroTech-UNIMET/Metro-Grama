@@ -1,16 +1,25 @@
-import { useQuery, UseQueryOptions } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 
 import { getSubjects } from "@/api/subjectsAPI";
 
-export function useFetchSubjects(careers: string[] = [], queryOptions?: Omit<UseQueryOptions, 'queryKey' | 'queryFn'>) {
-  const careersParam = careers.length === 0  ? "none" : careers.sort().join(",")
-  
+import type { Subject } from "@/interfaces/Subject";
+import type { OptionalQueryOptions } from "../types";
+
+export function useFetchSubjects(
+  careers: string[] = [],
+  queryOptions?: OptionalQueryOptions<Subject[]>
+) {
+  const careersParam = careers.length === 0 ? "none" : careers.sort().join(",");
+
   const query = useQuery({
-    queryKey: ["subjects", {
-      careers: careersParam
-    }],
+    queryKey: [
+      "subjects",
+      {
+        careers: careersParam,
+      },
+    ],
     queryFn: () => getSubjects(careersParam),
-    ...queryOptions
+    ...queryOptions,
   });
 
   return query;

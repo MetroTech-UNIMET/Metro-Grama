@@ -1,7 +1,7 @@
 import type { Subject } from "@/interfaces/Subject";
 import type { NodeStyleIcon } from "@antv/graphin/lib/typings/type";
 import type { NodeStatuses } from "@/features/grafo/behaviors/StatusActions";
-import type { Option as DropdownOption } from "@ui/derived/multidropdown";
+import type { Option } from "@ui/types";
 import type { Career } from "@/interfaces/Career";
 
 export function careerEmoji(career: string): string {
@@ -22,7 +22,7 @@ export function careerEmoji(career: string): string {
  */
 export function getNormalIcon(
   subject: Subject,
-  selectedCareers: DropdownOption[],
+  selectedCareers: Option[],
   careers?: Career[]
 ): NodeStyleIcon {
   let icon = "";

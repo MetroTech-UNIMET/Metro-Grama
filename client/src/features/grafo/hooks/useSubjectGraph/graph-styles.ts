@@ -4,8 +4,9 @@ import { getNormalIcon, getCustomIconProps } from "./functions";
 import useLazyGraphIcons from "../../../../hooks/lazy-loading/use-LazyGraphIcons";
 
 import type { Subject } from "@/interfaces/Subject";
-import type { Option as DropdownOption } from "@ui/derived/multidropdown";
+import type { Option } from "@ui/types";
 import type { Career } from "@/interfaces/Career";
+import type { Node4j } from "@/interfaces/Graph";
 
 import "@antv/graphin-icons/dist/index.css";
 
@@ -37,10 +38,7 @@ export const edgeStyle = {
   },
 };
 
-export function useNodeStyle(
-  selectedCareers: DropdownOption[],
-  careers?: Career[]
-) {
+export function useNodeStyle(selectedCareers: Option[], careers?: Career[]) {
   const { icons, ...query } = useLazyGraphIcons();
 
   const getNodeStyle = useCallback(

@@ -3,12 +3,12 @@ export interface Node4j<T> {
   data: T;
 }
 
-interface Edge {
+export interface Edge {
   from: string;
   to: string;
 }
 
-interface Graph<T> {
+export interface Graph<T> {
   nodes: Node4j<T>[];
   edges: Edge[];
 }

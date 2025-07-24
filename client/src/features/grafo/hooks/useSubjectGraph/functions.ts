@@ -1,18 +1,11 @@
+import { idToSurrealId } from "@utils/queries";
+
 import type { Subject } from "@/interfaces/Subject";
 import type { NodeStyleIcon } from "@antv/graphin/lib/typings/type";
 import type { NodeStatuses } from "@/features/grafo/behaviors/StatusActions";
 import type { Option } from "@ui/types";
 import type { Career } from "@/interfaces/Career";
-
-export function careerEmoji(career: string): string {
-  switch (career) {
-    case "career:quimica":
-      return "🧪";
-    case "career:sistemas":
-      return "💾";
-  }
-  return "";
-}
+import type { Node4j } from "@/interfaces/Graph";
 
 /**
  * Returns the NodeStyleIcon for a given subject and selected careers.
@@ -26,12 +19,12 @@ export function getNormalIcon(
   careers?: Career[]
 ): NodeStyleIcon {
   let icon = "";
-  
+
   if (subject.careers.length > 1) {
     icon = "🤝";
     for (let i = 0; i < subject.careers.length; i++) {
-      
-      const emoji =  careers?.find((c) => c.id.ID === subject.careers[i].ID)?.emoji ?? "🛠️"
+      const emoji =
+        careers?.find((c) => c.id.ID === subject.careers[i].ID)?.emoji ?? "🛠️";
       if (i == 0) {
         icon += "\n\r" + emoji + " ";
         continue;
@@ -40,11 +33,14 @@ export function getNormalIcon(
     }
   } else {
     const career = selectedCareers.find(
-      (option) => option.query === `${subject.careers[0].Table}:${subject.careers[0].ID}`
+      (option) =>
+        option.value ===
+        idToSurrealId(subject.careers[0].ID, subject.careers[0].Table)
     );
-    
-    icon = careers?.find((c) => c.name === career?.value)?.emoji ?? "🛠️"
-    
+
+    icon =
+      careers?.find((c) => idToSurrealId(c.id.ID, c.id.Table) === career?.value)
+        ?.emoji ?? "🛠️";
   }
 
   return {

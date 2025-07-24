@@ -30,7 +30,7 @@ type SubjectForm struct {
 }
 
 type SubjectNode struct {
-	Code      string                   `json:"code"`
+	Code      surrealModels.RecordID   `json:"code"`
 	Name      string                   `json:"name"`
 	Careers   []surrealModels.RecordID `json:"careers"`
 	Credits   uint8                    `json:"credits"`

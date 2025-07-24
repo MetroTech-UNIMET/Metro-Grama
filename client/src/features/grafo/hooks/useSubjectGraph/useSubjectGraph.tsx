@@ -18,14 +18,14 @@ import { edgeStyle, useNodeStyle } from "./graph-styles";
 import type { GraphinData } from "@antv/graphin";
 import type { AxiosError } from "axios";
 import type { Subject } from "@/interfaces/Subject";
-import type { Option as DropdownOption } from "@ui/types";
+import type { Option } from "@ui/types";
 import type { NodeStatuses } from "@/features/grafo/behaviors/StatusActions";
 import type { Career } from "@/interfaces/Career";
 import type { Graph, Node4j } from "@/interfaces/Graph";
 
 export default function useSubjectGraph(
   data: Graph<Subject> | undefined,
-  selectedCareers: DropdownOption[]
+  selectedCareers: Option[]
 ) {
   const { data: careers } = useQuery<Career[]>({
     queryKey: ["careers"],

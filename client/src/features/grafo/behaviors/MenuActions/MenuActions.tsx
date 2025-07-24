@@ -40,8 +40,10 @@ function MenuNode({ node }: MenuNodeProps) {
   const { user } = useAuth();
   const { enrollMutation, unenrollMutation } = useEnrollmentMutations();
 
-  const subjectCode = node._cfg?.model?.data.data.code.ID;
-  const subjectName = node._cfg?.model?.data.data.name;
+  const subject = (node._cfg?.model?.data).data;
+
+  const subjectCode = subject.code.ID;
+  const subjectName = subject.name;
 
   function markViewed(node: INode) {
     // TODO - Refactorizar logica de no cambiar el state a menos que haya sido exitoso
@@ -81,13 +83,7 @@ function MenuNode({ node }: MenuNodeProps) {
           ? "Desmarcar como materia vista"
           : "Marcar como materia vista"}
       </ContextMenuItem>
-      <ContextMenuItem
-        onClick={() => {
-          const subject = (node._cfg?.model?.data as Node4j<Subject>).data;
-          selectSubject(subject);
-          // close();
-        }}
-      >
+      <ContextMenuItem onClick={() => selectSubject(subject)}>
         Ver detalles
       </ContextMenuItem>
     </ContextMenuContent>

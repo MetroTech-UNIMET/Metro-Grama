@@ -1,7 +1,9 @@
 import { createContext, useContext, useState } from "react";
-import { INode, IEdge } from "@antv/g6";
 import { getNodesFromEdges } from "@/lib/utils/graph";
-import { Subject } from "@/interfaces/Subject";
+
+import type { INode, IEdge } from "@antv/g6";
+import type { Subject } from "@/interfaces/Subject";
+import type { Node4j } from "@/interfaces/Graph";
 
 export type nodeCustomState = "accesible" | "viewed";
 export type edgeCustomState = "future" | "prelation" | "prelation-viewed";

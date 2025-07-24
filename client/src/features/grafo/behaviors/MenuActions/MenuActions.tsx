@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
-import { useSubjectSheet } from "@/features/grafo/SubjectSheet";
-import { useStatusActions } from "./StatusActions";
-import { enrollStudent, unenrollStudent } from "@/api/interactions/enrollApi";
+import { useEnrollmentMutations } from "./mutations/use-enrollment-mutations";
+import { useStatusActions } from "../StatusActions";
 
+import { useSubjectSheet } from "@/features/grafo/SubjectSheet";
 import { useAuth } from "@/contexts/AuthenticationContext";
 import { useLazyGraphinContext } from "@/hooks/lazy-loading/use-LazyGraphin";
 
@@ -15,12 +15,12 @@ import {
   ContextMenuTrigger,
 } from "@ui/context-menu";
 import { CardTitle } from "@ui/card";
-import { useMutation } from "@tanstack/react-query";
 
 import type { INode } from "@antv/g6";
 import type { Subject } from "@/interfaces/Subject";
 import type { IG6GraphEvent } from "@antv/graphin";
 import type { Node4j } from "@/interfaces/Graph";
+import { Spinner } from "@ui/spinner";
 
 interface SubjectNode extends INode {
   _cfg: {
@@ -31,88 +31,28 @@ interface SubjectNode extends INode {
 }
 
 interface MenuNodeProps {
-  node: SubjectNode | null;
-  close: () => void;
+  node: SubjectNode;
 }
 
-function MenuNode({ node, close }: MenuNodeProps) {
+function MenuNode({ node }: MenuNodeProps) {
   const { selectSubject } = useSubjectSheet();
   const { nodeActions } = useStatusActions();
   const { user } = useAuth();
-
-  const graphinContext = useLazyGraphinContext();
-
-  const enrollMutation = useMutation({
-    mutationFn: (viewedNodes: string[]) => enrollStudent(viewedNodes),
-
-    //@ts-ignore TODO - Agregar custom error
-    onError: (error, viewedNodes) => {
-      viewedNodes.reverse().forEach((id) => {
-        if (!graphinContext) return;
-        const { graph } = graphinContext;
-
-        const node = graph.findById(id) as INode;
-        nodeActions.disableViewedNode(node, node.getOutEdges());
-      });
-
-      toast.error("Error al marcar materia vista", {
-        description: "Intente de nuevo más tarde",
-        action: {
-          label: "Intente de nuevo",
-          onClick: () => enrollMutation.mutateAsync(viewedNodes),
-        },
-      });
-    },
-    onSuccess: () => {
-      toast.success("Materias marcadas exitosamente", {
-        description: "Sus materias se guardaron en la base de datos",
-      });
-    },
-  });
-
-  const unenrollMutation = useMutation({
-    mutationFn: (viewedNodes: string[]) => unenrollStudent(viewedNodes),
-
-    //@ts-ignore TODO - Agregar custom error
-    onError: (error, viewedNodes) => {
-      viewedNodes.forEach((id) => {
-        if (!graphinContext) return;
-        const { graph } = graphinContext;
-
-        const node = graph.findById(id) as INode;
-        nodeActions.enableViewedNode(node);
-      });
-
-      toast.error("Error al desmarcar materia vista", {
-        description: "Intente de nuevo más tarde",
-        action: {
-          label: "Intente de nuevo",
-          onClick: () => unenrollMutation.mutateAsync(viewedNodes),
-        },
-      });
-    },
-    onSuccess: () => {
-      toast("Materias desmarcadas exitosamente", {
-        description: "Sus materias se guardaron en la base de datos",
-      });
-    },
-  });
-
-  if (!node) return null;
+  const { enrollMutation, unenrollMutation } = useEnrollmentMutations();
 
   const subjectCode = node._cfg?.model?.data.data.code.ID;
   const subjectName = node._cfg?.model?.data.data.name;
 
-  async function markViewed(node: INode) {
+  function markViewed(node: INode) {
     // TODO - Refactorizar logica de no cambiar el state a menos que haya sido exitoso
     const { nodes, enabled } = nodeActions.enableViewedNode(node);
     const viewedNodes = Array.from(nodes);
 
     if (user) {
       if (enabled) {
-        await enrollMutation.mutateAsync(viewedNodes);
+        enrollMutation.mutate(viewedNodes);
       } else {
-        await unenrollMutation.mutateAsync(viewedNodes);
+        unenrollMutation.mutate(viewedNodes);
       }
     } else {
       toast(`Materias ${enabled ? "marcadas" : "desmarcadas"} exitosamente`, {
@@ -121,8 +61,6 @@ function MenuNode({ node, close }: MenuNodeProps) {
         className: "flex flex-col items-baseline space-x-0",
       });
     }
-
-    close();
   }
 
   return (
@@ -130,7 +68,15 @@ function MenuNode({ node, close }: MenuNodeProps) {
       <CardTitle className="px-2 py-1 text-sm font-semibold border-b border-muted">
         {subjectCode} - {subjectName}
       </CardTitle>
-      <ContextMenuItem onClick={() => markViewed(node)}>
+      <ContextMenuItem
+        onClick={() => markViewed(node)}
+        disabled={enrollMutation.isPending || unenrollMutation.isPending}
+      >
+        <Spinner
+          size="small"
+          show={enrollMutation.isPending || unenrollMutation.isPending}
+        />
+
         {node?.hasState("viewed")
           ? "Desmarcar como materia vista"
           : "Marcar como materia vista"}
@@ -139,7 +85,7 @@ function MenuNode({ node, close }: MenuNodeProps) {
         onClick={() => {
           const subject = (node._cfg?.model?.data as Node4j<Subject>).data;
           selectSubject(subject);
-          close();
+          // close();
         }}
       >
         Ver detalles
@@ -150,9 +96,7 @@ function MenuNode({ node, close }: MenuNodeProps) {
 
 const longTouchDuration = 1000;
 
-// REVIEW - Considerar hacer focus en el nodo al abrir el menu
-// TODO - Mejor manejo de posición como si fuera un tooltip
-export default function MenuActions() {
+export function MenuActions() {
   const graphinContext = useLazyGraphinContext();
 
   const [node, setNode] = useState<SubjectNode | null>(null);
@@ -183,30 +127,19 @@ export default function MenuActions() {
     }
 
     function handleNodeTouchStart(e: IG6GraphEvent) {
-      globalBlur();
-
       timerRef.current = setTimeout(() => {
         handleOpenContextMenu(e);
       }, longTouchDuration);
     }
 
     function handleNodeTouchMove(e: IG6GraphEvent) {
-      globalBlur();
-
       clearTimerRef();
       handleNodeTouchStart(e);
     }
 
     function handleNodeTouchEnd(shouldClose = false) {
-      globalBlur();
-
       clearTimerRef();
       if (shouldClose) close();
-    }
-
-    function close_Blur() {
-      globalBlur();
-      close();
     }
 
     graph.on("node:contextmenu", handleOpenContextMenu);
@@ -215,13 +148,9 @@ export default function MenuActions() {
     graph.on("node:touchmove", handleNodeTouchMove);
     graph.on("node:touchend", handleNodeTouchEnd);
 
-    graph.on("canvas:click", close_Blur);
-    graph.on("canvas:drag", close_Blur);
-    graph.on("canvas:touchstart", close_Blur);
-
-    // document.addEventListener("click", globalClickCloseMenu);
-    // TODO - Add event listener on zoom to close
-    // TODO - Add event listener on element not in graph to close
+    graph.on("canvas:click", close);
+    graph.on("canvas:drag", close);
+    graph.on("canvas:touchstart", close);
 
     return () => {
       graph.off("node:contextmenu", handleOpenContextMenu);
@@ -256,18 +185,7 @@ export default function MenuActions() {
         <div ref={hiddenTriggerRef} />
       </ContextMenuTrigger>
 
-      <MenuNode node={node} close={close} />
-      {/* <div
-        className={cn("absolute", !node && "hidden")}
-        style={{
-          top: position.y,
-          left: position.x,
-        }}
-      >
-      </div> */}
+      {node && <MenuNode node={node} />}
     </>
   );
-}
-function globalBlur() {
-  (document.activeElement as HTMLElement)?.blur();
 }

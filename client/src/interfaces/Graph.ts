@@ -1,4 +1,4 @@
-interface Node4j<T> {
+export interface Node4j<T> {
   id: string;
   data: T;
 }

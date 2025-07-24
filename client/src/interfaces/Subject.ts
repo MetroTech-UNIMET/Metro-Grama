@@ -1,7 +1,7 @@
 import { Id } from "./surrealDb";
 
 export interface Subject {
-  code: string;
+  code: Id;
   name: string;
   careers: Id[];
   credits: number;

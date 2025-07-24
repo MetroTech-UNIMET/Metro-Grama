@@ -2,7 +2,6 @@ package careers
 
 import (
 	"fmt"
-	"metrograma/middlewares"
 	"metrograma/models"
 	"metrograma/modules/careers/services"
 	"metrograma/tools"
@@ -10,16 +9,18 @@ import (
 
 	"github.com/labstack/echo/v4"
 	surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
+	authMiddlewares "metrograma/modules/auth/middlewares"
+
 )
 
 func Handlers(e *echo.Group) {
 	careersGroup := e.Group("/careers")
 	careersGroup.GET("/", getCareers)
-	careersGroup.POST("/", createCareer, middlewares.AdminAuth)
-	careersGroup.DELETE("/:careerId", deleteCareer, middlewares.AdminAuth)
+	careersGroup.POST("/", createCareer, authMiddlewares.AdminAuth)
+	careersGroup.DELETE("/:careerId", deleteCareer, authMiddlewares.AdminAuth)
 
 	careersGroup.GET("/withSubjects/:careerId", getCareerWithSubjectsById)
-	// careersGroup.PATCH("/withSubjects/:careerId", updateCareerWithSubjects, middlewares.AdminAuth)
+	// careersGroup.PATCH("/withSubjects/:careerId", updateCareerWithSubjects, authMiddlewares.AdminAuth)
 }
 
 func getCareers(c echo.Context) error {

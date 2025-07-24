@@ -2,7 +2,6 @@ package subjects
 
 import (
 	"fmt"
-	"metrograma/middlewares"
 	"metrograma/models"
 	"metrograma/modules/subjects/services"
 	"metrograma/tools"
@@ -10,13 +9,15 @@ import (
 
 	"github.com/labstack/echo/v4"
 	surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
+	authMiddlewares "metrograma/modules/auth/middlewares"
+
 )
 
 func Handlers(e *echo.Group) {
 	subjectsGroup := e.Group("/subjects")
-	subjectsGroup.GET("/", getSubjects, middlewares.AdminAuth)
+	subjectsGroup.GET("/", getSubjects)
 	subjectsGroup.GET("/graph/", getSubjectsGraph)
-	subjectsGroup.POST("/", createSubject, middlewares.AdminAuth)
+	subjectsGroup.POST("/", createSubject, authMiddlewares.AdminAuth)
 }
 
 func getSubjects(c echo.Context) error {

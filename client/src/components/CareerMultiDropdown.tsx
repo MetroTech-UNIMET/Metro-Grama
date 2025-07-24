@@ -1,25 +1,30 @@
-import MultipleSelector, { Option } from "@ui/derived/multidropdown";
+import MultipleSelector, {
+  type MultipleSelectorProps,
+} from "@ui/derived/multidropdown";
 import { Spinner } from "@ui/spinner";
-import useFetchCareersOptions, {
-  CareerOption,
-} from "@/hooks/use-FetchCareersOptions";
+import useFetchCareersOptions from "@/hooks/queries/use-FetchCareersOptions";
+import { cn } from "@utils/className";
 
-interface Props {
-  loadingSubjects: boolean;
-  value: CareerOption[];
-  onChange: (value: CareerOption[]) => void;
+import type { Option } from "@ui/types";
+
+interface Props extends Omit<MultipleSelectorProps, "options"> {
+  loadingSubjects?: boolean;
+  value: Option[];
   maxSelected?: number;
 }
 
 // FIXME - Width del input no se ajusta al tamaño cuando hay una sola badge
 export function CareerMultiDropdown({
-  loadingSubjects,
+  loadingSubjects = false,
   value,
   onChange,
   maxSelected = 2,
+  className,
+  ...props
 }: Props) {
   const { options, isLoading, error } = useFetchCareersOptions();
 
+  value;
   return (
     <div className="relative max-w-sm w-full">
       <MultipleSelector
@@ -50,7 +55,8 @@ export function CareerMultiDropdown({
           className: "w-auto",
         }}
         badgeClassName="bg-blue-200 hover:bg-blue-300 text-black"
-        className="bg-gray-200"
+        className={cn("bg-gray-200", className)}
+        {...props}
       />
     </div>
   );

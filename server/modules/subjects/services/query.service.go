@@ -10,6 +10,7 @@ import (
 	"text/template"
 
 	"github.com/surrealdb/surrealdb.go"
+	surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
 )
 
 func useGetSubjectsQuery(careers string) (*[]surrealdb.QueryResult[[]models.SubjectsByCareers], error) {
@@ -17,8 +18,8 @@ func useGetSubjectsQuery(careers string) (*[]surrealdb.QueryResult[[]models.Subj
 	SELECT
 	in as subject,
 	array::group(out) as careers,
- 	array::group(in->precede.out$prelationsConditions) as prelations	
- 	FROM belong
+  array::group(in->precede.out$prelationsConditions) as prelations	
+  FROM belong
 	$condition
 	GROUP BY subject
 	FETCH subject;
@@ -42,16 +43,16 @@ func useGetSubjectsQuery(careers string) (*[]surrealdb.QueryResult[[]models.Subj
 }
 
 const getSubjectsQueryTemplate = `SELECT id as code, name, BPCredits, credits, 
-    id->belong.out as careers
+    ->belong->career as careers
     FROM subject
     {{if .CareersNotEmpty}}
-    WHERE array::intersect(id->belong.out, $careers) != []
+    WHERE array::intersect(->belong->career, $careers) != []
     {{end}}`
 
 func GetSubjects(careers string) ([]models.SubjectNode, error) {
-	careersArray := []string{}
+	careersArray := []surrealModels.RecordID{}
 	if careers != "none" {
-		careersArray = tools.StringToArray(careers)
+		careersArray = tools.StringToIdArray(careers)
 	}
 	careersNotEmpty := len(careersArray) > 0
 
@@ -71,6 +72,7 @@ func GetSubjects(careers string) ([]models.SubjectNode, error) {
 	}
 
 	query := queryBuffer.String()
+
 	queryParams := map[string]any{
 		"careers": careersArray,
 	}
@@ -78,6 +80,7 @@ func GetSubjects(careers string) ([]models.SubjectNode, error) {
 	result, err := surrealdb.Query[[]models.SubjectNode](db.SurrealDB, query, queryParams)
 
 	if err != nil {
+		fmt.Println(err)
 		return []models.SubjectNode{}, err
 	}
 
@@ -114,7 +117,7 @@ func GetSubjectsGraph(careers string) (models.Graph[models.SubjectNode], error) 
 		nodes[i] = models.Node[models.SubjectNode]{
 			ID: subject.ID.String(),
 			Data: models.SubjectNode{
-				Code:      subject.ID.ID.(string),
+				Code:      subject.ID,
 				Name:      subject.Name,
 				Careers:   subjectByCareer.Careers,
 				Credits:   subject.Credits,
@@ -134,4 +137,4 @@ func GetSubjectsGraph(careers string) (models.Graph[models.SubjectNode], error) 
 		Nodes: nodes,
 		Edges: edges,
 	}, nil
-} 
+}

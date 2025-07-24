@@ -1,5 +1,5 @@
 import SearchPrelations from "./behaviors/Search-Prelations";
-import MenuActions from "./behaviors/MenuActions";
+import { MenuActions } from "./behaviors/MenuActions";
 import UpdateNodeStatusOnGraphChange from "./behaviors/Update-Node-Status-OnGraphChange";
 import CreditsMenu from "./behaviors/CreditsMenu";
 // import SideBarGraph from "./SideBarGraph";
@@ -9,13 +9,13 @@ import { CareerMultiDropdown } from "@components/CareerMultiDropdown";
 
 import { Spinner } from "@ui/spinner";
 import GoogleLogin from "@ui/derived/GoogleLogin";
+import { ContextMenu } from "@ui/context-menu";
 
 import useSubjectGraph from "@/features/grafo/hooks/useSubjectGraph/useSubjectGraph";
 import useFecthSubjectsGraphByCareer from "@/hooks/queries/subject/use-FecthSubjectsGraphByCareer";
 import useLazyGraphin from "@/hooks/lazy-loading/use-LazyGraphin";
 
 import type { AxiosError } from "axios";
-import { ContextMenu } from "@ui/context-menu";
 
 export default function Graph() {
   const { data, error, isLoading, selectedCareers, setSelectedCareers } =

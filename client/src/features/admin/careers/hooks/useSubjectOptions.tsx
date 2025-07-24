@@ -1,10 +1,11 @@
 import { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 
-import { getSubjects } from "@/api/subjectsAPI";
+import { useFetchSubjects } from "@/hooks/queries/subject/use-FetchSubjects";
+
 import type { Subject } from "@/interfaces/Subject";
-import type { Option } from "@ui/derived/multidropdown";
+import type { Option } from "@ui/types";
 
+// TODO - Eliminar y usar el T Data de Option
 export interface CodeOption {
   value: string;
   label: string;
@@ -15,16 +16,14 @@ export type SubjectNameCode = Pick<Subject, "name" | "code">;
 
 // TODO función para añadir más opciones a medida que se popule
 export default function useSubjectOptions() {
-  const { data: subjects, ...query } = useQuery({
-    queryKey: ["subjects"],
-    queryFn: () => getSubjects("none"),
-  });
+  const { data: subjects, ...query } = useFetchSubjects();
 
-
-  const [additionalSubjects, setAdditionalSubjects] = useState<Record<string, SubjectNameCode>>({});
+  const [additionalSubjects, setAdditionalSubjects] = useState<
+    Record<string, SubjectNameCode>
+  >({});
 
   function addAdditionalSubject(subject: SubjectNameCode) {
-    setAdditionalSubjects((prev) => ({ ...prev, [subject.code]: subject }));
+    setAdditionalSubjects((prev) => ({ ...prev, [subject.code.ID]: subject }));
   }
 
   function removeAdditionalSubject(code: string) {
@@ -56,8 +55,8 @@ function generateOptions(
   const codeOptions: CodeOption[] = [];
 
   subjects.forEach((subject) => {
-    const code = subject.code.split(":")[1];
-    const label = `(${code}) - ${subject.name}`
+    const code = subject.code.ID.split(":")[1];
+    const label = `(${code}) - ${subject.name}`;
 
     prelationsOptions.push({
       label,

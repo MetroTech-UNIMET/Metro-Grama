@@ -65,5 +65,5 @@ export function useEnrollmentMutations() {
     },
   });
 
-  return {enrollMutation,unenrollMutation}
+  return { enrollMutation, unenrollMutation };
 }

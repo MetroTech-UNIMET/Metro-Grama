@@ -1,4 +1,6 @@
 import axios from "@/axiosConfig";
+
+import type { Graph } from "@/interfaces/Graph";
 import type { Subject } from "@/interfaces/Subject";
 
 export async function getSubjectsGraph(
@@ -15,10 +17,7 @@ export async function getSubjectsGraph(
   return response.data;
 }
 
-export async function getSubjects(
-  careerParam: string
-): Promise<Subject[]> {
-
+export async function getSubjects(careerParam: string): Promise<Subject[]> {
   const response = await axios.get("/subjects/", {
     params: {
       careers: careerParam,

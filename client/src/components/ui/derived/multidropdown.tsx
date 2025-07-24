@@ -1,32 +1,34 @@
-import React, { useEffect, forwardRef } from "react";
-import { Command as CommandPrimitive, useCommandState } from "cmdk";
-import { X } from "lucide-react";
+import React, { useEffect, forwardRef } from 'react';
+import { Command as CommandPrimitive, useCommandState } from 'cmdk';
+import { X } from 'lucide-react';
 
-import { cn } from "@utils/className";
-import useDebounce from "@/hooks/useDebounceValue";
+import { cn } from '@/lib/utils/className';
+import useDebounce from '@/hooks/useDebounceValue';
 
-import { Badge } from "@ui/badge";
-import { Command, CommandGroup, CommandItem, CommandList } from "@ui/command";
 import { Spinner } from "@ui/spinner";
+import { Badge } from '@/components/ui/badge';
+import { Command, CommandGroup, CommandItem, CommandList } from '@/components/ui/command';
+import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
-export interface Option {
-  value: string;
-  label: string;
-  disable?: boolean;
-  /** fixed option that can't be removed. */
-  fixed?: boolean;
-  /** Group the options by providing key. */
-  [key: string]: string | boolean | undefined;
-}
-interface GroupOption {
-  [key: string]: Option[];
+import type { Option, GroupOption } from '../types';
+import { transToGroupOption } from '../utils/options';
+
+interface CommonProps {
+  id?: string;
+  readOnly?: boolean;
+  required?: boolean;
 }
 
-interface MultipleSelectorProps {
-  value?: Option[];
-  defaultOptions?: Option[];
+export interface MultipleSelectorProps<
+  TValue extends string | number = string | number,
+  TData = undefined,
+> extends CommonProps {
+  ref?: React.Ref<MultipleSelectorRef<TValue, TData>>;
+  value?: Option<TValue, TData>[];
+
+  defaultOptions?: Option<TValue, TData>[];
   /** manually controlled options */
-  options?: Option[];
+  options?: Option<TValue, TData>[];
   placeholder?: string;
 
   /** Use if fetching options async and want to show a loading state */
@@ -43,8 +45,8 @@ interface MultipleSelectorProps {
    **/
   triggerSearchOnFocus?: boolean;
   /** async search */
-  onSearch?: (value: string) => Promise<Option[]>;
-  onChange?: (options: Option[]) => void;
+  onSearch?: (value: string) => Promise<Option<TValue, TData>[]>;
+  onChange?: (options: Option<TValue, TData>[]) => void;
   /** Limit the maximum number of selected options. */
   maxSelected?: number;
   /** When the number of selected options exceeds the limit, the onMaxSelected will be called. */
@@ -56,7 +58,7 @@ interface MultipleSelectorProps {
   groupBy?: string;
   className?: string;
   badgeClassName?: string;
-  listRelativeContainerClassName?: string;
+  listClassName?: string;
   /**
    * First item selected is a default behavior by cmdk. That is why the default is true.
    * This is a workaround solution by add a dummy item.
@@ -71,45 +73,29 @@ interface MultipleSelectorProps {
   /** Props of `CommandInput` */
   inputProps?: Omit<
     React.ComponentPropsWithoutRef<typeof CommandPrimitive.Input>,
-    "value" | "placeholder" | "disabled"
+    'value' | 'placeholder' | 'disabled'
   >;
 
+  popoverContainer?: HTMLElement;
   showSpinner?: boolean;
 }
 
-export interface MultipleSelectorRef {
-  selectedValue: Option[];
+export interface MultipleSelectorRef<
+  TValue extends string | number = string | number,
+  TData = undefined,
+> {
+  selectedValue: Option<TValue, TData>[];
   input: HTMLInputElement;
 }
 
-function transToGroupOption(options: Option[], groupBy?: string) {
-  if (options.length === 0) {
-    return {};
-  }
-  if (!groupBy) {
-    return {
-      "": options,
-    };
-  }
-
-  const groupOption: GroupOption = {};
-  options.forEach((option) => {
-    const key = (option[groupBy] as string) || "";
-    if (!groupOption[key]) {
-      groupOption[key] = [];
-    }
-    groupOption[key].push(option);
-  });
-  return groupOption;
-}
-
-function removePickedOption(groupOption: GroupOption, picked: Option[]) {
-  const cloneOption = JSON.parse(JSON.stringify(groupOption)) as GroupOption;
+function removePickedOption<TValue extends string | number = string | number, TData = undefined>(
+  groupOption: GroupOption<TValue, TData>,
+  picked: Option<TValue, TData>[],
+) {
+  const cloneOption = JSON.parse(JSON.stringify(groupOption)) as GroupOption<TValue, TData>;
 
   for (const [key, value] of Object.entries(cloneOption)) {
-    cloneOption[key] = value.filter(
-      (val) => !picked.find((p) => p.value === val.value)
-    );
+    cloneOption[key] = value.filter((val) => !picked.find((p) => p.value === val.value));
   }
   return cloneOption;
 }
@@ -131,7 +117,8 @@ const CommandEmpty = forwardRef<
   return (
     <div
       ref={forwardedRef}
-      className={cn("py-6 text-center text-sm", className)}
+      className={cn('py-6 text-center text-sm', className)}
+      // eslint-disable-next-line react/no-unknown-property -- temp fix for cmdk
       cmdk-empty=""
       role="presentation"
       {...props}
@@ -139,370 +126,360 @@ const CommandEmpty = forwardRef<
   );
 });
 
-CommandEmpty.displayName = "CommandEmpty";
+CommandEmpty.displayName = 'CommandEmpty';
 
-// FIXME - Al parecer hay problemas con el forwardRef
-// Por lo que no detecta el touched cuando es Controlled
-// O no hace focus cuando hay un error en el form
-const MultipleSelector = React.forwardRef<
-  MultipleSelectorRef,
-  MultipleSelectorProps
->(
-  (
-    {
-      value,
-      onChange,
-      placeholder,
-      defaultOptions: arrayDefaultOptions = [],
-      options: arrayOptions,
-      delay,
-      onSearch,
-      loadingOptions,
-      loadingIndicator,
-      emptyIndicator,
-      maxSelected = Number.MAX_SAFE_INTEGER,
-      onMaxSelected,
-      hidePlaceholderWhenSelected,
-      disabled,
-      groupBy,
-      className,
-      badgeClassName,
-      listRelativeContainerClassName,
-      selectFirstItem = true,
-      creatable = false,
-      triggerSearchOnFocus = false,
-      commandProps,
-      inputProps,
-      showSpinner = false,
-    }: MultipleSelectorProps,
-    ref: React.Ref<MultipleSelectorRef>
-  ) => {
-    const inputRef = React.useRef<HTMLInputElement>(null);
-    const [open, setOpen] = React.useState(false);
-    const [isLoading, setIsLoading] = React.useState(loadingOptions || false);
+function MultipleSelector<TValue extends string | number = string | number, TData = undefined>({
+  ref,
+  value,
+  onChange,
+  placeholder,
+  defaultOptions: arrayDefaultOptions = [],
+  options: arrayOptions,
+  delay,
+  onSearch,
+  loadingOptions,
+  loadingIndicator,
+  emptyIndicator,
+  maxSelected = Number.MAX_SAFE_INTEGER,
+  onMaxSelected,
+  hidePlaceholderWhenSelected,
+  disabled,
+  groupBy,
+  className,
+  badgeClassName,
+  listClassName,
+  selectFirstItem = true,
+  creatable = false,
+  triggerSearchOnFocus = false,
+  commandProps,
+  inputProps,
+  showSpinner = false,
+  popoverContainer,
+}: MultipleSelectorProps<TValue, TData>) {
+  const inputRef = React.useRef<HTMLInputElement>(null);
+  const [open, setOpen] = React.useState(false);
+  const [inputIsFocused, setIsFocused] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(loadingOptions || false);
 
-    const [selected, setSelected] = React.useState<Option[]>(value || []);
-    const [options, setOptions] = React.useState<GroupOption>(
-      transToGroupOption(arrayDefaultOptions, groupBy)
-    );
-    const [inputValue, setInputValue] = React.useState("");
-    const debouncedSearchTerm = useDebounce(inputValue, delay || 500);
+  const [selected, setSelected] = React.useState<Option<TValue, TData>[]>(value || []);
+  const [options, setOptions] = React.useState<GroupOption<TValue, TData>>(
+    transToGroupOption<TValue, TData>(arrayDefaultOptions, groupBy),
+  );
+  const [inputValue, setInputValue] = React.useState('');
+  const debouncedSearchTerm = useDebounce(inputValue, delay || 500);
 
-    React.useImperativeHandle(
-      ref,
-      () => ({
-        selectedValue: [...selected],
-        input: inputRef.current as HTMLInputElement,
-      }),
-      [selected]
-    );
+  React.useImperativeHandle(
+    ref,
+    () => ({
+      selectedValue: [...selected],
+      input: inputRef.current as HTMLInputElement,
+      focus: () => inputRef.current?.focus(),
+    }),
+    [selected],
+  );
 
-    const handleUnselect = React.useCallback(
-      (option: Option) => {
-        const newOptions = selected.filter((s) => s.value !== option.value);
-        setSelected(newOptions);
-        onChange?.(newOptions);
-      },
-      [onChange, selected]
-    );
+  const handleUnselect = React.useCallback(
+    (option: Option<TValue, TData>) => {
+      const newOptions = selected.filter((s) => s.value !== option.value);
+      setSelected(newOptions);
+      onChange?.(newOptions);
+    },
+    [onChange, selected],
+  );
 
-    const handleKeyDown = React.useCallback(
-      (e: React.KeyboardEvent<HTMLDivElement>) => {
-        const input = inputRef.current;
-        if (input) {
-          if (e.key === "Delete" || e.key === "Backspace") {
-            if (input.value === "" && selected.length > 0) {
-              handleUnselect(selected[selected.length - 1]);
-            }
-          }
-          // This is not a default behaviour of the <input /> field
-          if (e.key === "Escape") {
-            input.blur();
+  const handleKeyDown = React.useCallback(
+    (e: React.KeyboardEvent<HTMLDivElement>) => {
+      const input = inputRef.current;
+      if (input) {
+        if (e.key === 'Delete' || e.key === 'Backspace') {
+          if (input.value === '' && selected.length > 0) {
+            handleUnselect(selected[selected.length - 1]);
           }
         }
-      },
-      [handleUnselect, selected]
-    );
-
-    useEffect(() => {
-      if (loadingOptions === undefined) return;
-      setIsLoading(loadingOptions);
-    }, [loadingOptions]);
-
-    useEffect(() => {
-      if (value) {
-        setSelected(value);
       }
-    }, [value]);
+    },
+    [handleUnselect, selected],
+  );
 
-    useEffect(() => {
-      /** If `onSearch` is provided, do not trigger options updated. */
-      if (!arrayOptions || onSearch) {
-        return;
-      }
-      const newOption = transToGroupOption(arrayOptions || [], groupBy);
-      if (JSON.stringify(newOption) !== JSON.stringify(options)) {
-        setOptions(newOption);
-      }
-    }, [arrayDefaultOptions, arrayOptions, groupBy, onSearch, options]);
+  useEffect(() => {
+    if (loadingOptions === undefined) return;
+    setIsLoading(loadingOptions);
+  }, [loadingOptions]);
 
-    useEffect(() => {
-      const doSearch = async () => {
-        setIsLoading(true);
-        const res = await onSearch?.(debouncedSearchTerm);
-        setOptions(transToGroupOption(res || [], groupBy));
-        setIsLoading(false);
-      };
+  useEffect(() => {
+    if (value) setSelected(value);
+  }, [value]);
 
-      const exec = async () => {
-        if (!onSearch || !open) return;
+  useEffect(() => {
+    /** If `onSearch` is provided, do not trigger options updated. */
+    if (!arrayOptions || onSearch) {
+      return;
+    }
+    const newOption = transToGroupOption<TValue, TData>(arrayOptions || [], groupBy);
+    if (JSON.stringify(newOption) !== JSON.stringify(options)) {
+      setOptions(newOption);
+    }
+  }, [arrayDefaultOptions, arrayOptions, groupBy, onSearch, options]);
 
-        if (triggerSearchOnFocus) {
-          await doSearch();
-        }
-
-        if (debouncedSearchTerm) {
-          await doSearch();
-        }
-      };
-
-      void exec();
-    }, [debouncedSearchTerm, groupBy, open, triggerSearchOnFocus]);
-
-    const CreatableItem = () => {
-      if (!creatable) return undefined;
-
-      const Item = (
-        <CommandItem
-          value={inputValue}
-          className="cursor-pointer"
-          onMouseDown={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-          }}
-          onSelect={(value: string) => {
-            if (selected.length >= maxSelected) {
-              onMaxSelected?.(selected.length);
-              return;
-            }
-            setInputValue("");
-            const newOptions = [...selected, { value, label: value }];
-            setSelected(newOptions);
-            onChange?.(newOptions);
-          }}
-        >{`Create "${inputValue}"`}</CommandItem>
-      );
-
-      // For normal creatable
-      if (!onSearch && inputValue.length > 0) {
-        return Item;
-      }
-
-      // For async search creatable. avoid showing creatable item before loading at first.
-      if (onSearch && debouncedSearchTerm.length > 0 && !isLoading) {
-        return Item;
-      }
-
-      return undefined;
+  useEffect(() => {
+    const doSearch = async () => {
+      setIsLoading(true);
+      const res = await onSearch?.(debouncedSearchTerm);
+      setOptions(transToGroupOption(res || [], groupBy));
+      setIsLoading(false);
     };
 
-    const EmptyItem = React.useCallback(() => {
-      if (!emptyIndicator) return undefined;
+    const exec = async () => {
+      if (!onSearch || !open) return;
 
-      // For async search that showing emptyIndicator
-      if (onSearch && !creatable && Object.keys(options).length === 0) {
-        return (
-          <CommandItem value="-" disabled>
-            {emptyIndicator}
-          </CommandItem>
-        );
+      if (triggerSearchOnFocus) {
+        await doSearch();
       }
 
-      return <CommandEmpty>{emptyIndicator}</CommandEmpty>;
-    }, [creatable, emptyIndicator, onSearch, options]);
+      if (debouncedSearchTerm) {
+        await doSearch();
+      }
+    };
 
-    const selectables = React.useMemo<GroupOption>(
-      () => removePickedOption(options, selected),
-      [options, selected]
+    void exec();
+  }, [debouncedSearchTerm, groupBy, open, triggerSearchOnFocus]);
+
+  const CreatableItem = () => {
+    if (!creatable) return undefined;
+
+    const Item = (
+      <CommandItem
+        value={inputValue}
+        className="cursor-pointer"
+        onMouseDown={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        }}
+        onSelect={(value: string) => {
+          if (selected.length >= maxSelected) {
+            onMaxSelected?.(selected.length);
+            return;
+          }
+          setInputValue('');
+          // REVIEW - Value siempre será un string
+          const newOptions = [
+            ...selected,
+            { value: value as any, label: value, data: undefined as TData },
+          ];
+          setSelected(newOptions);
+          onChange?.(newOptions);
+        }}
+      >{`Create "${inputValue}"`}</CommandItem>
     );
 
-    /** Avoid Creatable Selector freezing or lagging when paste a long string. */
-    const commandFilter = React.useCallback(() => {
-      if (commandProps?.filter) {
-        return commandProps.filter;
-      }
+    // For normal creatable
+    if (!onSearch && inputValue.length > 0) {
+      return Item;
+    }
 
-      if (creatable) {
-        return (value: string, search: string) => {
-          return value.toLowerCase().includes(search.toLowerCase()) ? 1 : -1;
-        };
-      }
-      // Using default filter in `cmdk`. We don't have to provide it.
-      return undefined;
-    }, [creatable, commandProps?.filter]);
+    // For async search creatable. avoid showing creatable item before loading at first.
+    if (onSearch && debouncedSearchTerm.length > 0 && !isLoading) {
+      return Item;
+    }
 
-    return (
+    return undefined;
+  };
+
+  const EmptyItem = React.useCallback(() => {
+    if (!emptyIndicator) return undefined;
+
+    // For async search that showing emptyIndicator
+    if (onSearch && !creatable && Object.keys(options).length === 0) {
+      return (
+        <CommandItem value="-" disabled>
+          {emptyIndicator}
+        </CommandItem>
+      );
+    }
+
+    return <CommandEmpty>{emptyIndicator}</CommandEmpty>;
+  }, [creatable, emptyIndicator, onSearch, options]);
+
+  const selectables = React.useMemo<GroupOption<TValue, TData>>(
+    () => removePickedOption(options, selected),
+    [options, selected],
+  );
+
+  /** Avoid Creatable Selector freezing or lagging when paste a long string. */
+  const commandFilter = React.useCallback(() => {
+    if (commandProps?.filter) {
+      return commandProps.filter;
+    }
+
+    if (creatable) {
+      return (value: string, search: string) => {
+        return value.toLowerCase().includes(search.toLowerCase()) ? 1 : -1;
+      };
+    }
+    // Using default filter in `cmdk`. We don't have to provide it.
+    return undefined;
+  }, [creatable, commandProps?.filter]);
+
+  return (
+    <Popover open={open || inputIsFocused} onOpenChange={setOpen}>
       <Command
         {...commandProps}
         onKeyDown={(e) => {
           handleKeyDown(e);
           commandProps?.onKeyDown?.(e);
         }}
-        className={cn(
-          "overflow-visible bg-transparent",
-          commandProps?.className
-        )}
+        className={cn('overflow-visible bg-transparent', commandProps?.className)}
         shouldFilter={
-          commandProps?.shouldFilter !== undefined
-            ? commandProps.shouldFilter
-            : !onSearch
-        } // When onSearch is provided, we don't want to filter the options. You can still override it.
+          commandProps?.shouldFilter !== undefined ? commandProps.shouldFilter : !onSearch
+        }
+        // When onSearch is provided, we don't want to filter the options. You can still override it.
         filter={commandFilter()}
       >
-        <div
-          className={cn(
-            "group rounded-md border border-input px-3 py-2 text-sm ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2",
-            className
-          )}
-        >
-          <div className="flex flex-wrap gap-1 w-full">
-            {selected.map((option) => {
-              return (
-                <Badge
-                  key={option.value}
-                  className={cn(
-                    "data-[disabled]:bg-muted-foreground data-[disabled]:text-muted data-[disabled]:hover:bg-muted-foreground",
-                    "data-[fixed]:bg-muted-foreground data-[fixed]:text-muted data-[fixed]:hover:bg-muted-foreground",
-                    badgeClassName
-                  )}
-                  data-fixed={option.fixed}
-                  data-disabled={disabled}
-                >
-                  {option.label}
-                  <button
+        <PopoverAnchor asChild>
+          <div
+            className={cn(
+              'border-input ring-offset-background group rounded-md border px-4 py-2.5 text-sm focus-within:ring-2 focus-within:ring-secondary focus-within:ring-offset-2',
+              className,
+            )}
+          >
+            <div className="flex w-full flex-wrap gap-1">
+              {selected.map((option) => {
+                return (
+                  <Badge
+                    key={option.value}
                     className={cn(
-                      "ml-1 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2",
-                      (disabled || option.fixed) && "hidden"
+                      'data-[disabled]:bg-muted-foreground data-[disabled]:text-muted data-[disabled]:hover:bg-muted-foreground',
+                      'data-[fixed]:bg-muted-foreground data-[fixed]:text-muted data-[fixed]:hover:bg-muted-foreground',
+                      badgeClassName,
                     )}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        handleUnselect(option);
-                      }
-                    }}
-                    onMouseDown={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                    }}
-                    onClick={() => handleUnselect(option)}
+                    data-fixed={option.fixed}
+                    data-disabled={disabled}
                   >
-                    <X className="h-3 w-3 text-muted-foreground hover:text-foreground" />
-                  </button>
-                </Badge>
-              );
-            })}
-            {/* Avoid having the "Search" Icon */}
-            <CommandPrimitive.Input
-              {...inputProps}
-              ref={inputRef}
-              value={inputValue}
-              disabled={disabled}
-              onValueChange={(value) => {
-                setInputValue(value);
-                inputProps?.onValueChange?.(value);
-              }}
-              onBlur={(event) => {
-                setOpen(false);
-                inputProps?.onBlur?.(event);
-              }}
-              onFocus={(event) => {
-                setOpen(true);
-                triggerSearchOnFocus && onSearch?.(debouncedSearchTerm);
-                inputProps?.onFocus?.(event);
-              }}
-              placeholder={
-                hidePlaceholderWhenSelected && selected.length !== 0
-                  ? ""
-                  : placeholder
-              }
-              className={cn(
-                "ml-2 flex-1 bg-transparent outline-none placeholder:text-muted-foreground w-full",
-                inputProps?.className
-              )}
-            />
-
-            <Spinner show={showSpinner} />
-          </div>
-        </div>
-
-        <div
-          className={cn(
-            "relative mt-2",
-            {
-              hidden: !open,
-            },
-            listRelativeContainerClassName
-          )}
-        >
-          {open && (
-            <CommandList className="absolute top-0 z-10 w-full rounded-md border bg-popover text-popover-foreground shadow-md outline-none animate-in">
-              {isLoading ? (
-                <>{loadingIndicator}</>
-              ) : (
-                <>
-                  {EmptyItem()}
-                  {CreatableItem()}
-                  {!selectFirstItem && (
-                    <CommandItem value="-" className="hidden" />
-                  )}
-                  {Object.entries(selectables).map(([key, dropdowns]) => (
-                    <CommandGroup
-                      key={key}
-                      heading={key}
-                      className="h-full overflow-auto"
+                    {option.label}
+                    <button
+                      className={cn(
+                        'ring-offset-background focus:ring-ring ml-1 rounded-full outline-none focus:ring-2 focus:ring-offset-2',
+                        (disabled || option.fixed) && 'hidden',
+                      )}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          handleUnselect(option);
+                        }
+                      }}
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                      }}
+                      onClick={() => handleUnselect(option)}
                     >
-                      <>
-                        {dropdowns.map((option) => {
-                          return (
-                            <CommandItem
-                              key={option.value}
-                              value={option.label}
-                              disabled={option.disable}
-                              onMouseDown={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                              }}
-                              onSelect={() => {
-                                if (selected.length >= maxSelected) {
-                                  onMaxSelected?.(selected.length);
-                                  return;
-                                }
-                                setInputValue("");
-                                const newOptions = [...selected, option];
-                                setSelected(newOptions);
-                                onChange?.(newOptions);
-                              }}
-                              className={cn(
-                                "cursor-pointer",
-                                option.disable &&
-                                  "cursor-default text-muted-foreground"
-                              )}
-                            >
-                              {option.label}
-                            </CommandItem>
-                          );
-                        })}
-                      </>
-                    </CommandGroup>
-                  ))}
-                </>
-              )}
-            </CommandList>
-          )}
-        </div>
-      </Command>
-    );
-  }
-);
+                      <X className="hover:text-foreground h-3 w-3 text-muted-foreground" />
+                    </button>
+                  </Badge>
+                );
+              })}
 
-MultipleSelector.displayName = "MultipleSelector";
+              <PopoverTrigger asChild>
+                <CommandPrimitive.Input
+                  {...inputProps}
+                  ref={inputRef}
+                  value={inputValue}
+                  disabled={disabled}
+                  onValueChange={(value) => {
+                    setInputValue(value);
+                    inputProps?.onValueChange?.(value);
+                  }}
+                  placeholder={
+                    hidePlaceholderWhenSelected && selected.length !== 0 ? '' : placeholder
+                  }
+                  className={cn(
+                    'ml-2 w-full flex-1 bg-transparent outline-none placeholder:text-muted-foreground',
+                    inputProps?.className,
+                  )}
+                  onFocus={(e) => {
+                    console.log('focus');
+                    triggerSearchOnFocus && onSearch?.(debouncedSearchTerm);
+                    setIsFocused(true);
+                    inputProps?.onFocus?.(e);
+                  }}
+                  onBlur={(e) => {
+                    console.log('blur');
+                    setIsFocused(false);
+                    inputProps?.onBlur?.(e);
+                  }}
+                />
+              </PopoverTrigger>
+
+              {showSpinner && <Spinner className="h-5 w-5" />}
+            </div>
+          </div>
+        </PopoverAnchor>
+
+        <PopoverContent
+          asChild
+          sideOffset={4}
+          onOpenAutoFocus={(e) => {
+            e.preventDefault();
+            inputRef.current?.focus();
+          }}
+          container={popoverContainer}
+        >
+          <CommandList
+            className={cn(
+              'w-[var(--radix-popper-anchor-width)] rounded-md border bg-popover p-1 text-popover-foreground shadow-md outline-none animate-in',
+              listClassName,
+            )}
+          >
+            {isLoading ? (
+              <>{loadingIndicator}</>
+            ) : (
+              <>
+                {EmptyItem()}
+                {CreatableItem()}
+                {!selectFirstItem && <CommandItem value="-" className="hidden" />}
+                {Object.entries(selectables).map(([key, dropdowns]) => (
+                  <CommandGroup key={key} heading={key} className="h-full overflow-auto">
+                    <>
+                      {dropdowns.map((option) => {
+                        return (
+                          <CommandItem
+                            key={option.value}
+                            value={option.label}
+                            disabled={option.disable}
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                            }}
+                            onSelect={() => {
+                              if (selected.length >= maxSelected) {
+                                onMaxSelected?.(selected.length);
+                                return;
+                              }
+                              setInputValue('');
+                              const newOptions = [...selected, option];
+
+                              setSelected(newOptions);
+                              onChange?.(newOptions);
+                            }}
+                            className={cn(
+                              'cursor-pointer',
+                              option.disable && 'cursor-default text-muted-foreground',
+                            )}
+                          >
+                            {option.label}
+                          </CommandItem>
+                        );
+                      })}
+                    </>
+                  </CommandGroup>
+                ))}
+              </>
+            )}
+          </CommandList>
+        </PopoverContent>
+      </Command>
+    </Popover>
+  );
+}
+
+MultipleSelector.displayName = 'MultipleSelector';
 export default MultipleSelector;

@@ -1,6 +1,5 @@
 import { useAuth } from "@/contexts/AuthenticationContext";
-import { AvatarImage } from "@radix-ui/react-avatar";
-import { Avatar, AvatarFallback } from "@ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@ui/avatar";
 import { Button } from "@ui/button";
 import { GoogleLink } from "@ui/link";
 import { Skeleton } from "@ui/skeleton";

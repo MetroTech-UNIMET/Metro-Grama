@@ -11,14 +11,14 @@ import { Spinner } from "@ui/spinner";
 import GoogleLogin from "@ui/derived/GoogleLogin";
 
 import useSubjectGraph from "@/features/grafo/hooks/useSubjectGraph/useSubjectGraph";
-import useFecthSubjectByCareer from "@/hooks/use-FecthSubjectByCareer";
+import useFecthSubjectsGraphByCareer from "@/hooks/queries/subject/use-FecthSubjectsGraphByCareer";
 import useLazyGraphin from "@/hooks/lazy-loading/use-LazyGraphin";
 
 import type { AxiosError } from "axios";
 
 export default function Graph() {
   const { data, error, isLoading, selectedCareers, setSelectedCareers } =
-    useFecthSubjectByCareer();
+    useFecthSubjectsGraphByCareer();
 
   const { graph } = useSubjectGraph(data, selectedCareers);
 

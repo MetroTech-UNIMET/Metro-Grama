@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 
 import { cn } from "@utils/className";
 import { useSubjectSheet } from "@/features/grafo/SubjectSheet";
@@ -9,17 +10,24 @@ import { useAuth } from "@/contexts/AuthenticationContext";
 import { useLazyGraphinContext } from "@/hooks/lazy-loading/use-LazyGraphin";
 
 import { ListContent, ListHeader, ListItem } from "@ui/list";
-import { toast } from "@ui/use-toast";
 import { GoogleLink } from "@ui/link";
 import { useMutation } from "@tanstack/react-query";
-import { ToastAction } from "@ui/toast";
 
 import type { INode } from "@antv/g6";
 import type { Subject } from "@/interfaces/Subject";
 import type { IG6GraphEvent } from "@antv/graphin";
+import type { Node4j } from "@/interfaces/Graph";
+
+interface SubjectNode extends INode {
+  _cfg: {
+    model: {
+      data: Node4j<Subject>;
+    };
+  };
+}
 
 interface MenuNodeProps {
-  node: INode | null;
+  node: SubjectNode | null;
   close: () => void;
 }
 
@@ -43,25 +51,17 @@ function MenuNode({ node, close }: MenuNodeProps) {
         nodeActions.disableViewedNode(node, node.getOutEdges());
       });
 
-      toast({
-        title: "Error al marcar materia vista",
+      toast.error("Error al marcar materia vista", {
         description: "Intente de nuevo más tarde",
-        variant: "destructive",
-        action: (
-          <ToastAction
-            altText="Intente de nuevo"
-            onClick={() => enrollMutation.mutateAsync(viewedNodes)}
-          >
-            Intente de nuevo
-          </ToastAction>
-        ),
+        action: {
+          label: "Intente de nuevo",
+          onClick: () => enrollMutation.mutateAsync(viewedNodes),
+        },
       });
     },
     onSuccess: () => {
-      toast({
-        title: "Materias marcadas exitosamente",
+      toast.success("Materias marcadas exitosamente", {
         description: "Sus materias se guardaron en la base de datos",
-        variant: "success",
       });
     },
   });
@@ -79,34 +79,24 @@ function MenuNode({ node, close }: MenuNodeProps) {
         nodeActions.enableViewedNode(node);
       });
 
-      toast({
-        title: "Error al desmarcar materia vista",
+      toast.error("Error al desmarcar materia vista", {
         description: "Intente de nuevo más tarde",
-        variant: "destructive",
-        action: (
-          <ToastAction
-            altText="Intente de nuevo"
-            onClick={() => unenrollMutation.mutateAsync(viewedNodes)}
-          >
-            Intente de nuevo
-          </ToastAction>
-        ),
+        action: {
+          label: "Intente de nuevo",
+          onClick: () => unenrollMutation.mutateAsync(viewedNodes),
+        },
       });
     },
     onSuccess: () => {
-      toast({
-        title: "Materias desmarcadas exitosamente",
+      toast("Materias desmarcadas exitosamente", {
         description: "Sus materias se guardaron en la base de datos",
-        variant: "success",
       });
     },
   });
 
   if (!node) return null;
 
-  //@ts-ignore
-  const subjectCode = node._cfg?.model?.data.data.code;
-  //@ts-ignore
+  const subjectCode = node._cfg?.model?.data.data.code.ID;
   const subjectName = node._cfg?.model?.data.data.name;
 
   async function markViewed(node: INode) {
@@ -121,8 +111,7 @@ function MenuNode({ node, close }: MenuNodeProps) {
         await unenrollMutation.mutateAsync(viewedNodes);
       }
     } else {
-      toast({
-        title: `Materias ${enabled ? "marcadas" : "desmarcadas"} exitosamente`,
+      toast(`Materias ${enabled ? "marcadas" : "desmarcadas"} exitosamente`, {
         description: "Si quiere que persista al volver a abrir, inicie sesión",
         action: <GoogleLink className="mt-2" />,
         className: "flex flex-col items-baseline space-x-0",
@@ -162,7 +151,7 @@ const longTouchDuration = 1000;
 export default function MenuActions() {
   const graphinContext = useLazyGraphinContext();
 
-  const [node, setNode] = useState<INode | null>(null);
+  const [node, setNode] = useState<SubjectNode | null>(null);
   const [position, setPosition] = useState({ x: 0, y: 0 });
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -178,7 +167,7 @@ export default function MenuActions() {
       if (!item) return;
 
       setPosition({ x: e.canvasX, y: e.canvasY });
-      setNode(item as INode);
+      setNode(item as SubjectNode);
     }
 
     function handleNodeTouchStart(e: IG6GraphEvent) {

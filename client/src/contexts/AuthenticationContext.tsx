@@ -4,11 +4,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { logOutGoogle } from "@/api/authApi";
 import { getUserProfile } from "@/api/usersApi";
 
-import { toast } from "@ui/use-toast";
 import { notRetryOnUnauthorized } from "@utils/queries";
 
 import type { AxiosError } from "axios";
 import { UserRole, type User } from "@/interfaces/User";
+import { toast } from "sonner";
 
 interface AuthContextProps {
   user: User | null;
@@ -45,10 +45,7 @@ export default function AuthenticationContext({
     mutationFn: logOutGoogle,
     //@ts-ignore TODO Considerar mostrar una descripción del error
     onError: (error) => {
-      toast({
-        title: "Error al cerrar sesión",
-        variant: "destructive",
-      });
+      toast.error("Error al cerrar sesión");
     },
     onSuccess: async () => {
       setUser(null);
@@ -77,14 +74,13 @@ export default function AuthenticationContext({
 export function OnlyAdmin({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
 
-  if(!user) 
+  if (!user)
     // TODO - Mejor manejo de sin autorización
     return <>No hay usuario </>;
-  
-  if (user?.role.ID !== UserRole.admin) 
+
+  if (user?.role.ID !== UserRole.admin)
     // TODO - Mejor manejo de sin autorización
     return <>El rol no es el correcto </>;
-  
 
-  return children
+  return children;
 }

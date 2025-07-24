@@ -1,6 +1,6 @@
-import AuthenticationContext from "@/contexts/AuthenticationContext";
-import { Toaster } from "@ui/toaster";
 import { Outlet } from "react-router-dom";
+import AuthenticationContext from "@/contexts/AuthenticationContext";
+
 export default function GraphLayout() {
   return (
     <>
@@ -12,7 +12,6 @@ export default function GraphLayout() {
           <Outlet />
         </AuthenticationContext>
       </main>
-      <Toaster />
     </>
   );
 }

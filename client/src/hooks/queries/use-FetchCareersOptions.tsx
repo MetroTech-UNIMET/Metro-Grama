@@ -1,11 +1,8 @@
-import { getCareers } from "@/api/careersApi";
-import { Career } from "@/interfaces/Career";
-import { Option } from "@ui/derived/multidropdown";
 import { useQuery } from "@tanstack/react-query";
+import { getCareers } from "@/api/careersApi";
 
-export interface CareerOption extends Option {
-  query: string;
-}
+import type { Option } from "@ui/types";
+import type { Career } from "@/interfaces/Career";
 
 export default function useFetchCareersOptions() {
   const { data, isLoading, error } = useQuery<Career[]>({
@@ -13,11 +10,10 @@ export default function useFetchCareersOptions() {
     queryFn: getCareers,
   });
 
-  const options: CareerOption[] =
+  const options: Option[] =
     data?.map((career) => ({
-      value: career.name,
+      value: `${career.id.Table}:${career.id.ID}`,
       label: `${career.emoji} ${career.name}`,
-      query: `${career.id.Table}:${career.id.ID}`,
     })) ?? [];
 
   return {

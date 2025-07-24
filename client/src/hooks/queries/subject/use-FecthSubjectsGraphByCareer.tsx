@@ -2,14 +2,14 @@ import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
 
-import useFetchCareersOptions from "./use-FetchCareersOptions";
+import useFetchCareersOptions from "../use-FetchCareersOptions";
 import { getSubjectsGraph } from "@/api/subjectsAPI";
 
 import type { Subject } from "@/interfaces/Subject";
-import type { CareerOption } from "./use-FetchCareersOptions";
+import type { Option } from "@ui/types";
 
-export default function useFecthSubjectByCareer() {
-  const [selectedCareers, setSelectedCareers] = useState<CareerOption[]>([]);
+export default function useFecthSubjectsGraphByCareer() {
+  const [selectedCareers, setSelectedCareers] = useState<Option[]>([]);
   const [searchParams, setSearchParams] = useSearchParams({
     careers: "none",
   });
@@ -17,7 +17,8 @@ export default function useFecthSubjectByCareer() {
   const careers = searchParams.get("careers") ?? "none";
   const subjectQuery = useQuery<Graph<Subject>>({
     queryKey: [
-      "subjects", "graph",
+      "subjects",
+      "graph",
       {
         careers: careers === "none" ? [] : careers.split(",").sort(),
       },
@@ -31,26 +32,28 @@ export default function useFecthSubjectByCareer() {
 
   useEffect(() => {
     if (options.length === 0 || loadingCareers) return;
-    
+
     if (isFirstRender.current) {
       isFirstRender.current = false;
-      
+
       const filter = searchParams.get("careers");
       if (!filter || !options) return;
-      
+
       if (filter === "none") {
         setSelectedCareers([]);
       } else {
         const careers = filter.split(",");
-        
-        const selectedCareers = careers.reduce<CareerOption[]>((acc, career) => {
-          const option = options.find((option) => option.query === career);
-          const exists = acc.find((accOption) => accOption.query === career);
-          if (option && !exists) 
-            acc.push(option);
-          
-          return acc;
-        }, []);
+
+        const selectedCareers = careers.reduce<Option[]>(
+          (acc, career) => {
+            const option = options.find((option) => option.value === career);
+            const exists = acc.find((accOption) => accOption.value === career);
+            if (option && !exists) acc.push(option);
+
+            return acc;
+          },
+          []
+        );
 
         setSelectedCareers(selectedCareers);
       }
@@ -60,7 +63,7 @@ export default function useFecthSubjectByCareer() {
     if (selectedCareers.length === 0) {
       setSearchParams({ careers: "none" });
     } else {
-      const careers = selectedCareers.map((career) => career.query).join(",");
+      const careers = selectedCareers.map((career) => career.value).join(",");
       setSearchParams({ careers });
     }
   }, [selectedCareers, loadingCareers]);

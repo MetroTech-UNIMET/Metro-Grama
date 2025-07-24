@@ -1,7 +1,6 @@
-import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useState, useCallback } from "react";
 
-import { forEachPromiseAll } from "@utils/promises";
+import { forEachPromiseAll } from "@/lib/utils/promises";
 
 import type { FieldValues, Path, UseFormTrigger } from "react-hook-form";
 
@@ -25,45 +24,57 @@ export default function useFormStep<T extends FieldValues>({
 }: Props<T>) {
   const [currentStep, setCurrentStep] = useState(0);
 
-  const { mutateAsync: validateFieldsMutation } = useMutation({
-    mutationFn: validateFields,
-  });
+  const validateFields = useCallback(
+    async (stepIndex: number) => {
+      const fields = steps[stepIndex].fields;
+      return await trigger(fields, { shouldFocus: true });
+    },
+    [steps, trigger]
+  );
 
-  async function next(validate = false) {
-    if (validate && !(await validateFieldsMutation(currentStep))) return;
+  const next = useCallback(
+    async (validate = false) => {
+      if (validate && !(await validateFields(currentStep))) return;
 
-    if (currentStep < steps.length - 1) {
-      if (currentStep === steps.length - 2) {
-        return handleSubmit();
+      if (currentStep < steps.length - 1) {
+        onPageChange?.(currentStep, currentStep + 1);
+        setCurrentStep((prev) => prev + 1);
+        return;
       }
 
-      onPageChange?.(currentStep, currentStep + 1);
-      setCurrentStep((prev) => prev + 1);
-    }
-  }
+      return handleSubmit();
+    },
+    [currentStep, steps, validateFields, onPageChange, handleSubmit]
+  );
 
-  async function previous(validate = false) {
-    if (validate && !(await validateFieldsMutation(currentStep))) return;
+  const previous = useCallback(
+    async (validate = false) => {
+      if (validate && !(await validateFields(currentStep))) return;
 
-    if (currentStep > 0) {
-      onPageChange?.(currentStep, currentStep + 1);
-      setCurrentStep((prev) => prev - 1);
-    }
-  }
+      if (currentStep > 0) {
+        onPageChange?.(currentStep, currentStep + 1);
+        setCurrentStep((prev) => prev - 1);
+      }
+    },
+    [currentStep, validateFields, onPageChange]
+  );
 
-  function jumpTo(step: number, validate = false) {
-    if (validate && !validateFieldsMutation(currentStep)) return;
+  const jumpTo = useCallback(
+    async (step: number, validate = false) => {
+      if (validate) {
+        const isValid = await validateFields(currentStep);
+        if (!isValid) return;
+      } else {
+        validateFields(currentStep);
+      }
 
-    if (step >= 0 && step < steps.length) {
-      onPageChange?.(currentStep, step);
-      setCurrentStep(step);
-    }
-  }
-
-  async function validateFields(stepIndex: number) {
-    const fields = steps[stepIndex].fields;
-    return await trigger(fields, { shouldFocus: true });
-  }
+      if (step >= 0 && step < steps.length) {
+        onPageChange?.(currentStep, step);
+        setCurrentStep(step);
+      }
+    },
+    [currentStep, steps, validateFields, onPageChange]
+  );
 
   async function jumpToFirstErrorStep() {
     const validationResults = await forEachPromiseAll(steps, async (_, i) =>
@@ -82,5 +93,6 @@ export default function useFormStep<T extends FieldValues>({
     previous,
     jumpTo,
     jumpToFirstErrorStep,
+    validateFields,
   };
 }

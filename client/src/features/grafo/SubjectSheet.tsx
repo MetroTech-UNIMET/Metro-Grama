@@ -81,7 +81,7 @@ function SubjectSheetBody({ subject }: { subject: Subject }) {
     <>
       <SheetHeader>
         <SheetTitle>
-          {subject.name} ({subject.code})
+          {subject.name} ({subject.code.ID})
         </SheetTitle>
       </SheetHeader>
 

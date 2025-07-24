@@ -15,6 +15,7 @@ import useFecthSubjectsGraphByCareer from "@/hooks/queries/subject/use-FecthSubj
 import useLazyGraphin from "@/hooks/lazy-loading/use-LazyGraphin";
 
 import type { AxiosError } from "axios";
+import { ContextMenu } from "@ui/context-menu";
 
 export default function Graph() {
   const { data, error, isLoading, selectedCareers, setSelectedCareers } =
@@ -25,9 +26,10 @@ export default function Graph() {
   const { graphinImport, error: graphinError } = useLazyGraphin();
 
   if (error) return <ShowAxiosError error={error as AxiosError} />;
-  if (graphinError) return <ShowAxiosError error={graphinError as AxiosError} />;
+  if (graphinError)
+    return <ShowAxiosError error={graphinError as AxiosError} />;
 
-  if ((!data && graph.nodes.length === 0) || !graphinImport){
+  if ((!data && graph.nodes.length === 0) || !graphinImport) {
     return (
       <div className="h-full grid place-items-center ">
         <Spinner size="giant" />
@@ -62,22 +64,23 @@ export default function Graph() {
         </>
       ) : (
         <div className="overflow-hidden h-full">
-          <Graphin
-            data={graph}
-            style={{
-              backgroundColor: "transparent",
-              position: "relative",
-            }}
-            layout={{ type: "dagre" }}
-          >
-            <Hoverable bindType="node" />
-            <SearchPrelations />
-            <MenuActions />
-            <CreditsMenu />
+          <ContextMenu>
+            <Graphin
+              data={graph}
+              style={{
+                backgroundColor: "transparent",
+                position: "relative",
+              }}
+              layout={{ type: "dagre" }}
+            >
+              <Hoverable bindType="node" />
+              <SearchPrelations />
+              <MenuActions />
+              <CreditsMenu />
 
-            <UpdateNodeStatusOnGraphChange graphData={graph} />
-          </Graphin>
-          
+              <UpdateNodeStatusOnGraphChange graphData={graph} />
+            </Graphin>
+          </ContextMenu>
         </div>
       )}
     </>

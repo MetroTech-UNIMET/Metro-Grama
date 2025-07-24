@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
-import { cn } from "@utils/className";
 import { useSubjectSheet } from "@/features/grafo/SubjectSheet";
 import { useStatusActions } from "./StatusActions";
 import { enrollStudent, unenrollStudent } from "@/api/interactions/enrollApi";
@@ -9,8 +8,13 @@ import { enrollStudent, unenrollStudent } from "@/api/interactions/enrollApi";
 import { useAuth } from "@/contexts/AuthenticationContext";
 import { useLazyGraphinContext } from "@/hooks/lazy-loading/use-LazyGraphin";
 
-import { ListContent, ListHeader, ListItem } from "@ui/list";
 import { GoogleLink } from "@ui/link";
+import {
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@ui/context-menu";
+import { CardTitle } from "@ui/card";
 import { useMutation } from "@tanstack/react-query";
 
 import type { INode } from "@antv/g6";
@@ -122,16 +126,16 @@ function MenuNode({ node, close }: MenuNodeProps) {
   }
 
   return (
-    <ListContent className="max-w-64">
-      <ListHeader>
+    <ContextMenuContent className="max-w-64">
+      <CardTitle className="px-2 py-1 text-sm font-semibold border-b border-muted">
         {subjectCode} - {subjectName}
-      </ListHeader>
-      <ListItem onClick={() => markViewed(node)}>
+      </CardTitle>
+      <ContextMenuItem onClick={() => markViewed(node)}>
         {node?.hasState("viewed")
           ? "Desmarcar como materia vista"
           : "Marcar como materia vista"}
-      </ListItem>
-      <ListItem
+      </ContextMenuItem>
+      <ContextMenuItem
         onClick={() => {
           const subject = (node._cfg?.model?.data as Node4j<Subject>).data;
           selectSubject(subject);
@@ -139,8 +143,8 @@ function MenuNode({ node, close }: MenuNodeProps) {
         }}
       >
         Ver detalles
-      </ListItem>
-    </ListContent>
+      </ContextMenuItem>
+    </ContextMenuContent>
   );
 }
 
@@ -152,7 +156,6 @@ export default function MenuActions() {
   const graphinContext = useLazyGraphinContext();
 
   const [node, setNode] = useState<SubjectNode | null>(null);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -166,7 +169,16 @@ export default function MenuActions() {
 
       if (!item) return;
 
-      setPosition({ x: e.canvasX, y: e.canvasY });
+      const x = e.canvasX;
+      const y = e.canvasY;
+
+      const contextMenuEvent = new MouseEvent("contextmenu", {
+        bubbles: true,
+        clientX: x,
+        clientY: y,
+      });
+      hiddenTriggerRef.current?.dispatchEvent(contextMenuEvent);
+
       setNode(item as SubjectNode);
     }
 
@@ -234,19 +246,26 @@ export default function MenuActions() {
   function close() {
     setNode(null);
     clearTimerRef();
-    setPosition({ x: 0, y: 0 });
   }
 
+  const hiddenTriggerRef = useRef<HTMLDivElement | null>(null);
+
   return (
-    <div
-      className={cn("absolute", !node && "hidden")}
-      style={{
-        top: position.y,
-        left: position.x,
-      }}
-    >
+    <>
+      <ContextMenuTrigger asChild>
+        <div ref={hiddenTriggerRef} />
+      </ContextMenuTrigger>
+
       <MenuNode node={node} close={close} />
-    </div>
+      {/* <div
+        className={cn("absolute", !node && "hidden")}
+        style={{
+          top: position.y,
+          left: position.x,
+        }}
+      >
+      </div> */}
+    </>
   );
 }
 function globalBlur() {

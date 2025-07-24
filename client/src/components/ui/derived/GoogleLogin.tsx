@@ -22,7 +22,7 @@ export default function GoogleLogin() {
           <span>{user.firstName}</span>
         </div>
 
-        <Button onClick={logOut} variant={"destructive"}>
+        <Button onClick={logOut} colors="destructive">
           <LogOutIcon />
           Cerrar sesión
         </Button>

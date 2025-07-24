@@ -73,5 +73,5 @@ export default function useCountCredits(graph: IGraph) {
 }
 
 function getSubjectType(subject: Subject) {
-  return subject.code.slice(0, 2);
+  return subject.code.ID.slice(0, 2);
 }

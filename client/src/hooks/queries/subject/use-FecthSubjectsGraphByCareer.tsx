@@ -7,6 +7,7 @@ import { getSubjectsGraph } from "@/api/subjectsAPI";
 
 import type { Subject } from "@/interfaces/Subject";
 import type { Option } from "@ui/types";
+import type { Graph } from "@/interfaces/Graph";
 
 export default function useFecthSubjectsGraphByCareer() {
   const [selectedCareers, setSelectedCareers] = useState<Option[]>([]);
@@ -44,16 +45,13 @@ export default function useFecthSubjectsGraphByCareer() {
       } else {
         const careers = filter.split(",");
 
-        const selectedCareers = careers.reduce<Option[]>(
-          (acc, career) => {
-            const option = options.find((option) => option.value === career);
-            const exists = acc.find((accOption) => accOption.value === career);
-            if (option && !exists) acc.push(option);
+        const selectedCareers = careers.reduce<Option[]>((acc, career) => {
+          const option = options.find((option) => option.value === career);
+          const exists = acc.find((accOption) => accOption.value === career);
+          if (option && !exists) acc.push(option);
 
-            return acc;
-          },
-          []
-        );
+          return acc;
+        }, []);
 
         setSelectedCareers(selectedCareers);
       }

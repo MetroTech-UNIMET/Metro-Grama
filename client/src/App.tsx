@@ -13,6 +13,9 @@ import SuspenseLayout from "@/layouts/SuspenseLayout";
 
 // import { Principal } from "@/features/Principal/Principal";
 // import Login from "@/features/login-register/Login";
+
+const HorarioPage = lazy(() => import("@/pages/horario/HorarioPage"));
+
 const RegisterAdmin = lazy(
   () => import("@/pages/(auth)/register/admin/RegisterAdmin")
 );
@@ -31,6 +34,7 @@ function App() {
       children: [
         {
           children: [
+            { path: "/horario", element: <HorarioPage /> },
             { path: "/register/admin", element: <RegisterAdmin /> },
             { path: "/register/student", element: <RegisterStudent /> },
           ],

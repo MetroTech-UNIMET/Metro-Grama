@@ -1,18 +1,42 @@
-import type { Day, Event } from "../../types";
-import { PlannerEvent } from "../Event";
+import { format } from 'date-fns';
+
+import { useWeeklyPlannerContext } from '../../context';
+import { PlannerEvent } from '../Event';
+import type { Day, DaySchedule, Event } from '../../types';
 
 interface Props {
   day: Day;
   events: Event[];
 }
 
-export function DayColumn({ day, events }: Props) {
+export function DaysColumns({ schedules }: { schedules: DaySchedule[] }) {
+  const { timeSlots, locale } = useWeeklyPlannerContext();
   return (
     <section
-      className="relative !block grow basis-0 pt-0 border-l last:border-r border-gray-200"
-      role="tabpanel"
+      style={
+        {
+          '--height': `calc(var(--height-row) * ${timeSlots.length + 1})`,
+        } as React.CSSProperties
+      }
+      className={`relative z-20 ml-[60px] flex h-[--height]`}
     >
-      <div className="h-12 text-sm font-medium py-2 border-b border-gray-200 hidden md:flex justify-center items-center capitalize">
+      {schedules.map((day) => (
+        <DayColumns
+          key={day.day.toISOString()}
+          day={{
+            name: format(day.day, 'EEEE', { locale }),
+          }}
+          events={day.events}
+        />
+      ))}
+    </section>
+  );
+}
+
+function DayColumns({ day, events }: Props) {
+  return (
+    <section className="relative !block grow basis-0 border-l border-gray-200 pt-0 last:border-r" role="tabpanel">
+      <div className="hidden h-[--height-row] items-center justify-center border-b border-gray-200 py-2 text-sm font-medium capitalize md:flex">
         {day.name}
       </div>
       <ul className="relative md:h-full">

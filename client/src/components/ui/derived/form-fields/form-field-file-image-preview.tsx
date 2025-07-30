@@ -193,7 +193,7 @@ function FormInputImage<T extends FieldValues>({
                         width="30"
                         height="30"
                         viewBox="0 0 30 30"
-                        className="!size-6"
+                        className="size-6!"
                         fill="none"
                       >
                         <path
@@ -220,7 +220,7 @@ function FormInputImage<T extends FieldValues>({
                         onChange(e as any, undefined);
                       }}
                     >
-                      <Trash className="!size-6" />
+                      <Trash className="size-6!" />
                     </Button>
                   </div>
                 </div>
@@ -306,7 +306,7 @@ function PreviewDialog({
             width="29"
             height="32"
             viewBox="0 0 29 32"
-            className="!size-6"
+            className="size-6!"
             fill="none"
           >
             <path

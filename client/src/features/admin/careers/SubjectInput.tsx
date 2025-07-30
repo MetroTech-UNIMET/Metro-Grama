@@ -88,7 +88,7 @@ function SubjectInput({
                         placeholder="Código"
                         options={codeOptions as Option[]}
                         emptyMessage={"No hay materias para escoger"}
-                        listRelativeContainerClassName="z-[99]"
+                        listRelativeContainerClassName="z-99"
                         isLoading={loadingSubjects}
                         allowFreeInput={true}
                         inputWrapperClassName={cn({
@@ -203,7 +203,7 @@ function SubjectInput({
                 type="number"
                 min={0}
                 max={150}
-                containerClassname="max-w-[10rem] w-full h-full"
+                containerClassname="max-w-40 w-full h-full"
                 readOnly={usingExistingSubject && !isModeEdit}
                 disabled={isSubjectElective}
               />
@@ -215,7 +215,7 @@ function SubjectInput({
                 type="number"
                 min={0}
                 max={150}
-                containerClassname="max-w-[11rem] w-full h-full"
+                containerClassname="max-w-44 w-full h-full"
                 readOnly={usingExistingSubject && !isModeEdit}
                 disabled={isSubjectElective}
               />
@@ -232,7 +232,7 @@ function SubjectInput({
                         options={prelationOptions}
                         placeholder="Escoje las prelaciones "
                         loadingOptions={loadingSubjects}
-                        listRelativeContainerClassName="z-[99]"
+                        listRelativeContainerClassName="z-99"
                         className={cn("h-full w-full flex items-center", {
                           "bg-destructive/10":
                             fieldState.invalid && fieldState.isTouched,

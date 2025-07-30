@@ -9,7 +9,7 @@ export function BaseEvent({ event, containerClassName }: Props) {
   return (
     <div
       className={cn(
-        'block w-full rounded-md border-l-4 p-4 shadow-sm transition-all hover:shadow-md',
+        'block w-full rounded-md border-l-4 p-4 shadow-xs transition-all hover:shadow-md',
         containerClassName,
         getEventColor(event.type),
       )}

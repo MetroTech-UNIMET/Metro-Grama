@@ -35,7 +35,7 @@ export function PlannerEvent({ event }: Props) {
       >
         <BaseEvent
           event={event}
-          containerClassName="absolute top-[var(--w-schedule-event-top)] h-[var(--w-schedule-event-height)]"
+          containerClassName="absolute top-(--w-schedule-event-top) h-(--w-schedule-event-height)"
         />
       </li>
     </>

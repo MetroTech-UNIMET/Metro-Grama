@@ -68,7 +68,7 @@ function FloatingLabelInputField<T extends FieldValues>({
 
           //   <FormLabel
           //     className={cn(
-          //       "peer-focus:secondary peer-focus:dark:secondary absolute start-2 top-2 z-10 origin-[0] -translate-y-4 scale-75 transform bg-background px-2 text-sm text-gray-500 duration-300 peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:scale-100 peer-focus:top-2 peer-focus:-translate-y-4 peer-focus:scale-75 peer-focus:px-2 dark:bg-background rtl:peer-focus:left-auto rtl:peer-focus:translate-x-1/4",
+          //       "peer-focus:secondary peer-focus:dark:secondary absolute start-2 top-2 z-10 origin-[0] -translate-y-4 scale-75 transform bg-background px-2 text-sm text-gray-500 duration-300 peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:scale-100 peer-focus:top-2 peer-focus:-translate-y-4 peer-focus:scale-75 peer-focus:px-2 dark:bg-background peer-focus:rtl:left-auto peer-focus:rtl:translate-x-1/4",
           //       {
           //         "text-destructive/80": hasError,
           //         "text-success/80": isSuccessful,
@@ -89,7 +89,7 @@ function FloatingLabelInputField<T extends FieldValues>({
             <FormControl>
               <Input
                 className={cn(
-                  "block h-auto pb-2.5 pt-5 w-full text-gray-900 border-gray-300 appearance-none outline-none focus:ring-0 focus:border-primary-500 peer",
+                  "block h-auto pb-2.5 pt-5 w-full text-gray-900 border-gray-300 appearance-none outline-hidden focus:ring-0 focus:border-primary-500 peer",
                   {
                     "bg-destructive/10 border-destructive": hasError,
                     "bg-success/10 border-success": isSuccessful,
@@ -112,7 +112,7 @@ function FloatingLabelInputField<T extends FieldValues>({
 
             <FormLabel
               className={cn(
-                "absolute text-sm duration-300 transform -translate-y-4 scale-75 top-4 z-10 origin-[0] start-2.5 peer-focus:text-primary-500 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto",
+                "absolute text-sm duration-300 transform -translate-y-4 scale-75 top-4 z-10 origin-[0] start-2.5 peer-focus:text-primary-500 peer-focus:rtl:translate-x-1/4 peer-focus:rtl:left-auto",
                 {
                   "-translate-y-4 scale-75": props.placeholder,
                   "peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-4":

@@ -238,7 +238,7 @@ export default function CareerForm({ mode, data }: Props) {
             <FloatingLabelInputField
               name="id"
               label="Identificador"
-              containerClassname="max-w-[6.5rem]"
+              containerClassname="max-w-26"
               showErrors={true}
               readOnly={mode === "edit"}
             />

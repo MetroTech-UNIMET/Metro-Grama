@@ -2,15 +2,15 @@ import { cn } from '@/lib/utils/className';
 import { cva, VariantProps } from 'class-variance-authority';
 
 const badgeVariants = cva(
-  'inline-flex items-center rounded-md border border-neutral-200 px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-neutral-950 focus:ring-offset-2 dark:border-neutral-800 dark:focus:ring-neutral-300',
+  'inline-flex items-center rounded-md border border-neutral-200 px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-hidden focus:ring-2 focus:ring-neutral-950 focus:ring-offset-2 dark:border-neutral-800 dark:focus:ring-neutral-300',
   {
     variants: {
       variant: {
         default:
-          'border-transparent bg-neutral-900 text-neutral-50 shadow hover:bg-neutral-900/80 dark:bg-neutral-50 dark:text-neutral-900 dark:hover:bg-neutral-50/80',
+          'border-transparent bg-neutral-900 text-neutral-50 shadow-sm hover:bg-neutral-900/80 dark:bg-neutral-50 dark:text-neutral-900 dark:hover:bg-neutral-50/80',
         secondary: 'border-transparent bg-secondary-50 text-neutral-900 hover:bg-secondary-200/80',
         destructive:
-          'border-transparent bg-red-500 text-neutral-50 shadow hover:bg-red-500/80 dark:bg-red-900 dark:text-neutral-50 dark:hover:bg-red-900/80',
+          'border-transparent bg-red-500 text-neutral-50 shadow-sm hover:bg-red-500/80 dark:bg-red-900 dark:text-neutral-50 dark:hover:bg-red-900/80',
         outline: 'text-neutral-950 dark:text-neutral-50',
         gray: 'border-transparent bg-neutral-200 hover:bg-neutral-300/80 text-neutral-900 dark:bg-neutral-800 dark:text-neutral-50',
       },

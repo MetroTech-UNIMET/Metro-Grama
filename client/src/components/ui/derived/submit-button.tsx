@@ -22,10 +22,10 @@ export default function SubmitButton({
         <Spinner
         // className={cn("h-6 w-6", {
         //   "border-secondary group-hover:border-primary":
-        //     props.variant === "outline",
+        //     props.variant === "outline-solid",
         //   "border-secondary": props.colors === "primary",
         //   "border-primary": !(
-        //     props.variant === "outline" || props.colors === "primary"
+        //     props.variant === "outline-solid" || props.colors === "primary"
         //   ),
         // })}
         />

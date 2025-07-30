@@ -179,7 +179,7 @@ export default function AutoComplete({
       <div className={cn("relative mt-1", listRelativeContainerClassName)}>
         <div
           className={cn(
-            "animate-in fade-in-0 zoom-in-95 absolute top-0 z-10 w-full rounded-xl bg-white outline-none",
+            "animate-in fade-in-0 zoom-in-95 absolute top-0 z-10 w-full rounded-xl bg-white outline-hidden",
             listContainerClassName,
             isOpen ? "block" : "hidden"
           )}

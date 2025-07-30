@@ -108,7 +108,7 @@ function FormInputNumberField<T extends FieldValues>({
                   {...field}
                   type="number"
                   className={cn(
-                    'border-0 px-0 text-center [&::-webkit-inner-spin-button]:hidden !ring-0 !ring-offset-0',
+                    'border-0 px-0 text-center [&::-webkit-inner-spin-button]:hidden ring-0! ring-offset-0!',
                     {
                       'border-destructive bg-destructive/10': hasError && showColorsState,
                     },

@@ -70,9 +70,9 @@ function FormDateField<T extends FieldValues>({
               <PopoverTrigger asChild>
                 <FormControl>
                   <Button
-                    variant={'outline'}
+                    variant={'outline-solid'}
                     className={cn(
-                      'h-[2.625rem] rounded-[10px] border-gray-100 pl-3 text-left font-normal',
+                      'h-10.5 rounded-[10px] border-gray-100 pl-3 text-left font-normal',
                       !field.value && 'text-muted-foreground',
                     )}
                   >

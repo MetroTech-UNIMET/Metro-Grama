@@ -21,6 +21,7 @@ export default function UpdateNodeStatusOnGraphChange({ graphData }: Props) {
     if (!graphinContext) return;
 
     const { graph } = graphinContext;
+    if (!graph) return;
 
     const nodesState: {
       node: INode;

@@ -348,8 +348,8 @@ function MultipleSelector<TValue extends string | number = string | number, TDat
                   <Badge
                     key={option.value}
                     className={cn(
-                      'data-[disabled]:bg-muted-foreground data-[disabled]:text-muted data-[disabled]:hover:bg-muted-foreground',
-                      'data-[fixed]:bg-muted-foreground data-[fixed]:text-muted data-[fixed]:hover:bg-muted-foreground',
+                      'data-disabled:bg-muted-foreground data-disabled:text-muted data-disabled:hover:bg-muted-foreground',
+                      'data-fixed:bg-muted-foreground data-fixed:text-muted data-fixed:hover:bg-muted-foreground',
                       badgeClassName,
                     )}
                     data-fixed={option.fixed}
@@ -358,7 +358,7 @@ function MultipleSelector<TValue extends string | number = string | number, TDat
                     {option.label}
                     <button
                       className={cn(
-                        'ring-offset-background focus:ring-ring ml-1 rounded-full outline-none focus:ring-2 focus:ring-offset-2',
+                        'ring-offset-background focus:ring-ring ml-1 rounded-full outline-hidden focus:ring-2 focus:ring-offset-2',
                         (disabled || option.fixed) && 'hidden',
                       )}
                       onKeyDown={(e) => {
@@ -392,7 +392,7 @@ function MultipleSelector<TValue extends string | number = string | number, TDat
                     hidePlaceholderWhenSelected && selected.length !== 0 ? '' : placeholder
                   }
                   className={cn(
-                    'ml-2 w-full flex-1 bg-transparent outline-none placeholder:text-muted-foreground',
+                    'ml-2 w-full flex-1 bg-transparent outline-hidden placeholder:text-muted-foreground',
                     inputProps?.className,
                   )}
                   onFocus={(e) => {
@@ -402,7 +402,7 @@ function MultipleSelector<TValue extends string | number = string | number, TDat
                     inputProps?.onFocus?.(e);
                   }}
                   onBlur={(e) => {
-                    console.log('blur');
+                    console.log('blur-sm');
                     setIsFocused(false);
                     inputProps?.onBlur?.(e);
                   }}
@@ -425,7 +425,7 @@ function MultipleSelector<TValue extends string | number = string | number, TDat
         >
           <CommandList
             className={cn(
-              'w-[var(--radix-popper-anchor-width)] rounded-md border bg-popover p-1 text-popover-foreground shadow-md outline-none animate-in',
+              'w-(--radix-popper-anchor-width) rounded-md border bg-popover p-1 text-popover-foreground shadow-md outline-hidden animate-in',
               listClassName,
             )}
           >

@@ -49,7 +49,7 @@ export default function Feature() {
             height={1442}
           />
           <div className="relative" aria-hidden="true">
-            <div className="absolute -inset-x-20 bottom-0 bg-gradient-to-t from-gray-900 pt-[7%]" />
+            <div className="absolute -inset-x-20 bottom-0 bg-linear-to-t from-gray-900 pt-[7%]" />
           </div>
         </div>
       </div>

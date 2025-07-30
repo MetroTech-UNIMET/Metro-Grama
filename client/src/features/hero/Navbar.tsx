@@ -47,7 +47,7 @@ export default function Navbar() {
   return (
     <header className="fixed flex justify-center w-full z-50 ">
       <div
-        className="flex items-center justify-between w-[95%] backdrop-blur-sm
+        className="flex items-center justify-between w-[95%] backdrop-blur-xs
           mt-8 py-2 px-6 rounded-3xl transition-all bg-background shadow-md
           min-h-14"
       >

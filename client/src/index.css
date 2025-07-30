@@ -1,7 +1,147 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
- 
+@import 'tailwindcss';
+
+@plugin 'tailwindcss-animate';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-UI-white: #f9f9fd;
+  --color-UI-black: #1e1e1e;
+
+  --color-Unimet-primary-50: #fffaec;
+  --color-Unimet-primary-100: #fff4d3;
+  --color-Unimet-primary-200: #ffe6a5;
+  --color-Unimet-primary-300: #ffd26d;
+  --color-Unimet-primary-400: #ffb332;
+  --color-Unimet-primary-500: #ff9a0a;
+  --color-Unimet-primary-600: #ff8200;
+  --color-Unimet-primary-700: #cc5f02;
+  --color-Unimet-primary-800: #a1490b;
+  --color-Unimet-primary-900: #823e0c;
+  --color-Unimet-primary-950: #461d04;
+
+  --color-primary-50: #f8f7fc;
+  --color-primary-100: #f2f0fa;
+  --color-primary-200: #e7e4f6;
+  --color-primary-300: #d1c9ed;
+  --color-primary-400: #b8a7e2;
+  --color-primary-500: #9c82d4;
+  --color-primary-600: #8660c3;
+  --color-primary-700: #7953b2;
+  --color-primary-800: #654497;
+  --color-primary-900: #553b7d;
+  --color-primary-950: #382654;
+  --color-primary-gradient: #2c73d2;
+  --color-primary: #8660c3;
+  --color-primary-foreground: #f2f0fa;
+
+  --color-secondary-50: #f0f8ff;
+  --color-secondary-100: #e0f1fe;
+  --color-secondary-200: #b9e3fe;
+  --color-secondary-300: #7ccefd;
+  --color-secondary-400: #36b7fa;
+  --color-secondary-500: #0c9eeb;
+  --color-secondary-600: #0081cf;
+  --color-secondary-700: #0163a3;
+  --color-secondary-800: #065486;
+  --color-secondary-900: #0b466f;
+  --color-secondary-950: #072d4a;
+  --color-secondary-gradient: #5ca1fe;
+  --color-secondary-foreground: #e0f1fe;
+  --color-secondary: #0c9eeb;
+
+  --color-tertiary-50: #eefffa;
+  --color-tertiary-100: #c5fff1;
+  --color-tertiary-200: #8bffe4;
+  --color-tertiary-300: #4afed6;
+  --color-tertiary-400: #15ecc2;
+  --color-tertiary-500: #00d0ab;
+  --color-tertiary-600: #00a88c;
+  --color-tertiary-700: #008f7a;
+  --color-tertiary-800: #06695c;
+  --color-tertiary-900: #0a574c;
+  --color-tertiary-950: #003530;
+  --color-tertiary-gradient: #008e9b;
+  --color-tertiary: #00d0ab;
+  --color-tertiary-foreground: #c5fff1;
+
+  --color-success: hsl(var(--success));
+  --color-success-foreground: hsl(var(--success-foreground));
+
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+
+  @keyframes accordion-down {
+    from {
+      height: 0;
+    }
+    to {
+      height: var(--radix-accordion-content-height);
+    }
+  }
+  @keyframes accordion-up {
+    from {
+      height: var(--radix-accordion-content-height);
+    }
+    to {
+      height: 0;
+    }
+  }
+}
+
+@utility container {
+  margin-inline: auto;
+  padding-inline: 2rem;
+  @media (width >= --theme(--breakpoint-sm)) {
+    max-width: none;
+  }
+  @media (width >= 1400px) {
+    max-width: 1400px;
+  }
+}
+
+/*
+  The default border color has changed to `currentcolor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;

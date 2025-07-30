@@ -55,7 +55,7 @@ function CommandInput({
       <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
       <CommandPrimitive.Input
         className={cn(
-          'flex h-10 w-full rounded-md bg-transparent py-2.5 text-sm outline-none placeholder:text-neutral-500 disabled:cursor-not-allowed disabled:opacity-50 dark:placeholder:text-neutral-400',
+          'flex h-10 w-full rounded-md bg-transparent py-2.5 text-sm outline-hidden placeholder:text-neutral-500 disabled:cursor-not-allowed disabled:opacity-50 dark:placeholder:text-neutral-400',
           className,
         )}
         {...props}
@@ -108,7 +108,7 @@ function CommandItem({ className, ...props }: React.ComponentProps<typeof Comman
   return (
     <CommandPrimitive.Item
       className={cn(
-        'relative flex cursor-default items-center rounded-sm px-2 py-1.5 text-sm outline-none select-none aria-selected:bg-neutral-100 aria-selected:text-neutral-900 data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 dark:aria-selected:bg-neutral-800 dark:aria-selected:text-neutral-50',
+        'relative flex cursor-default items-center rounded-sm px-2 py-1.5 text-sm outline-hidden select-none aria-selected:bg-neutral-100 aria-selected:text-neutral-900 data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 dark:aria-selected:bg-neutral-800 dark:aria-selected:text-neutral-50',
         className,
       )}
       {...props}

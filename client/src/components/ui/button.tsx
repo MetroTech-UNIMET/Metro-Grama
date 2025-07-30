@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils/className';
 
 const variant = {
   default: '',
-  outline: 'border border-primary bg-white shadow-sm',
+  outline: 'border border-primary bg-white shadow-xs',
   ghost:
     'hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-neutral-50',
   link: 'text-neutral-900 underline-offset-4 hover:underline dark:text-neutral-50 bg-transparent!',
@@ -30,11 +30,11 @@ const size = {
   sm: 'h-8 rounded-md px-3 text-xs',
   lg: 'h-10 rounded-md px-8',
   icon: 'h-9 w-9',
-  'big-icon': 'h-9 w-9 [&_svg]:size-6',
+  'big-icon': 'h-12 w-12 [&_svg]:size-6',
 };
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-neutral-950 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 dark:focus-visible:ring-neutral-300 cursor-pointer',
+  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-neutral-950 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 dark:focus-visible:ring-neutral-300 cursor-pointer',
   {
     variants: {
       colors,
@@ -49,7 +49,7 @@ const buttonVariants = cva(
     compoundVariants: [
       {
         colors: 'neutral',
-        variant: 'outline',
+        variant: 'outline-solid',
         className:
           'text-neutral-900 border-neutral-900 border-2 hover:bg-neutral-100 active:bg-neutral-200 dark:text-neutral-50 dark:border-neutral-50 dark:hover:bg-neutral-800 dark:active:bg-neutral-700',
       },
@@ -67,12 +67,12 @@ const buttonVariants = cva(
       },
       {
         colors: 'secondary',
-        variant: 'outline',
+        variant: 'outline-solid',
         className: 'border-secondary border-2 hover:bg-secondary-300 active:bg-secondary-100',
       },
       {
         colors: 'primary',
-        variant: 'outline',
+        variant: 'outline-solid',
         className:
           'text-neutral-900 border-primary border-2 hover:bg-primary-200 active:bg-primary-100',
       },
@@ -84,7 +84,7 @@ const buttonVariants = cva(
       },
       {
         colors: 'success',
-        variant: 'outline',
+        variant: 'outline-solid',
         className:
           'text-success border-success border-2 hover:bg-success/10 active:bg-success/20 dark:hover:bg-success/20 dark:active:bg-success/30',
       },
@@ -96,7 +96,7 @@ const buttonVariants = cva(
       },
       {
         colors: 'destructive',
-        variant: 'outline',
+        variant: 'outline-solid',
         className:
           'text-destructive border-destructive border-2 hover:bg-destructive/10 active:bg-destructive/20 dark:hover:bg-destructive/20 dark:active:bg-destructive/30',
       },

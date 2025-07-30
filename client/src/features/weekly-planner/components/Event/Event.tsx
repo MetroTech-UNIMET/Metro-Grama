@@ -1,10 +1,8 @@
 import { calculateCustomHeight, calculateCustomTop, calculateUniformHeight, calculateUniformTop } from './functions';
+import { BaseEvent } from './BaseEvent';
 import { useWeeklyPlannerContext } from '../../context';
 
-import { cn } from '@utils/className';
-
 import type { Event } from '../../types';
-import { BaseEvent } from './BaseEvent';
 
 interface Props {
   event: Event;
@@ -23,8 +21,6 @@ export function PlannerEvent({ event }: Props) {
       ? calculateUniformTop(event.start_hour, planner_start_hour, props.interval)
       : calculateCustomTop(event.start_hour, props.timeSlots);
 
-  // console.log(event.start_hour, event.end_hour, top);
-
   return (
     <>
       <li
@@ -32,8 +28,8 @@ export function PlannerEvent({ event }: Props) {
         className="md:px-px"
         style={
           {
-            '--w-schedule-event-top': `calc(3rem * ${top})`,
-            '--w-schedule-event-height': `calc(3rem * ${height})`,
+            '--w-schedule-event-top': `calc(var(--height-row) * ${top})`,
+            '--w-schedule-event-height': `calc(var(--height-row) * ${height})`,
           } as React.CSSProperties
         }
       >

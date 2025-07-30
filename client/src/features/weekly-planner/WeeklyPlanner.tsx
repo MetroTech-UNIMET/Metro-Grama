@@ -3,7 +3,7 @@ import { format, type Locale } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 import { WeeklyPlannerProvider } from './context';
-import { DaysColumns } from './components/DayColumn/DayColumn';
+import { DaysColumns } from './components/DayColumn';
 import { MobileDayColumns } from './components/DayColumn/MobileDayColumns';
 import { MobileTabNavigation } from './components/MobileTabNavigation';
 import { PlannerGrid, PlannerGridProps } from './components/PlannerGrid';

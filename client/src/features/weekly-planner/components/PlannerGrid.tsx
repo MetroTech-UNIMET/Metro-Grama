@@ -13,11 +13,11 @@ export function PlannerGrid({
 
   return (
     <div
-      className="block absolute z-10 top-[50px] left-0 w-full"
+      className="block absolute z-10 top-[--height-row] left-0 w-full"
       aria-hidden="true"
     >
       {timeSlots.map((time, index) => (
-        <div key={time} className="h-12 relative">
+        <div key={time} className="h-[--height-row] relative">
           {extraDecoration?.(time, index)}
 
           {(shouldRenderTime?.(time, index) ?? true) && (

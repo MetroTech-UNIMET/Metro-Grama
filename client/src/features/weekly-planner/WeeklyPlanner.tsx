@@ -1,4 +1,5 @@
 // inspired from: https://codyhouse.co/ds/components/info/weekly-schedule
+import { useState } from 'react';
 import { format, type Locale } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -9,7 +10,8 @@ import { MobileTabNavigation } from './components/MobileTabNavigation';
 import { PlannerGrid, PlannerGridProps } from './components/PlannerGrid';
 import { daysOfWeek } from './constants';
 
-import { useBreakpoint } from '@/hooks/use-is-mobile';
+import { useResizeObserver } from '@/hooks/use-resize-observer';
+import { useScrollbarWidth } from '@/hooks/use-scrollbar-width';
 
 import { Tabs } from '@ui/tabs';
 
@@ -42,8 +44,6 @@ export function WeeklyPlanner({
   rowHeight = '3.5rem',
   ...props
 }: WeeklyPlannerProps) {
-  const isMobile = useBreakpoint(1024);
-
   const subjectEvents: SubjectEvent[] = [
     {
       id: 'm1',
@@ -196,13 +196,26 @@ export function WeeklyPlanner({
     events: subjectEvents.filter((event) => event.dayIndex === dayIndex),
   }));
 
+  const [isMobile, setIsMobile] = useState<boolean | undefined>(false);
+  const scrollbarWidth = useScrollbarWidth();
+
+  const ref = useResizeObserver<HTMLDivElement>({
+    onResize: (width, ref) => {
+      const { scrollHeight, clientHeight } = ref;
+      const hasVerticalScrollbar = scrollHeight > clientHeight;
+      const offsetWidth = hasVerticalScrollbar ? -scrollbarWidth : 0;
+
+      setIsMobile(width < 1024 - 1 + offsetWidth);
+    },
+  });
+
   return (
     <WeeklyPlannerProvider {...props}>
-      <Tabs defaultValue={format(daysOfWeek[0], 'EEE', { locale })}>
-        <div className="relative" style={{ '--height-row': rowHeight } as React.CSSProperties}>
-          {isMobile && <MobileTabNavigation />}
+      <Tabs defaultValue={format(daysOfWeek[0], 'EEE', { locale })} asChild>
+        <div ref={ref} className="relative" style={{ '--height-row': rowHeight } as React.CSSProperties}>
+          {!!isMobile && <MobileTabNavigation />}
 
-          {isMobile ? <MobileDayColumns schedules={schedules} /> : <DaysColumns schedules={schedules} />}
+          {!!isMobile ? <MobileDayColumns schedules={schedules} /> : <DaysColumns schedules={schedules} />}
 
           {!isMobile && <PlannerGrid shouldRenderTime={shouldRenderTime} extraDecoration={extraDecoration} />}
         </div>

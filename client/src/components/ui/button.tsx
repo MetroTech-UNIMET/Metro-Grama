@@ -6,17 +6,15 @@ import { cn } from '@/lib/utils/className';
 
 const variant = {
   default: '',
-  outline: 'border border-primary bg-white shadow-xs',
-  ghost:
-    'hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-neutral-50',
+  outline: 'border border-primary bg-UI-white shadow-xs',
+  ghost: 'hover:bg-neutral-100 hover:text-neutral-900 dark:hover:bg-neutral-800 dark:hover:text-neutral-50',
   link: 'text-neutral-900 underline-offset-4 hover:underline dark:text-neutral-50 bg-transparent!',
 };
 
 const colors = {
   neutral: '',
   // 'text-neutral-50 hover:bg-neutral-800 dark:bg-neutral-800 dark:text-neutral-50 dark:hover:bg-neutral-700',
-  primary:
-    'bg-primary text-neutral-50 hover:bg-primary/90 hover:ring-1 ring-secondary active:bg-primary-900',
+  primary: 'bg-primary text-neutral-50 hover:bg-primary/90 hover:ring-1 ring-secondary active:bg-primary-900',
   secondary:
     'bg-secondary text-neutral-900 hover:bg-neutral-100/80 dark:bg-neutral-800 dark:text-neutral-50 dark:hover:bg-neutral-800/80',
   success:
@@ -49,7 +47,7 @@ const buttonVariants = cva(
     compoundVariants: [
       {
         colors: 'neutral',
-        variant: 'outline-solid',
+        variant: 'outline',
         className:
           'text-neutral-900 border-neutral-900 border-2 hover:bg-neutral-100 active:bg-neutral-200 dark:text-neutral-50 dark:border-neutral-50 dark:hover:bg-neutral-800 dark:active:bg-neutral-700',
       },
@@ -62,19 +60,17 @@ const buttonVariants = cva(
       {
         colors: 'neutral',
         variant: 'link',
-        className:
-          'text-neutral-900 hover:text-neutral-700 dark:text-neutral-50 dark:hover:text-neutral-300',
+        className: 'text-neutral-900 hover:text-neutral-700 dark:text-neutral-50 dark:hover:text-neutral-300',
       },
       {
         colors: 'secondary',
-        variant: 'outline-solid',
+        variant: 'outline',
         className: 'border-secondary border-2 hover:bg-secondary-300 active:bg-secondary-100',
       },
       {
         colors: 'primary',
-        variant: 'outline-solid',
-        className:
-          'text-neutral-900 border-primary border-2 hover:bg-primary-200 active:bg-primary-100',
+        variant: 'outline',
+        className: 'text-neutral-900 border-primary border-2 hover:bg-primary-200 active:bg-primary-100',
       },
       {
         colors: 'primary',
@@ -84,7 +80,7 @@ const buttonVariants = cva(
       },
       {
         colors: 'success',
-        variant: 'outline-solid',
+        variant: 'outline',
         className:
           'text-success border-success border-2 hover:bg-success/10 active:bg-success/20 dark:hover:bg-success/20 dark:active:bg-success/30',
       },
@@ -96,7 +92,7 @@ const buttonVariants = cva(
       },
       {
         colors: 'destructive',
-        variant: 'outline-solid',
+        variant: 'outline',
         className:
           'text-destructive border-destructive border-2 hover:bg-destructive/10 active:bg-destructive/20 dark:hover:bg-destructive/20 dark:active:bg-destructive/30',
       },

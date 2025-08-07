@@ -57,7 +57,7 @@ export const GoogleLink = ({ className = "" }: { className?: string }) => {
     <a
       href={`${baseApiUrl}/auth/google/login`}
       className={cn(
-        buttonVariants({ variant: "outline-solid", className: "gap-4" }),
+        buttonVariants({ variant: "outline", className: "gap-4" }),
         className
       )}
     >

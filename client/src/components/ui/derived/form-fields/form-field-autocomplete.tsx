@@ -15,7 +15,7 @@ export interface FormAutocompleteFieldProps<
   showColorsState?: boolean;
 
   containerClassName?: string;
-  label: string;
+  label?: string;
   labelClassName?: string;
 
   saveAsOption?: boolean;
@@ -52,13 +52,11 @@ function FormAutocompleteField<T extends FieldValues, J extends string | number,
               containerClassName,
             )}
           >
-            <FormLabel
-              className={labelClassName}
-              required={props.required}
-              showColorsState={showColorsState}
-            >
-              {label}
-            </FormLabel>
+            {label && (
+              <FormLabel className={labelClassName} required={props.required} showColorsState={showColorsState}>
+                {label}
+              </FormLabel>
+            )}
 
             <FormControl>
               <AutoComplete
@@ -79,9 +77,7 @@ function FormAutocompleteField<T extends FieldValues, J extends string | number,
             </FormControl>
 
             {showErrors && hasError && (
-              <FormMessage className="mt-1 text-sm text-destructive/80">
-                {fieldState.error?.message}
-              </FormMessage>
+              <FormMessage className="text-destructive/80 mt-1 text-sm">{fieldState.error?.message}</FormMessage>
             )}
           </FormItem>
         );

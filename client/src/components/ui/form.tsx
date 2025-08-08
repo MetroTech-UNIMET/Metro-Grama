@@ -95,7 +95,7 @@ function FormLabel({
   return (
     <Label
       className={cn(
-        'text-body-sm block font-semibold text-balance text-gray-500 dark:text-white',
+        'text-body-sm block font-semibold text-balance ',
         {
           'text-destructive': invalid && showColorsState,
         },

@@ -3,7 +3,7 @@ import { useState, useCallback } from 'react';
 import { zodErrorToFieldErrors } from '@utils/zod/zod-to-hook-form-errors';
 import { combinePaths, getZodPathFields } from '@utils/zod/zod-schema-paths';
 
-import type { FieldErrors, FieldValues, Path, SubmitErrorHandler, UseFormReturn } from 'react-hook-form';
+import type { FieldErrors, FieldValues, Path, UseFormReturn } from 'react-hook-form';
 import type { FormSchema } from '@utils/zod/types';
 
 export type ValidateAction = boolean | 'callOnError';
@@ -20,7 +20,11 @@ interface Props<T extends FieldValues> {
   /**
    * Called when the form encounters an error when validating and if `callOnError` is true.
    */
-  onError?: SubmitErrorHandler<T>;
+  onError?: (
+    errors: FieldErrors<T>,
+    currentStep: number,
+    event?: React.BaseSyntheticEvent,
+  ) => unknown | Promise<unknown>;
   /**
    * Called when the schema validation is successful
    */
@@ -116,7 +120,7 @@ export default function useFormStep<T extends FieldValues>({
         });
 
         if (callOnError) {
-          onError?.(rhfErrors);
+          await onError?.(rhfErrors, currentStep);
         }
       } else {
         onSuccess?.(currentStep, currentSchema, parsed.data);

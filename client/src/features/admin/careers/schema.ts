@@ -1,9 +1,7 @@
-import { z } from "zod";
-import type { Step } from "@/hooks/useFormStep";
-import type { Path } from "react-hook-form";
+import { z } from 'zod/v4';
+import { numberOfSubjectsByTrimester, numberOfTrimesters } from './constants';
 
-export const numberOfTrimesters = 12;
-export const numberOfSubjectsByTrimester = 5;
+import type { Step } from '@/hooks/useFormStep';
 
 export type CreateCareerFormType = z.infer<typeof createCareerSchema>;
 export type CreateSubjectType = z.infer<typeof subjectSchema>;
@@ -11,7 +9,7 @@ export type CreateSubjectType = z.infer<typeof subjectSchema>;
 const subjectCodeOptionSchema = z.object({
   label: z.string(),
   value: z.string().length(7, {
-    message: "El código debe tener exactamente 7 caracteres",
+    error: 'El código debe tener exactamente 7 caracteres',
   }),
 });
 
@@ -20,44 +18,39 @@ const subjectSchema = z
     code: z.string().optional(),
     name: z.string().optional(),
     credits: z
-      .number()
-      .int({
-        message: "Los créditos necesarios deben ser un número entero",
-      })
+      .int()
       .min(0, {
-        message: "Los créditos nesarios no pueden ser negativos",
+        error: 'Los créditos nesarios no pueden ser negativos',
       })
       .max(150, {
-        message: "Los créditos necesarios no pueden exceder 150",
+        error: 'Los créditos necesarios no pueden exceder 150',
       })
       .optional(),
     BPCredits: z
-      .number()
-      .int({
-        message: "Los créditos necesarios deben ser un número entero",
-      })
+      .int()
       .min(0, {
-        message: "Los créditos nesarios no pueden ser negativos",
+        error: 'Los créditos nesarios no pueden ser negativos',
       })
       .max(150, {
-        message: "Los créditos necesarios no pueden exceder 150",
+        error: 'Los créditos necesarios no pueden exceder 150',
       })
       .optional(),
     prelations: z
       .array(subjectCodeOptionSchema)
       .max(3, {
-        message: "Esta materia no puede depender de más de 3 materias",
+        error: 'Esta materia no puede depender de más de 3 materias',
       })
-      .default([]),
-    subjectType: z.enum(["elective", "existing", "new"]).default("new"),
+      .prefault([]),
+    subjectType: z.enum(['elective', 'existing', 'new']).prefault('new'),
   })
   .superRefine((data, ctx) => {
-    if (data.subjectType === "elective") {
+    if (data.subjectType === 'elective') {
       if (data.prelations.length > 0) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Las materias electivas no pueden tener prelaciones",
-          path: ["elective"],
+        ctx.issues.push({
+          code: 'custom',
+          message: 'Las materias electivas no pueden tener prelaciones',
+          path: ['prelations'],
+          input: data.prelations,
         });
       }
     } else {
@@ -65,157 +58,131 @@ const subjectSchema = z
     }
   });
 
-export const createCareerSchema = z.object({
+const stepCareerSchema = z.object({
   name: z.string().min(5, {
-    message: "El nombre de la carrera debe tener mínimo 5 caracteres",
+    error: 'El nombre de la carrera debe tener mínimo 5 caracteres',
   }),
   emoji: z
     .string()
-    .regex(
-      /(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])/,
-      {
-        message: "El emoji no es válido",
-      }
-    ),
+    .regex(/(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])/, {
+      error: 'El emoji no es válido',
+    }),
   id: z
     .string()
-    .min(5, { message: "El id de la carrera debe tener mínimo 5 caracteres" })
-    .max(10, {
-      message: "El id de la carrera debe tener máximo 10 caracteres",
-    }),
-  subjects: z.array(
-    z.array(subjectSchema).length(numberOfSubjectsByTrimester, {
-      message: "Cada trimestre debe tener exactamente 5 materias",
+    .min(5, {
+      error: 'El id de la carrera debe tener mínimo 5 caracteres',
     })
-  ),
+    .max(10, {
+      error: 'El id de la carrera debe tener máximo 10 caracteres',
+    }),
 });
 
+const stepSubjects = z.object({
+  subjects: z
+    .array(
+      z.array(subjectSchema).length(numberOfSubjectsByTrimester, {
+        error: `Cada trimestre debe tener exactamente ${numberOfSubjectsByTrimester} materias`,
+      }),
+    )
+    .length(numberOfTrimesters, {
+      error: `Debe haber exactamente ${numberOfTrimesters} trimestres`,
+    }),
+});
+
+export const createCareerSchema = z.object({
+  ...stepCareerSchema.shape,
+  ...stepSubjects.shape,
+});
 export const defaultCreateCareerValues: CreateCareerFormType = {
-  name: "",
-  emoji: "",
-  id: "",
+  name: '',
+  emoji: '',
+  id: '',
   subjects: Array.from({ length: numberOfTrimesters }, () =>
     Array.from({ length: numberOfSubjectsByTrimester }, () => ({
-      code: "",
-      name: "",
+      code: '',
+      name: '',
       credits: 0,
       BPCredits: 0,
       prelations: [],
-      subjectType: "new" as "elective" | "existing" | "new",
-    }))
+      subjectType: 'new' as 'elective' | 'existing' | 'new',
+    })),
   ),
 };
 
-const [trimesterSteps, groupedFieldNames] = generateSteps(
-  numberOfTrimesters,
-  numberOfSubjectsByTrimester
-);
-
-export { groupedFieldNames };
-export const steps: Step<CreateCareerFormType>[] = [
+export const steps: Step[] = [
   {
-    id: "Carrera",
-    fields: ["name", "emoji", "id"],
+    id: 'Carrera',
+    schema: stepCareerSchema,
   },
-  ...trimesterSteps,
+  ...generateSteps(numberOfTrimesters),
 ];
 
 function validateNonElective(data: CreateSubjectType, ctx: z.RefinementCtx) {
   if (!data.code) {
-    ctx.addIssue({
-      message: "El código de la materia es obligatorio",
-      path: ["code"],
-      code: z.ZodIssueCode.invalid_type,
-      expected: "string",
-      received: "undefined",
+    ctx.issues.push({
+      path: ['code'],
+      code: 'invalid_type',
+      expected: 'string',
+      received: undefined,
+      input: data.code,
+      message: 'El código de la materia es obligatorio',
     });
   } else if (data.code.length !== 7) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.too_small,
-      message: "El código de la materia debe tener exactamente 7 caracteres",
-      path: ["code"],
+    ctx.issues.push({
+      code: 'too_small',
+      path: ['code'],
       minimum: 7,
       exact: true,
-      type: "string",
+      origin: 'string',
       inclusive: true,
+      input: data.code,
+      message: 'El código de la materia debe tener exactamente 7 caracteres',
     });
   }
 
   if (!data.name) {
-    ctx.addIssue({
-      message: "El nombre de la materia es obligatorio",
-      path: ["name"],
-      code: z.ZodIssueCode.invalid_type,
-      expected: "string",
-      received: "undefined",
+    ctx.issues.push({
+      path: ['name'],
+      code: 'invalid_type',
+      expected: 'string',
+      received: undefined,
+      input: data.name,
+      message: 'El nombre de la materia es obligatorio',
     });
   }
 
   if (data.credits === undefined) {
-    ctx.addIssue({
-      message: "Los créditos de la materia son obligatorios",
-      path: ["credits"],
-      code: z.ZodIssueCode.invalid_type,
-      expected: "number",
-      received: "undefined",
+    ctx.issues.push({
+      path: ['credits'],
+      code: 'invalid_type',
+      expected: 'number',
+      received: undefined,
+      input: data.credits,
+      message: 'Los créditos de la materia son obligatorios',
     });
   } else if (data.BPCredits === undefined) {
-    ctx.addIssue({
-      message: "Los créditos de la materia son obligatorios",
-      path: ["BPCredits"],
-      code: z.ZodIssueCode.invalid_type,
-      expected: "number",
-      received: "undefined",
+    ctx.issues.push({
+      path: ['BPCredits'],
+      code: 'invalid_type',
+      expected: 'number',
+      received: 'undefined',
+      input: data.BPCredits,
+      message: 'Los créditos de la materia son obligatorios',
     });
   }
 }
 
-function generateSteps(
-  numberOfTrimesters: number,
-  numberOfSubjectsByTrimester: number
-) {
-  type CreateCareerPath = Path<CreateCareerFormType>;
+function generateSteps(numberOfTrimesters: number) {
+  const steps: Step[] = [];
 
-  const steps: Step<CreateCareerFormType>[] = [];
-  const groupedNames: Record<
-    `subjects.${number}.${number}`,
-    Readonly<CreateCareerPath[]>
-  >[] = [];
-
-  for (
-    let trimesterIndex = 0;
-    trimesterIndex < numberOfTrimesters;
-    trimesterIndex++
-  ) {
-    const fields: CreateCareerPath[] = [];
-    const subjectGroup: Record<string, Readonly<CreateCareerPath[]>> = {};
-
-    for (
-      let subjectIndex = 0;
-      subjectIndex < numberOfSubjectsByTrimester;
-      subjectIndex++
-    ) {
-      const subjectName = `subjects.${trimesterIndex}.${subjectIndex}` as const;
-
-      const subjectFields = [
-        `${subjectName}.code`,
-        `${subjectName}.name`,
-        `${subjectName}.credits`,
-        `${subjectName}.BPCredits`,
-      ] as const;
-      fields.push(...subjectFields);
-
-      subjectGroup[subjectName] = subjectFields;
-    }
-
-    groupedNames.push(subjectGroup);
+  for (let trimesterIndex = 0; trimesterIndex < numberOfTrimesters; trimesterIndex++) {
     steps.push({
       id: trimesterIndex + 1,
-      fields,
+      schema: stepSubjects,
     });
   }
 
-  return [steps, groupedNames] as const;
+  return steps;
 }
 
 // REVIEW - Esto se usaba pasra retonar el indices de los codigos que se repetian

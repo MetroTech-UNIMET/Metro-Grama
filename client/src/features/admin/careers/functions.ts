@@ -1,35 +1,32 @@
-import { createCareer, updateCareer } from "@/api/careersApi";
-import { toast } from "@ui/use-toast";
-import { getDirtyNestedFields } from "@utils/forms";
-import { idToSurrealId } from "@utils/queries";
+import { toast } from 'sonner';
 
-import type { CreateCareerFormType } from "./schema";
-import type { ArrayToObject, DirtyFields } from "@utils/forms";
-import type { CareerWithSubjects } from "@/interfaces/Career";
+import { createCareer, updateCareer } from '@/api/careersApi';
+import { getDirtyNestedFields } from '@utils/forms';
+import { idToSurrealId } from '@utils/queries';
+
+import type { CreateCareerFormType } from './schema';
+import type { ArrayToObject, DirtyFields } from '@utils/forms';
+import type { CareerWithSubjects } from '@/interfaces/Career';
 
 function validateOnSubmit(data: CreateCareerFormType) {
   const allCodes: string[] = [];
   for (let trimester of data.subjects) {
     for (let subject of trimester) {
-      if (subject.subjectType === "elective" || !subject.code) {
+      if (subject.subjectType === 'elective' || !subject.code) {
         continue;
       }
 
       for (let prelation of subject.prelations) {
         if (prelation.value === subject.code) {
-          toast({
-            title: "Relaciones inválidas",
+          toast.error('Relaciones inválidas', {
             description: `La materia : ${subject.name}" no puede tener una relación consigo misma`,
-            variant: "destructive",
           });
           return false;
         }
 
         if (!allCodes.includes(prelation.value)) {
-          toast({
-            title: "Relaciones inválidas",
+          toast.error('Relaciones inválidas', {
             description: `En la materia "${subject.name}", la prelación "${prelation.label}" no está presente en trimestres anteriores`,
-            variant: "destructive",
             duration: 7 * 1000,
           });
 
@@ -41,20 +38,16 @@ function validateOnSubmit(data: CreateCareerFormType) {
     }
   }
 
-  const repeatedCodes = allCodes.filter(
-    (code, index) => allCodes.indexOf(code) !== index
-  );
+  const repeatedCodes = allCodes.filter((code, index) => allCodes.indexOf(code) !== index);
 
   if (repeatedCodes.length > 0) {
     const message =
       repeatedCodes.length > 1
-        ? `Los códigos ${repeatedCodes.join(", ")} están repetidos`
+        ? `Los códigos ${repeatedCodes.join(', ')} están repetidos`
         : `El código ${repeatedCodes[0]} está repetido`;
 
-    toast({
-      title: "Códigos repetidos",
+    toast.error('Códigos repetidos', {
       description: message,
-      variant: "destructive",
     });
 
     return false;
@@ -64,13 +57,13 @@ function validateOnSubmit(data: CreateCareerFormType) {
 }
 
 export async function onCreate(data: CreateCareerFormType) {
-  if (!validateOnSubmit(data)) throw new Error("Datos inválidos");
+  if (!validateOnSubmit(data)) throw new Error('Datos inválidos');
 
   const newData = transformCreateData(data);
 
   await createCareer(newData);
   return {
-    title: "Carrera creada",
+    title: 'Carrera creada',
     description: `La carrera "${data.name}" ha sido creada exitosamente`,
   };
 }
@@ -78,12 +71,10 @@ export async function onCreate(data: CreateCareerFormType) {
 export async function onEdit(
   orinalData: CareerWithSubjects,
   data: CreateCareerFormType,
-  dirtyFields: DirtyFields<CreateCareerFormType>
+  dirtyFields: DirtyFields<CreateCareerFormType>,
 ) {
   if (Object.keys(dirtyFields).length === 0)
-    throw new Error(
-      "Para poder modificar, tiene que realizar un cambio en el formulario"
-    );
+    throw new Error('Para poder modificar, tiene que realizar un cambio en el formulario');
 
   if (!validateOnSubmit(data)) return false;
 
@@ -99,7 +90,7 @@ export async function onEdit(
   });
 
   const filtered = getDirtyNestedFields(data, dirtyFields) as Partial<
-    ArrayToObject<CreateCareerFormType, "prelations">
+    ArrayToObject<CreateCareerFormType, 'prelations'>
   >;
 
   const transformed = transformEditData(filtered);
@@ -107,7 +98,7 @@ export async function onEdit(
   await updateCareer(orinalData, transformed);
 
   return {
-    title: "Carrera actualizada",
+    title: 'Carrera actualizada',
     description: `La carrera "${data.name}" ha sido actualizada exitosamente`,
   };
 }
@@ -117,21 +108,19 @@ function transformCreateData(data: CreateCareerFormType) {
     ...data,
     subjects: data.subjects.map((trimester) =>
       trimester.map((subject) => {
-        if (subject.subjectType === "elective") {
+        if (subject.subjectType === 'elective') {
           return undefined;
         }
         return {
           ...subject,
           prelations: subject.prelations.map((prelation) => prelation.value),
         };
-      })
+      }),
     ),
   };
 }
 
-function transformEditData(
-  data: Partial<ArrayToObject<CreateCareerFormType, "prelations">>
-) {
+function transformEditData(data: Partial<ArrayToObject<CreateCareerFormType, 'prelations'>>) {
   if (!data.subjects) return data;
 
   const transformedData: {
@@ -144,14 +133,12 @@ function transformEditData(
     transformedData.subjects[trimesterIndex] = {};
 
     Object.entries(trimester).forEach(([subjectIndex, subject]) => {
-      if (subject.subjectType === "elective") {
+      if (subject.subjectType === 'elective') {
         transformedData.subjects[trimesterIndex][subjectIndex] = null;
       } else {
         transformedData.subjects[trimesterIndex][subjectIndex] = {
           ...subject,
-          code: subject.code
-            ? idToSurrealId(subject.code, "subject")
-            : undefined,
+          code: subject.code ? idToSurrealId(subject.code, 'subject') : undefined,
           prelations: subject.prelations?.map((prelation) => prelation.value),
         };
       }

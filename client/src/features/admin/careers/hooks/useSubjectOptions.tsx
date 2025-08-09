@@ -1,9 +1,9 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState } from 'react';
 
-import { useFetchSubjects } from "@/hooks/queries/subject/use-FetchSubjects";
+import { useFetchSubjects } from '@/hooks/queries/subject/use-FetchSubjects';
 
-import type { Subject } from "@/interfaces/Subject";
-import type { Option } from "@ui/types";
+import type { Subject } from '@/interfaces/Subject';
+import type { Option } from '@ui/types';
 
 // TODO - Eliminar y usar el T Data de Option
 export interface CodeOption {
@@ -12,15 +12,13 @@ export interface CodeOption {
   subject?: Subject;
 }
 
-export type SubjectNameCode = Pick<Subject, "name" | "code">;
+export type SubjectNameCode = Pick<Subject, 'name' | 'code'>;
 
 // TODO función para añadir más opciones a medida que se popule
 export default function useSubjectOptions() {
   const { data: subjects, ...query } = useFetchSubjects();
 
-  const [additionalSubjects, setAdditionalSubjects] = useState<
-    Record<string, SubjectNameCode>
-  >({});
+  const [additionalSubjects, setAdditionalSubjects] = useState<Record<string, SubjectNameCode>>({});
 
   function addAdditionalSubject(subject: SubjectNameCode) {
     setAdditionalSubjects((prev) => ({ ...prev, [subject.code.ID]: subject }));
@@ -48,14 +46,12 @@ export default function useSubjectOptions() {
   };
 }
 
-function generateOptions(
-  subjects: (SubjectNameCode | Subject)[]
-): [Option[], CodeOption[]] {
+function generateOptions(subjects: (SubjectNameCode | Subject)[]): [Option[], CodeOption[]] {
   const prelationsOptions: Option[] = [];
   const codeOptions: CodeOption[] = [];
 
   subjects.forEach((subject) => {
-    const code = subject.code.ID.split(":")[1];
+    const code = subject.code.ID;
     const label = `(${code}) - ${subject.name}`;
 
     prelationsOptions.push({

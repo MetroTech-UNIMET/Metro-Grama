@@ -1,13 +1,40 @@
-import type { FieldNamesMarkedBoolean, FieldValues } from "react-hook-form";
+import { toast } from 'sonner';
 
-export type DirtyFields<T extends FieldValues> = Partial<
-  Readonly<FieldNamesMarkedBoolean<T>>
->;
+import type {
+  FieldError,
+  FieldErrors,
+  FieldNamesMarkedBoolean,
+  FieldValues,
+  SubmitErrorHandler,
+} from 'react-hook-form';
 
-export function getDirtyFields<T extends FieldValues>(
-  data: T,
-  dirty: DirtyFields<T>
-): Partial<T> {
+// FIXME - Utilizar sooner para los toasts
+export const onInvalidToast: SubmitErrorHandler<FieldValues> = (errors) => {
+  const firstError = findFirstError(errors);
+  const errorMessage = firstError?.message;
+
+  if (typeof errorMessage === 'string') {
+    toast.error(errorMessage);
+  } else {
+    toast.error('An unknown error occurred.');
+  }
+};
+
+function findFirstError<T extends FieldValues>(errors: FieldErrors<T>): FieldError | undefined {
+  for (const key in errors) {
+    const error = errors[key];
+    if (error && 'message' in error) return error as FieldError;
+    else if (error && typeof error === 'object') {
+      const nestedError = findFirstError(error as FieldErrors<T>);
+      if (nestedError) return nestedError;
+    }
+  }
+  return undefined;
+}
+
+export type DirtyFields<T extends FieldValues> = Partial<Readonly<FieldNamesMarkedBoolean<T>>>;
+
+export function getDirtyFields<T extends FieldValues>(data: T, dirty: DirtyFields<T>): Partial<T> {
   let result: Partial<T> = {};
 
   for (let key in dirty) {
@@ -28,14 +55,12 @@ export function getDirtyFields<T extends FieldValues>(
 export type ArrayToObject<T, PreserveArrayKeys extends keyof any = never> = T extends (infer U)[]
   ? { [key: number]: ArrayToObject<U, PreserveArrayKeys> }
   : T extends object
-  ? {
-      [K in keyof T]: K extends PreserveArrayKeys
-        ? T[K]
-        : ArrayToObject<T[K], PreserveArrayKeys>;
-    }
-  : T;
+    ? {
+        [K in keyof T]: K extends PreserveArrayKeys ? T[K] : ArrayToObject<T[K], PreserveArrayKeys>;
+      }
+    : T;
 
-  /**
+/**
  * Filters the dirty fields from a form and returns only the dirty fields and their values
  * @param data Original data from the form
  * @param dirty Object with the dirty fields from formState.dirtyFields
@@ -65,18 +90,11 @@ export type ArrayToObject<T, PreserveArrayKeys extends keyof any = never> = T ex
  *   }
  * }
  */
-export function getDirtyNestedFields<T extends FieldValues>(
-  data: T,
-  dirty: DirtyFields<T>
-): Partial<ArrayToObject<T>> {
+export function getDirtyNestedFields<T extends FieldValues>(data: T, dirty: DirtyFields<T>): Partial<ArrayToObject<T>> {
   let result: Partial<ArrayToObject<T>> = {};
 
-  function traverse(
-    currentData: T,
-    currentDirty: DirtyFields<T>,
-    path: string[] = []
-  ) {
-    if (typeof currentDirty === "boolean" && currentDirty) {
+  function traverse(currentData: T, currentDirty: DirtyFields<T>, path: string[] = []) {
+    if (typeof currentDirty === 'boolean' && currentDirty) {
       const value = path.reduce((acc, key) => acc[key], data);
 
       path.reduce((acc: Record<keyof T, any>, key: keyof T, index) => {
@@ -87,7 +105,7 @@ export function getDirtyNestedFields<T extends FieldValues>(
         }
         return acc[key];
       }, result);
-    } else if (typeof currentDirty === "object" && currentDirty !== null) {
+    } else if (typeof currentDirty === 'object' && currentDirty !== null) {
       for (const key in currentDirty) {
         traverse(currentData[key], currentDirty[key]!!, [...path, key]);
       }

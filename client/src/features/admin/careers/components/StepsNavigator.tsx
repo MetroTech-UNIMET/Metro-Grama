@@ -10,7 +10,7 @@ type TouchedFields<T extends FieldValues> = Partial<Readonly<FieldNamesMarkedBoo
 interface Props<T extends FieldValues> {
   steps: Step[];
   currentStep: number;
-  jumpTo: (step: number, validateCurrentStep?: ValidateAction) => Promise<false | undefined>;
+  jumpTo: (step: number, validateCurrentStep?: ValidateAction) => Promise<boolean>;
   stepHasErrors?: (step: Step, currentStep: number, errors: FieldErrors<T>) => boolean;
   headerClassName?: string;
   errors: FieldErrors<T>;

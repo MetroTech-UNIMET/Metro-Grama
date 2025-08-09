@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react';
-import { useForm } from 'react-hook-form';
+import { FieldErrors, useForm } from 'react-hook-form';
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema';
 import { toast } from 'sonner';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
@@ -11,11 +11,13 @@ import StepSubjects from './components/steps/StepSubjects';
 import { numberOfTrimesters } from './constants';
 import StepsNavigator from './components/StepsNavigator';
 
-import useFormStep from '@/hooks/useFormStep';
 import useSubjectOptions from './hooks/useSubjectOptions';
+import useFormStep from '@/hooks/useFormStep';
 
 import { onInvalidToast } from '@utils/forms';
+import { extractShema } from '@utils/zod/zod-type-guards';
 
+import { Tabs, TabsContent } from '@ui/tabs';
 import { Spinner } from '@ui/spinner';
 import { Form } from '@ui/form';
 import { Button } from '@ui/button';
@@ -109,6 +111,8 @@ export default function CareerForm({ mode, data }: Props) {
     steps,
     form,
     onPageChange: (prevPage) => {
+      if (currentStep === 0) return;
+
       const subjects = form.getValues(`subjects.${prevPage - 1}`);
       subjects.forEach((subject) => {
         const isNewSubject = subject.subjectType === 'new';
@@ -134,6 +138,8 @@ export default function CareerForm({ mode, data }: Props) {
       });
     },
     onError: (errors, currentStep) => {
+      if (currentStep === 0) return;
+
       const subjects = form.getValues(`subjects.${currentStep - 1}`);
       subjects.forEach((subject) => {
         const code = subject.code;
@@ -145,73 +151,102 @@ export default function CareerForm({ mode, data }: Props) {
 
       onInvalidToast(errors);
     },
-    transformBeforeValidation: (data, currentStep) => {
-      if (currentStep === 0) return data;
+    transformErrors: (errors, currentStep) => {
+      if (currentStep === 0) return errors;
 
-      const { subjects } = data;
+      const stepIndex = currentStep - 1;
+      const subjectErrors = errors?.subjects?.[stepIndex];
+      return { subjects: { [stepIndex]: subjectErrors } };
+    },
+    filterPaths: (paths, steps) => {
+      if (steps === 0) return paths;
 
-      return {
-        ...data,
-        subjects: [subjects[currentStep - 1]],
-      };
+      const subjectPath = `subjects.${steps - 1}`;
+      return paths.filter((path) => {
+        return path.startsWith(subjectPath) || path === 'subjects';
+      });
     },
   });
 
   const trimesterStepsForm = useMemo(
     () =>
       Array.from({ length: numberOfTrimesters }).map((_, trimesterIndex) => (
-        <StepSubjects
-          key={trimesterIndex}
-          trimesterIndex={trimesterIndex}
-          form={form}
-          mode={mode}
-          codeOptions={codeOptions}
-          prelationsOptions={prelationsOptions}
-          isLoading={query.isLoading}
-        />
+        <TabsContent value={steps[trimesterIndex + 1].id.toString()} key={trimesterIndex}>
+          <StepSubjects
+            trimesterIndex={trimesterIndex}
+            form={form}
+            mode={mode}
+            codeOptions={codeOptions}
+            prelationsOptions={prelationsOptions}
+            isLoading={query.isLoading}
+          />
+        </TabsContent>
       )),
     [codeOptions, prelationsOptions, form, mode, query.isLoading],
   );
 
   return (
     <Form {...form}>
-      <form
-        onSubmit={handleSubmit(onSubmit, async (errors) => {
-          onInvalidToast(errors);
-          await jumpToFirstErrorStep();
-        })}
-        className="bg-background p-16"
-      >
-        <StepsNavigator
-          jumpTo={jumpTo}
-          steps={steps}
-          currentStep={currentStep}
-          headerClassName="mb-8"
-          errors={form.formState.errors}
-          touchedFields={form.formState.touchedFields}
-        />
+      <Tabs asChild value={String(steps[currentStep].id)}>
+        <form
+          onSubmit={handleSubmit(onSubmit, async (errors) => {
+            onInvalidToast(errors);
+            await jumpToFirstErrorStep();
+          })}
+          className="bg-background p-16"
+        >
+          <StepsNavigator
+            jumpTo={jumpTo}
+            steps={steps}
+            currentStep={currentStep}
+            headerClassName="mb-8"
+            errors={form.formState.errors}
+            touchedFields={form.formState.touchedFields}
+            stepHasErrors={(step, index, errors) => {
+              if (!step.schema) return false;
 
-        {currentStep === 0 && <Step1 mode={mode} />}
+              if (index === 0) {
+                const extracted = extractShema(step.schema);
+                const careerSchemaKeys = Object.keys(extracted.shape);
+                const hasError = careerSchemaKeys.some((key) => {
+                  return errors[key as keyof FieldErrors<CreateCareerFormType>] !== undefined;
+                });
+                return hasError;
+              }
 
-        {currentStep >= 1 && <>{trimesterStepsForm[currentStep - 1]}</>}
+              const currentSubjectStep = index - 1;
+              if (errors.subjects) {
+                return errors.subjects[currentSubjectStep] !== undefined;
+              }
 
-        <footer className="mt-8">
-          <Button type="button" onClick={() => previous()} size="icon">
-            <ArrowLeft />
+              return false;
+            }}
+          />
+
+          <TabsContent value="Carrera">
+            <Step1 mode={mode} />
+          </TabsContent>
+
+          {currentStep >= 1 && <>{trimesterStepsForm[currentStep - 1]}</>}
+
+          <footer className="mt-8">
+            <Button type="button" onClick={() => previous()} size="icon">
+              <ArrowLeft />
+            </Button>
+
+            <Button type="button" onClick={async () => await next('callOnError')} size="icon">
+              <ArrowRight />
+            </Button>
+          </footer>
+
+          <Button type="submit" className="mt-8 gap-x-2" disabled={form.formState.isSubmitting}>
+            <Spinner className="text-white" show={form.formState.isSubmitting} />
+            {mode === 'edit' ? 'Editar' : 'Crear'} Carrera
           </Button>
 
-          <Button type="button" onClick={async () => await next('callOnError')} size="icon">
-            <ArrowRight />
-          </Button>
-        </footer>
-
-        <Button type="submit" className="mt-8 gap-x-2" disabled={form.formState.isSubmitting}>
-          <Spinner className="text-white" show={form.formState.isSubmitting} />
-          {mode === 'edit' ? 'Editar' : 'Crear'} Carrera
-        </Button>
-
-        {/* <DevTool control={form.control} /> */}
-      </form>
+          {/* <DevTool control={form.control} /> */}
+        </form>
+      </Tabs>
     </Form>
   );
 }

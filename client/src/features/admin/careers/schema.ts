@@ -80,14 +80,9 @@ const stepCareerSchema = z.object({
 const stepSubjects = z.object({
   subjects: z
     .array(
-      z
-        .array(subjectSchema)
-        .length(numberOfSubjectsByTrimester, {
-          error: `Cada trimestre debe tener exactamente ${numberOfSubjectsByTrimester} materias`,
-        })
-        .length(1, {
-          error: 'xdddd',
-        }),
+      z.array(subjectSchema).length(numberOfSubjectsByTrimester, {
+        error: `Cada trimestre debe tener exactamente ${numberOfSubjectsByTrimester} materias`,
+      }),
     )
     .length(numberOfTrimesters, {
       error: `Debe haber exactamente ${numberOfTrimesters} trimestres`,
@@ -114,14 +109,12 @@ export const defaultCreateCareerValues: CreateCareerFormType = {
   ),
 };
 
-const trimesterSteps = generateSteps(numberOfTrimesters);
-
 export const steps: Step[] = [
   {
     id: 'Carrera',
     schema: stepCareerSchema,
   },
-  ...trimesterSteps,
+  ...generateSteps(numberOfTrimesters),
 ];
 
 function validateNonElective(data: CreateSubjectType, ctx: z.RefinementCtx) {

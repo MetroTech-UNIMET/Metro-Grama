@@ -41,7 +41,7 @@ export default function CareerForm({ mode, data }: Props) {
 
   const form = useForm<CreateCareerFormType>({
     resolver: standardSchemaResolver(createCareerSchema),
-    // mode: 'onBlur',
+    mode: 'onBlur',
     defaultValues: defaultCreateCareerValues,
   });
   const { handleSubmit } = form;

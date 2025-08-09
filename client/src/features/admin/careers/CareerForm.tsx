@@ -13,9 +13,11 @@ import StepsNavigator from './components/StepsNavigator';
 
 import useSubjectOptions from './hooks/useSubjectOptions';
 import useFormStep from '@/hooks/useFormStep';
+import { useDirections } from '@/hooks/use-directions';
 
 import { onInvalidToast } from '@utils/forms';
 import { extractShema } from '@utils/zod/zod-type-guards';
+import { cn } from '@utils/className';
 
 import { Tabs, TabsContent } from '@ui/tabs';
 import { Spinner } from '@ui/spinner';
@@ -30,7 +32,6 @@ interface Props {
   data?: CareerWithSubjects;
 }
 
-// TODO - Transiciones entre los pasos
 export default function CareerForm({ mode, data }: Props) {
   const {
     options: [prelationsOptions, codeOptions],
@@ -168,10 +169,24 @@ export default function CareerForm({ mode, data }: Props) {
     },
   });
 
+  const { direction, goNext, goPrevious, goTo } = useDirections({
+    currentStep,
+    next,
+    previous,
+    jumpTo,
+  });
+
   const trimesterStepsForm = useMemo(
     () =>
       Array.from({ length: numberOfTrimesters }).map((_, trimesterIndex) => (
-        <TabsContent value={steps[trimesterIndex + 1].id.toString()} key={trimesterIndex}>
+        <TabsContent
+          key={trimesterIndex}
+          value={steps[trimesterIndex + 1].id.toString()}
+          className={cn(
+            'data-[state=active]:animate-in slide-in-from-left duration-300',
+            direction === 'right' && 'direction-reverse',
+          )}
+        >
           <StepSubjects
             trimesterIndex={trimesterIndex}
             form={form}
@@ -182,7 +197,7 @@ export default function CareerForm({ mode, data }: Props) {
           />
         </TabsContent>
       )),
-    [codeOptions, prelationsOptions, form, mode, query.isLoading],
+    [direction, codeOptions, prelationsOptions, form, mode, query.isLoading],
   );
 
   return (
@@ -196,7 +211,7 @@ export default function CareerForm({ mode, data }: Props) {
           className="bg-background p-16"
         >
           <StepsNavigator
-            jumpTo={jumpTo}
+            jumpTo={goTo}
             steps={steps}
             currentStep={currentStep}
             headerClassName="mb-8"
@@ -223,18 +238,24 @@ export default function CareerForm({ mode, data }: Props) {
             }}
           />
 
-          <TabsContent value="Carrera">
+          <TabsContent
+            value="Carrera"
+            className={cn(
+              'data-[state=active]:animate-in slide-in-from-left duration-300',
+              direction === 'right' && 'direction-reverse',
+            )}
+          >
             <Step1 mode={mode} />
           </TabsContent>
 
-          {currentStep >= 1 && <>{trimesterStepsForm[currentStep - 1]}</>}
+          {trimesterStepsForm}
 
           <footer className="mt-8">
-            <Button type="button" onClick={() => previous()} size="icon">
+            <Button type="button" onClick={() => goPrevious()} size="icon">
               <ArrowLeft />
             </Button>
 
-            <Button type="button" onClick={async () => await next('callOnError')} size="icon">
+            <Button type="button" onClick={async () => await goNext('callOnError')} size="icon">
               <ArrowRight />
             </Button>
           </footer>

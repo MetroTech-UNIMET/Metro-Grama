@@ -149,6 +149,7 @@ export default function useFormStep<T extends FieldValues>({
       if (!!validate && !(await validateFields(currentStep, validate === 'callOnError'))) return false;
 
       if (currentStep < stepsLength - 1) changeStep(currentStep + 1);
+      return true;
     },
     [currentStep, stepsLength, validateFields, changeStep],
   );
@@ -157,9 +158,8 @@ export default function useFormStep<T extends FieldValues>({
     async (validate: ValidateAction = false) => {
       if (!!validate && !(await validateFields(currentStep, validate === 'callOnError'))) return false;
 
-      if (currentStep > 0) {
-        changeStep(currentStep - 1);
-      }
+      if (currentStep > 0) changeStep(currentStep - 1);
+      return true;
     },
     [currentStep, validateFields, changeStep],
   );
@@ -192,9 +192,8 @@ export default function useFormStep<T extends FieldValues>({
         }
       }
 
-      if (step >= 0 && step < steps.length) {
-        changeStep(step);
-      }
+      if (step >= 0 && step < steps.length) changeStep(step);
+      return true;
     },
     [currentStep, steps, validateFields, changeStep, jumpToFirstErrorStep],
   );

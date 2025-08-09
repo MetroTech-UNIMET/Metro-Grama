@@ -104,7 +104,6 @@ export default function AutoComplete<TValue extends string | number = string | n
   }, [inputOptions, groupBy]);
 
   useEffect(() => {
-    console.log(value, selected);
     if (!value) {
       setInputValue('');
       setSelected(undefined);
@@ -121,8 +120,6 @@ export default function AutoComplete<TValue extends string | number = string | n
   const handleSelectOption = useCallback(
     (selectedOption: Option<TValue, TData>) => {
       // setInputValue(customOnSelectLabeling(selectedOption));
-
-      console.log(selectedOption);
       setSelected(selectedOption);
       onSelect?.(selectedOption);
       onValueChange?.(selectedOption);
@@ -186,7 +183,6 @@ export default function AutoComplete<TValue extends string | number = string | n
 
       if (!allowFreeInput) setInputValue(selected?.label || '');
       else if (selected?.label !== inputValue && selected?.value !== inputValue) {
-        console.log(selected?.label, inputValue)
         // REVIEW - Pensar si tiene sentido buscar una opcion con el mismo label
         let optionToSelect: Option<TValue, TData> | undefined;
 

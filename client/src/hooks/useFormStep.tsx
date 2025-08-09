@@ -30,10 +30,16 @@ interface Props<T extends FieldValues> {
    */
   onSuccess?: (step: number, schema: FormSchema, data: any) => void;
   /**
-   * Function to transform the data from form.getValues() before validation.
-   * @description This is useful if you need to only get a subset of the form values or transform them in some way before validation.
+   * Function to transform the errors before comparing them with the schema path.
+   * @description This is useful if you need to only get a subset of the form errors or transform them in some way before validation.
+   * For example, you might want to remove some fields when wanting to validate a specific step.
    */
-  transformBeforeValidation?: (data: T, currentStep: number) => T;
+  transformErrors?: (errors: FieldErrors<T>, currentStep: number) => FieldErrors<T>;
+  /**
+   * Optional function to filter the paths that will be validated.
+   * @description This is useful if you want to validate only a subset of the paths in the schema.
+   */
+  filterPaths?: (paths: Path<T>[], currentStep: number) => Path<T>[];
   onPageChange?: (prevPage: number, nextPage: number) => void;
 }
 
@@ -42,7 +48,8 @@ export default function useFormStep<T extends FieldValues>({
   form: { getValues, clearErrors, setError },
   onError,
   onSuccess,
-  transformBeforeValidation,
+  transformErrors,
+  filterPaths,
   onPageChange,
 }: Props<T>) {
   const [currentStep, setCurrentStep] = useState(0);
@@ -61,33 +68,36 @@ export default function useFormStep<T extends FieldValues>({
       const currentSchema = steps[currentStep].schema;
       if (!currentSchema) return true;
 
-      let currentFormValues = getValues();
-      if (transformBeforeValidation) currentFormValues = transformBeforeValidation(currentFormValues, currentStep);
+      const currentFormValues = getValues();
 
       const parsed = await currentSchema.safeParseAsync(currentFormValues);
-      if (parsed.error) {
-        const rhfErrors = zodErrorToFieldErrors<T>(parsed.error, true);
-        const [pathFields, arrayPaths] = getZodPathFields(currentSchema);
 
-        const paths = generateRHFPaths(pathFields, arrayPaths, currentFormValues);
+      const [pathFields, arrayPaths] = getZodPathFields(currentSchema);
+      let paths = generateRHFPaths(pathFields, arrayPaths, currentFormValues);
+      if (filterPaths) paths = filterPaths(paths, currentStep);
+
+      if (parsed.error) {
+        let rhfErrors = zodErrorToFieldErrors<T>(parsed.error, true);
+        const originalRhfErrors = rhfErrors;
+        if (transformErrors) rhfErrors = transformErrors(rhfErrors, currentStep);
 
         paths.forEach((path) => {
           let { field, auxError } = getError();
 
           if (!auxError) {
-            clearErrors(field as Path<T>);
+            clearErrors(field);
             return;
           }
           const root = auxError?.root;
           const message = auxError?.message;
 
           if (root) {
-            setError(field as Path<T>, root as any, {
+            setError(field, root as any, {
               shouldFocus: true,
             });
           } else if (message) {
             setError(
-              field as Path<T>,
+              field,
               {
                 message: message as any,
                 type: auxError.type as any,
@@ -98,18 +108,18 @@ export default function useFormStep<T extends FieldValues>({
               },
             );
           } else {
-            clearErrors(field as Path<T>);
+            // clearErrors(field);
           }
 
           function getError() {
             const segments = path.split('.');
 
-            let field = '';
+            let field = '' as Path<T>;
             let auxError = rhfErrors;
 
             for (let i = 0; i < segments.length; i++) {
               const segment = segments[i];
-              field = combinePaths(field, segment);
+              field = combinePaths(field, segment) as Path<T>;
 
               auxError = auxError[segment] as FieldErrors<T>;
               if (!auxError) return { field, auxError: undefined };
@@ -120,15 +130,18 @@ export default function useFormStep<T extends FieldValues>({
         });
 
         if (callOnError) {
-          await onError?.(rhfErrors, currentStep);
+          await onError?.(originalRhfErrors, currentStep);
         }
       } else {
+        paths.forEach((path) => {
+          clearErrors(path);
+        });
         onSuccess?.(currentStep, currentSchema, parsed.data);
       }
 
       return parsed.success;
     },
-    [steps, onError, transformBeforeValidation, onSuccess, getValues, setError, clearErrors],
+    [steps, onError, transformErrors, onSuccess, filterPaths, getValues, setError, clearErrors],
   );
 
   const next = useCallback(
@@ -200,12 +213,12 @@ function generateRHFPaths<T extends FieldValues>(
   pathFields: string[],
   arrayPaths: string[],
   currentFormValues: T,
-): string[] {
-  const allPaths: string[] = [];
+): Path<T>[] {
+  const allPaths: Path<T>[] = [];
 
   function resolveArrayPaths(basePath: string, remainingPath: string[], currentValue: any) {
     if (!remainingPath.length) {
-      allPaths.push(basePath);
+      allPaths.push(basePath as Path<T>);
       return;
     }
 
@@ -223,7 +236,7 @@ function generateRHFPaths<T extends FieldValues>(
   }
 
   pathFields.forEach((path) => {
-    allPaths.push(path);
+    allPaths.push(path as Path<T>);
   });
 
   arrayPaths.forEach((arrayPath) => {

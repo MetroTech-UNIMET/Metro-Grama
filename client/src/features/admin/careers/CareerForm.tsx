@@ -255,7 +255,7 @@ export default function CareerForm({ mode, data }: Props) {
               <ArrowLeft />
             </Button>
 
-            <Button type="button" onClick={async () => await goNext('callOnError')} size="icon">
+            <Button type="button" onClick={async () => await goNext('ignoreValidation')} size="icon">
               <ArrowRight />
             </Button>
           </footer>

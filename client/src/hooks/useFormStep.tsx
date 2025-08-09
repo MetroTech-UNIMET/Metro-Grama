@@ -6,7 +6,13 @@ import { combinePaths, getZodPathFields } from '@utils/zod/zod-schema-paths';
 import type { FieldErrors, FieldValues, Path, UseFormReturn } from 'react-hook-form';
 import type { FormSchema } from '@utils/zod/types';
 
-export type ValidateAction = boolean | 'callOnError';
+/**
+ * Type representing the action to take when validating a step.
+ * - `boolean`: Indicates whether to validate the step.
+ * - `'callOnError'`: Validates the step and calls the `onError` callback if validation fails.
+ * - `'ignoreValidation'`: Still validates the step, but does not block the navigation.
+ */
+export type ValidateAction = boolean | 'callOnError' | 'ignoreValidation';
 
 export interface Step {
   schema?: FormSchema;
@@ -146,7 +152,12 @@ export default function useFormStep<T extends FieldValues>({
 
   const next = useCallback(
     async (validate: ValidateAction = false) => {
-      if (!!validate && !(await validateFields(currentStep, validate === 'callOnError'))) return false;
+      if (!!validate) {
+        const validationPromise = validateFields(currentStep, validate === 'callOnError');
+        if (validate !== 'ignoreValidation' && !(await validationPromise)) {
+          return false;
+        }
+      }
 
       if (currentStep < stepsLength - 1) changeStep(currentStep + 1);
       return true;
@@ -156,7 +167,12 @@ export default function useFormStep<T extends FieldValues>({
 
   const previous = useCallback(
     async (validate: ValidateAction = false) => {
-      if (!!validate && !(await validateFields(currentStep, validate === 'callOnError'))) return false;
+      if (!!validate) {
+        const validationPromise = validateFields(currentStep, validate === 'callOnError');
+        if (validate !== 'ignoreValidation' && !(await validationPromise)) {
+          return false;
+        }
+      }
 
       if (currentStep > 0) changeStep(currentStep - 1);
       return true;
@@ -177,9 +193,11 @@ export default function useFormStep<T extends FieldValues>({
 
   const jumpTo = useCallback(
     async (step: number, validateCurrentStep: ValidateAction = false) => {
-      if (validateCurrentStep) {
-        const isValid = await validateFields(currentStep, validateCurrentStep === 'callOnError');
-        if (!isValid) return false;
+      if (!!validateCurrentStep) {
+        const validationPromise = validateFields(currentStep, validateCurrentStep === 'callOnError');
+        if (validateCurrentStep !== 'ignoreValidation' && !(await validationPromise)) {
+          return false;
+        }
       }
 
       const nextStep = steps[step];

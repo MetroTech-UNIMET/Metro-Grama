@@ -7,10 +7,10 @@ import (
 	"metrograma/tools"
 	"net/http"
 
-	"github.com/labstack/echo/v4"
-	surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
 	authMiddlewares "metrograma/modules/auth/middlewares"
 
+	"github.com/labstack/echo/v4"
+	surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
 )
 
 func Handlers(e *echo.Group) {
@@ -23,12 +23,34 @@ func Handlers(e *echo.Group) {
 	// careersGroup.PATCH("/withSubjects/:careerId", updateCareerWithSubjects, authMiddlewares.AdminAuth)
 }
 
+// getCareers godoc
+// @Summary      List careers
+// @Description  Get all careers
+// @Tags         careers
+// @Accept       json
+// @Produce      json
+// @Success      200  {array}   models.CareerEntity
+// @Failure      400  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /careers/ [get]
 func getCareers(c echo.Context) error {
 	careers, err := services.GetCareers()
 	return tools.GetResponse(c, careers, err)
 }
 
 // TODO - Testear
+// createCareer godoc
+// @Summary      Create career
+// @Description  Create a new career
+// @Tags         careers
+// @Accept       json
+// @Produce      json
+// @Param        career  body      models.CareerCreateForm  true  "Career form"
+// @Success      201  {object}  map[string]string
+// @Failure      400  {object}  map[string]string
+// @Failure      409  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /careers/ [post]
 func createCareer(c echo.Context) error {
 	var careerForm models.CareerCreateForm
 	if err := c.Bind(&careerForm); err != nil {
@@ -59,6 +81,17 @@ type deleteCareerParam struct {
 }
 
 // TODO - Testear
+// deleteCareer godoc
+// @Summary      Delete a career
+// @Description  Deletes a career by id
+// @Tags         careers
+// @Accept       json
+// @Produce      json
+// @Param        careerId  path  string  true  "Career ID"
+// @Success      204
+// @Failure      400  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /careers/{careerId}/ [delete]
 func deleteCareer(c echo.Context) error {
 	var target deleteCareerParam
 	if err := c.Bind(&target); err != nil {
@@ -98,6 +131,18 @@ func deleteCareer(c echo.Context) error {
 // 	return nil
 // }
 
+// getCareerWithSubjectsById godoc
+// @Summary      Get career with subjects
+// @Description  Returns a career and its subjects by id
+// @Tags         careers
+// @Accept       json
+// @Produce      json
+// @Param        careerId  path  string  true  "Career ID"
+// @Success      200  {object}  models.CareerWithSubjects
+// @Failure      400  {object}  map[string]string
+// @Failure      404  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /careers/withSubjects/{careerId}/ [get]
 func getCareerWithSubjectsById(c echo.Context) error {
 	careerId := c.Param("careerId")
 	if careerId == "" {

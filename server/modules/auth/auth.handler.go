@@ -17,6 +17,17 @@ func Handlers(e *echo.Group) {
 	e.POST("/auth/admin/login", adminLogin)
 }
 
+// adminLogin godoc
+// @Summary      Admin login
+// @Description  Authenticate admin user with credentials
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        credentials  body  models.UserLoginForm  true  "Login form"
+// @Success      200
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Router       /auth/admin/login [post]
 func adminLogin(c echo.Context) error {
 	var loginForm models.UserLoginForm
 	if err := c.Bind(&loginForm); err != nil {
@@ -26,7 +37,7 @@ func adminLogin(c echo.Context) error {
 	if err := c.Validate(loginForm); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
-	
+
 	authResult, err := services.LoginUser(loginForm)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusUnauthorized, err.Error())
@@ -49,7 +60,3 @@ func adminLogin(c echo.Context) error {
 
 	return c.NoContent(http.StatusOK)
 }
-
-
-
-

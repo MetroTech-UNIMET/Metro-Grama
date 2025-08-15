@@ -44,6 +44,18 @@ func extractData(c echo.Context) (*models.RecordID, []string, error) {
 	return &userID, subjects, nil
 }
 
+// createPassed godoc
+// @Summary      Enroll subjects for user
+// @Description  Enrolls the authenticated user into the provided subjects
+// @Tags         enroll
+// @Accept       json
+// @Produce      json
+// @Param        body  body  object  true  "{\"subjects\": [string]}"
+// @Success      201  {object}  map[string]string
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /enroll/ [post]
 func createPassed(c echo.Context) error {
 	userId, subjects, err := extractData(c)
 	if err != nil {
@@ -60,6 +72,18 @@ func createPassed(c echo.Context) error {
 	})
 }
 
+// deletePassed godoc
+// @Summary      Unenroll subjects for user
+// @Description  Removes the authenticated user's enrollment for provided subjects
+// @Tags         enroll
+// @Accept       json
+// @Produce      json
+// @Param        body  body  object  true  "{\"subjects\": [string]}"
+// @Success      201  {object}  map[string]string
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /enroll/ [delete]
 func deletePassed(c echo.Context) error {
 	userId, subjects, err := extractData(c)
 	if err != nil {
@@ -76,6 +100,16 @@ func deletePassed(c echo.Context) error {
 	})
 }
 
+// getEnrolledSubjects godoc
+// @Summary      Get enrolled subjects for user
+// @Description  Returns subjects the authenticated user is enrolled in
+// @Tags         enroll
+// @Accept       json
+// @Produce      json
+// @Success      200  {object}  map[string]interface{}
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /enroll/ [get]
 func getEnrolledSubjects(c echo.Context) error {
 	userId := c.Get("user-id").(models.RecordID)
 
@@ -87,4 +121,4 @@ func getEnrolledSubjects(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]interface{}{
 		"subjects": subjects,
 	})
-} 
+}

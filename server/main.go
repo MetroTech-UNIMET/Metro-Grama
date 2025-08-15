@@ -13,6 +13,10 @@ import (
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 	echoMiddleware "github.com/labstack/echo/v4/middleware"
+
+	docs "metrograma/docs"
+
+	echoSwagger "github.com/swaggo/echo-swagger"
 )
 
 func main() {
@@ -26,7 +30,7 @@ func main() {
 	e.Use(session.Middleware(sessions.NewCookieStore([]byte(env.UserTokenSigninKey))))
 	e.Use(middlewares.Cors())
 	e.Use(echoMiddleware.BodyLimit("2M"))
-	e.Use(echoMiddleware.Logger())
+	// e.Use(echoMiddleware.Logger())
 	e.Use(echoMiddleware.Gzip())
 	e.Use(echoMiddleware.Decompress())
 	e.Use(echoMiddleware.StaticWithConfig(echoMiddleware.StaticConfig{
@@ -47,6 +51,14 @@ func main() {
 	}))
 
 	handlers.CreateHandlers(e)
+
+	docs.SwaggerInfo.Title = "MetroGrama API"
+	docs.SwaggerInfo.Description = "MetroGrama API documentation"
+	docs.SwaggerInfo.Version = "1.0"
+	docs.SwaggerInfo.Host = fmt.Sprintf("localhost:%s", env.GetDotEnv("PORT"))
+	docs.SwaggerInfo.BasePath = "/api"
+	docs.SwaggerInfo.Schemes = []string{"http"}
+	e.GET("/swagger/*", echoSwagger.WrapHandler)
 
 	e.Logger.Fatal(e.Start(fmt.Sprintf(":%s", env.GetDotEnv("PORT"))))
 

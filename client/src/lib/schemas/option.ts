@@ -9,10 +9,10 @@ export const optionSchema = optionSchema_NoTransform.transform(
   (data) => data.value
 );
 
-export const optionStringSchemz_NoTransform = z.object({
+export const optionStringSchema_NoTransform = z.object({
   label: z.string(),
   value: z.string(),
 });
-export const optionStringSchema = optionStringSchemz_NoTransform.transform(
+export const optionStringSchema = optionStringSchema_NoTransform.transform(
   (data) => data.value
 );

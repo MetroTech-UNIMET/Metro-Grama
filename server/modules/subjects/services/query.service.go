@@ -86,9 +86,7 @@ func GetSubjects(careers string) ([]models.SubjectNode, error) {
 
 	subjects := (*result)[0].Result
 
-	if err != nil {
-		return []models.SubjectNode{}, err
-	} else if len(subjects) == 0 {
+	if len(subjects) == 0 {
 		return []models.SubjectNode{}, fmt.Errorf("there is no subjects belonging to this careers")
 	}
 

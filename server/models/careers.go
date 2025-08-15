@@ -3,7 +3,7 @@ package models
 import surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
 
 type CareerEntity struct {
-	ID                  surrealModels.RecordID `json:"id" validate:"required"`
+	ID                  surrealModels.RecordID `json:"id" validate:"required" swaggertype:"object"`
 	Name                string                 `json:"name" validate:"required"`
 	Emoji               string                 `json:"emoji" validate:"required"`
 	ElectivesTrimesters []int                  `json:"electivesTrimesters"`
@@ -21,7 +21,7 @@ type CreateCareerSubject struct {
 	Name        string                   `json:"name" validate:"required"`
 	Credits     uint8                    `json:"credits" validate:"gte=0,lte=150"`
 	BPCredits   uint8                    `json:"BPCredits" validate:"gte=0,lte=150"`
-	Prelations  []surrealModels.RecordID `json:"prelations" validate:"required,dive,required"`
+	Prelations  []surrealModels.RecordID `json:"prelations" validate:"required,dive,required" swaggertype:"array,object"`
 	SubjectType string                   `json:"subjectType" validate:"required,oneof=elective existing new"`
 }
 
@@ -37,7 +37,7 @@ type UpdateCareerSubject struct {
 	Name        string                   `json:"name,omitempty"`
 	Credits     uint8                    `json:"credits,omitempty" validate:"gte=0,lte=150"`
 	BPCredits   uint8                    `json:"BPCredits,omitempty" validate:"gte=0,lte=150"`
-	Prelations  []surrealModels.RecordID `json:"prelations,omitempty"`
+	Prelations  []surrealModels.RecordID `json:"prelations,omitempty" swaggertype:"array,object"`
 	SubjectType string                   `json:"subjectType,omitempty" validate:"oneof=elective existing new"`
 }
 
@@ -46,7 +46,7 @@ type CareerSubjectWithoutType struct {
 	Name       string                   `json:"name" validate:"required"`
 	Credits    uint8                    `json:"credits" validate:"gte=0,lte=150"`
 	BPCredits  uint8                    `json:"BPCredits" validate:"gte=0,lte=150"`
-	Prelations []surrealModels.RecordID `json:"prelations" validate:"required"`
+	Prelations []surrealModels.RecordID `json:"prelations" validate:"required" swaggertype:"array,object"`
 }
 
 type CareerWithSubjects struct {

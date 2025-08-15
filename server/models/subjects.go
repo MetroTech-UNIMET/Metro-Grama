@@ -11,7 +11,7 @@ import surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
 // }
 
 type SubjectEntity struct {
-	ID        surrealModels.RecordID `json:"id,omitempty"`
+	ID        surrealModels.RecordID `json:"id,omitempty" swaggertype:"object"`
 	Name      string                 `json:"name"`
 	Credits   uint8                  `json:"credits"`
 	BPCredits uint8                  `json:"BPCredits"`
@@ -30,9 +30,9 @@ type SubjectForm struct {
 }
 
 type SubjectNode struct {
-	Code      surrealModels.RecordID   `json:"code"`
+	Code      surrealModels.RecordID   `json:"code" swaggertype:"object"`
 	Name      string                   `json:"name"`
-	Careers   []surrealModels.RecordID `json:"careers"`
+	Careers   []surrealModels.RecordID `json:"careers" swaggertype:"array,object"`
 	Credits   uint8                    `json:"credits"`
 	BPCredits uint8                    `json:"BPCredits"`
 }
@@ -43,7 +43,7 @@ type SubjectEdge struct {
 }
 
 type SubjectsByCareers struct {
-	Careers    []surrealModels.RecordID `json:"careers"`
-	Prelations []surrealModels.RecordID `json:"prelations"`
+	Careers    []surrealModels.RecordID `json:"careers" swaggertype:"array,object"`
+	Prelations []surrealModels.RecordID `json:"prelations" swaggertype:"array,object"`
 	Subject    SubjectEntity
 }

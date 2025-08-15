@@ -6,6 +6,7 @@ import (
 	"metrograma/modules/careers"
 	"metrograma/modules/interactions"
 	"metrograma/modules/subjects"
+	"metrograma/modules/trimesters"
 	"metrograma/modules/users"
 
 	"github.com/labstack/echo/v4"
@@ -13,13 +14,15 @@ import (
 
 func CreateHandlers(e *echo.Echo) {
 	apiGroup := e.Group("/api")
-	apiGroup.Any("*", func(c echo.Context) error {
-		return echo.ErrNotFound
-	})
 	health.Handlers(apiGroup)
 	subjects.Handlers(apiGroup)
 	careers.Handlers(apiGroup)
 	users.Handlers(apiGroup)
 	auth.Handlers(apiGroup)
 	interactions.Handlers(apiGroup)
+	trimesters.Handlers(apiGroup)
+
+	apiGroup.Any("*", func(c echo.Context) error {
+		return echo.ErrNotFound
+	})
 }

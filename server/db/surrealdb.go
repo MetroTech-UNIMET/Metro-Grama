@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"fmt"
 	"metrograma/env"
 
@@ -16,17 +17,22 @@ type SurrealErrMsg struct {
 }
 
 func InitSurrealDB() {
-	db, err := surrealdb.New(fmt.Sprintf("ws://%s/rpc", env.GetDotEnv("SURREAL_HOST")))
+	db, err := surrealdb.FromEndpointURLString(context.Background(),fmt.Sprintf("ws://%s/rpc", env.GetDotEnv("SURREAL_HOST")))
 	if err != nil {
 		panic(err.Error())
 	}
-	if err = db.Use(env.GetDotEnv("SURREAL_NS"), env.GetDotEnv("SURREAL_DB")); err != nil {
+	if err = db.Use(context.Background(), env.GetDotEnv("SURREAL_NS"), env.GetDotEnv("SURREAL_DB")); err != nil {
 		panic(err)
 	}
-	if _, err = db.SignIn(&surrealdb.Auth{
-		Username: env.GetDotEnv("SURREAL_USER"),
-		Password: env.GetDotEnv("SURREAL_PASS"),
-	}); err != nil {
+	
+	auth := &surrealdb.Auth{
+		Username:  env.GetDotEnv("SURREAL_USER"),
+		Password:  env.GetDotEnv("SURREAL_PASS"),
+	}
+
+	fmt.Printf("Auth: %+v\n", auth)
+
+	if _, err = db.SignIn(context.Background(), auth); err != nil {
 		panic(err)
 	}
 

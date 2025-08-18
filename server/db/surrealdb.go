@@ -17,20 +17,18 @@ type SurrealErrMsg struct {
 }
 
 func InitSurrealDB() {
-	db, err := surrealdb.FromEndpointURLString(context.Background(),fmt.Sprintf("ws://%s/rpc", env.GetDotEnv("SURREAL_HOST")))
+	db, err := surrealdb.FromEndpointURLString(context.Background(), fmt.Sprintf("ws://%s/rpc", env.GetDotEnv("SURREAL_HOST")))
 	if err != nil {
 		panic(err.Error())
 	}
 	if err = db.Use(context.Background(), env.GetDotEnv("SURREAL_NS"), env.GetDotEnv("SURREAL_DB")); err != nil {
 		panic(err)
 	}
-	
-	auth := &surrealdb.Auth{
-		Username:  env.GetDotEnv("SURREAL_USER"),
-		Password:  env.GetDotEnv("SURREAL_PASS"),
-	}
 
-	fmt.Printf("Auth: %+v\n", auth)
+	auth := &surrealdb.Auth{
+		Username: env.GetDotEnv("SURREAL_USER"),
+		Password: env.GetDotEnv("SURREAL_PASS"),
+	}
 
 	if _, err = db.SignIn(context.Background(), auth); err != nil {
 		panic(err)

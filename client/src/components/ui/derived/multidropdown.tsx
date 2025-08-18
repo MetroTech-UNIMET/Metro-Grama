@@ -5,7 +5,7 @@ import { X } from 'lucide-react';
 import { cn } from '@/lib/utils/className';
 import useDebounce from '@/hooks/useDebounceValue';
 
-import { Spinner } from "@ui/spinner";
+import { Spinner } from '@ui/spinner';
 import { Badge } from '@/components/ui/badge';
 import { Command, CommandGroup, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -19,10 +19,7 @@ interface CommonProps {
   required?: boolean;
 }
 
-export interface MultipleSelectorProps<
-  TValue extends string | number = string | number,
-  TData = undefined,
-> extends CommonProps {
+export interface MultipleSelectorProps<TValue = string | number, TData = undefined> extends CommonProps {
   ref?: React.Ref<MultipleSelectorRef<TValue, TData>>;
   value?: Option<TValue, TData>[];
 
@@ -32,7 +29,7 @@ export interface MultipleSelectorProps<
   placeholder?: string;
 
   /** Use if fetching options async and want to show a loading state */
-  loadingOptions?: boolean;
+  isLoading?: boolean;
   /** Loading component. */
   loadingIndicator?: React.ReactNode;
   /** Empty component. */
@@ -47,6 +44,11 @@ export interface MultipleSelectorProps<
   /** async search */
   onSearch?: (value: string) => Promise<Option<TValue, TData>[]>;
   onChange?: (options: Option<TValue, TData>[]) => void;
+
+  /** Function called when selecting an option */
+  onSelect?: (option: Option<TValue, TData>) => void;
+  /** Function called when unselecting an option */
+  onUnselect?: (option: Option<TValue, TData>) => void;
   /** Limit the maximum number of selected options. */
   maxSelected?: number;
   /** When the number of selected options exceeds the limit, the onMaxSelected will be called. */
@@ -54,6 +56,8 @@ export interface MultipleSelectorProps<
   /** Hide the placeholder when there are options selected. */
   hidePlaceholderWhenSelected?: boolean;
   disabled?: boolean;
+  /** Function to determine if an option should be disabled */
+  isOptionDisabled?: (option: Option<TValue, TData>) => boolean;
   /** Group the options base on provided key. */
   groupBy?: string;
   className?: string;
@@ -80,10 +84,7 @@ export interface MultipleSelectorProps<
   showSpinner?: boolean;
 }
 
-export interface MultipleSelectorRef<
-  TValue extends string | number = string | number,
-  TData = undefined,
-> {
+export interface MultipleSelectorRef<TValue = string | number, TData = undefined> {
   selectedValue: Option<TValue, TData>[];
   input: HTMLInputElement;
 }
@@ -106,25 +107,24 @@ function removePickedOption<TValue extends string | number = string | number, TD
  *
  * @reference: https://github.com/hsuanyi-chou/shadcn-ui-expansions/issues/34#issuecomment-1949561607
  **/
-const CommandEmpty = forwardRef<
-  HTMLDivElement,
-  React.ComponentProps<typeof CommandPrimitive.Empty>
->(({ className, ...props }, forwardedRef) => {
-  const render = useCommandState((state) => state.filtered.count === 0);
+const CommandEmpty = forwardRef<HTMLDivElement, React.ComponentProps<typeof CommandPrimitive.Empty>>(
+  ({ className, ...props }, forwardedRef) => {
+    const render = useCommandState((state) => state.filtered.count === 0);
 
-  if (!render) return null;
+    if (!render) return null;
 
-  return (
-    <div
-      ref={forwardedRef}
-      className={cn('py-6 text-center text-sm', className)}
-      // eslint-disable-next-line react/no-unknown-property -- temp fix for cmdk
-      cmdk-empty=""
-      role="presentation"
-      {...props}
-    />
-  );
-});
+    return (
+      <div
+        ref={forwardedRef}
+        className={cn('py-6 text-center text-sm', className)}
+        // eslint-disable-next-line react/no-unknown-property -- temp fix for cmdk
+        cmdk-empty=""
+        role="presentation"
+        {...props}
+      />
+    );
+  },
+);
 
 CommandEmpty.displayName = 'CommandEmpty';
 
@@ -132,12 +132,14 @@ function MultipleSelector<TValue extends string | number = string | number, TDat
   ref,
   value,
   onChange,
+  onSelect: onSelectProps,
+  onUnselect,
   placeholder,
   defaultOptions: arrayDefaultOptions = [],
   options: arrayOptions,
   delay,
   onSearch,
-  loadingOptions,
+  isLoading: loadingOptions,
   loadingIndicator,
   emptyIndicator,
   maxSelected = Number.MAX_SAFE_INTEGER,
@@ -155,6 +157,7 @@ function MultipleSelector<TValue extends string | number = string | number, TDat
   inputProps,
   showSpinner = false,
   popoverContainer,
+  isOptionDisabled,
 }: MultipleSelectorProps<TValue, TData>) {
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [open, setOpen] = React.useState(false);
@@ -180,11 +183,30 @@ function MultipleSelector<TValue extends string | number = string | number, TDat
 
   const handleUnselect = React.useCallback(
     (option: Option<TValue, TData>) => {
+      if (disabled || option.fixed) return;
+
       const newOptions = selected.filter((s) => s.value !== option.value);
       setSelected(newOptions);
       onChange?.(newOptions);
+      onUnselect?.(option);
     },
-    [onChange, selected],
+    [onChange, onUnselect, selected, disabled],
+  );
+
+  const handleSelect = React.useCallback(
+    (option: Option<TValue, TData>) => {
+      if (selected.length >= maxSelected) {
+        onMaxSelected?.(selected.length);
+        return;
+      }
+      setInputValue('');
+      const newOptions = [...selected, option];
+
+      setSelected(newOptions);
+      onChange?.(newOptions);
+      onSelectProps?.(option);
+    },
+    [onChange, selected, maxSelected, onMaxSelected, onSelectProps],
   );
 
   const handleKeyDown = React.useCallback(
@@ -262,10 +284,7 @@ function MultipleSelector<TValue extends string | number = string | number, TDat
           }
           setInputValue('');
           // REVIEW - Value siempre será un string
-          const newOptions = [
-            ...selected,
-            { value: value as any, label: value, data: undefined as TData },
-          ];
+          const newOptions = [...selected, { value: value as any, label: value, data: undefined as TData }];
           setSelected(newOptions);
           onChange?.(newOptions);
         }}
@@ -329,16 +348,14 @@ function MultipleSelector<TValue extends string | number = string | number, TDat
           commandProps?.onKeyDown?.(e);
         }}
         className={cn('overflow-visible bg-transparent', commandProps?.className)}
-        shouldFilter={
-          commandProps?.shouldFilter !== undefined ? commandProps.shouldFilter : !onSearch
-        }
+        shouldFilter={commandProps?.shouldFilter !== undefined ? commandProps.shouldFilter : !onSearch}
         // When onSearch is provided, we don't want to filter the options. You can still override it.
         filter={commandFilter()}
       >
         <PopoverAnchor asChild>
           <div
             className={cn(
-              'border-input ring-offset-background group rounded-md border px-4 py-2.5 text-sm focus-within:ring-2 focus-within:ring-secondary focus-within:ring-offset-2',
+              'border-input ring-offset-background group focus-within:ring-secondary rounded-md border px-4 py-2.5 text-sm focus-within:ring-2 focus-within:ring-offset-2',
               className,
             )}
           >
@@ -372,7 +389,7 @@ function MultipleSelector<TValue extends string | number = string | number, TDat
                       }}
                       onClick={() => handleUnselect(option)}
                     >
-                      <X className="hover:text-foreground h-3 w-3 text-muted-foreground" />
+                      <X className="hover:text-foreground text-muted-foreground h-3 w-3" />
                     </button>
                   </Badge>
                 );
@@ -388,21 +405,17 @@ function MultipleSelector<TValue extends string | number = string | number, TDat
                     setInputValue(value);
                     inputProps?.onValueChange?.(value);
                   }}
-                  placeholder={
-                    hidePlaceholderWhenSelected && selected.length !== 0 ? '' : placeholder
-                  }
+                  placeholder={hidePlaceholderWhenSelected && selected.length !== 0 ? '' : placeholder}
                   className={cn(
-                    'ml-2 w-full flex-1 bg-transparent outline-hidden placeholder:text-muted-foreground',
+                    'placeholder:text-muted-foreground ml-2 w-full flex-1 bg-transparent outline-hidden',
                     inputProps?.className,
                   )}
                   onFocus={(e) => {
-                    console.log('focus');
                     triggerSearchOnFocus && onSearch?.(debouncedSearchTerm);
                     setIsFocused(true);
                     inputProps?.onFocus?.(e);
                   }}
                   onBlur={(e) => {
-                    console.log('blur-sm');
                     setIsFocused(false);
                     inputProps?.onBlur?.(e);
                   }}
@@ -425,7 +438,7 @@ function MultipleSelector<TValue extends string | number = string | number, TDat
         >
           <CommandList
             className={cn(
-              'w-(--radix-popper-anchor-width) rounded-md border bg-popover p-1 text-popover-foreground shadow-md outline-hidden animate-in',
+              'bg-popover text-popover-foreground animate-in w-(--radix-popper-anchor-width) rounded-md border p-1 shadow-md outline-hidden',
               listClassName,
             )}
           >
@@ -440,30 +453,19 @@ function MultipleSelector<TValue extends string | number = string | number, TDat
                   <CommandGroup key={key} heading={key} className="h-full overflow-auto">
                     <>
                       {dropdowns.map((option) => {
+                        const disabled = isOptionDisabled?.(option);
+
                         return (
                           <CommandItem
                             key={option.value}
                             value={option.label}
-                            disabled={option.disable}
+                            disabled={disabled}
                             onMouseDown={(e) => {
                               e.preventDefault();
                               e.stopPropagation();
                             }}
-                            onSelect={() => {
-                              if (selected.length >= maxSelected) {
-                                onMaxSelected?.(selected.length);
-                                return;
-                              }
-                              setInputValue('');
-                              const newOptions = [...selected, option];
-
-                              setSelected(newOptions);
-                              onChange?.(newOptions);
-                            }}
-                            className={cn(
-                              'cursor-pointer',
-                              option.disable && 'cursor-default text-muted-foreground',
-                            )}
+                            onSelect={() => !disabled && handleSelect(option)}
+                            className={cn('cursor-pointer', disabled && 'text-muted-foreground cursor-default')}
                           >
                             {option.label}
                           </CommandItem>

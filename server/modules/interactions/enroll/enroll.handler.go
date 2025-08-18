@@ -11,7 +11,7 @@ import (
 )
 
 func Handlers(e *echo.Group) {
-	enrollGroup := e.Group("/enroll", authMiddlewares.UserAuth)
+	enrollGroup := e.Group("/enroll", authMiddlewares.StudentAuth)
 
 	enrollGroup.POST("/", createPassed)
 	enrollGroup.DELETE("/", deletePassed)
@@ -19,8 +19,8 @@ func Handlers(e *echo.Group) {
 }
 
 func extractData(c echo.Context) (*models.RecordID, []string, error) {
-	userId := c.Get("user-id")
-	if userId == nil {
+	studentId := c.Get("student-id")
+	if studentId == nil {
 		return nil, nil, echo.NewHTTPError(http.StatusUnauthorized)
 	}
 
@@ -36,7 +36,7 @@ func extractData(c echo.Context) (*models.RecordID, []string, error) {
 		return nil, nil, echo.NewHTTPError(http.StatusBadRequest, "No subjects provided")
 	}
 
-	userID, ok := userId.(models.RecordID)
+	userID, ok := studentId.(models.RecordID)
 	if !ok {
 		return nil, nil, echo.NewHTTPError(http.StatusUnauthorized, "Invalid user ID")
 	}
@@ -111,9 +111,9 @@ func deletePassed(c echo.Context) error {
 // @Failure      500  {object}  map[string]string
 // @Router       /enroll/ [get]
 func getEnrolledSubjects(c echo.Context) error {
-	userId := c.Get("user-id").(models.RecordID)
+	studentId := c.Get("student-id").(models.RecordID)
 
-	subjects, err := services.GetEnrolledSubjects(userId)
+	subjects, err := services.GetEnrolledSubjects(studentId)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}

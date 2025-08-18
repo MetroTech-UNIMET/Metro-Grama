@@ -8,7 +8,7 @@ type UserEntity struct {
 	FirstName string                 `json:"firstName"`
 	LastName  string                 `json:"lastName"`
 	Email     string                 `json:"email"`
-	// CareerID   RecordID `json:"careerID"`
+	Phone     string                 `json:"phone"`
 	PictureUrl string `json:"pictureUrl"`
 	// Created    time.Time `json:"created"`
 	Verified bool `json:"verified"`

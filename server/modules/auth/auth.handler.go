@@ -2,6 +2,7 @@ package auth
 
 import (
 	"metrograma/models"
+	"metrograma/modules/auth/DTO"
 	"metrograma/modules/auth/services"
 	"net/http"
 
@@ -15,6 +16,7 @@ func Handlers(e *echo.Group) {
 	e.Any("/auth/google/callback", services.OauthGoogleCallback)
 	e.Any("/auth/google/logout", services.OauthGoogleLogout)
 	e.POST("/auth/admin/login", adminLogin)
+	e.POST("/auth/:id_user/complete-student/", completeStudent)
 }
 
 // adminLogin godoc
@@ -59,4 +61,35 @@ func adminLogin(c echo.Context) error {
 	}
 
 	return c.NoContent(http.StatusOK)
+}
+
+// completeStudent godoc
+// @Summary      Complete student data
+// @Description  Accepts student details and careers with trimesters to complete registration/profile
+// @Tags         auth
+// @Accept       json
+// @Produce      json
+// @Param        payload  body  DTO.CompleteStudentDTO  true  "Complete student payload"
+// @Param        id_user  path  string  true  "User ID"
+// @Success      202
+// @Failure      400  {object}  map[string]string
+// @Router       /auth/{id_user}/complete-student/ [post]
+func completeStudent(c echo.Context) error {
+	var payload DTO.CompleteStudentDTO
+	if err := c.Bind(&payload); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	if err := c.Validate(payload); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	idUser := c.Param("id_user")
+
+	user, err := services.CompleteUser(idUser, payload)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	return c.JSON(http.StatusAccepted, user)
 }

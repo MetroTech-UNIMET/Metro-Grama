@@ -18,7 +18,7 @@ export function CareerMultiDropdown({
   loadingSubjects = false,
   value,
   onChange,
-  maxSelected = 2,
+  maxSelected = 3,
   className,
   ...props
 }: Props) {

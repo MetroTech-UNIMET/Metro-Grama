@@ -61,4 +61,4 @@ func getUserFromSession(c echo.Context) (*models.MinimalUser, error) {
 	}
 
 	return &user, nil
-} 
+}

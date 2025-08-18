@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"metrograma/db"
 
 	"github.com/surrealdb/surrealdb.go"
@@ -8,6 +9,6 @@ import (
 )
 
 func DeleteSubject(subjectID surrealModels.RecordID) error {
-	_, err := surrealdb.Delete[surrealModels.RecordID](db.SurrealDB, subjectID.String())
+	_, err := surrealdb.Delete[surrealModels.RecordID](context.Background(), db.SurrealDB, subjectID.String())
 	return err
 } 

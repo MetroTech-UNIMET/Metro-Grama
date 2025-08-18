@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"fmt"
 	"metrograma/db"
 	"metrograma/models"
@@ -18,7 +19,7 @@ type UserLoginResult struct {
 }
 
 func LoginUser(login models.UserLoginForm) (*AuthResult, error) {
-	result, err := surrealdb.Query[[]UserLoginResult](db.SurrealDB, loginQuery, map[string]any{
+	result, err := surrealdb.Query[[]UserLoginResult](context.Background(), db.SurrealDB, loginQuery, map[string]any{
 		"email":    login.Email,
 		"password": login.Password,
 	})

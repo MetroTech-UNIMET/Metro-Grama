@@ -2,6 +2,7 @@ package services
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"metrograma/db"
 	"metrograma/models"
@@ -76,7 +77,7 @@ func CreateCareer(careerForm models.CareerCreateForm) any {
 	}
 
 	fmt.Println(queryParams)
-	data, err := surrealdb.Query[any](db.SurrealDB, query.String(), queryParams)
+	data, err := surrealdb.Query[any](context.Background(), db.SurrealDB, query.String(), queryParams)
 	if err != nil {
 		return err
 	}

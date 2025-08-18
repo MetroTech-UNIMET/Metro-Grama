@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"fmt"
 	"metrograma/db"
 	"metrograma/models"
@@ -10,7 +11,7 @@ import (
 )
 
 func GetCareers() ([]models.CareerEntity, error) {
-	careers, err := surrealdb.Select[[]models.CareerEntity](db.SurrealDB, surrealModels.Table("career"))
+	careers, err := surrealdb.Select[[]models.CareerEntity](context.Background(), db.SurrealDB, surrealModels.Table("career"))
 
 	if err != nil {
 		return []models.CareerEntity{}, fmt.Errorf("error fetching careers: %v", err)
@@ -31,7 +32,7 @@ func GetCareerWithSubjectsById(careerId string) (any, error) {
 		Subjects []SubjectComplex `json:"subjects"`
 	}
 
-	rows, err := surrealdb.Query[CareerWithSubjectsResponse](db.SurrealDB, `
+	rows, err := surrealdb.Query[CareerWithSubjectsResponse](context.Background(), db.SurrealDB, `
 LET $subjects = SELECT
     in as subject,
     trimester as trimester,

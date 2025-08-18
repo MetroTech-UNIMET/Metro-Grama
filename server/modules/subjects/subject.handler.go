@@ -100,16 +100,21 @@ func createSubject(c echo.Context) error {
 	}
 
 	for _, c := range subjectForm.Careers {
-		if err := tools.ExistRecord(
-			*surrealModels.ParseRecordID(c.CareerID),
-		); err != nil {
+		careerID,err := surrealModels.ParseRecordID(c.CareerID)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusNotFound, fmt.Sprintf("Career `%s` not found", c.CareerID))
+		}
+		if err := tools.ExistRecord(*careerID); err != nil {
 			return echo.NewHTTPError(http.StatusNotFound, fmt.Sprintf("Precedes subject `%s` not found", c.CareerID))
 		}
 	}
 
 	for _, p := range subjectForm.PrecedesID {
-		err := tools.ExistRecord(*surrealModels.ParseRecordID(p))
+		precedesID, err := surrealModels.ParseRecordID(p)
 		if err != nil {
+			return echo.NewHTTPError(http.StatusNotFound, fmt.Sprintf("Precedes subject `%s` not found", p))
+		}
+		if err := tools.ExistRecord(*precedesID); err != nil {
 			return echo.NewHTTPError(http.StatusNotFound, fmt.Sprintf("Precedes subject `%s` not found", p))
 		}
 	}

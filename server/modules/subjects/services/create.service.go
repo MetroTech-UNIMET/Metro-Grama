@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"fmt"
 	"metrograma/db"
 	"metrograma/models"
@@ -39,7 +40,7 @@ func CreateSubject(subject models.SubjectForm) error {
 		"precedesID": subject.PrecedesID,
 	}
 
-	result, err := surrealdb.Query[models.SubjectEntity](db.SurrealDB, query, queryParams)
+	result, err := surrealdb.Query[models.SubjectEntity](context.Background(), db.SurrealDB, query, queryParams)
 	if err != nil {
 		return fmt.Errorf("error creating subject: %v", err)
 	}

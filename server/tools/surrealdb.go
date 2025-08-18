@@ -1,6 +1,7 @@
 package tools
 
 import (
+	"context"
 	"errors"
 	"metrograma/db"
 	"strings"
@@ -30,7 +31,7 @@ func GetSurrealErrorMsgs(data interface{}) error {
 }
 
 func ExistRecord(id models.RecordID) error {
-	_, err := surrealdb.Select[any](db.SurrealDB, id)
+	_, err := surrealdb.Select[any](context.Background(),db.SurrealDB, id)
 	if err != nil {
 		return err
 	}
@@ -47,7 +48,11 @@ func ToIdArray(value []string) []models.RecordID {
 	recordIDs := make([]models.RecordID, len(value))
 
 	for i, v := range value {
-		recordIDs[i] = *models.ParseRecordID(v)
+		parsed, err := models.ParseRecordID(v)
+		if err != nil {
+			continue
+		}
+		recordIDs[i] = *parsed
 	}
 	return recordIDs
 }

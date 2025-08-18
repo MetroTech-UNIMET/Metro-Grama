@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"fmt"
 	"metrograma/db"
 	"metrograma/models"
@@ -12,7 +13,7 @@ import (
 var existUserByEmailQuery = "SELECT id, role FROM user WHERE email = $email"
 
 func ExistUserByEmail(email string) (models.MinimalUser, error) {
-	result, err := surrealdb.Query[[]models.MinimalUser](db.SurrealDB, existUserByEmailQuery, map[string]any{
+	result, err := surrealdb.Query[[]models.MinimalUser](context.Background(), db.SurrealDB, existUserByEmailQuery, map[string]any{
 		"email": email,
 	})
 
@@ -29,7 +30,7 @@ func ExistUserByEmail(email string) (models.MinimalUser, error) {
 }
 
 func ExistUser(id surrealModels.RecordID) (models.MinimalUser, error) {
-	user, err := surrealdb.Select[models.MinimalUser](db.SurrealDB, id)
+	user, err := surrealdb.Select[models.MinimalUser](context.Background(), db.SurrealDB, id)
 
 	if err != nil {
 		return models.MinimalUser{}, err
@@ -39,7 +40,7 @@ func ExistUser(id surrealModels.RecordID) (models.MinimalUser, error) {
 }
 
 func GetUser(id surrealModels.RecordID) (models.UserEntity, error) {
-	user, err := surrealdb.Select[models.UserEntity](db.SurrealDB, id)
+	user, err := surrealdb.Select[models.UserEntity](context.Background(), db.SurrealDB, id)
 
 	if err != nil {
 		return models.UserEntity{}, err

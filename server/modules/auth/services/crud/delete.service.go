@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"metrograma/db"
 	"metrograma/models"
 	"metrograma/tools"
@@ -9,7 +10,7 @@ import (
 )
 
 func DeleteUserByEmail(email string) error {
-	result, err := surrealdb.Query[[]models.MinimalUser](db.SurrealDB, "DELETE user WHERE email = $email;", map[string]any{
+	result, err := surrealdb.Query[[]models.MinimalUser](context.Background(), db.SurrealDB, "DELETE user WHERE email = $email;", map[string]any{
 		"email": email,
 	})
 	if err != nil {

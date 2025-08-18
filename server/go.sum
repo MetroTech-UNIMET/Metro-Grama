@@ -97,6 +97,8 @@ github.com/surrealdb/surrealdb.go v0.3.0 h1:ZoJjsM2igRxU+kB/6BL2jgNLILNGh5yRcE6S
 github.com/surrealdb/surrealdb.go v0.3.0/go.mod h1:FeN83bXg2rO0GJ8Tp1xufkh3uiAlfgjeyTgFDx76T9s=
 github.com/surrealdb/surrealdb.go v0.3.2 h1:ynBbD0onW+M4BXhZ1+dDdVnNcaqBqFlHaHCFnk8LgmQ=
 github.com/surrealdb/surrealdb.go v0.3.2/go.mod h1:A0zahuChOaJtvTm2lefQnV+6aJtgqNLm9TIdYhZbw1Q=
+github.com/surrealdb/surrealdb.go v0.9.0 h1:Q9PTyPyYNcgw6jZ4NGqtMjMHMKWpGF2WEedud+DoaiY=
+github.com/surrealdb/surrealdb.go v0.9.0/go.mod h1:Ru9MiuzPf4oj2QEp9y0cJZy/BswE+ktxEaXhxXH8VQo=
 github.com/swaggo/echo-swagger v1.4.1 h1:Yf0uPaJWp1uRtDloZALyLnvdBeoEL5Kc7DtnjzO/TUk=
 github.com/swaggo/echo-swagger v1.4.1/go.mod h1:C8bSi+9yH2FLZsnhqMZLIZddpUxZdBYuNHbtaS1Hljc=
 github.com/swaggo/files/v2 v2.0.2 h1:Bq4tgS/yxLB/3nwOMcul5oLEUKa877Ykgz3CJMVbQKU=

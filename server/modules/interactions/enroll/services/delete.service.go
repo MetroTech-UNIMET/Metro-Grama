@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"metrograma/db"
 	"metrograma/tools"
 
@@ -9,7 +10,7 @@ import (
 )
 
 func UnenrollStudent(studentId surrealModels.RecordID, subjects []string) error {
-	data, err := surrealdb.Query[any](db.SurrealDB, "DELETE $studentId->enroll WHERE out in $subjectsId", map[string]any{
+	data, err := surrealdb.Query[any](context.Background(), db.SurrealDB, "DELETE $studentId->enroll WHERE out in $subjectsId", map[string]any{
 		"studentId":  studentId,
 		"subjectsId": tools.ToIdArray(subjects),
 	})

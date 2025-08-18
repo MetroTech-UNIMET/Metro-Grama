@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"metrograma/db"
 	"metrograma/tools"
 
@@ -9,7 +10,7 @@ import (
 )
 
 func EnrollStudent(studentId surrealModels.RecordID, subjects []string) error {
-	data, err := surrealdb.Query[any](db.SurrealDB, "RELATE $studentId -> enroll -> $subjectsId", map[string]interface{}{
+	data, err := surrealdb.Query[any](context.Background(), db.SurrealDB, "RELATE $studentId -> enroll -> $subjectsId", map[string]interface{}{
 		"studentId":  studentId,
 		"subjectsId": tools.ToIdArray(subjects),
 	})

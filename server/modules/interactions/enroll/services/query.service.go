@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"metrograma/db"
 
 	"github.com/surrealdb/surrealdb.go"
@@ -8,7 +9,7 @@ import (
 )
 
 func GetEnrolledSubjects(studentId surrealModels.RecordID) ([]string, error) {
-	query, err := surrealdb.Query[[]string](db.SurrealDB, "SELECT VALUE <string> out from enroll WHERE in == $studentId and passed == true", map[string]any{
+	query, err := surrealdb.Query[[]string](context.Background(), db.SurrealDB, "SELECT VALUE <string> out from enroll WHERE in == $studentId and passed == true", map[string]any{
 		"studentId": studentId,
 	})
 

@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"fmt"
 	"metrograma/db"
 	"metrograma/models"
@@ -8,10 +9,10 @@ import (
 	"github.com/surrealdb/surrealdb.go"
 )
 
-const getAllTrimestersQuery = "SELECT * FROM trimesters;"
+const getAllTrimestersQuery = "SELECT * FROM trimester;"
 
 func GetAllTrimesters() ([]models.TrimesterEntity, error) {
-	result, err := surrealdb.Query[[]models.TrimesterEntity](db.SurrealDB, getAllTrimestersQuery, nil)
+	result, err := surrealdb.Query[[]models.TrimesterEntity](context.Background(), db.SurrealDB, getAllTrimestersQuery, nil)
 	if err != nil {
 		return []models.TrimesterEntity{}, err
 	}

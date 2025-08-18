@@ -2,6 +2,7 @@ package services
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"metrograma/db"
 	"metrograma/models"
@@ -29,14 +30,14 @@ func useGetSubjectsQuery(careers string) (*[]surrealdb.QueryResult[[]models.Subj
 		baseQuery = strings.Replace(baseQuery, "$condition", "", 1)
 		baseQuery = strings.Replace(baseQuery, "$prelationsConditions", "", 1)
 
-		return surrealdb.Query[[]models.SubjectsByCareers](db.SurrealDB, baseQuery, nil)
+		return surrealdb.Query[[]models.SubjectsByCareers](context.Background(), db.SurrealDB, baseQuery, nil)
 	} else {
 		careersArray := tools.StringToIdArray(careers)
 
 		baseQuery = strings.Replace(baseQuery, "$condition", "WHERE out IN $careersId", 1)
 		baseQuery = strings.Replace(baseQuery, "$prelationsConditions", "[WHERE ->belong.out ANYINSIDE $careersId]", 1)
 
-		return surrealdb.Query[[]models.SubjectsByCareers](db.SurrealDB, baseQuery, map[string]any{
+		return surrealdb.Query[[]models.SubjectsByCareers](context.Background(), db.SurrealDB, baseQuery, map[string]any{
 			"careersId": careersArray,
 		})
 	}
@@ -77,7 +78,7 @@ func GetSubjects(careers string) ([]models.SubjectNode, error) {
 		"careers": careersArray,
 	}
 
-	result, err := surrealdb.Query[[]models.SubjectNode](db.SurrealDB, query, queryParams)
+	result, err := surrealdb.Query[[]models.SubjectNode](context.Background(), db.SurrealDB, query, queryParams)
 
 	if err != nil {
 		fmt.Println(err)

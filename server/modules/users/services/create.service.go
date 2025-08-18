@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"metrograma/db"
 	"metrograma/models"
 	"metrograma/tools"
@@ -19,7 +20,7 @@ func CreateSimpleUser(user models.SimpleUserSigninForm) error {
 		"verified":   user.Verified,
 	}
 
-	data, err := surrealdb.Create[models.UserEntity](db.SurrealDB, surrealModels.Table("user"), queryParams)
+	data, err := surrealdb.Create[models.UserEntity](context.Background(), db.SurrealDB, surrealModels.Table("user"), queryParams)
 	if err != nil {
 		return err
 	}

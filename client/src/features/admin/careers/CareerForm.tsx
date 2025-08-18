@@ -1,5 +1,5 @@
-import { useEffect, useMemo } from 'react';
-import { FieldErrors, useForm } from 'react-hook-form';
+import { useCallback, useEffect, useMemo } from 'react';
+import { type FieldErrors, type Path, useForm } from 'react-hook-form';
 import { standardSchemaResolver } from '@hookform/resolvers/standard-schema';
 import { toast } from 'sonner';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
@@ -9,7 +9,7 @@ import { onCreate, onEdit } from './functions';
 import { Step1 } from './components/steps/Step1';
 import StepSubjects from './components/steps/StepSubjects';
 import { numberOfTrimesters } from './constants';
-import StepsNavigator from './components/StepsNavigator';
+import StepsNavigator from '../../../components/forms/StepsNavigator';
 
 import useSubjectOptions from './hooks/useSubjectOptions';
 import useFormStep from '@/hooks/useFormStep';
@@ -45,7 +45,7 @@ export default function CareerForm({ mode, data }: Props) {
     mode: 'onBlur',
     defaultValues: defaultCreateCareerValues,
   });
-  const { handleSubmit } = form;
+  const { handleSubmit, getValues } = form;
 
   useEffect(() => {
     if (!data) return;
@@ -108,13 +108,11 @@ export default function CareerForm({ mode, data }: Props) {
     }
   }
 
-  const { currentStep, next, previous, jumpTo, jumpToFirstErrorStep } = useFormStep({
-    steps,
-    form,
-    onPageChange: (prevPage) => {
-      if (currentStep === 0) return;
+  const onPageChange = useCallback(
+    (prevPage: number) => {
+      if (prevPage === 0) return;
 
-      const subjects = form.getValues(`subjects.${prevPage - 1}`);
+      const subjects = getValues(`subjects.${prevPage - 1}`);
       subjects.forEach((subject) => {
         const isNewSubject = subject.subjectType === 'new';
         const code = subject.code;
@@ -138,10 +136,14 @@ export default function CareerForm({ mode, data }: Props) {
         });
       });
     },
-    onError: (errors, currentStep) => {
+    [getValues, addAdditionalSubject, removeAdditionalSubject],
+  );
+
+  const onError = useCallback(
+    (errors: FieldErrors<CreateCareerFormType>, currentStep: number) => {
       if (currentStep === 0) return;
 
-      const subjects = form.getValues(`subjects.${currentStep - 1}`);
+      const subjects = getValues(`subjects.${currentStep - 1}`);
       subjects.forEach((subject) => {
         const code = subject.code;
         if (!code) return;
@@ -152,21 +154,16 @@ export default function CareerForm({ mode, data }: Props) {
 
       onInvalidToast(errors);
     },
-    transformErrors: (errors, currentStep) => {
-      if (currentStep === 0) return errors;
+    [getValues, removeAdditionalSubject],
+  );
 
-      const stepIndex = currentStep - 1;
-      const subjectErrors = errors?.subjects?.[stepIndex];
-      return { subjects: { [stepIndex]: subjectErrors } };
-    },
-    filterPaths: (paths, steps) => {
-      if (steps === 0) return paths;
-
-      const subjectPath = `subjects.${steps - 1}`;
-      return paths.filter((path) => {
-        return path.startsWith(subjectPath) || path === 'subjects';
-      });
-    },
+  const { currentStep, next, previous, jumpTo, jumpToFirstErrorStep } = useFormStep({
+    steps,
+    form,
+    onPageChange: onPageChange,
+    onError,
+    transformErrors,
+    filterPaths,
   });
 
   const { direction, goNext, goPrevious, goTo } = useDirections({
@@ -270,4 +267,21 @@ export default function CareerForm({ mode, data }: Props) {
       </Tabs>
     </Form>
   );
+}
+
+function transformErrors(errors: FieldErrors<CreateCareerFormType>, currentStep: number) {
+  if (currentStep === 0) return errors;
+
+  const stepIndex = currentStep - 1;
+  const subjectErrors = errors?.subjects?.[stepIndex];
+  return { subjects: { [stepIndex]: subjectErrors } };
+}
+
+function filterPaths(paths: Path<CreateCareerFormType>[], steps: number) {
+  if (steps === 0) return paths;
+
+  const subjectPath = `subjects.${steps - 1}`;
+  return paths.filter((path) => {
+    return path.startsWith(subjectPath) || path === 'subjects';
+  });
 }

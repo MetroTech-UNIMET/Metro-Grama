@@ -5,6 +5,7 @@ import (
 	"metrograma/modules/auth"
 	"metrograma/modules/careers"
 	"metrograma/modules/interactions"
+	"metrograma/modules/subject_offer"
 	"metrograma/modules/subjects"
 	"metrograma/modules/trimesters"
 	"metrograma/modules/users"
@@ -21,6 +22,7 @@ func CreateHandlers(e *echo.Echo) {
 	auth.Handlers(apiGroup)
 	interactions.Handlers(apiGroup)
 	trimesters.Handlers(apiGroup)
+	subject_offer.Handlers(apiGroup)
 
 	apiGroup.Any("*", func(c echo.Context) error {
 		return echo.ErrNotFound

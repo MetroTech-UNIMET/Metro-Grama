@@ -6,8 +6,11 @@ require (
 	github.com/go-playground/validator/v10 v10.19.0
 	github.com/joho/godotenv v1.5.1
 	github.com/labstack/echo/v4 v4.13.4
+	github.com/ledongthuc/pdf v0.0.0-20250511090121-5959a4027728
 	github.com/stretchr/testify v1.10.0
 	github.com/surrealdb/surrealdb.go v0.9.0
+	github.com/swaggo/echo-swagger v1.4.1
+	github.com/swaggo/swag v1.16.6
 	golang.org/x/oauth2 v0.19.0
 )
 
@@ -15,8 +18,6 @@ require (
 	cloud.google.com/go/compute v1.20.1 // indirect
 	cloud.google.com/go/compute/metadata v0.2.3 // indirect
 	github.com/KyleBanks/depth v1.2.1 // indirect
-	github.com/PuerkitoBio/purell v1.2.1 // indirect
-	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
 	github.com/fxamacker/cbor/v2 v2.7.0 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/go-openapi/jsonpointer v0.21.2 // indirect
@@ -27,17 +28,13 @@ require (
 	github.com/gorilla/context v1.1.2 // indirect
 	github.com/gorilla/securecookie v1.1.2 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
-	github.com/kr/pretty v0.3.1 // indirect
 	github.com/mailru/easyjson v0.9.0 // indirect
 	github.com/rogpeppe/go-internal v1.12.0 // indirect
-	github.com/swaggo/echo-swagger v1.4.1 // indirect
 	github.com/swaggo/files/v2 v2.0.2 // indirect
-	github.com/swaggo/swag v1.16.6 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	golang.org/x/mod v0.27.0 // indirect
 	golang.org/x/sync v0.16.0 // indirect
 	golang.org/x/tools v0.36.0 // indirect
-	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
 
@@ -46,7 +43,6 @@ require (
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/gorilla/sessions v1.2.2
 	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/labstack/echo-contrib v0.17.1

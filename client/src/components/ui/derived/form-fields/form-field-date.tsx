@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { format } from 'date-fns';
+import { es } from 'date-fns/locale';
 import { CalendarIcon } from '@radix-ui/react-icons';
 
 import { cn } from '@/lib/utils/className';
@@ -10,40 +11,36 @@ import { Calendar } from '@/components/ui/calendar';
 import { Button } from '@/components/ui/button';
 
 import type { FieldValues, Path } from 'react-hook-form';
-import type { DayPickerSingleProps } from 'react-day-picker';
+import type { PropsBase, PropsSingle } from 'react-day-picker';
+import type { CommonLabelProps, CommonErrorProps } from '../../types/forms.types';
 
-type LabelDatePickerProps = Omit<DayPickerSingleProps, 'onSelect' | 'disabled' | 'mode'> & {
-  label: string;
-  containerClassName?: string;
-  labelClassName?: string;
+type OnSelectType = PropsSingle['onSelect'];
+type DisabledType = PropsBase['disabled'];
 
-  required?: boolean;
+export interface DateFieldProps<T extends FieldValues>
+  extends Omit<PropsSingle, 'onSelect' | 'mode' | 'required'>,
+    CommonLabelProps,
+    CommonErrorProps {
+  name: Path<T>;
   disabled?: boolean;
+  required?: boolean;
+
+  onSelect?: (date: Date | undefined, onChange: OnSelectType) => void;
+  disableByDate?: DisabledType;
 
   popoverContainer?: HTMLElement;
-};
-
-type OnSelectType = DayPickerSingleProps['onSelect'];
-type DisabledType = DayPickerSingleProps['disabled'];
-
-export interface DateFieldProps<T extends FieldValues> extends LabelDatePickerProps {
-  name: Path<T>;
-  showErrors?: boolean;
-  showColorsState?: boolean;
-  onSelect?: (date: Date | undefined, onChange: OnSelectType) => void;
-
-  disableByDate?: DisabledType;
 }
 
 function FormDateField<T extends FieldValues>({
   name,
   disabled,
   disableByDate,
-  id,
+
   label,
   containerClassName,
   labelClassName,
-  className,
+  descriptionLabel,
+
   onSelect: onSelectProps,
   showErrors = true,
   showColorsState = true,
@@ -56,34 +53,45 @@ function FormDateField<T extends FieldValues>({
     <FormField
       name={name}
       disabled={disabled}
-      render={({ field: { ref, onChange, ...field } }) => {
+      render={({ field: { ref, onChange, ...field }, fieldState }) => {
+        const isDisabled = disabled || field.disabled;
+        const hasError = fieldState.invalid;
         return (
           <FormItem className={cn('flex flex-col', containerClassName)}>
-            <FormLabel
-              className={labelClassName}
-              required={props.required}
-              showColorsState={showColorsState}
-            >
-              {label}
-            </FormLabel>
-            <Popover modal={true}>
-              <PopoverTrigger asChild>
+            {label && (
+              <FormLabel
+                className={labelClassName}
+                required={props.required}
+                showColorsState={showColorsState}
+                description={descriptionLabel}
+              >
+                {label}
+              </FormLabel>
+            )}
+
+            <Popover modal={false}>
+              <PopoverTrigger asChild disabled={isDisabled}>
                 <FormControl>
                   <Button
-                    variant={'outline-solid'}
+                    variant={'outline'}
                     className={cn(
-                      'h-10.5 rounded-[10px] border-gray-100 pl-3 text-left font-normal',
+                      'h-10.5 rounded-[10px] border border-gray-100 pl-3 text-left font-normal',
                       !field.value && 'text-muted-foreground',
+                      hasError && 'border-destructive bg-destructive/10',
                     )}
                   >
-                    {field.value ? format(field.value, 'PPP') : <span>Escoge una fecha</span>}
+                    {field.value ? (
+                      format(field.value, 'PPP', { locale: es })
+                    ) : (
+                      <span>Escoge una fecha</span>
+                    )}
                     <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                   </Button>
                 </FormControl>
               </PopoverTrigger>
 
               <PopoverContent
-                className="w-auto p-0"
+                className="z-50 w-auto p-0"
                 align="start"
                 container={popoverContainer}
                 ref={(ref) => setPopOverRef(ref)}
@@ -94,14 +102,14 @@ function FormDateField<T extends FieldValues>({
                   onSelect={(date) => {
                     onSelectProps ? onSelectProps(date, onChange) : onChange(date);
                   }}
-                  disabled={disableByDate}
+                  disabled={disableByDate || isDisabled}
                   {...props}
                   {...field}
-                  captionLayout="dropdown-buttons"
-                  fromYear={1960}
-                  toYear={2030}
+                  captionLayout="dropdown"
+                  startMonth={new Date(1960, 0)}
+                  endMonth={new Date(2030, 0)}
                   container={popOverRef ?? undefined}
-                  initialFocus
+                  autoFocus
                 />
               </PopoverContent>
             </Popover>

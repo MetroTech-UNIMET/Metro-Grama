@@ -4,19 +4,16 @@ import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/comp
 import AutoComplete, { type AutoCompleteProps } from '@/components/ui/derived/autocomplete';
 
 import { useWatch, type FieldValues, type Path } from 'react-hook-form';
+import type { CommonErrorProps, CommonLabelProps } from '../../types/forms.types';
 
 export interface FormAutocompleteFieldProps<
   T extends FieldValues,
-  J extends string | number = string | number,
+  J = string | number,
   K = undefined,
-> extends AutoCompleteProps<J, K> {
+> extends AutoCompleteProps<J, K>,
+    CommonLabelProps,
+    CommonErrorProps {
   name: Path<T>;
-  showErrors?: boolean;
-  showColorsState?: boolean;
-
-  containerClassName?: string;
-  label?: string;
-  labelClassName?: string;
 
   saveAsOption?: boolean;
 }
@@ -26,10 +23,11 @@ function FormAutocompleteField<T extends FieldValues, J extends string | number,
   disabled,
   id,
   label,
+  descriptionLabel,
   containerClassName,
   labelClassName,
   className,
-  showErrors = false,
+  showErrors = true,
   showColorsState = true,
   ...props
 }: FormAutocompleteFieldProps<T, J, K>) {
@@ -53,7 +51,12 @@ function FormAutocompleteField<T extends FieldValues, J extends string | number,
             )}
           >
             {label && (
-              <FormLabel className={labelClassName} required={props.required} showColorsState={showColorsState}>
+              <FormLabel
+                className={labelClassName}
+                required={props.required}
+                showColorsState={showColorsState}
+                description={descriptionLabel}
+              >
                 {label}
               </FormLabel>
             )}
@@ -77,7 +80,9 @@ function FormAutocompleteField<T extends FieldValues, J extends string | number,
             </FormControl>
 
             {showErrors && hasError && (
-              <FormMessage className="text-destructive/80 mt-1 text-sm">{fieldState.error?.message}</FormMessage>
+              <FormMessage className="text-destructive/80 mt-1 text-sm">
+                {fieldState.error?.message}
+              </FormMessage>
             )}
           </FormItem>
         );

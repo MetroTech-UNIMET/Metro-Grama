@@ -1,23 +1,41 @@
-import { FormControl, FormField, FormItem } from '@/components/ui/form';
-import { Checkbox } from '@/components/ui/checkbox';
-import { type CheckboxProps } from 'radix-ui';
-import type { FieldValues, Path } from 'react-hook-form';
 import { cn } from '@/lib/utils/className';
 
-interface CheckboxFieldProps<T extends FieldValues> extends Omit<CheckboxProps, 'onValueChange'> {
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Checkbox } from '@/components/ui/checkbox';
+
+import type { FieldValues, Path } from 'react-hook-form';
+import type { CommonLabelProps, CommonErrorProps } from '../../types/forms.types';
+
+type CheckboxProps = React.ComponentProps<typeof Checkbox>;
+type CheckedState = NonNullable<CheckboxProps['checked']>;
+type OnChangeType = (...event: any[]) => void;
+
+interface CheckboxFieldProps<T extends FieldValues>
+  extends Omit<CheckboxProps, 'onValueChange' | 'onChange'>,
+    CommonLabelProps,
+    CommonErrorProps {
   name: Path<T>;
 
   containerClassName?: string;
-  className?: string;
   children?: React.ReactNode;
+
+  onChange?: (checked: CheckedState, onChange: OnChangeType) => void;
 }
 
-export default function FormFieldCheckbox<T extends FieldValues>({
+export function FormCheckboxField<T extends FieldValues>({
   name,
   disabled,
-  required,
   containerClassName,
+
   className,
+  label,
+  labelClassName,
+  descriptionLabel,
+
+  showErrors = true,
+  showColorsState = true,
+
+  onChange: onChangeProps,
 
   children,
   ...props
@@ -32,15 +50,34 @@ export default function FormFieldCheckbox<T extends FieldValues>({
             {
               'opacity-60': disabled,
             },
-            'space-y-0',
+            'space-y-0!',
             containerClassName,
           )}
         >
+          {label && (
+            <FormLabel
+              className={labelClassName}
+              required={props.required}
+              showColorsState={showColorsState}
+              description={descriptionLabel}
+            >
+              {label}
+            </FormLabel>
+          )}
+
           <FormControl>
-            <Checkbox checked={value} onCheckedChange={onChange} {...props} {...field} />
+            <Checkbox
+              checked={value}
+              onCheckedChange={(e) => {
+                onChangeProps ? onChangeProps(e, onChange) : onChange(e);
+              }}
+              {...props}
+              {...field}
+            />
           </FormControl>
 
           {!props.asChild && children}
+          {showErrors && <FormMessage className="mt-1" />}
         </FormItem>
       )}
     />

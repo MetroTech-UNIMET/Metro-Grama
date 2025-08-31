@@ -19,21 +19,16 @@ import {
 } from '@/components/ui/dialog';
 
 import { useWatch, type FieldValues, type Path } from 'react-hook-form';
-
-type LabelInputProps = Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'type'> & {
-  label?: string;
-  containerClassName?: string;
-  labelClassName?: string;
-
-  required?: boolean;
-};
+import type { CommonLabelProps, CommonErrorProps } from '../../types/forms.types';
 
 type OnChangeType = React.ChangeEventHandler<HTMLInputElement>;
 
-export interface InputImageFieldProps<T extends FieldValues> extends LabelInputProps {
+export interface InputImageFieldProps<T extends FieldValues>
+  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'type'>,
+    CommonLabelProps,
+    CommonErrorProps {
   name: Path<T>;
-  showErrors?: boolean;
-  showColorsState?: boolean;
+
   onChange?: (e: React.ChangeEvent<HTMLInputElement>, onChange: OnChangeType) => void;
 
   cropperProps?: React.ComponentProps<typeof Cropper>;
@@ -43,9 +38,12 @@ function FormInputImage<T extends FieldValues>({
   name,
   disabled,
   id,
+
   label,
   containerClassName,
   labelClassName,
+  descriptionLabel,
+
   className,
   onChange: onChangeProps,
   showErrors = true,
@@ -54,23 +52,23 @@ function FormInputImage<T extends FieldValues>({
   ...props
 }: InputImageFieldProps<T>) {
   const [imagePreview, setImagePreview] = React.useState<string | null>(null);
-  const [originalImageURL, setOriginalImageURL] = React.useState<string | null>(null);
+  const originalImageURL = React.useRef<string | null>(null);
   const inputRef = React.useRef<HTMLInputElement>(null);
 
   const value = useWatch({ name });
 
   React.useEffect(() => {
-    if ((value as any) instanceof File) {
-      const url = URL.createObjectURL(value);
+    if ((value?.file as any) instanceof File) {
+      const url = URL.createObjectURL(value.file);
       setImagePreview(url);
 
       return () => {
         URL.revokeObjectURL(url);
       };
-    } else if (typeof value === 'string') {
-      setImagePreview(value);
-      if (!originalImageURL) {
-        setOriginalImageURL(value);
+    } else if (typeof value?.file === 'string') {
+      setImagePreview(value.file);
+      if (!originalImageURL.current) {
+        originalImageURL.current = value.file;
       }
     } else {
       setImagePreview(null);
@@ -91,18 +89,23 @@ function FormInputImage<T extends FieldValues>({
         const hasError = fieldState.invalid;
 
         function onChange(e: React.ChangeEvent<HTMLInputElement>, file: File | undefined) {
-          onChangeProps ? onChangeProps(e, onChangeForm) : onChangeForm(file);
+          onChangeProps
+            ? onChangeProps(e, onChangeForm)
+            : onChangeForm({ file, preview: file ? URL.createObjectURL(file) : undefined });
         }
 
         return (
           <FormItem className={containerClassName}>
-            <FormLabel
-              className={labelClassName}
-              required={props.required}
-              showColorsState={showColorsState}
-            >
-              {label}
-            </FormLabel>
+            {label && (
+              <FormLabel
+                className={labelClassName}
+                required={props.required}
+                showColorsState={showColorsState}
+                description={descriptionLabel}
+              >
+                {label}
+              </FormLabel>
+            )}
 
             <Dropzone
               onDrop={(acceptedFiles, _) => {
@@ -121,11 +124,11 @@ function FormInputImage<T extends FieldValues>({
               multiple={false}
             >
               {({ getRootProps, getInputProps, isDragActive }) => (
-                <div className="flex h-20 w-full items-center justify-around gap-4 rounded-lg bg-gray-50 px-6 py-3">
+                <div className="flex h-auto w-full flex-col items-center justify-around gap-4 rounded-lg bg-gray-50 px-4 py-3 sm:h-20 sm:flex-row sm:px-6">
                   <div
                     {...getRootProps()}
                     className={cn(
-                      'flex w-full cursor-pointer flex-row items-center justify-center gap-4 rounded-md border-2 border-dashed border-gray-300 py-2.5 text-sm dark:hover:border-gray-500',
+                      'flex w-full cursor-pointer flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed border-gray-300 py-2.5 text-sm sm:flex-row sm:gap-4 dark:hover:border-gray-500',
                       {
                         'border-secondary-600 text-secondary-600': isDragActive,
                         'border-destructive bg-destructive/10 hover:bg-destructive/20': hasError,
@@ -138,6 +141,7 @@ function FormInputImage<T extends FieldValues>({
                       height="32"
                       viewBox="0 0 42 32"
                       fill="none"
+                      className="h-6 w-6 sm:h-8 sm:w-8"
                     >
                       <path
                         d="M31.5001 26.2858C30.7651 26.2858 30.1876 25.7201 30.1876 25.0001C30.1876 24.2801 30.7651 23.7144 31.5001 23.7144C35.8314 23.7144 39.3751 20.243 39.3751 16.0001C39.3751 11.7572 35.8314 8.28582 31.5001 8.28582H28.7439C28.2714 8.28582 27.8514 8.05439 27.6151 7.64296C25.9351 4.81439 22.9951 3.14296 19.7139 3.14296C14.6476 3.14296 10.5264 7.1801 10.5264 12.143C10.5264 12.863 9.94887 13.4287 9.21387 13.4287H7.90137C5.01387 13.4287 2.65137 15.743 2.65137 18.5715C2.65137 21.4001 5.01387 23.7144 7.90137 23.7144C8.63637 23.7144 9.21387 24.2801 9.21387 25.0001C9.21387 25.7201 8.63637 26.2858 7.90137 26.2858C3.57012 26.2858 0.0263672 22.8144 0.0263672 18.5715C0.0263672 14.3287 3.57012 10.8572 7.90137 10.8572H7.98012C8.63637 5.07153 13.6501 0.571533 19.7139 0.571533C23.6251 0.571533 27.3001 2.52582 29.4789 5.71439H31.5264C37.3276 5.71439 42.0264 10.3172 42.0264 16.0001C42.0264 21.683 37.3276 26.2858 31.5264 26.2858H31.5001Z"
@@ -153,7 +157,7 @@ function FormInputImage<T extends FieldValues>({
                       />
                     </svg>
 
-                    <p>Puede soltar aquí el archivo</p>
+                    <p className="text-center sm:text-left">Puede soltar aquí el archivo</p>
 
                     <FormControl>
                       <Input
@@ -163,20 +167,21 @@ function FormInputImage<T extends FieldValues>({
                         onBlur={onBlur}
                         onChange={(e) => {
                           const file = e.target.files?.[0];
-
                           onChange(e, file);
                         }}
+                        className="hidden"
                       />
                     </FormControl>
-                    {/* {value && value.map((file) => <div key={file.path}>{file.path}</div>)} */}
                   </div>
 
-                  <div className="flex flex-row gap-4">
+                  <div className="mt-2 flex w-full justify-center gap-2 sm:mt-0 sm:w-auto sm:gap-4">
                     <Button
                       type="button"
                       variant="outline"
                       colors="secondary"
                       onClick={() => inputRef.current?.click()}
+                      className="text-xs sm:text-sm"
+                      size="sm"
                     >
                       Buscar archivo
                     </Button>
@@ -184,9 +189,10 @@ function FormInputImage<T extends FieldValues>({
                     <Button
                       type="button"
                       variant="ghost"
-                      className={cn('text-gray-300', {
+                      className={cn('hidden text-gray-300 sm:flex', {
                         'text-success': !!imagePreview,
                       })}
+                      size="sm"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -219,8 +225,9 @@ function FormInputImage<T extends FieldValues>({
                         setImagePreview(null);
                         onChange(e as any, undefined);
                       }}
+                      size="sm"
                     >
-                      <Trash className="size-6!" />
+                      <Trash className="size-5!" />
                     </Button>
                   </div>
                 </div>
@@ -265,6 +272,8 @@ function PreviewDialog({
   const previewRef = React.useRef<CropperPreviewRef>(null);
   const resultRef = React.useRef<CropperPreviewRef>(null);
 
+  const [isOpen, setIsOpen] = React.useState(false);
+
   const onUpdate = () => {
     previewRef.current?.refresh();
   };
@@ -291,6 +300,7 @@ function PreviewDialog({
             cancelable: true,
           }),
         );
+        setIsOpen(false);
       },
       undefined,
       1,
@@ -298,15 +308,15 @@ function PreviewDialog({
   }
 
   return (
-    <Dialog>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button type="button" variant="ghost" className="text-gray-300">
+        <Button type="button" variant="ghost" className="text-gray-300" size="sm">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="29"
             height="32"
             viewBox="0 0 29 32"
-            className="size-6!"
+            className="!size-5"
             fill="none"
           >
             <path
@@ -317,56 +327,59 @@ function PreviewDialog({
         </Button>
       </DialogTrigger>
 
-      <DialogContent>
+      <DialogContent className="max-w-[95vw]">
         <DialogHeader>
-          <DialogTitle>Recorta tu imagen de {label}</DialogTitle>
-
-          <DialogDescription>
+          <DialogTitle className="text-lg sm:text-xl">Recorta tu imagen de {label}</DialogTitle>
+          <DialogDescription className="text-sm sm:text-base">
             Ajusta tu imagen para que tenga el tamaño y la forma correcta.
           </DialogDescription>
         </DialogHeader>
 
-        <section className="flex flex-row justify-between">
-          <div>
-            <p>Preview</p>
+        {/* Previews responsive */}
+        <section className="mb-4 flex flex-col justify-between gap-4 sm:flex-row">
+          <div className="flex flex-col items-center">
+            <p className="mb-1 text-sm">Preview</p>
             <CropperPreview
-              className="absolute h-12 w-12 rounded-full border border-secondary-600"
+              className="border-secondary-600 h-12 w-12 rounded-full border"
               ref={previewRef}
               cropper={cropperRef}
-              // backgroundComponent={AdjustablePreviewBackground}
             />
           </div>
 
-          <div>
-            <p>Resultado</p>
+          <div className="flex flex-col items-center">
+            <p className="mb-1 text-sm">Resultado</p>
             <CropperPreview
-              className="absolute h-12 w-12 rounded-full border border-secondary-600"
+              className="border-secondary-600 h-12 w-12 rounded-full border"
               ref={resultRef}
               cropper={cropperRef}
             />
           </div>
         </section>
 
-        <Cropper
-          src={imagePreview}
-          ref={cropperRef}
-          stencilProps={{
-            grid: true,
-            ...stencilProps,
-          }}
-          {...cropperPropsRest}
-          onUpdate={onUpdate}
-        />
+        {/* Cropper responsive */}
+        <div className="max-h-[40vh] overflow-auto">
+          <Cropper
+            src={imagePreview}
+            ref={cropperRef}
+            stencilProps={{
+              grid: true,
+              ...stencilProps,
+            }}
+            className="max-h-[40vh] w-auto"
+            {...cropperPropsRest}
+            onUpdate={onUpdate}
+          />
+        </div>
 
-        <DialogFooter>
+        <DialogFooter className="mt-4">
           <Button
             type="button"
             variant="outline"
             colors="secondary"
-            className="mt-4"
             onClick={onCrop}
+            className="w-full sm:w-auto"
           >
-            Recortar
+            Aceptar
           </Button>
         </DialogFooter>
       </DialogContent>

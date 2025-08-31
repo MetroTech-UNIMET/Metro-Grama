@@ -5,21 +5,18 @@ import { Textarea } from '@/components/ui/textarea';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 
 import type { FieldValues, Path } from 'react-hook-form';
+import type { CommonErrorProps, CommonLabelProps } from '../../types/forms.types';
 
-type LabelTextAreaProps = Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, 'onChange'> & {
-  label: string;
-  containerClassName?: string;
-  labelClassName?: string;
-
-  required?: boolean;
-};
+type LabelTextAreaProps = Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, 'onChange'>;
 
 type OnChangeType = React.ChangeEventHandler<HTMLTextAreaElement>;
 
-export interface TextAreaFieldProps<T extends FieldValues> extends LabelTextAreaProps {
+export interface TextAreaFieldProps<T extends FieldValues>
+  extends LabelTextAreaProps,
+    CommonLabelProps,
+    CommonErrorProps {
   name: Path<T>;
-  showErrors?: boolean;
-  showColorsState?: boolean;
+
   onChange?: (e: React.ChangeEvent<HTMLTextAreaElement>, onChange: OnChangeType) => void;
 }
 
@@ -27,12 +24,16 @@ function FormTextAreaField<T extends FieldValues>({
   name,
   disabled,
   id,
+
   label,
+  descriptionLabel,
   containerClassName,
   labelClassName,
+
   required,
   className,
   onChange: onChangeProps,
+
   showErrors = true,
   showColorsState = true,
   ...props
@@ -53,13 +54,16 @@ function FormTextAreaField<T extends FieldValues>({
               containerClassName,
             )}
           >
-            <FormLabel
-              className={labelClassName}
-              required={required}
-              showColorsState={showColorsState}
-            >
-              {label}
-            </FormLabel>
+            {label && (
+              <FormLabel
+                className={labelClassName}
+                required={required}
+                showColorsState={showColorsState}
+                description={descriptionLabel}
+              >
+                {label}
+              </FormLabel>
+            )}
 
             <FormControl>
               <Textarea
@@ -72,6 +76,7 @@ function FormTextAreaField<T extends FieldValues>({
                 onChange={(e) => {
                   onChangeProps ? onChangeProps(e, onChange) : onChange(e);
                 }}
+                required={required}
                 placeholder={props.placeholder ?? ' '}
                 {...props}
                 {...field}

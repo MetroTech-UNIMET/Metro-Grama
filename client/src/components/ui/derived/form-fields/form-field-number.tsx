@@ -6,28 +6,24 @@ import { Button } from '@/components/ui/button';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 
 import type { ControllerFieldState, FieldValues, Path, UseFormStateReturn } from 'react-hook-form';
+import type { CommonLabelProps, CommonErrorProps } from '../../types/forms.types';
 
-type LabelInputNumberProps = Omit<
-  React.InputHTMLAttributes<HTMLInputElement>,
-  'type' | 'onChange'
-> & {
-  label?: string;
-  containerClassName?: string;
-  labelClassName?: string;
-
-  required?: boolean;
-};
+type LabelInputNumberProps = Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type' | 'onChange'>;
 
 type OnChangeType = (...event: any[]) => void;
 
-export interface InputFieldNumberProps<T extends FieldValues> extends LabelInputNumberProps {
+export interface InputFieldNumberProps<T extends FieldValues>
+  extends LabelInputNumberProps,
+    CommonLabelProps,
+    CommonErrorProps {
   name: Path<T>;
+
   customErrorMessage?(
     fieldState: ControllerFieldState,
     formState: UseFormStateReturn<FieldValues>,
   ): React.ReactNode;
-  showErrors?: boolean;
-  showColorsState?: boolean;
+  subContainerClassName?: string;
+
   onChange?: (e: React.ChangeEvent<HTMLInputElement>, onChange: OnChangeType) => void;
 
   /** When the value is undefined, this will be the value that overrides it */
@@ -38,9 +34,12 @@ function FormInputNumberField<T extends FieldValues>({
   name,
   disabled,
   id,
+
   label,
   containerClassName,
+  subContainerClassName,
   labelClassName,
+  descriptionLabel,
 
   className,
   onChange: onChangeProps,
@@ -82,15 +81,22 @@ function FormInputNumberField<T extends FieldValues>({
               containerClassName,
             )}
           >
-            <FormLabel
-              className={labelClassName}
-              required={props.required}
-              showColorsState={showColorsState}
+            {label && (
+              <FormLabel
+                className={labelClassName}
+                required={props.required}
+                showColorsState={showColorsState}
+                description={descriptionLabel}
+              >
+                {label}
+              </FormLabel>
+            )}
+            <div
+              className={cn(
+                'border-stroke focus-within:ring-secondary flex items-center rounded-[7px] border-[1.5px] focus-within:ring-2 focus-within:ring-offset-2',
+                subContainerClassName,
+              )}
             >
-              {label}
-            </FormLabel>
-
-            <div className="border-stroke flex items-center rounded-[7px] border-[1.5px] focus-within:ring-2 focus-within:ring-secondary focus-within:ring-offset-2">
               <Button
                 type="button"
                 variant="ghost"
@@ -108,14 +114,33 @@ function FormInputNumberField<T extends FieldValues>({
                   {...field}
                   type="number"
                   className={cn(
-                    'border-0 px-0 text-center [&::-webkit-inner-spin-button]:hidden ring-0! ring-offset-0!',
+                    'border-0 px-0 text-center ring-0! ring-offset-0! [&::-webkit-inner-spin-button]:hidden',
                     {
                       'border-destructive bg-destructive/10': hasError && showColorsState,
                     },
                     className,
                   )}
                   onChange={(e) => {
-                    onChangeProps ? onChangeProps(e, onChange) : onChange(Number(e.target.value));
+                    const val = Number(e.target.value);
+                    let value = val;
+
+                    if (props.max !== undefined) {
+                      value = Math.min(value, Number(props.max));
+                    }
+                    if (props.min !== undefined) {
+                      value = Math.max(value, Number(props.min));
+                    }
+
+                    // Create a new event with the cleaned value
+                    const newEvent = {
+                      ...e,
+                      target: {
+                        ...e.target,
+                        value: value.toString(),
+                      },
+                    };
+
+                    onChangeProps ? onChangeProps(newEvent as any, onChange) : onChange(value);
                   }}
                   onKeyDown={(e) => {
                     if (e.key === '-') {

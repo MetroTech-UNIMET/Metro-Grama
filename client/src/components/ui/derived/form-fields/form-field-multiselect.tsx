@@ -6,32 +6,35 @@ import MultipleSelector, {
 } from '@/components/ui/derived/multidropdown';
 
 import type { FieldValues, Path } from 'react-hook-form';
+import type { CommonLabelProps, CommonErrorProps } from '../../types/forms.types';
 
-export interface FormMultipleSelectorFieldProps<T extends FieldValues>
-  extends Omit<MultipleSelectorProps, 'selected'> {
+export interface FormMultipleSelectorFieldProps<
+  T extends FieldValues,
+  J = string | number,
+  K = undefined,
+> extends Omit<MultipleSelectorProps<J, K>, 'selected'>,
+    CommonLabelProps,
+    CommonErrorProps {
   name: Path<T>;
-  showErrors?: boolean;
-  showColorsState?: boolean;
-
-  containerClassName?: string;
-  label: string;
-  labelClassName?: string;
 
   popoverContainer?: HTMLElement;
 }
 
-function FormMultipleSelectorField<T extends FieldValues>({
+function FormMultipleSelectorField<T extends FieldValues, J extends string | number, K>({
   name,
   disabled,
   id,
+
   label,
   containerClassName,
   labelClassName,
+  descriptionLabel,
+
   className,
   showErrors = false,
   showColorsState = true,
   ...props
-}: FormMultipleSelectorFieldProps<T>) {
+}: FormMultipleSelectorFieldProps<T, J, K>) {
   return (
     <FormField
       name={name}
@@ -48,13 +51,16 @@ function FormMultipleSelectorField<T extends FieldValues>({
               containerClassName,
             )}
           >
-            <FormLabel
-              className={labelClassName}
-              required={props.required}
-              showColorsState={showColorsState}
-            >
-              {label}
-            </FormLabel>
+            {label && (
+              <FormLabel
+                className={labelClassName}
+                required={props.required}
+                showColorsState={showColorsState}
+                description={descriptionLabel}
+              >
+                {label}
+              </FormLabel>
+            )}
 
             <FormControl>
               <MultipleSelector
@@ -70,7 +76,7 @@ function FormMultipleSelectorField<T extends FieldValues>({
             </FormControl>
 
             {showErrors && hasError && (
-              <FormMessage className="mt-1 text-sm text-destructive/80">
+              <FormMessage className="text-destructive/80 mt-1 text-sm">
                 {fieldState.error?.message}
               </FormMessage>
             )}

@@ -4,15 +4,13 @@ import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/comp
 import { PhoneInput, type PhoneInputProps } from '@/components/ui/derived/phone-input';
 
 import type { FieldValues, Path } from 'react-hook-form';
+import type { CommonErrorProps, CommonLabelProps } from '../../types/forms.types';
 
-export interface FormPhoneInputFieldProps<T extends FieldValues> extends PhoneInputProps {
+export interface FormPhoneInputFieldProps<T extends FieldValues>
+  extends PhoneInputProps,
+    CommonLabelProps,
+    CommonErrorProps {
   name: Path<T>;
-  showErrors?: boolean;
-  showColorsState?: boolean;
-
-  containerClassName?: string;
-  label: string;
-  labelClassName?: string;
 
   popoverContainer?: HTMLElement;
 }
@@ -21,11 +19,14 @@ function FormPhoneInputField<T extends FieldValues>({
   name,
   disabled,
   id,
+
   label,
   containerClassName,
   labelClassName,
   className,
-  showErrors = false,
+  descriptionLabel,
+
+  showErrors = true,
   showColorsState = true,
   popoverContainer,
 
@@ -50,18 +51,22 @@ function FormPhoneInputField<T extends FieldValues>({
               containerClassName,
             )}
           >
-            <FormLabel
-              className={labelClassName}
-              required={props.required}
-              showColorsState={showColorsState}
-            >
-              {label}
-            </FormLabel>
+            {label && (
+              <FormLabel
+                className={labelClassName}
+                required={props.required}
+                showColorsState={showColorsState}
+                description={descriptionLabel}
+              >
+                {label}
+              </FormLabel>
+            )}
 
             <FormControl>
               <PhoneInput
                 {...props}
                 {...field}
+                placeholder="+58 4XX XXXXXXX"
                 popoverContainer={popoverContainer}
                 numberInputProps={{
                   className: cn(
@@ -80,7 +85,7 @@ function FormPhoneInputField<T extends FieldValues>({
             </FormControl>
 
             {showErrors && hasError && (
-              <FormMessage className="mt-1 text-sm text-destructive/80">
+              <FormMessage className="text-destructive/80 mt-1 text-sm">
                 {fieldState.error?.message}
               </FormMessage>
             )}

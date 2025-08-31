@@ -5,31 +5,28 @@ import { Input } from '@/components/ui/input';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 
 import type { ControllerFieldState, FieldValues, Path, UseFormStateReturn } from 'react-hook-form';
+import type { CommonErrorProps, CommonLabelProps } from '../../types/forms.types';
 
-type LabelInputProps = Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'> & {
-  label?: string;
-  containerClassName?: string;
-  labelClassName?: string;
+type LabelInputProps = Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'> &
+  CommonLabelProps & {
+    startContent?: React.ReactNode;
+    startContentClassName?: string;
 
-  startContent?: React.ReactNode;
-  startContentClassName?: string;
+    endContent?: React.ReactNode;
+    endContentClassName?: string;
 
-  endContent?: React.ReactNode;
-  endContentClassName?: string;
-
-  required?: boolean;
-};
+    required?: boolean;
+  };
 
 type OnChangeType = (...event: any[]) => void;
 
-export interface InputFieldProps<T extends FieldValues> extends LabelInputProps {
+export interface InputFieldProps<T extends FieldValues> extends LabelInputProps, CommonErrorProps {
   name: Path<T>;
   customErrorMessage?(
     fieldState: ControllerFieldState,
     formState: UseFormStateReturn<FieldValues>,
   ): React.ReactNode;
-  showErrors?: boolean;
-  showColorsState?: boolean;
+
   onChange?: (e: React.ChangeEvent<HTMLInputElement>, onChange: OnChangeType) => void;
 }
 
@@ -38,6 +35,7 @@ function FormInputField<T extends FieldValues>({
   disabled,
   id,
   label,
+  descriptionLabel,
   containerClassName,
   labelClassName,
 
@@ -78,19 +76,22 @@ function FormInputField<T extends FieldValues>({
               containerClassName,
             )}
           >
-            <FormLabel
-              className={labelClassName}
-              required={props.required}
-              showColorsState={showColorsState}
-            >
-              {label}
-            </FormLabel>
+            {label && (
+              <FormLabel
+                className={labelClassName}
+                required={props.required}
+                showColorsState={showColorsState}
+                description={descriptionLabel}
+              >
+                {label}
+              </FormLabel>
+            )}
 
             <div className="relative">
               {startContent && (
                 <span
                   className={cn(
-                    'left-4.5 absolute top-1/2 -translate-y-1/2',
+                    'absolute top-1/2 left-4.5 -translate-y-1/2',
                     startContentClassName,
                   )}
                 >
@@ -115,10 +116,26 @@ function FormInputField<T extends FieldValues>({
                   )}
                   onChange={(e) => {
                     if (props.type === 'number') {
-                      const value = Number(e.target.value);
-                      onChangeProps
-                        ? onChangeProps(e, onChange)
-                        : onChange(value === 0 ? undefined : value);
+                      const val = Number(e.target.value);
+                      let value = val;
+
+                      if (props.max !== undefined) {
+                        value = Math.min(value, Number(props.max));
+                      }
+                      if (props.min !== undefined) {
+                        value = Math.max(value, Number(props.min));
+                      }
+
+                      // Create a new event with the cleaned value
+                      const newEvent = {
+                        ...e,
+                        target: {
+                          ...e.target,
+                          value: value.toString(),
+                        },
+                      };
+
+                      onChangeProps ? onChangeProps(newEvent as any, onChange) : onChange(value);
                     } else {
                       onChangeProps ? onChangeProps(e, onChange) : onChange(e);
                     }
@@ -130,7 +147,7 @@ function FormInputField<T extends FieldValues>({
               {endContent && (
                 <span
                   className={cn(
-                    'absolute right-[18px] top-1/2 -translate-y-1/2',
+                    'absolute top-1/2 right-[18px] -translate-y-1/2',
                     endContentClassName,
                   )}
                 >

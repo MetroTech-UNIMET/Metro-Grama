@@ -5,4 +5,7 @@ export interface Trimester {
   starting_date: string;
   ending_date: string;
   intensive: boolean;
+
+  is_current: boolean;
+  is_next: boolean;
 }

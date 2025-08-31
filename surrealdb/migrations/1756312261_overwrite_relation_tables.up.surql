@@ -1,0 +1,3 @@
+DEFINE TABLE OVERWRITE belong TYPE RELATION FROM subject to career;
+DEFINE TABLE OVERWRITE enroll TYPE RELATION FROM student to subject;
+DEFINE TABLE OVERWRITE precede TYPE RELATION FROM subject to subject;

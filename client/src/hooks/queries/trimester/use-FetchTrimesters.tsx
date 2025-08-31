@@ -20,7 +20,9 @@ export function useFetchTrimesters({ queryOptions }: Props) {
   return query;
 }
 
-export function useFetchTrimestersOptions({ queryOptions }: Props<Option[]> = {}) {
+export type TrimesterOption = Option<string, Trimester>;
+
+export function useFetchTrimestersOptions({ queryOptions }: Props<TrimesterOption[]> = {}) {
   const queryClient = useQueryClient();
 
   const query = useQuery({
@@ -28,9 +30,10 @@ export function useFetchTrimestersOptions({ queryOptions }: Props<Option[]> = {}
     queryFn: async () => {
       const trimesters = await fetchAndSetQueryData(queryClient, ['trimesters'], getAllTrimesters);
 
-      const options: Option[] = trimesters.map((trimester) => ({
+      const options: TrimesterOption[] = trimesters.map((trimester) => ({
         value: trimester.id.ID,
         label: trimester.id.ID,
+        data: trimester,
       }));
 
       return options;

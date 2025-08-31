@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { ArrowLeft } from 'lucide-react';
 
 import SubjectOfferForm from './SubjectOfferForm/SubjectOfferForm';
@@ -15,17 +16,35 @@ interface Props {
   subjectOffer: SubjectOfferWithSchedules;
 
   onAddSubject: (subjectOffer: SubjectOfferWithSchedules) => void;
+  onRemoveSubject: (subjectOffer: SubjectOfferWithSchedules) => void;
+  getIsSubjectSelected: (subjectOffer: SubjectOfferWithSchedules) => boolean;
+
   onBack: () => void;
 }
 
-export default function SubjectOfferDetail({ subjectOffer, onBack, onAddSubject }: Props) {
+export default function SubjectOfferDetail({
+  subjectOffer,
+  onBack,
+  onAddSubject,
+  onRemoveSubject,
+  getIsSubjectSelected,
+}: Props) {
   const { view, go, back } = useSubjectOfferDetailRouter(subjectOffer);
   const handleHeaderBack = () => back(onBack);
 
   // Always prefer the freshest data from react-query
   const trimesterId = subjectOffer.trimester.id.ID;
   const { data: offers } = useFetchAnnualOfferByTrimester({ trimesterId });
-  const currentSubjectOffer = offers?.find(o => o.id.ID === subjectOffer.id.ID) ?? subjectOffer;
+
+  const currentSubjectOffer = useMemo(
+    () => offers?.find((o) => o.id.ID === subjectOffer.id.ID) ?? subjectOffer,
+    [offers, subjectOffer],
+  );
+
+  const isSelected = useMemo(
+    () => getIsSubjectSelected(currentSubjectOffer),
+    [currentSubjectOffer, getIsSubjectSelected],
+  );
 
   return (
     <>
@@ -38,6 +57,8 @@ export default function SubjectOfferDetail({ subjectOffer, onBack, onAddSubject 
           <SubjectOfferSchedulesList
             subjectOffer={currentSubjectOffer}
             onAddSubject={onAddSubject}
+            onRemoveSubject={onRemoveSubject}
+            isSelected={isSelected}
             onRequestEdit={() => go('form')}
           />
         )}

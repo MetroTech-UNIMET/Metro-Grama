@@ -1,4 +1,4 @@
-import { Pencil, Plus } from 'lucide-react';
+import { Pencil, Plus, Trash } from 'lucide-react';
 
 import { weekDayOptions } from './SubjectOfferForm/constants';
 
@@ -14,19 +14,42 @@ import type { SubjectSchedule } from '@/interfaces/SubjectSchedule';
 
 interface Props {
   subjectOffer: SubjectOfferWithSchedules;
+
+  isSelected: boolean;
   onAddSubject: (subjectOffer: SubjectOfferWithSchedules) => void;
+  onRemoveSubject: (subjectOffer: SubjectOfferWithSchedules) => void;
+
   onRequestEdit?: () => void;
 }
 
-export function SubjectOfferSchedulesList({ subjectOffer, onAddSubject, onRequestEdit }: Props) {
+export function SubjectOfferSchedulesList({
+  subjectOffer,
+  onAddSubject,
+  isSelected,
+  onRemoveSubject,
+  onRequestEdit,
+}: Props) {
   const schedules = subjectOffer.schedules;
 
   return (
     <SidebarGroup>
       <div className="flex w-full items-center">
-        <Button colors="primary" className="w-full rounded-r-none" onClick={() => onAddSubject(subjectOffer)}>
-          <Plus />
-          Agregar al horario
+        <Button
+          colors={isSelected ? 'destructive' : 'primary'}
+          className="w-full rounded-r-none"
+          onClick={() => (isSelected ? onRemoveSubject(subjectOffer) : onAddSubject(subjectOffer))}
+        >
+          {isSelected ? (
+            <>
+              <Trash />
+              Eliminar del horario
+            </>
+          ) : (
+            <>
+              <Plus />
+              Agregar al horario
+            </>
+          )}
         </Button>
         <Button
           size="icon"

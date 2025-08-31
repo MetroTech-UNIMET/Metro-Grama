@@ -17,9 +17,11 @@ import type { SubjectOfferWithSchedules } from '@/interfaces/SubjectOffer';
 
 interface Props {
   onAddSubject: (subjectOffer: SubjectOfferWithSchedules) => void;
+  onRemoveSubject: (subjectOffer: SubjectOfferWithSchedules) => void;
+  getIsSubjectSelected: (subjectOffer: SubjectOfferWithSchedules) => boolean;
 }
 
-export function PlannerSidebar({ onAddSubject }: Props) {
+export function PlannerSidebar({ onAddSubject, onRemoveSubject, getIsSubjectSelected }: Props) {
   const [selectedSubject, setSelectedSubject] = useState<SubjectOfferWithSchedules | null>(null);
 
   return (
@@ -30,6 +32,8 @@ export function PlannerSidebar({ onAddSubject }: Props) {
             subjectOffer={selectedSubject}
             onBack={() => setSelectedSubject(null)}
             onAddSubject={onAddSubject}
+            onRemoveSubject={onRemoveSubject}
+            getIsSubjectSelected={getIsSubjectSelected}
           />
         ) : (
           <HomeSidebar setSelectedSubject={setSelectedSubject} />

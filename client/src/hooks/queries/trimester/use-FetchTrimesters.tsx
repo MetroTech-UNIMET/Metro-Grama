@@ -4,7 +4,7 @@ import { fetchAndSetQueryData } from '@utils/tanstack-query';
 
 import type { Trimester } from '@/interfaces/Trimester';
 import type { OptionalQueryOptions } from '../types';
-import type { Option } from '@ui/types';
+import type { Option } from '@ui/types/option.types';
 
 interface Props<T = Trimester[]> {
   queryOptions?: OptionalQueryOptions<T>;

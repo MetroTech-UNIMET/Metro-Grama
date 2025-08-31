@@ -167,7 +167,7 @@
   --color-Unimet-primary-900: var(--color-Unimet-primary-900);
   --color-Unimet-primary-950: var(--color-Unimet-primary-950);
 
-  --color-primary: var(--color-primary-400);
+  --color-primary: var(--color-primary-500);
   --color-primary-50: var(--color-primary-50);
   --color-primary-100: var(--color-primary-100);
   --color-primary-200: var(--color-primary-200);
@@ -182,6 +182,7 @@
   --color-primary-gradient: var(--color-primary-gradient);
   --color-primary-foreground: var(--color-primary-foreground);
 
+  --color-secondary: var(--color-secondary-400);
   --color-secondary-50: var(--color-secondary-50);
   --color-secondary-100: var(--color-secondary-100);
   --color-secondary-200: var(--color-secondary-200);
@@ -196,6 +197,7 @@
   --color-secondary-gradient: var(--color-secondary-gradient);
   --color-secondary-foreground: var(--color-secondary-foreground);
 
+  --color-tertiary: var(--color-tertiary-400);
   --color-tertiary-50: var(--color-tertiary-50);
   --color-tertiary-100: var(--color-tertiary-100);
   --color-tertiary-200: var(--color-tertiary-200);

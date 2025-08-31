@@ -1,4 +1,4 @@
-import type { GroupOption, Option } from '../types';
+import type { Option, GroupOption } from '../types/option.types';
 
 export function transToGroupOption<
   TValue extends string | number = string | number,

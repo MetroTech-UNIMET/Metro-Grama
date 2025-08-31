@@ -10,6 +10,9 @@ interface Props {
 // REVIEW - Puedo poner los amigos que la están viendo
 export default function SubjectOfferCard({ subjectOffer, onSelect }: Props) {
   const { subject } = subjectOffer;
+
+  const numSchedules = subjectOffer.schedules.length;
+
   return (
     <Card className="cursor-pointer transition-shadow hover:shadow-lg" onClick={() => onSelect(subjectOffer)}>
       <CardHeader>
@@ -21,7 +24,13 @@ export default function SubjectOfferCard({ subjectOffer, onSelect }: Props) {
         <div className="flex w-full justify-between">
           <p>Desbloquea: 2</p>
 
-          <Badge>1 horario</Badge>
+          {numSchedules !== 0 ? (
+            <Badge>
+              {numSchedules} horario{numSchedules !== 1 ? 's' : ''}
+            </Badge>
+          ) : (
+            <Badge>Sin horarios</Badge>
+          )}
         </div>
       </CardContent>
     </Card>

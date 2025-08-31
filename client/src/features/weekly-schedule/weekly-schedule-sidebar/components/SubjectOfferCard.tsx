@@ -1,18 +1,20 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@ui/card';
-
-import type { Subject } from '@/interfaces/Subject';
 import { Badge } from '@ui/badge';
 
+import type { SubjectOfferWithSchedules } from '@/interfaces/SubjectOffer';
+
 interface Props {
-  subject: Subject;
+  subjectOffer: SubjectOfferWithSchedules;
+  onSelect: (subjectOffer: SubjectOfferWithSchedules) => void;
 }
 // REVIEW - Puedo poner los amigos que la están viendo
-export default function SubjectOfferCard({ subject }: Props) {
+export default function SubjectOfferCard({ subjectOffer, onSelect }: Props) {
+  const { subject } = subjectOffer;
   return (
-    <Card className="cursor-pointer transition-shadow hover:shadow-lg" onClick={() => {}}>
+    <Card className="cursor-pointer transition-shadow hover:shadow-lg" onClick={() => onSelect(subjectOffer)}>
       <CardHeader>
         <CardTitle className="text-lg">{subject.name}</CardTitle>
-        <CardDescription>{subject.code.ID}</CardDescription>
+        <CardDescription>{subject.id.ID}</CardDescription>
       </CardHeader>
 
       <CardContent>

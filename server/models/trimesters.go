@@ -9,4 +9,6 @@ type TrimesterEntity struct {
 	StartingDate surrealModels.CustomDateTime `json:"starting_date" validate:"required" swaggertype:"string"`
 	EndingDate   surrealModels.CustomDateTime `json:"ending_date" validate:"required" swaggertype:"string"`
 	Intensive    bool                         `json:"intensive" validate:"required"`
+	IsCurrent    bool                         `json:"is_current" validate:"required"`
+	IsNext       bool                         `json:"is_next" validate:"required"`
 }

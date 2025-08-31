@@ -18,6 +18,7 @@ import { Tabs } from '@ui/tabs';
 import type { SubjectEvent, DaySchedule } from './types';
 
 export type WeeklyPlannerProps = {
+  subjectEvents: SubjectEvent[];
   type: 'uniform-interval' | 'custom-interval';
   locale?: Locale;
   rowHeight?: string;
@@ -38,159 +39,13 @@ interface CustomIntervalProps {
 }
 
 export function WeeklyPlanner({
+  subjectEvents,
   locale = es,
   shouldRenderTime,
   extraDecoration,
   rowHeight = '3.5rem',
   ...props
 }: WeeklyPlannerProps) {
-  const subjectEvents: SubjectEvent[] = [
-    {
-      id: 'm1',
-      start_hour: '09:30',
-      end_hour: '10:30',
-      title: 'Abs Circuit',
-      type: 'abs',
-      dayIndex: 1,
-    },
-    {
-      id: 'm2',
-      start_hour: '11:00',
-      end_hour: '12:30',
-      title: 'Rowing Workout',
-      type: 'rowing',
-      dayIndex: 1,
-    },
-    {
-      id: 'm3',
-      start_hour: '14:00',
-      end_hour: '15:15',
-      title: 'Yoga Level 1',
-      type: 'yoga1',
-      dayIndex: 1,
-    },
-    {
-      id: 't1',
-      start_hour: '10:00',
-      end_hour: '11:00',
-      title: 'Rowing Workout',
-      type: 'rowing',
-      dayIndex: 2,
-    },
-    {
-      id: 't2',
-      start_hour: '11:30',
-      end_hour: '13:00',
-      title: 'Restorative Yoga',
-      type: 'restorative',
-      dayIndex: 2,
-    },
-    {
-      id: 't3',
-      start_hour: '13:30',
-      end_hour: '15:00',
-      title: 'Abs Circuit',
-      type: 'abs',
-      dayIndex: 2,
-    },
-    {
-      id: 't4',
-      start_hour: '15:45',
-      end_hour: '16:45',
-      title: 'Yoga Level 1',
-      type: 'yoga1',
-      dayIndex: 2,
-    },
-    {
-      id: 'w1',
-      start_hour: '09:00',
-      end_hour: '10:15',
-      title: 'Restorative Yoga',
-      type: 'restorative',
-      dayIndex: 3,
-    },
-    {
-      id: 'w2',
-      start_hour: '10:45',
-      end_hour: '11:45',
-      title: 'Yoga Level 1',
-      type: 'yoga1',
-      dayIndex: 3,
-    },
-    {
-      id: 'w3',
-      start_hour: '12:00',
-      end_hour: '13:45',
-      title: 'Rowing Workout',
-      type: 'rowing',
-      dayIndex: 3,
-    },
-    {
-      id: 'w4',
-      start_hour: '13:45',
-      end_hour: '15:00',
-      title: 'Yoga Level 1',
-      type: 'yoga1',
-      dayIndex: 3,
-    },
-    {
-      id: 'th1',
-      start_hour: '09:30',
-      end_hour: '10:30',
-      title: 'Abs Circuit',
-      type: 'abs',
-      dayIndex: 4,
-    },
-    {
-      id: 'th2',
-      start_hour: '12:00',
-      end_hour: '13:45',
-      title: 'Restorative Yoga',
-      type: 'restorative',
-      dayIndex: 4,
-    },
-    {
-      id: 'th3',
-      start_hour: '15:30',
-      end_hour: '16:30',
-      title: 'Abs Circuit',
-      type: 'abs',
-      dayIndex: 4,
-    },
-    {
-      id: 'th4',
-      start_hour: '17:00',
-      end_hour: '18:00',
-      title: 'Rowing Workout',
-      type: 'rowing',
-      dayIndex: 4,
-    },
-    {
-      id: 'f1',
-      start_hour: '10:00',
-      end_hour: '11:00',
-      title: 'Rowing Workout',
-      type: 'rowing',
-      dayIndex: 5,
-    },
-    {
-      id: 'f2',
-      start_hour: '12:30',
-      end_hour: '14:00',
-      title: 'Abs Circuit',
-      type: 'abs',
-      dayIndex: 5,
-    },
-    {
-      id: 'f3',
-      start_hour: '15:45',
-      end_hour: '16:45',
-      title: 'Yoga Level 1',
-      type: 'yoga1',
-      dayIndex: 5,
-    },
-  ];
-
   const schedules: DaySchedule[] = Array.from({ length: 7 }, (_, dayIndex) => ({
     day: new Date(new Date().setDate(new Date().getDate() - new Date().getDay() + dayIndex)),
     events: subjectEvents.filter((event) => event.dayIndex === dayIndex),
@@ -210,7 +65,7 @@ export function WeeklyPlanner({
   });
 
   return (
-    <WeeklyPlannerProvider {...props}>
+    <WeeklyPlannerProvider subjectEvents={subjectEvents} {...props}>
       <Tabs defaultValue={format(daysOfWeek[0], 'EEE', { locale })} asChild>
         <div ref={ref} className="relative" style={{ '--height-row': rowHeight } as React.CSSProperties}>
           {!!isMobile && <MobileTabNavigation />}

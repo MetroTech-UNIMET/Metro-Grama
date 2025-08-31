@@ -27,8 +27,8 @@ const size = {
   default: 'h-9 px-4 py-2',
   sm: 'h-8 rounded-md px-3 text-xs',
   lg: 'h-10 rounded-md px-8',
-  icon: 'h-9 w-9',
-  'big-icon': 'h-12 w-12 [&_svg]:size-6',
+  icon: 'size-9',
+  'big-icon': 'size-12 [&_svg]:size-6',
 };
 
 const buttonVariants = cva(
@@ -78,6 +78,13 @@ const buttonVariants = cva(
         className:
           'text-primary bg-transparent hover:bg-secondary/10 dark:hover:bg-secondary/20 active:bg-secondary/20 dark:active:bg-secondary/30',
       },
+      {
+        colors: 'secondary',
+        variant: 'ghost',
+        className:
+          'text-secondary bg-transparent hover:bg-secondary/10 dark:hover:bg-secondary/20 active:bg-secondary/20 dark:active:bg-secondary/30',
+      },
+
       {
         colors: 'success',
         variant: 'outline',

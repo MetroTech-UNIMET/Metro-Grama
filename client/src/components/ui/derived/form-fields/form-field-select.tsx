@@ -1,49 +1,41 @@
 import * as React from 'react';
 
 import { cn } from '@/lib/utils/className';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 
 import type { FieldValues, Path } from 'react-hook-form';
-import { type SelectProps } from 'radix-ui';
-import type { Option } from '@/components/ui/types';
+import type { Option } from '@/components/ui/types/option.types';
+import type { CommonErrorProps, CommonLabelProps } from '@/components/ui/types/forms.types';
 
-type LabelSelectProps = Omit<SelectProps, 'onValueChange'> & {
-  label: string;
-  containerClassName?: string;
-  labelClassName?: string;
-
-  required?: boolean;
-};
+type SelectProps = React.ComponentProps<typeof Select>;
 
 type onValueChange = NonNullable<SelectProps['onValueChange']>;
 
-export interface SelectFieldProps<T extends FieldValues> extends LabelSelectProps {
+export interface SelectFieldProps<T extends FieldValues, J = string | number, K = undefined>
+  extends Omit<SelectProps, 'onValueChange'>,
+    CommonLabelProps,
+    CommonErrorProps {
   name: Path<T>;
-  showErrors?: boolean;
-  showColorsState?: boolean;
 
   className?: string;
   readOnly?: boolean;
 
-  onValueChange?: (value: string, onChange: onValueChange) => void;
-  options: Option[];
+  onValueChange?: (value: J, onChange: onValueChange) => void;
+  options: Option<J, K>[];
 
   popoverContainer?: HTMLElement;
 }
 
-function FormSelectField<T extends FieldValues>({
+function FormSelectField<T extends FieldValues, J = string | number, K = undefined>({
   name,
   disabled,
+
   label,
+  descriptionLabel,
   containerClassName,
   labelClassName,
+
   required,
   className,
   readOnly = false,
@@ -53,7 +45,7 @@ function FormSelectField<T extends FieldValues>({
   options,
   popoverContainer,
   ...props
-}: SelectFieldProps<T>) {
+}: SelectFieldProps<T, J, K>) {
   return (
     <FormField
       name={name}
@@ -70,22 +62,32 @@ function FormSelectField<T extends FieldValues>({
               containerClassName,
             )}
           >
-            <FormLabel className={labelClassName} required showColorsState={showColorsState}>
-              {label}
-            </FormLabel>
+            {label && (
+              <FormLabel
+                className={labelClassName}
+                required={required}
+                showColorsState={showColorsState}
+                description={descriptionLabel}
+              >
+                {label}
+              </FormLabel>
+            )}
 
             <Select
               onValueChange={(value) => {
-                if (!value) return;
+                if (Array.isArray(value)) throw new Error('Array values are not supported, use Multidropdown');
+
                 onValueChangeProps ? onValueChangeProps(value, onChange) : onChange(value);
               }}
               value={value}
               {...field}
+              items={options}
               disabled={disabled || readOnly || field.disabled}
             >
               <FormControl>
                 <SelectTrigger
                   className={cn(
+                    'mb-0',
                     {
                       'border-red-500 bg-red-500/10': hasError && showColorsState,
                       'bg-white': !hasError && showColorsState,
@@ -93,13 +95,13 @@ function FormSelectField<T extends FieldValues>({
                     className,
                   )}
                 >
-                  <SelectValue {...props} />
+                  <SelectValue {...props}></SelectValue>
                 </SelectTrigger>
               </FormControl>
 
               <SelectContent container={popoverContainer}>
                 {options.map((option) => (
-                  <SelectItem key={option.value} value={String(option.value)}>
+                  <SelectItem key={String(option.value)} value={option.value}>
                     {option.label}
                   </SelectItem>
                 ))}

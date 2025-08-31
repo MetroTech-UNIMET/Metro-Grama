@@ -3,14 +3,7 @@
 import * as React from 'react';
 import { Slot as SlotPrimitive } from 'radix-ui';
 
-import {
-  Controller,
-  ControllerProps,
-  FieldPath,
-  FieldValues,
-  FormProvider,
-  useFormContext,
-} from 'react-hook-form';
+import { Controller, ControllerProps, FieldPath, FieldValues, FormProvider, useFormContext } from 'react-hook-form';
 
 import { cn } from '@/lib/utils/className';
 import { Label } from '@/components/ui/label';
@@ -81,12 +74,14 @@ function FormItem({ className, ...props }: React.HTMLAttributes<HTMLDivElement>)
 interface ExtraFormLabelProps {
   required?: boolean;
   showColorsState?: boolean;
+  description?: React.ReactNode;
 }
 
 function FormLabel({
   className,
   showColorsState = true,
   required = false,
+  description,
   ...props
 }: React.ComponentProps<typeof Label> & ExtraFormLabelProps) {
   const { formItemId, invalid } = useFormField();
@@ -95,7 +90,7 @@ function FormLabel({
   return (
     <Label
       className={cn(
-        'text-body-sm block font-semibold text-balance ',
+        'text-body-sm block font-semibold text-balance',
         {
           'text-destructive': invalid && showColorsState,
         },
@@ -105,6 +100,7 @@ function FormLabel({
       {...props}
     >
       {props.children}
+      {description && description}
       {required && <span className="text-red-500"> *</span>}
     </Label>
   );
@@ -135,11 +131,7 @@ function FormDescription({ className, ...props }: React.HTMLAttributes<HTMLParag
   );
 }
 
-function FormMessage({
-  className,
-  children,
-  ...props
-}: React.HTMLAttributes<HTMLParagraphElement>) {
+function FormMessage({ className, children, ...props }: React.HTMLAttributes<HTMLParagraphElement>) {
   const { error, formMessageId } = useFormField();
   const body = error?.message ? String(error?.message) : children;
 
@@ -158,13 +150,4 @@ function FormMessage({
   );
 }
 
-export {
-  useFormField,
-  Form,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormDescription,
-  FormMessage,
-  FormField,
-};
+export { useFormField, Form, FormItem, FormLabel, FormControl, FormDescription, FormMessage, FormField };

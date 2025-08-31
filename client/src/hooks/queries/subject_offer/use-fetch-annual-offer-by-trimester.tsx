@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { getAnualOffersByTrimester } from '@/api/subject_offferAPI';
+import { getAnualOffersByTrimester, type Query_AnnualOffers } from '@/api/subject_offferAPI';
 
 import type { SubjectOfferWithSchedules } from '@/interfaces/SubjectOffer';
 import type { OptionalQueryOptions } from '../types';
@@ -7,12 +7,13 @@ import type { OptionalQueryOptions } from '../types';
 interface Props<T = SubjectOfferWithSchedules[]> {
   queryOptions?: OptionalQueryOptions<T>;
   trimesterId: string;
+  optionalQuery?: Query_AnnualOffers;
 }
 
-export function useFetchAnnualOfferByTrimester({ queryOptions, trimesterId }: Props) {
+export function useFetchAnnualOfferByTrimester({ queryOptions, trimesterId, optionalQuery }: Props) {
   const query = useQuery({
-    queryKey: ['subjects', 'offer', trimesterId],
-    queryFn: () => getAnualOffersByTrimester(trimesterId),
+    queryKey: ['subjects', 'offer', trimesterId, optionalQuery],
+    queryFn: () => getAnualOffersByTrimester(trimesterId, optionalQuery),
     ...queryOptions,
   });
 

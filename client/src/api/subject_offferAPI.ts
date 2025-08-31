@@ -2,12 +2,26 @@ import axios from '@/axiosConfig';
 
 import type { SubjectOfferWithSchedules } from '@/interfaces/SubjectOffer';
 
-export async function getAnualOffers() {
-  const response = await axios.get('/subject_offer/');
+export interface Query_AnnualOffers {
+  careers?: string[];
+}
+export async function getAnualOffers(query: Query_AnnualOffers = {}) {
+  const queryParams = new URLSearchParams();
+
+  if (query.careers && query.careers.length > 0) {
+    queryParams.append('careers', query.careers.join(','));
+  }
+
+  const response = await axios.get(`/subject_offer/?${queryParams.toString()}`);
   return response.data as SubjectOfferWithSchedules[];
 }
 
-export async function getAnualOffersByTrimester(trimesterId: string) {
-  const response = await axios.get(`/subject_offer/${trimesterId}`);
+export async function getAnualOffersByTrimester(trimesterId: string, query: Query_AnnualOffers = {}) {
+  const queryParams = new URLSearchParams();
+
+  if (query.careers && query.careers.length > 0) {
+    queryParams.append('careers', query.careers.join(','));
+  }
+  const response = await axios.get(`/subject_offer/${trimesterId}?${queryParams.toString()}`);
   return response.data as SubjectOfferWithSchedules[];
 }

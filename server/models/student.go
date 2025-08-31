@@ -6,6 +6,6 @@ import (
 
 type StudentEntity struct {
 	ID      surrealModels.RecordID `json:"id" swaggertype:"object"`
-	id_card string                 `json:"id_card"`
+	Id_card string                 `json:"id_card"`
 	User    UserEntity             `json:"user"`
 }

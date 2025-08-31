@@ -1,15 +1,14 @@
-import MultipleSelector, {
-  type MultipleSelectorProps,
-} from "@ui/derived/multidropdown";
-import { Spinner } from "@ui/spinner";
-import useFetchCareersOptions from "@/hooks/queries/use-FetchCareersOptions";
-import { cn } from "@utils/className";
+import { cn } from '@utils/className';
 
-import type { Option } from "@ui/types";
+import useFetchCareersOptions, { type CareerOption } from '@/hooks/queries/use-FetchCareersOptions';
 
-interface Props extends Omit<MultipleSelectorProps, "options"> {
+import MultipleSelector, { type MultipleSelectorProps } from '@ui/derived/multidropdown';
+import { Spinner } from '@ui/spinner';
+
+import type { Career } from '@/interfaces/Career';
+
+interface Props extends Omit<MultipleSelectorProps<string, Career>, 'options'> {
   loadingSubjects?: boolean;
-  value: Option[];
   maxSelected?: number;
 }
 
@@ -20,22 +19,23 @@ export function CareerMultiDropdown({
   onChange,
   maxSelected = 3,
   className,
+  placeholder,
   ...props
 }: Props) {
   const { options, isLoading, error } = useFetchCareersOptions();
 
   value;
   return (
-    <div className="relative max-w-sm w-full">
+    <div className="relative w-full max-w-sm">
       <MultipleSelector
         value={value}
-        onChange={onChange as (value: Option[]) => void}
+        onChange={onChange as (value: CareerOption[]) => void}
         options={options}
         maxSelected={maxSelected}
         placeholder={
-          value.length === maxSelected
-            ? "Máximo alcanzado"
-            : "Selecciona las carreras que deseas visualizar"
+          value?.length === maxSelected
+            ? 'Máximo alcanzado'
+            : (placeholder ?? 'Selecciona las carreras que deseas visualizar')
         }
         showSpinner={loadingSubjects}
         emptyIndicator={
@@ -46,16 +46,16 @@ export function CareerMultiDropdown({
           ) : (
             <p>
               {options.length === 0 || error
-                ? " No se encontraron carreras. Por favor, intenta más tarde o recarga la página."
-                : "No hay más carreras para seleccionar."}
+                ? ' No se encontraron carreras. Por favor, intenta más tarde o recarga la página.'
+                : 'No hay más carreras para seleccionar.'}
             </p>
           )
         }
         inputProps={{
-          className: "w-auto",
+          className: 'w-auto',
         }}
         badgeClassName="bg-blue-200 hover:bg-blue-300 text-black"
-        className={cn("bg-gray-200", className)}
+        className={cn('bg-gray-200', className)}
         {...props}
       />
     </div>

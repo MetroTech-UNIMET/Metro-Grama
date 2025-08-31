@@ -2,6 +2,8 @@ import React, { useEffect, forwardRef } from 'react';
 import { Command as CommandPrimitive, useCommandState } from 'cmdk';
 import { X } from 'lucide-react';
 
+import { transToGroupOption } from '../utils/options';
+
 import { cn } from '@/lib/utils/className';
 import useDebounce from '@/hooks/useDebounceValue';
 
@@ -10,8 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Command, CommandGroup, CommandItem, CommandList } from '@/components/ui/command';
 import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
-import type { Option, GroupOption } from '../types';
-import { transToGroupOption } from '../utils/options';
+import type { Option, GroupOption } from '../types/option.types';
 
 interface CommonProps {
   id?: string;

@@ -10,14 +10,14 @@ import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from '@/compon
 import { transToGroupOption } from '@/components/ui/utils/options';
 import { cn } from '@/lib/utils/className';
 
-import type { Option, GroupOption } from '@/components/ui/types';
+import type { Option, GroupOption } from '@/components/ui/types/option.types';
 import type { BaseCustomCommand } from './custom-command-items/types';
 // import { filterIgnoringAccents } from "@utils/filters";
 
 export interface AutoCompleteProps<TValue = string | number, TData = undefined>
   extends Omit<InputHTMLAttributes<HTMLInputElement>, 'value' | 'onSelect'> {
   options: Option<TValue, TData>[] | GroupOption<TValue, TData>;
-  emptyMessage: string;
+  emptyIndicator?: React.ReactNode;
   value?: Option<TValue, TData> | Option<TValue, TData>['value'];
   onSelect?: (value: Option<TValue, TData>) => void;
   /** If true,  will save the value as an Option */
@@ -51,7 +51,7 @@ export interface AutoCompleteProps<TValue = string | number, TData = undefined>
 export default function AutoComplete<TValue extends string | number = string | number, TData = undefined>({
   options: inputOptions,
   placeholder,
-  emptyMessage,
+  emptyIndicator,
   value,
   onSelect,
   disabled,
@@ -314,7 +314,7 @@ export default function AutoComplete<TValue extends string | number = string | n
               : null}
             {!isLoading ? (
               <CommandPrimitive.Empty className="rounded-sm px-2 py-3 text-center text-sm select-none">
-                {emptyMessage}
+                {emptyIndicator}
               </CommandPrimitive.Empty>
             ) : null}
           </CommandList>

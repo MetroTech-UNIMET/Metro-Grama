@@ -11,19 +11,20 @@ import (
 )
 
 // ReadAnualOfferPDF orchestrates loading, header detection, binning & parsing.
-func ReadAnualOfferPDF(pdfBuffer *bytes.Buffer) ([]DTO.SubjectOffer, error) {
+func ReadAnualOfferPDF(pdfBuffer *bytes.Buffer) (DTO.ReadResult, error) {
 	reader, err := pdf.NewReader(bytes.NewReader(pdfBuffer.Bytes()), int64(pdfBuffer.Len()))
 	if err != nil {
-		return nil, echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("PDF inválido: %v", err))
+		return DTO.ReadResult{}, echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("PDF inválido: %v", err))
 	}
 	pages := reader.NumPage()
+
 	var all []DTO.SubjectOffer
 
 	for p := 1; p <= pages; p++ {
 		pg := reader.Page(p)
 		rows, err := pg.GetTextByRow()
 		if err != nil {
-			return nil, echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("No se pudo leer página %d: %v", p, err))
+			return DTO.ReadResult{}, echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("No se pudo leer página %d: %v", p, err))
 		}
 
 		header := detectHeaderCols(rows)
@@ -37,5 +38,7 @@ func ReadAnualOfferPDF(pdfBuffer *bytes.Buffer) ([]DTO.SubjectOffer, error) {
 		pageOffers := parsePageSubjects(rows, bins, gap)
 		all = append(all, pageOffers...)
 	}
-	return all, nil
+
+	result := DTO.ReadResult{Period: "2526", SubjectOffers: all}
+	return result, nil
 }

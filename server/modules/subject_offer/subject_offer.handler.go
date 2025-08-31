@@ -71,17 +71,22 @@ func uploadPDF(c echo.Context) error {
 
 // getAnualOffer godoc
 // @Summary      List all subject_offer edges
-// @Description  Returns subject_offer edges with related subject and trimester
+// @Description  Returns subject_offer edges with related subject and trimester. Optional filter by careers (CSV of record IDs). Use careers=none to get an error.
 // @Tags         subject_offer
 // @Accept       json
 // @Produce      json
+// @Param        careers  query     string  false  "careers filter (comma-separated RecordIDs)"
 // @Success      200       {array}   DTO.QueryAnnualOffer
 // @Failure      500       {object}  map[string]string
 // @Router       /subject_offer/ [get]
 func getAnualOffer(c echo.Context) error {
-	offers, err := services.GetAllAnnualOffers()
+	careers := c.QueryParam("careers")
+	if careers == "none" {
+		return echo.NewHTTPError(http.StatusBadRequest, "Escoja al menos 1 carrera para filtrar")
+	}
+	offers, err := services.GetAllAnnualOffers(careers)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 	return c.JSON(http.StatusOK, offers)
 }
@@ -93,13 +98,19 @@ func getAnualOffer(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Param        trimesterId path string true "Trimester ID"
+// @Param        careers  query     string  false  "careers filter (comma-separated RecordIDs)"
 // @Success      200       {array}   DTO.QueryAnnualOffer
 // @Failure      500       {object}  map[string]string
 // @Router       /subject_offer/{trimesterId} [get]
 func getAnualOfferById(c echo.Context) error {
 	trimesterId := c.Param("trimesterId")
-	offers, err := services.GetAnnualOfferById(trimesterId)
+	careers := c.QueryParam("careers")
+	if careers == "none" {
+		return echo.NewHTTPError(http.StatusBadRequest, "Escoja al menos 1 carrera para filtrar")
+	}
+	offers, err := services.GetAnnualOfferById(trimesterId, careers)
 	if err != nil {
+
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 	}
 	return c.JSON(http.StatusOK, offers)

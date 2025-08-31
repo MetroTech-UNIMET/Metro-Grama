@@ -7,6 +7,7 @@ import SubjectOfferDetail from '../SubjectOfferDetail/SubjectOfferDetail';
 import { useFetchAnnualOfferByTrimester } from '@/hooks/queries/subject_offer/use-fetch-annual-offer-by-trimester';
 import { type TrimesterOption, useFetchTrimestersOptions } from '@/hooks/queries/trimester/use-FetchTrimesters';
 
+import { CareerMultiDropdown } from '@components/CareerMultiDropdown';
 import AutoComplete from '@ui/derived/autocomplete';
 import { TrimesterItem } from '@ui/derived/custom-command-items/trimester-item-option';
 import { Input } from '@ui/input';
@@ -14,6 +15,7 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarHeader, Si
 import { Skeleton } from '@ui/skeleton';
 
 import type { SubjectOfferWithSchedules } from '@/interfaces/SubjectOffer';
+import type { CareerOption } from '@/hooks/queries/use-FetchCareersOptions';
 
 interface Props {
   onAddSubject: (subjectOffer: SubjectOfferWithSchedules) => void;
@@ -46,6 +48,7 @@ export function PlannerSidebar({ onAddSubject, onRemoveSubject, getIsSubjectSele
   );
 }
 
+// TODO - Usar NUQS o tanstack router para usar trimestre y carreras como queryParams
 function HomeSidebar({
   setSelectedSubject,
 }: {
@@ -53,6 +56,7 @@ function HomeSidebar({
 }) {
   const trimesterQuery = useFetchTrimestersOptions();
 
+  const [selectedCareers, setSelectedCareers] = useState<CareerOption[]>([]);
   const [selectedTrimester, setSelectedTrimester] = useState<TrimesterOption | undefined>(undefined);
 
   useEffect(() => {
@@ -64,16 +68,25 @@ function HomeSidebar({
 
   const subjectsOfferQuery = useFetchAnnualOfferByTrimester({
     trimesterId: selectedTrimester?.value ?? '',
+    optionalQuery: {
+      careers: selectedCareers.map((c) => c.value),
+    },
     queryOptions: {
       enabled: !!selectedTrimester,
     },
   });
 
-  // Render header and content; show loading/error inside content
   return (
     <>
       <SidebarHeader>
         <Input placeholder="Buscar oferta ..." />
+
+        <CareerMultiDropdown
+          value={selectedCareers}
+          onChange={setSelectedCareers}
+          className="bg-transparent"
+          placeholder="Carreras a filtrar"
+        />
 
         <AutoComplete
           options={trimesterQuery.data ?? []}
@@ -85,7 +98,7 @@ function HomeSidebar({
           isOptionDisabled={(option) => !(option.data?.is_current || option.data?.is_next)}
         />
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className="mt-4">
         <SidebarGroup title="Materias" className="gap-2">
           {false || subjectsOfferQuery.isPending ? (
             <>

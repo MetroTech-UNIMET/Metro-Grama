@@ -2,18 +2,19 @@ package services
 
 import (
 	"context"
-	"fmt"
 	"metrograma/db"
 	"metrograma/models"
+	"net/http"
 
+	"github.com/labstack/echo/v4"
 	"github.com/surrealdb/surrealdb.go"
 	surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
 )
 
-var existUserByEmailQuery = "SELECT id, role FROM user WHERE email = $email"
+var existUserByEmailQuery = "SELECT id, role FROM ONLY user WHERE email = $email"
 
 func ExistUserByEmail(email string) (models.MinimalUser, error) {
-	result, err := surrealdb.Query[[]models.MinimalUser](context.Background(), db.SurrealDB, existUserByEmailQuery, map[string]any{
+	result, err := surrealdb.Query[models.MinimalUser](context.Background(), db.SurrealDB, existUserByEmailQuery, map[string]any{
 		"email": email,
 	})
 
@@ -21,12 +22,13 @@ func ExistUserByEmail(email string) (models.MinimalUser, error) {
 		return models.MinimalUser{}, err
 	}
 
-	if len(*result) == 0 {
-		return models.MinimalUser{}, fmt.Errorf("incorrect credentials")
+	if result == nil {
+		return models.MinimalUser{}, echo.NewHTTPError(http.StatusUnauthorized, "incorrect credentials")
 	}
+
 	user := (*result)[0].Result
 
-	return user[0], nil
+	return user, nil
 }
 
 func ExistUser(id surrealModels.RecordID) (models.MinimalUser, error) {
@@ -34,7 +36,7 @@ func ExistUser(id surrealModels.RecordID) (models.MinimalUser, error) {
 
 	if err != nil {
 		return models.MinimalUser{}, err
-		}
+	}
 
 	return *user, nil
 }

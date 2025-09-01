@@ -1,6 +1,6 @@
 import { Menu } from "lucide-react";
 // import Icono from "@/assets/images/Icono_MetroTech.png";
-import { NavLink } from "react-router-dom";
+import { Link } from "@tanstack/react-router";
 import { cn } from "@utils/className";
 import useMediaQuery from "@/hooks/useMediaQuery";
 import { Drawer, DrawerContent, DrawerTrigger } from "@ui/drawer";
@@ -17,28 +17,26 @@ export default function Navbar() {
   const isExtraSmall = useMediaQuery("(max-width: 400px)");
 
   const links = navigation.map((item) => (
-    <NavLink
+    <Link
       key={item.name}
       to={item.href}
-      className={({ isActive }) =>
-        cn(
-          "text-center rounded-xl px-3 py-1",
-          isActive ? "bg-primary" : "hover:bg-primary-100",
-          !isDesktop && "text-3xl "
-        )
-      }
+      activeOptions={{ exact: true }}
+      className={cn(
+        "text-center rounded-xl px-3 py-1 hover:bg-primary-100 data-[status=active]:bg-primary",
+        !isDesktop && "text-3xl "
+      )}
     >
       {item.name}
-    </NavLink>
+    </Link>
   ));
 
   const authLinks = (
     <>
-      <ButtonLink variant="outline" to="/login">
+  <ButtonLink variant="outline" to="/login">
         Inicia Sesión
       </ButtonLink>
       
-      <ButtonLink to="/register" className="ml-4">
+  <ButtonLink to="/register/student" className="ml-4">
         Regístrate
       </ButtonLink>
     </>

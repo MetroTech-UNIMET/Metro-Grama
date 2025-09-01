@@ -7,7 +7,7 @@ import {
   DrawerFooter,
 } from "@ui/drawer";
 import { Menu } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link } from "@tanstack/react-router";
 
 import Icono from "@/assets/images/Icono_MetroTech.png";
 import GoogleLogin from "@ui/derived/GoogleLogin";

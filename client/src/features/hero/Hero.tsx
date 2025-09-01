@@ -1,5 +1,5 @@
 import { cn } from "@utils/className";
-import { Link } from "react-router-dom";
+import { Link } from "@tanstack/react-router";
 
 export default function Hero() {
   return (
@@ -32,13 +32,14 @@ export default function Hero() {
             
             <div className="mt-10 flex items-center justify-center gap-x-6">
               <Link
-                to="/register"
+                to="/register/student"
                 className="rounded-md bg-indigo-500 px-3.5 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-indigo-400 focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-400"
               >
                 Registrate
               </Link>
               <Link
-                to="/sobre"
+                to="/materias"
+                search={{ careers: 'none' } as any}
                 className="text-sm font-semibold leading-6 text-white"
               >
                 Aprende mas <span aria-hidden="true">→</span>

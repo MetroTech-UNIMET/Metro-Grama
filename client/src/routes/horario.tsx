@@ -1,3 +1,4 @@
+import { createFileRoute } from '@tanstack/react-router';
 import { useState } from 'react';
 
 import { PlannerSidebar } from '@/features/weekly-schedule/weekly-schedule-sidebar/components/PlannerSidebar/PlannerSidebar';
@@ -9,6 +10,14 @@ import { formatTimeHour } from '@utils/time';
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@ui/sidebar';
 
 import type { SubjectEvent } from '@/features/weekly-schedule/weekly-planner/types';
+
+export const Route = createFileRoute('/horario')({
+  component: RouteComponent,
+});
+
+function RouteComponent() {
+  return <WeeklySchedulePage />;
+}
 
 function getStudentTimeSlots(start_hour: number, end_hour: number): string[] {
   const startHour = start_hour * 60;
@@ -39,7 +48,7 @@ function getStudentTimeSlots(start_hour: number, end_hour: number): string[] {
 
 const studentTimeSlots = getStudentTimeSlots(7, 21);
 
-export default function WeeklySchedulePage() {
+function WeeklySchedulePage() {
   const [subjectEvents, setSubjectEvents] = useState<SubjectEvent[]>([
     // {
     //   id: 'm1',
@@ -193,7 +202,7 @@ export default function WeeklySchedulePage() {
         onAddSubject={(subject_offer) => {
           setSubjectEvents((prev) => [
             ...prev,
-            ...subject_offer.schedules.map((schedule, idx) => ({
+            ...subject_offer.schedules.map((schedule) => ({
               id: schedule.id.ID,
               title: subject_offer.subject.name,
               start_hour: formatTimeHour(schedule.starting_hour, schedule.starting_minute),

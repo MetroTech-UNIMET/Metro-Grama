@@ -1,7 +1,7 @@
 import { useCallback, useEffect } from 'react';
 import { type FieldErrors, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from '@tanstack/react-router';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 
 import { Step1 } from './components/Step1';
@@ -48,7 +48,6 @@ export default function RegisterStudentForm() {
     defaultValues: defaultRegisterStudentValues,
   });
 
-  // TODO - Sustituir por tanstack router
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -66,7 +65,7 @@ export default function RegisterStudentForm() {
   async function onSubmit(data: RegisterStudentOutput) {
     if (!user) throw new Error('Para poder completar su perfil, necesita loguearse primero');
     await registerStudent(user.id.ID, data);
-    navigate('/');
+  navigate({ to: '/' });
   }
 
   const formSubmit = useCallback(

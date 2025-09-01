@@ -1,4 +1,4 @@
-import { Outlet } from "react-router-dom";
+import { Outlet } from "@tanstack/react-router";
 import AuthenticationContext from "@/contexts/AuthenticationContext";
 import "@antv/graphin-icons/dist/index.css";
 

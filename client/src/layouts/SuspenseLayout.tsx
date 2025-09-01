@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet } from "@tanstack/react-router";
 import { Spinner } from "@ui/spinner";
 
 function DefaultSpinner() {

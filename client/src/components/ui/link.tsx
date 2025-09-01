@@ -2,25 +2,31 @@ import React from "react";
 import { VariantProps } from "class-variance-authority";
 import { buttonVariants } from "./button";
 import { cn } from "@utils/className";
-import { Link, LinkProps } from "react-router-dom";
+import { Link as RouterLink } from "@tanstack/react-router";
 import { baseApiUrl } from "@/axiosConfig";
 
 export interface LinkComponentProps
-  extends LinkProps,
-    VariantProps<typeof buttonVariants> {}
+  extends Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, "href">,
+    VariantProps<typeof buttonVariants> {
+  to: string;
+  params?: any;
+  search?: any;
+  className?: string;
+  children?: React.ReactNode;
+}
 
 export const ButtonLink = React.forwardRef<
   HTMLAnchorElement,
   LinkComponentProps
 >(({ className, variant, size, children, ...props }, ref) => {
   return (
-    <Link
-      ref={ref}
-      {...props}
+    <RouterLink
+      ref={ref as any}
+      {...(props as any)}
       className={cn(buttonVariants({ variant, size, className }))}
     >
       {children}
-    </Link>
+    </RouterLink>
   );
 });
 

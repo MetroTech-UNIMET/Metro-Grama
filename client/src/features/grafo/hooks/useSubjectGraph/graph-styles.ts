@@ -1,44 +1,44 @@
-import { useCallback } from "react";
+import { useCallback } from 'react';
 
-import { getNormalIcon, getCustomIconProps } from "./functions";
-import useLazyGraphIcons from "../../../../hooks/lazy-loading/use-LazyGraphIcons";
+import { getNormalIcon, getCustomIconProps } from './functions';
+import useLazyGraphIcons from '../../../../hooks/lazy-loading/use-LazyGraphIcons';
 
-import type { Subject } from "@/interfaces/Subject";
-import type { Option } from "@ui/types";
-import type { Career } from "@/interfaces/Career";
-import type { Node4j } from "@/interfaces/Graph";
+import type { Subject } from '@/interfaces/Subject';
+import type { CareerOption } from '@/hooks/queries/use-FetchCareersOptions';
+import type { Career } from '@/interfaces/Career';
+import type { Node4j } from '@/interfaces/Graph';
 
-import "@antv/graphin-icons/dist/index.css";
+import '@antv/graphin-icons/dist/index.css';
 
 export const edgeStyle = {
   status: {
     prelation: {
       keyshape: {
-        stroke: "blue",
+        stroke: 'blue',
       },
       halo: {
-        fill: "#ddd",
+        fill: '#ddd',
         visible: true,
       },
     },
-    "prelation-viewed": {
+    'prelation-viewed': {
       keyshape: {
-        stroke: "blue",
+        stroke: 'blue',
       },
     },
     future: {
       keyshape: {
-        stroke: "red",
+        stroke: 'red',
       },
       halo: {
-        fill: "#ddd",
+        fill: '#ddd',
         visible: true,
       },
     },
   },
 };
 
-export function useNodeStyle(selectedCareers: Option[], careers?: Career[]) {
+export function useNodeStyle(selectedCareers: CareerOption[], careers?: Career[]) {
   const { icons, ...query } = useLazyGraphIcons();
 
   const getNodeStyle = useCallback(
@@ -53,13 +53,13 @@ export function useNodeStyle(selectedCareers: Option[], careers?: Career[]) {
       return {
         icon: icon,
         keyshape: {
-          fill: "white",
-          stroke: "#5B8FF9",
+          fill: 'white',
+          stroke: '#5B8FF9',
           size: nodeSize,
         },
         label: {
           value: node.data.name,
-          fill: "white",
+          fill: 'white',
           offset: [0, labelOffset],
           fontSize: 12,
         },
@@ -77,7 +77,7 @@ export function useNodeStyle(selectedCareers: Option[], careers?: Career[]) {
                   };
                 },
                 duration: 200,
-                easing: "easeCubic",
+                easing: 'easeCubic',
                 delay: 0,
                 repeat: false,
               },
@@ -86,32 +86,32 @@ export function useNodeStyle(selectedCareers: Option[], careers?: Career[]) {
           start: {
             halo: {
               visible: true,
-              fill: "blue",
+              fill: 'blue',
             },
             icon: {
               size: 16 * iconLen,
-              fill: "green",
-              type: "font",
-              fontFamily: "graphin",
+              fill: 'green',
+              type: 'font',
+              fontFamily: 'graphin',
               value: icons.home,
             },
           },
           viewed: {
             keyshape: {
-              fill: "green",
-              stroke: "green",
+              fill: 'green',
+              stroke: 'green',
             },
           },
           accesible: {
             keyshape: {
-              fill: "blue",
-              stroke: "blue",
+              fill: 'blue',
+              stroke: 'blue',
             },
           },
         },
       };
     },
-    [icons, selectedCareers]
+    [icons, selectedCareers],
   );
 
   if (!icons) {

@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 
-import { getEnrolledSubjects } from "@/api/interactions/enrollApi";
-import { getCareers } from "@/api/careersApi";
-import { notRetryOnUnauthorized } from "@utils/queries";
-import { useStatusActions } from "@/features/grafo/behaviors/StatusActions";
+import { getEnrolledSubjects } from '@/api/interactions/enrollApi';
+import { getCareers } from '@/api/careersApi';
+import { notRetryOnUnauthorized } from '@utils/queries';
+import { useStatusActions } from '@/features/grafo/behaviors/StatusActions';
 
 import {
   isNodeViewed,
@@ -12,34 +12,28 @@ import {
   isNodeEnrolled,
   isInitialNodeFreeFromCredits,
   checkDependencies,
-} from "./functions";
-import { edgeStyle, useNodeStyle } from "./graph-styles";
+} from './functions';
+import { edgeStyle, useNodeStyle } from './graph-styles';
 
-import type { GraphinData } from "@antv/graphin";
-import type { AxiosError } from "axios";
-import type { Subject } from "@/interfaces/Subject";
-import type { Option } from "@ui/types";
-import type { NodeStatuses } from "@/features/grafo/behaviors/StatusActions";
-import type { Career } from "@/interfaces/Career";
-import type { Graph, Node4j } from "@/interfaces/Graph";
+import type { GraphinData } from '@antv/graphin';
+import type { AxiosError } from 'axios';
+import type { Subject } from '@/interfaces/Subject';
+import type { CareerOption } from '@/hooks/queries/use-FetchCareersOptions';
+import type { NodeStatuses } from '@/features/grafo/behaviors/StatusActions';
+import type { Career } from '@/interfaces/Career';
+import type { Graph, Node4j } from '@/interfaces/Graph';
 
-export default function useSubjectGraph(
-  data: Graph<Subject> | undefined,
-  selectedCareers: Option[]
-) {
+export default function useSubjectGraph(data: Graph<Subject> | undefined, selectedCareers: CareerOption[]) {
   const { data: careers } = useQuery<Career[]>({
-    queryKey: ["careers"],
+    queryKey: ['careers'],
     queryFn: getCareers,
   });
   const [graph, setGraph] = useState<GraphinData>({ nodes: [], edges: [] });
 
   const { nodeStatuses, setSubjectWithCredits } = useStatusActions();
 
-  const { data: enrolledSubjects, error: errorEnrolledSubjects } = useQuery<
-    string[],
-    AxiosError
-  >({
-    queryKey: ["enrolledSubjects", "studentId"],
+  const { data: enrolledSubjects, error: errorEnrolledSubjects } = useQuery<string[], AxiosError>({
+    queryKey: ['enrolledSubjects', 'studentId'],
     queryFn: getEnrolledSubjects,
     retry: notRetryOnUnauthorized,
   });
@@ -52,11 +46,7 @@ export default function useSubjectGraph(
       return;
     }
 
-    const setEnrolledSubjects = getSetEnrolledSubjects(
-      enrolledSubjects,
-      errorEnrolledSubjects,
-      nodeStatuses
-    );
+    const setEnrolledSubjects = getSetEnrolledSubjects(enrolledSubjects, errorEnrolledSubjects, nodeStatuses);
 
     if (!data || !setEnrolledSubjects || !getNodeStyle) return;
 
@@ -95,7 +85,7 @@ export default function useSubjectGraph(
           setEnrolledSubjects,
           subjectRelations,
           dependecyCount,
-          nodeStatuses
+          nodeStatuses,
         );
 
         if (node.data.credits + node.data.BPCredits > 0) {
@@ -126,7 +116,7 @@ export default function useSubjectGraph(
 function getSetEnrolledSubjects(
   enrolledSubjects: string[] | undefined,
   errorEnrolledSubjects: AxiosError | null,
-  nodeStatuses: NodeStatuses<Subject>
+  nodeStatuses: NodeStatuses<Subject>,
 ) {
   // If there is an error fetching the enrolled subjects,
   // we will use the viewed subjects from the context.
@@ -153,7 +143,7 @@ function getNodeStatus(
   enrolledSubjects: Set<string>,
   subjectRelations: Record<string, Set<string>>,
   dependencyCount: number,
-  nodeStatuses: NodeStatuses<Subject>
+  nodeStatuses: NodeStatuses<Subject>,
 ) {
   if (isNodeViewed(node.id, nodeStatuses)) {
     return [true, false];
@@ -176,11 +166,6 @@ function getNodeStatus(
     }
   }
 
-  const isAccessible = checkDependencies(
-    node.id,
-    enrolledSubjects,
-    subjectRelations,
-    dependencyCount
-  );
+  const isAccessible = checkDependencies(node.id, enrolledSubjects, subjectRelations, dependencyCount);
   return [false, isAccessible];
 }

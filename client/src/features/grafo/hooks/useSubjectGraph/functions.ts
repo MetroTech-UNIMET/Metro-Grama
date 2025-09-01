@@ -1,11 +1,11 @@
-import { idToSurrealId } from "@utils/queries";
+import { idToSurrealId } from '@utils/queries';
 
-import type { Subject } from "@/interfaces/Subject";
-import type { NodeStyleIcon } from "@antv/graphin/lib/typings/type";
-import type { NodeStatuses } from "@/features/grafo/behaviors/StatusActions";
-import type { Option } from "@ui/types";
-import type { Career } from "@/interfaces/Career";
-import type { Node4j } from "@/interfaces/Graph";
+import type { Subject } from '@/interfaces/Subject';
+import type { NodeStyleIcon } from '@antv/graphin/lib/typings/type';
+import type { NodeStatuses } from '@/features/grafo/behaviors/StatusActions';
+import type { CareerOption } from '@/hooks/queries/use-FetchCareersOptions';
+import type { Career } from '@/interfaces/Career';
+import type { Node4j } from '@/interfaces/Graph';
 
 /**
  * Returns the NodeStyleIcon for a given subject and selected careers.
@@ -13,40 +13,31 @@ import type { Node4j } from "@/interfaces/Graph";
  * @param selectedCareers - The selected careers as DropdownOptions.
  * @returns The NodeStyleIcon object.
  */
-export function getNormalIcon(
-  subject: Subject,
-  selectedCareers: Option[],
-  careers?: Career[]
-): NodeStyleIcon {
-  let icon = "";
+export function getNormalIcon(subject: Subject, selectedCareers: CareerOption[], careers?: Career[]): NodeStyleIcon {
+  let icon = '';
 
   if (subject.careers.length > 1) {
-    icon = "🤝";
+    icon = '🤝';
     for (let i = 0; i < subject.careers.length; i++) {
-      const emoji =
-        careers?.find((c) => c.id.ID === subject.careers[i].ID)?.emoji ?? "🛠️";
+      const emoji = careers?.find((c) => c.id.ID === subject.careers[i].ID)?.emoji ?? '🛠️';
       if (i == 0) {
-        icon += "\n\r" + emoji + " ";
+        icon += '\n\r' + emoji + ' ';
         continue;
       }
-      icon += emoji + " ";
+      icon += emoji + ' ';
     }
   } else {
     const career = selectedCareers.find(
-      (option) =>
-        option.value ===
-        idToSurrealId(subject.careers[0].ID, subject.careers[0].Table)
+      (option) => option.value === idToSurrealId(subject.careers[0].ID, subject.careers[0].Table),
     );
 
-    icon =
-      careers?.find((c) => idToSurrealId(c.id.ID, c.id.Table) === career?.value)
-        ?.emoji ?? "🛠️";
+    icon = careers?.find((c) => idToSurrealId(c.id.ID, c.id.Table) === career?.value)?.emoji ?? '🛠️';
   }
 
   return {
     size: 25,
-    type: "text",
-    fontFamily: "graphin",
+    type: 'text',
+    fontFamily: 'graphin',
     value: icon,
   };
 }
@@ -57,31 +48,22 @@ export function getNormalIcon(
  * @returns An array containing the label offset and icon length.
  */
 export function getCustomIconProps(icon: NodeStyleIcon) {
-  let iconLen = icon.value!.replace(/\s/g, "").length;
+  let iconLen = icon.value!.replace(/\s/g, '').length;
   iconLen = iconLen == 0 ? 2 : iconLen > 2 ? iconLen * 0.54 : iconLen;
   const labelOffset = iconLen > 2 ? 10 * 0.52 * iconLen : 10;
 
   return [labelOffset, iconLen];
 }
 
-export function isNodeViewed(
-  nodeId: string,
-  nodeStatuses: NodeStatuses<Subject>
-): boolean {
+export function isNodeViewed(nodeId: string, nodeStatuses: NodeStatuses<Subject>): boolean {
   return nodeStatuses.viewed.has(nodeId);
 }
 
-export function isNodeAccessible(
-  nodeId: string,
-  nodeStatuses: NodeStatuses<Subject>
-): boolean {
+export function isNodeAccessible(nodeId: string, nodeStatuses: NodeStatuses<Subject>): boolean {
   return nodeStatuses.accesible.has(nodeId);
 }
 
-export function isNodeEnrolled(
-  nodeId: string,
-  enrolledSubjects: Set<string>
-): boolean {
+export function isNodeEnrolled(nodeId: string, enrolledSubjects: Set<string>): boolean {
   return enrolledSubjects.has(nodeId);
 }
 
@@ -93,7 +75,7 @@ export function checkDependencies(
   nodeId: string,
   enrolledSubjects: Set<string>,
   subjectRelations: Record<string, Set<string>>,
-  dependencyCount: number
+  dependencyCount: number,
 ): boolean {
   let dependenciesViewed = 0;
 

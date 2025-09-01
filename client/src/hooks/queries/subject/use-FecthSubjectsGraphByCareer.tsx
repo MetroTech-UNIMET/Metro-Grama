@@ -1,21 +1,19 @@
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearch } from "@tanstack/react-router";
 
-import useFetchCareersOptions from "../use-FetchCareersOptions";
+import useFetchCareersOptions, { type CareerOption } from "../use-FetchCareersOptions";
 import { getSubjectsGraph } from "@/api/subjectsAPI";
 
-import type { Subject } from "@/interfaces/Subject";
-import type { Option } from "@ui/types";
 import type { Graph } from "@/interfaces/Graph";
+import type { Subject } from "@/interfaces/Subject";
 
 export default function useFecthSubjectsGraphByCareer() {
-  const [selectedCareers, setSelectedCareers] = useState<Option[]>([]);
-  const [searchParams, setSearchParams] = useSearchParams({
-    careers: "none",
-  });
+  const [selectedCareers, setSelectedCareers] = useState<CareerOption[]>([]);
+  const search = useSearch({ from: "/materias" });
+  const navigate = useNavigate();
 
-  const careers = searchParams.get("careers") ?? "none";
+  const careers = search?.careers ?? "none";
   const subjectQuery = useQuery<Graph<Subject>>({
     queryKey: [
       "subjects",
@@ -37,7 +35,7 @@ export default function useFecthSubjectsGraphByCareer() {
     if (isFirstRender.current) {
       isFirstRender.current = false;
 
-      const filter = searchParams.get("careers");
+  const filter = careers;
       if (!filter || !options) return;
 
       if (filter === "none") {
@@ -45,30 +43,30 @@ export default function useFecthSubjectsGraphByCareer() {
       } else {
         const careers = filter.split(",");
 
-        const selectedCareers = careers.reduce<Option[]>((acc, career) => {
+        const selectedCareers = careers.reduce((acc: CareerOption[], career: string) => {
           const option = options.find((option) => option.value === career);
           const exists = acc.find((accOption) => accOption.value === career);
           if (option && !exists) acc.push(option);
 
           return acc;
-        }, []);
+        }, [] as CareerOption[]);
 
         setSelectedCareers(selectedCareers);
       }
       return;
     }
 
-    if (selectedCareers.length === 0) {
-      setSearchParams({ careers: "none" });
-    } else {
-      const careers = selectedCareers.map((career) => career.value).join(",");
-      setSearchParams({ careers });
-    }
+    // Update the URL search params via router to keep state in sync
+  const next =
+      selectedCareers.length === 0
+        ? { careers: "none" as const }
+        : { careers: selectedCareers.map((c) => c.value).join(",") };
+  navigate({ to: "/materias", search: next as any, replace: true });
   }, [selectedCareers, loadingCareers]);
 
   useEffect(() => {
     subjectQuery.refetch();
-  }, [searchParams]);
+  }, [careers]);
 
   return { ...subjectQuery, selectedCareers, setSelectedCareers };
 }

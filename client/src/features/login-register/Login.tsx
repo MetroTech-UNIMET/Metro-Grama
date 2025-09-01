@@ -1,5 +1,4 @@
 import logo from "../../assets/images/Icono_MetroTech.png";
-import { Link } from "react-router-dom";
 import { baseApiUrl } from "@/axiosConfig";
 
 export default function Login() {
@@ -17,9 +16,9 @@ export default function Login() {
           Inicia sesión con Google
         </button> */}
 
-        <Link to={`${baseApiUrl}/auth/google/login`}>
-        Inicia sesión con Google
-        </Link>
+        <a href={`${baseApiUrl}/auth/google/login`}>
+          Inicia sesión con Google
+        </a>
 
         {/* <div className="mt- sm:mx-auto sm:w-full sm:max-w-[480px]">
           <div className="bg-white px-6 py-12 shadow-sm sm:rounded-lg sm:px-12">

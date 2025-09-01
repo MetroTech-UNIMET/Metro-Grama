@@ -1,7 +1,7 @@
 import axios from '@/axiosConfig';
 
 import type { Student } from '@/interfaces/Student';
-import type { RegisterStudentOutput } from '@/pages/(auth)/register/student/components/RegisterStudentForm/schema';
+import type { RegisterStudentOutput } from '@/routes/register/components/RegisterStudentForm/schema';
 
 export async function logOutGoogle() {
   return await axios.get('/auth/google/logout');

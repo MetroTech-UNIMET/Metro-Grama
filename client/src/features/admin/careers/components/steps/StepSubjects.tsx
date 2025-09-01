@@ -2,7 +2,7 @@ import SubjectInput from '../SubjectInput';
 import { numberOfSubjectsByTrimester } from '../../constants';
 
 import type { CodeOption } from '../../hooks/useSubjectOptions';
-import type { Option } from '@ui/types';
+import type { Option } from '@ui/types/option.types';
 import type { UseFormReturn } from 'react-hook-form';
 import type { CreateCareerFormType } from '../../schema';
 

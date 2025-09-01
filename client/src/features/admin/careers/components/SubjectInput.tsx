@@ -6,13 +6,12 @@ import { cn } from '@utils/className';
 import { FormInputField } from '@ui/derived/form-fields/form-field-input';
 import { FormAutocompleteField } from '@ui/derived/form-fields/form-field-autocomplete';
 import { FormMultipleSelectorField } from '@ui/derived/form-fields/form-field-multiselect';
-import { TooltipArrow } from '@radix-ui/react-tooltip';
 import { FormControl, FormField, FormItem, FormLabel } from '@ui/form';
 import { Switch } from '@ui/switch';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, TooltipArrow } from '@ui/tooltip';
 import { Skeleton } from '@ui/skeleton';
 
-import type { Option } from '@ui/types';
+import type { Option } from '@ui/types/option.types';
 import type { CreateCareerFormType, CreateSubjectType } from '../schema';
 import type { FieldError, FieldErrors, UseFormResetField, UseFormSetValue, UseFormTrigger } from 'react-hook-form';
 import type { CodeOption } from '../hooks/useSubjectOptions';
@@ -73,7 +72,7 @@ function SubjectInput({
                 disabled={isSubjectElective}
                 placeholder="Código"
                 options={codeOptions as Option[]}
-                emptyMessage={'No hay materias para escoger'}
+                emptyIndicator={'No hay materias para escoger'}
                 // listRelativeContainerClassName="z-99"
                 isLoading={loadingSubjects}
                 allowFreeInput={true}
@@ -182,7 +181,7 @@ function SubjectInput({
                 label="Prelaciones"
                 options={prelationOptions}
                 placeholder="Escoje las prelaciones "
-                loadingOptions={loadingSubjects}
+                isLoading={loadingSubjects}
                 // className={cn('flex h-full w-full items-center', {
                 //   'bg-destructive/10': fieldState.invalid && fieldState.isTouched,
                 //   'bg-success/10': !fieldState.invalid && fieldState.isTouched,

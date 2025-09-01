@@ -1,4 +1,4 @@
-import type { Option } from '@/components/ui/types';
+import type { Option } from '@/components/ui/types/option.types';
 import type { ComponentProps } from 'react';
 import { Command as CommandPrimitive } from 'cmdk';
 

@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react';
 import { useFetchSubjects } from '@/hooks/queries/subject/use-FetchSubjects';
 
 import type { Subject } from '@/interfaces/Subject';
-import type { Option } from '@ui/types';
+import type { Option } from '@ui/types/option.types';
 
 // TODO - Eliminar y usar el T Data de Option
 export interface CodeOption {

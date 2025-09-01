@@ -20,8 +20,7 @@ export async function updateCareer(oldCareer: CareerWithSubjects, newCareer: any
   });
 }
 
-export async function getCompleteCareer(id?: string): Promise<CareerWithSubjects> {
-  if (!id) throw new Error("No id provided");
+export async function getCompleteCareer(id: string): Promise<CareerWithSubjects> {
   
   const surrealId = idToSurrealId(id, "career");
   const response = await axios.get(`/careers/withSubjects/${surrealId}`);

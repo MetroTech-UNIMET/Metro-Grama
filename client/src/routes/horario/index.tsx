@@ -9,14 +9,24 @@ import { formatTimeHour } from '@utils/time';
 
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@ui/sidebar';
 
-import type { SubjectEvent } from '@/features/weekly-schedule/weekly-planner/types';
+import type { Event } from '@/features/weekly-schedule/weekly-planner/types';
+import AuthenticationContext from '@/contexts/AuthenticationContext';
+import { SubjectOffer } from '@/interfaces/SubjectOffer';
+import { Button } from '@ui/button';
+import { Save } from 'lucide-react';
 
-export const Route = createFileRoute('/horario')({
+export const Route = createFileRoute('/horario/')({
   component: RouteComponent,
 });
 
 function RouteComponent() {
-  return <WeeklySchedulePage />;
+  return (
+    <>
+      <AuthenticationContext>
+        <WeeklySchedulePage />
+      </AuthenticationContext>
+    </>
+  );
 }
 
 function getStudentTimeSlots(start_hour: number, end_hour: number): string[] {
@@ -49,7 +59,7 @@ function getStudentTimeSlots(start_hour: number, end_hour: number): string[] {
 const studentTimeSlots = getStudentTimeSlots(7, 21);
 
 function WeeklySchedulePage() {
-  const [subjectEvents, setSubjectEvents] = useState<SubjectEvent[]>([
+  const [subjectEvents, setSubjectEvents] = useState<Event<Pick<SubjectOffer, 'id'>>[]>([
     // {
     //   id: 'm1',
     //   start_hour: '09:30',
@@ -186,34 +196,36 @@ function WeeklySchedulePage() {
     //   type: 'abs',
     //   dayIndex: 5,
     // },
-    {
-      id: 'f3',
-      start_hour: '15:45',
-      end_hour: '16:45',
-      title: 'Yoga Level 1',
-      type: 'yoga1',
-      dayIndex: 5,
-    },
+    // {
+    //   id: 'f3',
+    //   start_hour: '15:45',
+    //   end_hour: '16:45',
+    //   title: 'Yoga Level 1',
+    //   type: 'yoga1',
+    //   dayIndex: 5,
+    // },
   ]);
 
   return (
     <SidebarProvider customWidth="20rem">
       <PlannerSidebar
-        onAddSubject={(subject_offer) => {
+        onAddSubject={(subject_offer, sectionIndex) => {
+          const schedules = subject_offer.sections[sectionIndex].schedules;
           setSubjectEvents((prev) => [
             ...prev,
-            ...subject_offer.schedules.map((schedule) => ({
+            ...schedules.map((schedule) => ({
               id: schedule.id.ID,
               title: subject_offer.subject.name,
               start_hour: formatTimeHour(schedule.starting_hour, schedule.starting_minute),
               end_hour: formatTimeHour(schedule.ending_hour, schedule.ending_minute),
               type: 'rowing' as any,
               dayIndex: schedule.day_of_week,
+              data: { id: subject_offer.id },
             })),
           ]);
         }}
-        onRemoveSubject={(subject_offer) => {
-          setSubjectEvents((prev) => [...prev.filter((event) => event.title !== subject_offer.subject.name)]);
+        onRemoveSubject={(subject_offerId) => {
+          setSubjectEvents((prev) => [...prev.filter((event) => event.data.id.ID !== subject_offerId.ID)]);
         }}
         getIsSubjectSelected={(subject_offer) =>
           subjectEvents.some((event) => event.title === subject_offer.subject.name)
@@ -241,9 +253,23 @@ function WeeklySchedulePage() {
                 )}
               ></div>
             )}
-          />
+          >
+            <Button
+              colors="primary"
+              className={cn(
+                // '',
+                // 'mt-16 w-full py-8 text-lg',
+                'z-20 w-56 absolute top-10 right-1/2 translate-x-1/2'
+              )}
+            >
+              <Save className='!size-6' />
+              Guardar horario
+            </Button>
+          </WeeklyPlanner>
         </div>
       </SidebarInset>
     </SidebarProvider>
   );
 }
+
+

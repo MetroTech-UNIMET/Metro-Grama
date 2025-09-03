@@ -1,34 +1,24 @@
-import React from "react";
-import { VariantProps } from "class-variance-authority";
-import { buttonVariants } from "./button";
-import { cn } from "@utils/className";
-import { Link as RouterLink } from "@tanstack/react-router";
-import { baseApiUrl } from "@/axiosConfig";
+import React from 'react';
+import { Link as RouterLink } from '@tanstack/react-router';
+
+import { cn } from '@utils/className';
+
+import { baseApiUrl } from '@/axiosConfig';
+import { buttonVariants } from './button';
+
+import type { VariantProps } from 'class-variance-authority';
 
 export interface LinkComponentProps
-  extends Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, "href">,
-    VariantProps<typeof buttonVariants> {
-  to: string;
-  params?: any;
-  search?: any;
-  className?: string;
-  children?: React.ReactNode;
-}
+  extends React.ComponentPropsWithRef<typeof RouterLink>,
+    VariantProps<typeof buttonVariants> {}
 
-export const ButtonLink = React.forwardRef<
-  HTMLAnchorElement,
-  LinkComponentProps
->(({ className, variant, size, children, ...props }, ref) => {
+export const ButtonLink = ({ className, variant, size, children, ...props }: LinkComponentProps) => {
   return (
-    <RouterLink
-      ref={ref as any}
-      {...(props as any)}
-      className={cn(buttonVariants({ variant, size, className }))}
-    >
+    <RouterLink {...props} className={cn(buttonVariants({ variant, size, className }))}>
       {children}
     </RouterLink>
   );
-});
+};
 
 const GoogleSvg = (
   <svg
@@ -58,14 +48,11 @@ const GoogleSvg = (
   </svg>
 );
 
-export const GoogleLink = ({ className = "" }: { className?: string }) => {
+export const GoogleLink = ({ className = '' }: { className?: string }) => {
   return (
     <a
       href={`${baseApiUrl}/auth/google/login`}
-      className={cn(
-        buttonVariants({ variant: "outline", className: "gap-4" }),
-        className
-      )}
+      className={cn(buttonVariants({ variant: 'outline', className: 'gap-4' }), className)}
     >
       {GoogleSvg}
       Inicia sesión con Google

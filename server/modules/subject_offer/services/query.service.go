@@ -16,10 +16,11 @@ import (
 // Template kept only to build the fixed SELECT/FROM/FETCH parts without WHERE logic
 const getAnnualOfferQueryTemplate = `SELECT
 	id, in as subject, out as trimester,
-	(SELECT * 
-		FROM subject_schedule 
+	(SELECT *,
+        (SELECT * FROM subject_schedule WHERE subject_section = $parent.id) as schedules
+		FROM subject_section 
 		WHERE subject_offer = $parent.id
-	) AS schedules,
+	) AS sections,
 	in->belong->career as careers
 FROM subject_offer
 {{.WhereClause}}

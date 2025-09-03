@@ -8,6 +8,12 @@ import (
 
 type QueryAnnualOffer struct {
 	models.AnnualOfferEntity
+	// Schedules []models.SubjectScheduleEntity `json:"schedules"`
+	Sections []SectionsWithSchedules  `json:"sections"`
+	Careers  []surrealModels.RecordID `json:"careers" swaggertype:"array,object"`
+}
+
+type SectionsWithSchedules struct {
+	models.SubjectSectionEntity
 	Schedules []models.SubjectScheduleEntity `json:"schedules"`
-	Careers   []surrealModels.RecordID       `json:"careers" swaggertype:"array,object"`
 }

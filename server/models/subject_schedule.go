@@ -14,5 +14,5 @@ type SubjectScheduleEntity struct {
 	EndingHour   int `json:"ending_hour" validate:"required,min=0,max=23"`
 	EndingMinute int `json:"ending_minute" validate:"required,min=0,max=59"`
 
-	SubjectOffer surrealModels.RecordID `json:"subject_offer" validate:"required" swaggertype:"object"`
+	SubjectSection surrealModels.RecordID `json:"subject_section" validate:"required" swaggertype:"object"`
 }

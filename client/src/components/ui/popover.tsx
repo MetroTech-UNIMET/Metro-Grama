@@ -13,6 +13,8 @@ const PopoverAnchor = PopoverPrimitive.Anchor;
 
 const PopoverClose = PopoverPrimitive.Close;
 
+const PopoverArrow = PopoverPrimitive.Arrow;
+
 function PopoverContent({
   className,
   align = 'center',
@@ -37,4 +39,4 @@ function PopoverContent({
   );
 }
 
-export { Popover, PopoverTrigger, PopoverContent, PopoverClose, PopoverAnchor };
+export { Popover, PopoverTrigger, PopoverContent, PopoverClose, PopoverAnchor, PopoverArrow };

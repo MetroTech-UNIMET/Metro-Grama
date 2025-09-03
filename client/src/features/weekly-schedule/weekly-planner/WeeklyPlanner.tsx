@@ -15,15 +15,16 @@ import { useScrollbarWidth } from '@/hooks/use-scrollbar-width';
 
 import { Tabs } from '@ui/tabs';
 
-import type { SubjectEvent, DaySchedule } from './types';
+import type { Event, DaySchedule } from './types';
 
-export type WeeklyPlannerProps = {
-  subjectEvents: SubjectEvent[];
+export type WeeklyPlannerProps<T> = {
+  subjectEvents: Event<T>[];
   type: 'uniform-interval' | 'custom-interval';
   locale?: Locale;
   rowHeight?: string;
   extraDecoration?: PlannerGridProps['extraDecoration'];
   shouldRenderTime?: PlannerGridProps['shouldRenderTime'];
+  children?: React.ReactNode;
 } & (UniformIntervalProps | CustomIntervalProps);
 
 interface UniformIntervalProps {
@@ -38,14 +39,15 @@ interface CustomIntervalProps {
   timeSlots: string[];
 }
 
-export function WeeklyPlanner({
+export function WeeklyPlanner<T>({
   subjectEvents,
   locale = es,
   shouldRenderTime,
   extraDecoration,
   rowHeight = '3.5rem',
+  children,
   ...props
-}: WeeklyPlannerProps) {
+}: WeeklyPlannerProps<T>) {
   const schedules: DaySchedule[] = Array.from({ length: 7 }, (_, dayIndex) => ({
     day: new Date(new Date().setDate(new Date().getDate() - new Date().getDay() + dayIndex)),
     events: subjectEvents.filter((event) => event.dayIndex === dayIndex),
@@ -73,6 +75,8 @@ export function WeeklyPlanner({
           {!!isMobile ? <MobileDayColumns schedules={schedules} /> : <DaysColumns schedules={schedules} />}
 
           {!isMobile && <PlannerGrid shouldRenderTime={shouldRenderTime} extraDecoration={extraDecoration} />}
+
+          {children}
         </div>
       </Tabs>
     </WeeklyPlannerProvider>

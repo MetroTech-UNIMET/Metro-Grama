@@ -7,6 +7,8 @@ import SubjectOfferDetail from '../SubjectOfferDetail/SubjectOfferDetail';
 import { useFetchAnnualOfferByTrimester } from '@/hooks/queries/subject_offer/use-fetch-annual-offer-by-trimester';
 import { type TrimesterOption, useFetchTrimestersOptions } from '@/hooks/queries/trimester/use-FetchTrimesters';
 
+import { useAuth } from '@/contexts/AuthenticationContext';
+
 import { CareerMultiDropdown } from '@components/CareerMultiDropdown';
 import AutoComplete from '@ui/derived/autocomplete';
 import { TrimesterItem } from '@ui/derived/custom-command-items/trimester-item-option';
@@ -14,17 +16,18 @@ import { Input } from '@ui/input';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarHeader, SidebarRail } from '@ui/sidebar';
 import { Skeleton } from '@ui/skeleton';
 
-import type { SubjectOfferWithSchedules } from '@/interfaces/SubjectOffer';
+import type { SubjectOfferWithSections } from '@/interfaces/SubjectOffer';
 import type { CareerOption } from '@/hooks/queries/use-FetchCareersOptions';
+import type { Id } from '@/interfaces/surrealDb';
 
 interface Props {
-  onAddSubject: (subjectOffer: SubjectOfferWithSchedules) => void;
-  onRemoveSubject: (subjectOffer: SubjectOfferWithSchedules) => void;
-  getIsSubjectSelected: (subjectOffer: SubjectOfferWithSchedules) => boolean;
+  onAddSubject: (subjectOffer: SubjectOfferWithSections, sectionIndex: number) => void;
+  onRemoveSubject: (subjectOfferId: Id) => void;
+  getIsSubjectSelected: (subjectOffer: SubjectOfferWithSections) => boolean;
 }
 
 export function PlannerSidebar({ onAddSubject, onRemoveSubject, getIsSubjectSelected }: Props) {
-  const [selectedSubject, setSelectedSubject] = useState<SubjectOfferWithSchedules | null>(null);
+  const [selectedSubject, setSelectedSubject] = useState<SubjectOfferWithSections | null>(null);
 
   return (
     <div>
@@ -52,8 +55,10 @@ export function PlannerSidebar({ onAddSubject, onRemoveSubject, getIsSubjectSele
 function HomeSidebar({
   setSelectedSubject,
 }: {
-  setSelectedSubject: (subject: SubjectOfferWithSchedules | null) => void;
+  setSelectedSubject: (subject: SubjectOfferWithSections | null) => void;
 }) {
+  const { user: _ } = useAuth();
+
   const trimesterQuery = useFetchTrimestersOptions();
 
   const [selectedCareers, setSelectedCareers] = useState<CareerOption[]>([]);

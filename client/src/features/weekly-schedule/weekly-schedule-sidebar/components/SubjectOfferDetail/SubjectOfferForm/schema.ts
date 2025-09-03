@@ -20,6 +20,7 @@ const scheduleSchema = z
   .check((ctx) => {
     const { starting_time, ending_time } = ctx.value;
     // Ensure start is before end
+    console.log(starting_time, ending_time, starting_time >= ending_time);
     if (starting_time >= ending_time) {
       ctx.issues.push({
         code: 'too_big',
@@ -56,7 +57,7 @@ const scheduleSchema = z
     };
   });
 
-export const subjectScheduleSchema = z.object({
+const sectionsSchema = z.object({
   schedules: z
     .array(scheduleSchema)
     .min(1, {
@@ -65,6 +66,19 @@ export const subjectScheduleSchema = z.object({
     .max(3, {
       message: 'Se permiten un máximo de 3 horarios para la materia',
     }),
+  classroom_code: z.string().optional(),
+});
+
+export const subjectScheduleSchema = z.object({
+  sections: z
+    .array(sectionsSchema)
+    .min(1, {
+      error: 'Se requiere al menos una sección para la materia',
+    })
+    .max(10, {
+      error: 'Se permiten un máximo de 10 secciones para la materia',
+    })
+    .transform((value) => value.map((section, index) => ({ ...section, section_number: index + 1 }))),
   subject_offer_id: z.object({
     ID: z.string(),
     Table: z.literal('subject_offer'),
@@ -75,11 +89,15 @@ export type SubjectScheduleInput = z.input<typeof subjectScheduleSchema>;
 export type SubjectScheduleOutput = z.output<typeof subjectScheduleSchema>;
 
 export const subjectScheduleDefaultValues: SubjectScheduleInput = {
-  schedules: [
+  sections: [
     {
-      starting_time: default8Hour,
-      ending_time: default10Hour,
-      day_of_week: null as any,
+      schedules: [
+        {
+          starting_time: default8Hour,
+          ending_time: default10Hour,
+          day_of_week: null as any,
+        },
+      ],
     },
   ],
   subject_offer_id: { ID: '', Table: 'subject_offer' },

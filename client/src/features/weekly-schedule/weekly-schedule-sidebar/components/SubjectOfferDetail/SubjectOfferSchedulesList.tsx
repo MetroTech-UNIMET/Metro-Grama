@@ -8,16 +8,16 @@ import { formatTimeHour } from '@utils/time';
 import { SidebarGroup } from '@ui/sidebar';
 import { Button } from '@ui/button';
 
-import type { SubjectOfferWithSchedules } from '@/interfaces/SubjectOffer';
+import type { SubjectOfferWithSections } from '@/interfaces/SubjectOffer';
 import type { SubjectSchedule } from '@/interfaces/SubjectSchedule';
-// removed inline editing in favor of parent-controlled pseudo-router
+import type { Id } from '@/interfaces/surrealDb';
 
 interface Props {
-  subjectOffer: SubjectOfferWithSchedules;
+  subjectOffer: SubjectOfferWithSections;
 
   isSelected: boolean;
-  onAddSubject: (subjectOffer: SubjectOfferWithSchedules) => void;
-  onRemoveSubject: (subjectOffer: SubjectOfferWithSchedules) => void;
+  onAddSubject: (subjectOffer: SubjectOfferWithSections, sectionIndex: number) => void;
+  onRemoveSubject: (subjectOfferId: Id) => void;
 
   onRequestEdit?: () => void;
 }
@@ -29,43 +29,47 @@ export function SubjectOfferSchedulesList({
   onRemoveSubject,
   onRequestEdit,
 }: Props) {
-  const schedules = subjectOffer.schedules;
+  const sections = subjectOffer.sections;
 
   return (
     <SidebarGroup>
-      <div className="flex w-full items-center">
-        <Button
-          colors={isSelected ? 'destructive' : 'primary'}
-          className="w-full rounded-r-none"
-          onClick={() => (isSelected ? onRemoveSubject(subjectOffer) : onAddSubject(subjectOffer))}
-        >
-          {isSelected ? (
-            <>
-              <Trash />
-              Eliminar del horario
-            </>
-          ) : (
-            <>
-              <Plus />
-              Agregar al horario
-            </>
-          )}
-        </Button>
-        <Button
-          size="icon"
-          variant="outline"
-          className="rounded-l-none border-yellow-400 text-black hover:bg-yellow-200 active:bg-yellow-100"
-          onClick={onRequestEdit}
-        >
-          <Pencil />
-        </Button>
-      </div>
+      <div className="flex w-full items-center"></div>
+      <Button
+        variant="outline"
+        className="border-yellow-400 text-black hover:bg-yellow-200 active:bg-yellow-100"
+        onClick={onRequestEdit}
+      >
+        Editar horarios
+        <Pencil />
+      </Button>
 
       <div className="mt-4 flex flex-col gap-4">
-        {(!schedules || schedules.length === 0) && <div className="text-muted-foreground text-sm">Sin horarios</div>}
+        {(!sections || sections.length === 0) && <div className="text-muted-foreground text-sm">Sin horarios</div>}
 
-        {schedules?.map((sch, idx) => (
-          <ScheduleItem key={idx} schedule={sch} />
+        {sections?.map((section, sectionIndex) => (
+          <div key={sectionIndex} className="flex flex-col gap-2">
+            {/* <h4 className="text-center font-semibold">Sección {idx + 1}</h4> */}
+
+            {section.schedules.map((sch, idx) => (
+              <ScheduleItem key={idx} schedule={sch} />
+            ))}
+            <Button
+              colors={isSelected ? 'destructive' : 'primary'}
+              onClick={() => (isSelected ? onRemoveSubject(subjectOffer.id) : onAddSubject(subjectOffer, sectionIndex))}
+            >
+              {isSelected ? (
+                <>
+                  <Trash />
+                  Eliminar del horario
+                </>
+              ) : (
+                <>
+                  <Plus />
+                  Agregar Sección {sectionIndex + 1} al horario
+                </>
+              )}
+            </Button>
+          </div>
         ))}
       </div>
     </SidebarGroup>

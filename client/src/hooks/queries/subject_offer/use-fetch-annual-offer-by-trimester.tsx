@@ -1,10 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { getAnualOffersByTrimester, type Query_AnnualOffers } from '@/api/subject_offferAPI';
 
-import type { SubjectOfferWithSchedules } from '@/interfaces/SubjectOffer';
+import type { SubjectOfferWithSections } from '@/interfaces/SubjectOffer';
 import type { OptionalQueryOptions } from '../types';
 
-interface Props<T = SubjectOfferWithSchedules[]> {
+interface Props<T = SubjectOfferWithSections[]> {
   queryOptions?: OptionalQueryOptions<T>;
   trimesterId: string;
   optionalQuery?: Query_AnnualOffers;

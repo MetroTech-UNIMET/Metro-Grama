@@ -2,7 +2,7 @@ import type { Id } from './surrealDb';
 
 import type { SubjectEntity } from '@/interfaces/Subject';
 import type { Trimester } from '@/interfaces/Trimester';
-import type { SubjectSchedule } from '@/interfaces/SubjectSchedule';
+import type { SubjectSectionWithSchedules } from './SubjectSection';
 
 export interface SubjectOffer {
   id: Id;
@@ -10,6 +10,6 @@ export interface SubjectOffer {
   trimester: Trimester;
 }
 
-export interface SubjectOfferWithSchedules extends SubjectOffer {
-  schedules: SubjectSchedule[];
+export interface SubjectOfferWithSections extends SubjectOffer {
+  sections: SubjectSectionWithSchedules[];
 }

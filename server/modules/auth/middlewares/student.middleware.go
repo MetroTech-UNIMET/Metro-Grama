@@ -33,7 +33,7 @@ SELECT *
     WHERE user = $userId
     FETCH user;`
 
-func getStudentFromSession(c echo.Context) (*models.StudentEntity, error) {
+func getStudentFromSession(c echo.Context) (*models.StudentWithUser, error) {
 	sessAuth, err := session.Get("auth", c)
 	if err != nil {
 		return nil, echo.NewHTTPError(http.StatusUnauthorized, "No se pudo obtener la sesión del estudiante")
@@ -53,7 +53,7 @@ func getStudentFromSession(c echo.Context) (*models.StudentEntity, error) {
 		"userId": surrealModels.NewRecordID("user", userIDStr),
 	}
 
-	res, err := surrealdb.Query[models.StudentEntity](context.Background(), db.SurrealDB, getStudentQuery, params)
+	res, err := surrealdb.Query[models.StudentWithUser](context.Background(), db.SurrealDB, getStudentQuery, params)
 	if err != nil {
 		return nil, echo.NewHTTPError(http.StatusUnauthorized)
 	}

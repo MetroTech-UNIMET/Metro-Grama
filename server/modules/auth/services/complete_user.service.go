@@ -47,7 +47,7 @@ func CompleteUser(idUser string, data DTO.CompleteStudentDTO) (any, error) {
 		"update": data,
 	}
 
-	result, err := surrealdb.Query[models.StudentEntity](context.Background(), db.SurrealDB, completeUserQuery, queryParams)
+	result, err := surrealdb.Query[models.StudentWithUser](context.Background(), db.SurrealDB, completeUserQuery, queryParams)
 
 	user := (*result)[0].Result
 

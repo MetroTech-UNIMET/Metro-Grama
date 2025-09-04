@@ -5,15 +5,16 @@ import (
 	"fmt"
 	"metrograma/db"
 	"metrograma/models"
+	"metrograma/modules/users/DTO"
 
 	"github.com/surrealdb/surrealdb.go"
 	surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
 )
 
-var existUserByEmailQuery = "SELECT id, role FROM user WHERE email = $email"
+var existUserByEmailQuery = "SELECT id, role FROM ONLY user WHERE email = $email"
 
 func ExistUserByEmail(email string) (models.MinimalUser, error) {
-	result, err := surrealdb.Query[[]models.MinimalUser](context.Background(), db.SurrealDB, existUserByEmailQuery, map[string]any{
+	result, err := surrealdb.Query[models.MinimalUser](context.Background(), db.SurrealDB, existUserByEmailQuery, map[string]any{
 		"email": email,
 	})
 
@@ -26,7 +27,7 @@ func ExistUserByEmail(email string) (models.MinimalUser, error) {
 	}
 	user := (*result)[0].Result
 
-	return user[0], nil
+	return user, nil
 }
 
 func ExistUser(id surrealModels.RecordID) (models.MinimalUser, error) {
@@ -39,14 +40,21 @@ func ExistUser(id surrealModels.RecordID) (models.MinimalUser, error) {
 	return *user, nil
 }
 
-func GetUser(id surrealModels.RecordID) (models.UserEntity, error) {
-	user, err := surrealdb.Select[models.UserEntity](context.Background(), db.SurrealDB, id)
+var getUserQuery = `SELECT *, (SELECT * 
+        FROM ONLY student WHERE user = $userId) as student 
+    FROM ONLY user WHERE id = $userId`
+
+func GetUser(id surrealModels.RecordID) (DTO.UserProfile, error) {
+	var params = map[string]any{
+		"userId": id,
+	}
+	result, err := surrealdb.Query[DTO.UserProfile](context.Background(), db.SurrealDB, getUserQuery, params)
 
 	if err != nil {
-		return models.UserEntity{}, err
+		return DTO.UserProfile{}, err
 	}
 
-	return *user, nil
+	user := (*result)[0].Result
+
+	return user, nil
 }
-
-

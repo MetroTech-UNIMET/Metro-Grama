@@ -1,6 +1,6 @@
 import axios from '@/axiosConfig';
 
-import type { Student } from '@/interfaces/Student';
+import type { StudentWithUser } from '@/interfaces/Student';
 import type { RegisterStudentOutput } from '@/routes/register/components/RegisterStudentForm/schema';
 
 export async function logOutGoogle() {
@@ -8,5 +8,5 @@ export async function logOutGoogle() {
 }
 
 export async function completeStudent(userId: string, data: RegisterStudentOutput) {
-  return await axios.post<Student>(`/auth/${userId}/complete-student/`, data);
+  return await axios.post<StudentWithUser>(`/auth/${userId}/complete-student/`, data);
 }

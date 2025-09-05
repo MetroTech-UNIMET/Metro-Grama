@@ -1,11 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
-import { getInitialTrimester } from './functions';
 import SubjectOfferCard from '../SubjectOfferCard';
 import SubjectOfferDetail from '../SubjectOfferDetail/SubjectOfferDetail';
 
 import { useFetchAnnualOfferByTrimester } from '@/hooks/queries/subject_offer/use-fetch-annual-offer-by-trimester';
-import { type TrimesterOption, useFetchTrimestersOptions } from '@/hooks/queries/trimester/use-FetchTrimesters';
+import { useFetchTrimestersOptions } from '@/hooks/queries/trimester/use-FetchTrimesters';
+import useFetchCareersOptions from '@/hooks/queries/use-FetchCareersOptions';
+
+import { useSelectedTrimester } from '@/hooks/search-params/use-selected-trimester';
+import { useSelectedCareers } from '@/hooks/search-params/use-selected-careers';
 
 import { useAuth } from '@/contexts/AuthenticationContext';
 
@@ -17,7 +20,6 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarHeader, Si
 import { Skeleton } from '@ui/skeleton';
 
 import type { SubjectOfferWithSections } from '@/interfaces/SubjectOffer';
-import type { CareerOption } from '@/hooks/queries/use-FetchCareersOptions';
 import type { Id } from '@/interfaces/surrealDb';
 
 interface Props {
@@ -59,17 +61,15 @@ function HomeSidebar({
 }) {
   const { user: _ } = useAuth();
 
+  const { options } = useFetchCareersOptions();
+  const { selectedCareers, setSelectedCareers } = useSelectedCareers({
+    careerOptions: options,
+  });
+
   const trimesterQuery = useFetchTrimestersOptions();
-
-  const [selectedCareers, setSelectedCareers] = useState<CareerOption[]>([]);
-  const [selectedTrimester, setSelectedTrimester] = useState<TrimesterOption | undefined>(undefined);
-
-  useEffect(() => {
-    if (trimesterQuery.data) {
-      const initialTrimester = getInitialTrimester(trimesterQuery.data);
-      setSelectedTrimester(initialTrimester);
-    }
-  }, [trimesterQuery.data]);
+  const { selectedTrimester, setSelectedTrimester } = useSelectedTrimester({
+    trimesterOptions: trimesterQuery.data ?? [],
+  });
 
   const subjectsOfferQuery = useFetchAnnualOfferByTrimester({
     trimesterId: selectedTrimester?.value ?? '',
@@ -105,7 +105,7 @@ function HomeSidebar({
       </SidebarHeader>
       <SidebarContent className="mt-4">
         <SidebarGroup title="Materias" className="gap-2">
-          {false || subjectsOfferQuery.isPending ? (
+          {subjectsOfferQuery.isPending ? (
             <>
               {Array.from({ length: 10 }).map((_, index) => (
                 <Skeleton key={index} className="h-30" />
@@ -117,8 +117,10 @@ function HomeSidebar({
             <>
               {/* TODO - Hay un error donde el id del subject es null porque la materia no existen aun pero ya se creo la relación
             Preguntarle a Pilar que hacer */}
-              {subjectsOfferQuery.data.map((offer) => (
-                <SubjectOfferCard key={offer.subject.id.ID} subjectOffer={offer} onSelect={setSelectedSubject} />
+              {subjectsOfferQuery.data.map((offer, index) => (
+                <SubjectOfferCard key={
+                  `${offer.subject?.id.ID ?? 'no-id'}-${index}`
+                } subjectOffer={offer} onSelect={setSelectedSubject} />
               ))}
             </>
           )}

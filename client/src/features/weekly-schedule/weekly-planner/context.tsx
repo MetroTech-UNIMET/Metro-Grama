@@ -1,4 +1,4 @@
-import { createContext, useContext } from 'react';
+import { createContext, use } from 'react';
 import { es, type Locale } from 'date-fns/locale';
 
 import { getTotalMinutes } from './utils';
@@ -8,6 +8,7 @@ import type { WeeklyPlannerProps } from './WeeklyPlanner';
 type WeeklyPlannerContextProps<T> = (WeeklyPlannerContexUniform | WeeklyPlannerContexCustom) & {
   locale: Locale;
   type: WeeklyPlannerProps<T>['type'];
+  events: WeeklyPlannerProps<T>['events'];
 
   start_hour: string;
   end_hour: string;
@@ -25,13 +26,13 @@ interface WeeklyPlannerContexCustom {
 
 const WeeklyPlannerContext = createContext<WeeklyPlannerContextProps<any> | undefined>(undefined);
 
-export const useWeeklyPlannerContext = () => {
-  const context = useContext(WeeklyPlannerContext);
+export function useWeeklyPlannerContext<T = any>(): WeeklyPlannerContextProps<T> {
+  const context = use(WeeklyPlannerContext) as WeeklyPlannerContextProps<T> | undefined;
   if (!context) {
     throw new Error('useWeeklyPlannerContext must be used within a WeeklyPlannerProvider');
   }
   return context;
-};
+}
 
 export function WeeklyPlannerProvider<T>({
   children,
@@ -56,6 +57,7 @@ export function WeeklyPlannerProvider<T>({
         end_hour,
         timeSlots,
         interval,
+        events: props.events,
       }}
     >
       {children}

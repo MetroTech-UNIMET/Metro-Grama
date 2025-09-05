@@ -18,7 +18,7 @@ import { Tabs } from '@ui/tabs';
 import type { Event, DaySchedule } from './types';
 
 export type WeeklyPlannerProps<T> = {
-  subjectEvents: Event<T>[];
+  events: Event<T>[];
   type: 'uniform-interval' | 'custom-interval';
   locale?: Locale;
   rowHeight?: string;
@@ -40,7 +40,7 @@ interface CustomIntervalProps {
 }
 
 export function WeeklyPlanner<T>({
-  subjectEvents,
+  events,
   locale = es,
   shouldRenderTime,
   extraDecoration,
@@ -50,7 +50,7 @@ export function WeeklyPlanner<T>({
 }: WeeklyPlannerProps<T>) {
   const schedules: DaySchedule[] = Array.from({ length: 7 }, (_, dayIndex) => ({
     day: new Date(new Date().setDate(new Date().getDate() - new Date().getDay() + dayIndex)),
-    events: subjectEvents.filter((event) => event.dayIndex === dayIndex),
+    events: events.filter((event) => event.dayIndex === dayIndex),
   }));
 
   const [isMobile, setIsMobile] = useState<boolean | undefined>(false);
@@ -67,7 +67,7 @@ export function WeeklyPlanner<T>({
   });
 
   return (
-    <WeeklyPlannerProvider subjectEvents={subjectEvents} {...props}>
+    <WeeklyPlannerProvider events={events} {...props}>
       <Tabs defaultValue={format(daysOfWeek[0], 'EEE', { locale })} asChild>
         <div ref={ref} className="relative" style={{ '--height-row': rowHeight } as React.CSSProperties}>
           {!!isMobile && <MobileTabNavigation />}

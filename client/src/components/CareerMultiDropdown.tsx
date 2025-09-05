@@ -7,7 +7,7 @@ import { Spinner } from '@ui/spinner';
 
 import type { Career } from '@/interfaces/Career';
 
-interface Props extends Omit<MultipleSelectorProps<string, Career>, 'options'> {
+interface Props extends Omit<MultipleSelectorProps<`career:${string}`, Career>, 'options'> {
   loadingSubjects?: boolean;
   maxSelected?: number;
 }

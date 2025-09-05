@@ -64,6 +64,12 @@ func buildAnnualOfferQuery(trimesterId string, careers string) (string, map[stri
 	return buf.String(), params, nil
 }
 
+// AnnualOfferQueryParams groups optional query params for annual offer queries
+type AnnualOfferQueryParams struct {
+	Careers        string
+	SubjectsFilter string
+}
+
 // GetAllAnnualOffers retrieves all subject_offer edges with their related subject and trimester.
 func GetAllAnnualOffers(careers string) ([]DTO.QueryAnnualOffer, error) {
 	query, params, err := buildAnnualOfferQuery("", careers)
@@ -79,8 +85,13 @@ func GetAllAnnualOffers(careers string) ([]DTO.QueryAnnualOffer, error) {
 }
 
 // GetAnnualOfferById retrieves subject_offer edges filtered by trimester ID.
-func GetAnnualOfferById(trimesterId string, careers string) ([]DTO.QueryAnnualOffer, error) {
-	query, params, err := buildAnnualOfferQuery(trimesterId, careers)
+func GetAnnualOfferById(trimesterId string, studentId string, queryParams AnnualOfferQueryParams) ([]DTO.QueryAnnualOffer, error) {
+	// For now, only careers is used. subjectsFilter/studentId wiring will be handled separately.
+	// Avoid unused warnings in tooling.
+	_ = studentId
+	_ = queryParams.SubjectsFilter
+
+	query, params, err := buildAnnualOfferQuery(trimesterId, queryParams.Careers)
 	if err != nil {
 		return nil, err
 	}

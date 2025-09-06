@@ -6,9 +6,10 @@ import type { Event } from '../../types';
 
 interface Props {
   event: Event;
+  layout?: { overlapped: boolean; column: 0 | 1 };
 }
 
-export function PlannerEvent({ event }: Props) {
+export function PlannerEvent({ event, layout }: Props) {
   const { start_hour: planner_start_hour, ...props } = useWeeklyPlannerContext();
 
   const height =
@@ -21,23 +22,24 @@ export function PlannerEvent({ event }: Props) {
       ? calculateUniformTop(event.start_hour, planner_start_hour, props.interval)
       : calculateCustomTop(event.start_hour, props.timeSlots);
 
+  const widthClass = layout?.overlapped ? 'w-1/2' : 'w-full';
+  const leftClass = layout?.overlapped ? (layout.column === 0 ? 'left-0' : 'left-1/2') : 'left-0';
+
   return (
-    <>
-      <li
-        key={event.id}
-        className="md:px-px"
-        style={
-          {
-            '--w-schedule-event-top': `calc(var(--height-row) * ${top})`,
-            '--w-schedule-event-height': `calc(var(--height-row) * ${height})`,
-          } as React.CSSProperties
-        }
-      >
-        <BaseEvent
-          event={event}
-          containerClassName="absolute top-(--w-schedule-event-top) h-(--w-schedule-event-height)"
-        />
-      </li>
-    </>
+    <li
+      key={event.id}
+      className="md:px-px"
+      style={
+        {
+          '--w-schedule-event-top': `calc(var(--height-row) * ${top})`,
+          '--w-schedule-event-height': `calc(var(--height-row) * ${height})`,
+        } as React.CSSProperties
+      }
+    >
+      <BaseEvent
+        event={event}
+        containerClassName={`absolute top-(--w-schedule-event-top) h-(--w-schedule-event-height) ${widthClass} ${leftClass}`}
+      />
+    </li>
   );
 }

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import SubjectOfferCard from '../SubjectOfferCard';
 import SubjectOfferDetail from '../SubjectOfferDetail/SubjectOfferDetail';
@@ -11,6 +11,7 @@ import { useSelectedTrimester } from '@/hooks/search-params/use-selected-trimest
 import { useSelectedCareers } from '@/hooks/search-params/use-selected-careers';
 
 import { useAuth } from '@/contexts/AuthenticationContext';
+import { normalize } from '@utils/strings';
 
 import { CareerMultiDropdown } from '@components/CareerMultiDropdown';
 import AutoComplete from '@ui/derived/autocomplete';
@@ -19,6 +20,7 @@ import { Input } from '@ui/input';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarHeader, SidebarRail } from '@ui/sidebar';
 import { Skeleton } from '@ui/skeleton';
 import { Checkbox } from '@ui/checkbox';
+import { useDebounceValue } from '@/hooks/shadcn.io/debounce/use-debounce-value';
 
 import type { SubjectOfferWithSections } from '@/interfaces/SubjectOffer';
 import type { Id } from '@/interfaces/surrealDb';
@@ -63,6 +65,10 @@ function HomeSidebar({
 }) {
   const { user } = useAuth();
   const [showEnrollable, setShowEnrollable] = useState(false);
+  // Immediate input value (updates instantly for UX)
+  const [searchInput, setSearchInput] = useState('');
+  // Debounced value (updates after delay)
+  const [debouncedSearch, setDebouncedSearch] = useDebounceValue('', 300);
 
   useEffect(() => {
     if (!user && showEnrollable) setShowEnrollable(false);
@@ -90,10 +96,31 @@ function HomeSidebar({
     },
   });
 
+  const filteredData = useMemo(() => {
+    if (!subjectsOfferQuery.data) return [] as SubjectOfferWithSections[];
+
+    const termRaw = debouncedSearch.trim();
+    if (!termRaw) return subjectsOfferQuery.data;
+    const term = normalize(termRaw);
+    return subjectsOfferQuery.data.filter((offer) => {
+      const name = normalize(offer.subject?.name ?? '');
+      return name.includes(term);
+    });
+  }, [subjectsOfferQuery.data, debouncedSearch]);
+
   return (
     <>
       <SidebarHeader>
-        <Input placeholder="Buscar oferta ..." />
+        {/* TODO - Hacerlo funcionar, pero creo que solo será un filtro a nivel de cliente debounced */}
+        <Input
+          placeholder="Busca por nombre de la materia..."
+          value={searchInput}
+          onChange={(e) => {
+            const v = e.target.value;
+            setSearchInput(v);
+            setDebouncedSearch(v); // debounced setter (from hook)
+          }}
+        />
 
         <CareerMultiDropdown
           value={selectedCareers}
@@ -137,7 +164,7 @@ function HomeSidebar({
             <>
               {/* TODO - Hay un error donde el id del subject es null porque la materia no existen aun pero ya se creo la relación
             Preguntarle a Pilar que hacer */}
-              {subjectsOfferQuery.data.map((offer, index) => (
+              {filteredData.map((offer, index) => (
                 <SubjectOfferCard
                   key={`${offer.subject?.id.ID ?? 'no-id'}-${index}`}
                   subjectOffer={offer}

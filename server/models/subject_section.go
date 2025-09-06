@@ -6,7 +6,7 @@ import (
 
 type SubjectSectionEntity struct {
 	ID            surrealModels.RecordID `json:"id" validate:"required"  swaggertype:"object"`
-	ClassRoomCode *string                `json:"class_room_code"`
+	ClassRoomCode *string                `json:"classroom_code"`
 	SectionNumber int                    `json:"section_number"`
 
 	SubjectOffer surrealModels.RecordID `json:"subject_offer" swaggertype:"object"`

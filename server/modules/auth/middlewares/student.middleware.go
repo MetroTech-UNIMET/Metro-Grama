@@ -14,7 +14,7 @@ import (
 
 func StudentAuth(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		student, err := getStudentFromSession(c)
+		student, err := GetStudentFromSession(c)
 		if err != nil {
 			return err
 		}
@@ -33,7 +33,7 @@ SELECT *
     WHERE user = $userId
     FETCH user;`
 
-func getStudentFromSession(c echo.Context) (*models.StudentWithUser, error) {
+func GetStudentFromSession(c echo.Context) (*models.StudentWithUser, error) {
 	sessAuth, err := session.Get("auth", c)
 	if err != nil {
 		return nil, echo.NewHTTPError(http.StatusUnauthorized, "No se pudo obtener la sesión del estudiante")

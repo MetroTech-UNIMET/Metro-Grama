@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import SubjectOfferCard from '../SubjectOfferCard';
 import SubjectOfferDetail from '../SubjectOfferDetail/SubjectOfferDetail';
@@ -18,6 +18,7 @@ import { TrimesterItem } from '@ui/derived/custom-command-items/trimester-item-o
 import { Input } from '@ui/input';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarHeader, SidebarRail } from '@ui/sidebar';
 import { Skeleton } from '@ui/skeleton';
+import { Checkbox } from '@ui/checkbox';
 
 import type { SubjectOfferWithSections } from '@/interfaces/SubjectOffer';
 import type { Id } from '@/interfaces/surrealDb';
@@ -53,13 +54,17 @@ export function PlannerSidebar({ onAddSubject, onRemoveSubject, getIsSubjectSele
   );
 }
 
-// TODO - Usar NUQS o tanstack router para usar trimestre y carreras como queryParams
 function HomeSidebar({
   setSelectedSubject,
 }: {
   setSelectedSubject: (subject: SubjectOfferWithSections | null) => void;
 }) {
-  const { user: _ } = useAuth();
+  const { user } = useAuth();
+  const [showEnrollable, setShowEnrollable] = useState(false);
+
+  useEffect(() => {
+    if (!user && showEnrollable) setShowEnrollable(false);
+  }, [user, showEnrollable]);
 
   const { options } = useFetchCareersOptions();
   const { selectedCareers, setSelectedCareers } = useSelectedCareers({
@@ -75,6 +80,8 @@ function HomeSidebar({
     trimesterId: selectedTrimester?.value ?? '',
     optionalQuery: {
       careers: selectedCareers.map((c) => c.value),
+      // Only send subjectsFilter when a user exists; backend defaults to 'none' otherwise
+      subjectsFilter: user ? (showEnrollable ? 'enrollable' : 'none') : undefined,
     },
     queryOptions: {
       enabled: !!selectedTrimester,
@@ -102,6 +109,17 @@ function HomeSidebar({
           CustomSelectItem={TrimesterItem}
           isOptionDisabled={(option) => !(option.data?.is_current || option.data?.is_next)}
         />
+
+        {user && (
+          <label className="flex items-center gap-2 text-sm font-medium">
+            <Checkbox
+              className="h-4 w-4"
+              checked={showEnrollable}
+              onCheckedChange={(value) => setShowEnrollable(value === true)}
+            />
+            Solo materias inscribibles
+          </label>
+        )}
       </SidebarHeader>
       <SidebarContent className="mt-4">
         <SidebarGroup title="Materias" className="gap-2">
@@ -118,9 +136,11 @@ function HomeSidebar({
               {/* TODO - Hay un error donde el id del subject es null porque la materia no existen aun pero ya se creo la relación
             Preguntarle a Pilar que hacer */}
               {subjectsOfferQuery.data.map((offer, index) => (
-                <SubjectOfferCard key={
-                  `${offer.subject?.id.ID ?? 'no-id'}-${index}`
-                } subjectOffer={offer} onSelect={setSelectedSubject} />
+                <SubjectOfferCard
+                  key={`${offer.subject?.id.ID ?? 'no-id'}-${index}`}
+                  subjectOffer={offer}
+                  onSelect={setSelectedSubject}
+                />
               ))}
             </>
           )}

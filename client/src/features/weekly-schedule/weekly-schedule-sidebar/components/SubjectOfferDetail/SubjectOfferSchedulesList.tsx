@@ -1,7 +1,6 @@
 import { Pencil, Plus, Trash } from 'lucide-react';
 
-import { weekDayOptions } from './SubjectOfferForm/constants';
-
+import { weekDayOptions } from '@/lib/constants/date';
 import { cn } from '@utils/className';
 import { formatTimeHour } from '@utils/time';
 

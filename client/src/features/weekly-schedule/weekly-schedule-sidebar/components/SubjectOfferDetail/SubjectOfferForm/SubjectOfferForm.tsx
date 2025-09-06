@@ -12,8 +12,9 @@ import {
   subjectScheduleSchema,
   type SubjectScheduleOutput,
 } from './schema';
-import { correctIntervalBetweenHours, defaultSchedule, weekDayOptions } from './constants';
+import { correctIntervalBetweenHours, defaultSchedule } from './constants';
 
+import { weekDayOptions } from '@/lib/constants/date';
 import { cn } from '@utils/className';
 import { onInvalidToast } from '@utils/forms';
 

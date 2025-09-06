@@ -24,6 +24,8 @@ export type WeeklyPlannerProps<T> = {
   rowHeight?: string;
   extraDecoration?: PlannerGridProps['extraDecoration'];
   shouldRenderTime?: PlannerGridProps['shouldRenderTime'];
+  /** Enable side-by-side layout for overlapping events */
+  overlapping?: boolean;
   children?: React.ReactNode;
 } & (UniformIntervalProps | CustomIntervalProps);
 
@@ -45,6 +47,7 @@ export function WeeklyPlanner<T>({
   shouldRenderTime,
   extraDecoration,
   rowHeight = '3.5rem',
+  overlapping = false,
   children,
   ...props
 }: WeeklyPlannerProps<T>) {
@@ -67,7 +70,7 @@ export function WeeklyPlanner<T>({
   });
 
   return (
-    <WeeklyPlannerProvider events={events} {...props}>
+  <WeeklyPlannerProvider events={events} overlapping={overlapping} {...props}>
       <Tabs defaultValue={format(daysOfWeek[0], 'EEE', { locale })} asChild>
         <div ref={ref} className="relative" style={{ '--height-row': rowHeight } as React.CSSProperties}>
           {!!isMobile && <MobileTabNavigation />}

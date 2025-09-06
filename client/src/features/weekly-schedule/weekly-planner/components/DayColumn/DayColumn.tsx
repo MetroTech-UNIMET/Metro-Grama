@@ -37,8 +37,11 @@ export function DaysColumns({ schedules }: { schedules: DaySchedule[] }) {
 }
 
 function DayColumns({ day, events }: Props) {
-  // NOTE: We assume there can be at most two overlapping events at any given time.
-  const layouts = computeEventLayouts(events);
+  const { overlapping } = useWeeklyPlannerContext();
+  // NOTE: We assume there can be at most two overlapping events at any given time when overlapping view is enabled.
+  const layouts = overlapping
+    ? computeEventLayouts(events)
+    : events.map((e) => ({ event: e, overlapped: false, column: 0 as 0 }));
 
   return (
     <section className="relative block! grow basis-0 border-l border-gray-200 pt-0 last:border-r" role="tabpanel">

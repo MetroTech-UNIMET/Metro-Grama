@@ -1,6 +1,6 @@
-import { createContext, use } from 'react';
+import { createContext, use, useMemo } from 'react';
 
-import { getTotalMinutes } from './utils';
+import { getTotalMinutes, checkEventsOverlapping } from './utils';
 
 import { defaultLocale } from '@/lib/constants/date';
 
@@ -11,6 +11,8 @@ type WeeklyPlannerContextProps<T> = (WeeklyPlannerContexUniform | WeeklyPlannerC
   locale: Locale;
   type: WeeklyPlannerProps<T>['type'];
   events: WeeklyPlannerProps<T>['events'];
+  overlapping: boolean;
+  overlappingEventIds: Set<string>;
 
   start_hour: string;
   end_hour: string;
@@ -50,6 +52,11 @@ export function WeeklyPlannerProvider<T>({
   const timeSlots =
     props.type === 'uniform-interval' ? getTimeSlots(start_hour, end_hour, props.interval) : props.timeSlots;
 
+  const overlappingEventIds = useMemo(
+    () => checkEventsOverlapping(props.overlapping ? 1 : 0, props.events),
+    [props.events, props.overlapping],
+  );
+
   return (
     <WeeklyPlannerContext.Provider
       value={{
@@ -60,6 +67,8 @@ export function WeeklyPlannerProvider<T>({
         timeSlots,
         interval,
         events: props.events,
+        overlapping: props.overlapping || false,
+        overlappingEventIds,
       }}
     >
       {children}

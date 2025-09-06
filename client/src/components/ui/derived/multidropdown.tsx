@@ -5,7 +5,6 @@ import { X } from 'lucide-react';
 import { transToGroupOption } from '../utils/options';
 
 import { cn } from '@/lib/utils/className';
-import useDebounce from '@/hooks/useDebounceValue';
 
 import { Spinner } from '@ui/spinner';
 import { Badge } from '@/components/ui/badge';
@@ -13,6 +12,7 @@ import { Command, CommandGroup, CommandItem, CommandList } from '@/components/ui
 import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 import type { Option, GroupOption } from '../types/option.types';
+import { useDebounceValue } from '@/hooks/shadcn.io/debounce/use-debounce-value';
 
 interface CommonProps {
   id?: string;
@@ -170,7 +170,7 @@ function MultipleSelector<TValue extends string | number = string | number, TDat
     transToGroupOption<TValue, TData>(arrayDefaultOptions, groupBy),
   );
   const [inputValue, setInputValue] = React.useState('');
-  const debouncedSearchTerm = useDebounce(inputValue, delay || 500);
+  const [debouncedSearchTerm] = useDebounceValue(inputValue, delay || 500);
 
   React.useImperativeHandle(
     ref,

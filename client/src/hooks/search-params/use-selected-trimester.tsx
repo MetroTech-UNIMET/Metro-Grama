@@ -22,7 +22,7 @@ export function useSelectedTrimester({ trimesterOptions }: Props) {
 
   useEffect(() => {
     if (initializedRef.current) return;
-    if (!trimesterOptions) return;
+    if (trimesterOptions.length === 0) return;
 
     let initial: TrimesterOption | undefined;
     if (initialTrimesterId) {

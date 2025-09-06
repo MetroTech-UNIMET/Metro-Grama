@@ -44,7 +44,7 @@ export function PlannerSidebar({ onAddSubject, onRemoveSubject, getIsSubjectSele
             getIsSubjectSelected={getIsSubjectSelected}
           />
         ) : (
-          <HomeSidebar setSelectedSubject={setSelectedSubject} />
+          <HomeSidebar setSelectedSubject={setSelectedSubject} getIsSubjectSelected={getIsSubjectSelected} />
         )}
         <SidebarFooter />
 
@@ -56,8 +56,10 @@ export function PlannerSidebar({ onAddSubject, onRemoveSubject, getIsSubjectSele
 
 function HomeSidebar({
   setSelectedSubject,
+  getIsSubjectSelected,
 }: {
   setSelectedSubject: (subject: SubjectOfferWithSections | null) => void;
+  getIsSubjectSelected: Props['getIsSubjectSelected'];
 }) {
   const { user } = useAuth();
   const [showEnrollable, setShowEnrollable] = useState(false);
@@ -140,6 +142,7 @@ function HomeSidebar({
                   key={`${offer.subject?.id.ID ?? 'no-id'}-${index}`}
                   subjectOffer={offer}
                   onSelect={setSelectedSubject}
+                  getIsSubjectSelected={getIsSubjectSelected}
                 />
               ))}
             </>

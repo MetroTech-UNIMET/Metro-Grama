@@ -90,7 +90,16 @@ function DropdownMenuRadioItem({
   className,
   children,
   ...props
-}: React.ComponentProps<typeof DropdownMenuPrimitive.RadioItem>) {
+}: React.ComponentProps<typeof DropdownMenuPrimitive.RadioItem> & {
+  /**
+   * Optional custom icon component (e.g., imported from lucide-react).
+   * It must be a React component accepting standard SVG props.
+   */
+  customIcon?: React.ComponentType<{
+    className?: string;
+  }>;
+}) {
+  const IconComponent = props.customIcon || CircleIcon;
   return (
     <DropdownMenuPrimitive.RadioItem
       data-slot="dropdown-menu-radio-item"
@@ -102,7 +111,7 @@ function DropdownMenuRadioItem({
     >
       <span className="pointer-events-none absolute left-2 flex size-3.5 items-center justify-center">
         <DropdownMenuPrimitive.ItemIndicator>
-          <CircleIcon className="size-2 fill-current" />
+          <IconComponent className={"size-2 fill-current"} />
         </DropdownMenuPrimitive.ItemIndicator>
       </span>
       {children}

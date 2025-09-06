@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link as RouterLink } from '@tanstack/react-router';
+import { Link as RouterLink, useLocation } from '@tanstack/react-router';
 
 import { cn } from '@utils/className';
 
@@ -49,9 +49,21 @@ const GoogleSvg = (
 );
 
 export const GoogleLink = ({ className = '' }: { className?: string }) => {
+  const location = useLocation();
+  const currentPath = React.useMemo(() => {
+    // Combine pathname + search (if any). location.pathname already starts with '/'
+    const search = location.search ?? '';
+    return `${location.pathname}${search}`;
+  }, [location.pathname, location.search]);
+
+  const href = React.useMemo(
+    () => `${baseApiUrl}/auth/google/login?redirect=${encodeURIComponent(currentPath)}`,
+    [currentPath]
+  );
+
   return (
     <a
-      href={`${baseApiUrl}/auth/google/login`}
+      href={href}
       className={cn(buttonVariants({ variant: 'outline', className: 'gap-4' }), className)}
     >
       {GoogleSvg}

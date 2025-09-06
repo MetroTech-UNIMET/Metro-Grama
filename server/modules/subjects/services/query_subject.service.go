@@ -137,3 +137,36 @@ func GetSubjectsGraph(careers string) (models.Graph[models.SubjectNode], error) 
 		Edges: edges,
 	}, nil
 }
+
+// getEnrollableSubjects returns the list of subject RecordIDs that are enrollable for a given student.
+// It runs a transaction in SurrealDB utilizing a helper function fn::is_subject_enrollable.
+func GetEnrollableSubjects(studentId surrealModels.RecordID) ([]surrealModels.RecordID, error) {
+	const q = `BEGIN TRANSACTION;
+LET $enrolled = SELECT VALUE out FROM enroll 
+	WHERE in = $studentId AND passed=true;
+RETURN SELECT VALUE id
+	FROM subject
+	WHERE fn::is_subject_enrollable(id, $studentId, $enrolled) = true;
+COMMIT TRANSACTION;`
+
+	params := map[string]any{
+		"studentId": studentId,
+	}
+
+	// Using Query with expected return of []RecordID via RETURN statement.
+	res, err := surrealdb.Query[[]surrealModels.RecordID](context.Background(), db.SurrealDB, q, params)
+	if err != nil {
+		return nil, err
+	}
+	// The RETURN result will be in the last meaningful statement's result.
+	// For safety, pick the last QueryResult entry.
+	if res == nil || len(*res) == 0 {
+		return []surrealModels.RecordID{}, nil
+	}
+	qr := (*res)[len(*res)-1]
+	ids := qr.Result
+	if ids == nil {
+		return []surrealModels.RecordID{}, nil
+	}
+	return ids, nil
+}

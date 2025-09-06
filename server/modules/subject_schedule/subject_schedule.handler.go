@@ -20,6 +20,7 @@ func Handlers(e *echo.Group) {
 // @Accept json
 // @Produce json
 // @Param schedules body DTO.CreateSubjectSchedule true "Schedules"
+// @Security     CookieAuth
 // @Success 201 {object} map[string]string
 // @Failure 400 {object} map[string]string
 // @Failure 500 {object} map[string]string

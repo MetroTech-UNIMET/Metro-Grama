@@ -5,6 +5,7 @@ import (
 	"context"
 	"metrograma/db"
 	"metrograma/modules/subject_offer/DTO"
+	subjectservices "metrograma/modules/subjects/services"
 	"metrograma/tools"
 	"strings"
 	"text/template"
@@ -27,9 +28,10 @@ FROM subject_offer
 FETCH subject, trimester;`
 
 // buildAnnualOfferQuery constructs the query and params for annual offers combining optional filters.
-func buildAnnualOfferQuery(trimesterId string, careers string) (string, map[string]any, error) {
+// If enrollable is provided (non-empty), the query will restrict to those subject IDs.
+func buildAnnualOfferQuery(trimesterId string, careers string, enrollable []surrealModels.RecordID) (string, map[string]any, error) {
 	// Build dynamic WHERE clause respecting single WHERE keyword
-	whereParts := make([]string, 0, 2)
+	whereParts := make([]string, 0, 3)
 	params := map[string]any{}
 
 	if trimesterId != "" {
@@ -45,6 +47,11 @@ func buildAnnualOfferQuery(trimesterId string, careers string) (string, map[stri
 	if len(careersArray) > 0 {
 		whereParts = append(whereParts, "in->belong->career ANYINSIDE $careers")
 		params["careers"] = careersArray
+	}
+
+	if len(enrollable) > 0 {
+		whereParts = append(whereParts, "in.id IN $enrollable")
+		params["enrollable"] = enrollable
 	}
 
 	whereClause := ""
@@ -72,7 +79,7 @@ type AnnualOfferQueryParams struct {
 
 // GetAllAnnualOffers retrieves all subject_offer edges with their related subject and trimester.
 func GetAllAnnualOffers(careers string) ([]DTO.QueryAnnualOffer, error) {
-	query, params, err := buildAnnualOfferQuery("", careers)
+	query, params, err := buildAnnualOfferQuery("", careers, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -85,13 +92,22 @@ func GetAllAnnualOffers(careers string) ([]DTO.QueryAnnualOffer, error) {
 }
 
 // GetAnnualOfferById retrieves subject_offer edges filtered by trimester ID.
-func GetAnnualOfferById(trimesterId string, studentId string, queryParams AnnualOfferQueryParams) ([]DTO.QueryAnnualOffer, error) {
-	// For now, only careers is used. subjectsFilter/studentId wiring will be handled separately.
-	// Avoid unused warnings in tooling.
-	_ = studentId
-	_ = queryParams.SubjectsFilter
+func GetAnnualOfferById(trimesterId string, studentId surrealModels.RecordID, queryParams AnnualOfferQueryParams) ([]DTO.QueryAnnualOffer, error) {
+	var enrollable []surrealModels.RecordID
+	if queryParams.SubjectsFilter == "enrollable" {
 
-	query, params, err := buildAnnualOfferQuery(trimesterId, queryParams.Careers)
+		ids, err := subjectservices.GetEnrollableSubjects(studentId)
+		if err != nil {
+			return nil, err
+		}
+		if len(ids) == 0 {
+			// No enrollable subjects => return empty set quickly
+			return []DTO.QueryAnnualOffer{}, nil
+		}
+		enrollable = ids
+	}
+
+	query, params, err := buildAnnualOfferQuery(trimesterId, queryParams.Careers, enrollable)
 	if err != nil {
 		return nil, err
 	}

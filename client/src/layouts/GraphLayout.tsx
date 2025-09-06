@@ -1,8 +1,7 @@
-import { Outlet } from "@tanstack/react-router";
 import AuthenticationContext from "@/contexts/AuthenticationContext";
 import "@antv/graphin-icons/dist/index.css";
 
-export default function GraphLayout() {
+export default function GraphLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
       <main
@@ -10,7 +9,7 @@ export default function GraphLayout() {
       text-UI-white h-svh p-8"
       >
         <AuthenticationContext>
-          <Outlet />
+          {children}
         </AuthenticationContext>
       </main>
     </>

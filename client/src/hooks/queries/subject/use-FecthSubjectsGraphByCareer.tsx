@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, queryOptions } from "@tanstack/react-query";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 
 import useFetchCareersOptions, { type CareerOption } from "../use-FetchCareersOptions";
@@ -8,13 +8,8 @@ import { getSubjectsGraph } from "@/api/subjectsAPI";
 import type { Graph } from "@/interfaces/Graph";
 import type { Subject } from "@/interfaces/Subject";
 
-export default function useFecthSubjectsGraphByCareer() {
-  const [selectedCareers, setSelectedCareers] = useState<CareerOption[]>([]);
-  const search = useSearch({ from: "/materias" });
-  const navigate = useNavigate();
-
-  const careers = search?.careers ?? "none";
-  const subjectQuery = useQuery<Graph<Subject>>({
+export function fetchSubjectsGraphByCareerOptions(careers: string) {
+  return queryOptions<Graph<Subject>>({
     queryKey: [
       "subjects",
       "graph",
@@ -24,6 +19,15 @@ export default function useFecthSubjectsGraphByCareer() {
     ],
     queryFn: () => getSubjectsGraph(careers),
   });
+}
+
+export default function useFecthSubjectsGraphByCareer() {
+  const [selectedCareers, setSelectedCareers] = useState<CareerOption[]>([]);
+  const search = useSearch({ from: "/materias" });
+  const navigate = useNavigate();
+
+  const careers = search?.careers ?? "none";
+  const subjectQuery = useQuery<Graph<Subject>>(fetchSubjectsGraphByCareerOptions(careers));
 
   const { options, isLoading: loadingCareers } = useFetchCareersOptions();
 

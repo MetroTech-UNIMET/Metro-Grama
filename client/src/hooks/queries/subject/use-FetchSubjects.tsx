@@ -1,17 +1,13 @@
-import { useQuery } from "@tanstack/react-query";
+import { queryOptions, useQuery } from "@tanstack/react-query";
 
 import { getSubjects } from "@/api/subjectsAPI";
 
 import type { Subject } from "@/interfaces/Subject";
 import type { OptionalQueryOptions } from "../types";
 
-export function useFetchSubjects(
-  careers: string[] = [],
-  queryOptions?: OptionalQueryOptions<Subject[]>
-) {
+export function fetchSubjectsOptions(careers: string[] = [], queryOpt?: OptionalQueryOptions<Subject[]>) {
   const careersParam = careers.length === 0 ? "none" : careers.sort().join(",");
-
-  const query = useQuery({
+  return queryOptions({
     queryKey: [
       "subjects",
       {
@@ -19,8 +15,14 @@ export function useFetchSubjects(
       },
     ],
     queryFn: () => getSubjects(careersParam),
-    ...queryOptions,
+    ...queryOpt,
   });
+}
 
+export function useFetchSubjects(
+  careers: string[] = [],
+  queryOptions?: OptionalQueryOptions<Subject[]>
+) {
+  const query = useQuery(fetchSubjectsOptions(careers, queryOptions));
   return query;
 }

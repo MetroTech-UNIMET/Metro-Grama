@@ -6,6 +6,8 @@ import z from 'zod/v4';
 
 import { courseSchema } from './schema';
 
+import { useFetchStudentCourseByTrimester } from '@/hooks/queries/course/use-fetch-student-course-by-trimester';
+
 import { useWeeklyPlannerContext } from '@/features/weekly-schedule/weekly-planner/context';
 
 import { createSchedule } from '@/api/interactions/courseApi';
@@ -27,6 +29,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuLabel,
 } from '@ui/dropdown-menu';
+import { Spinner } from '@ui/spinner';
 
 import type { SubjectEvent } from '..';
 
@@ -37,6 +40,14 @@ export function SaveScheduleButton() {
   const search = useSearch({ from: '/horario/' });
 
   const { user } = useAuth();
+
+  const trimesterId = search.trimester !== 'none' ? search.trimester : '';
+  const isPrincipal = search.is_principal;
+  const { isFetching } = useFetchStudentCourseByTrimester({
+    trimesterId,
+    params: { is_principal: isPrincipal },
+    queryOptions: { enabled: !!trimesterId },
+  });
 
   async function saveSchedules(isPrincipal: boolean) {
     if (!user) throw new Error('User is not authenticated');
@@ -114,15 +125,24 @@ export function SaveScheduleButton() {
           <DropdownMenuLabel>Escoger horarios</DropdownMenuLabel>
 
           <DropdownMenuRadioGroup
-            value={search.is_principal ? 'principal' : 'secundario'}
+            value={isPrincipal ? 'principal' : 'secundario'}
             onValueChange={(value) => chooseScheduleToView(value === 'principal')}
           >
-            <DropdownMenuRadioItem value="principal">Visualizar horario principal</DropdownMenuRadioItem>
+            <DropdownMenuRadioItem value="principal" customIcon={isPrincipal && isFetching ? CustomSpinner : undefined}>
+              Visualizar horario principal
+            </DropdownMenuRadioItem>
 
-            <DropdownMenuRadioItem value="secundario">Visualizar horario secundario</DropdownMenuRadioItem>
+            <DropdownMenuRadioItem
+              value="secundario"
+              customIcon={!isPrincipal && isFetching ? CustomSpinner : undefined}
+            >
+              Visualizar horario secundario
+            </DropdownMenuRadioItem>
           </DropdownMenuRadioGroup>
         </DropdownMenuContent>
       </DropdownMenu>
     </ButtonGroup>
   );
 }
+
+const CustomSpinner = () => <Spinner className="size-4" />;

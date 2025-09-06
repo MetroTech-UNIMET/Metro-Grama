@@ -1,9 +1,11 @@
-import { createFileRoute } from '@tanstack/react-router';
-import { useState } from 'react';
+import { createFileRoute, useSearch } from '@tanstack/react-router';
+import { useEffect, useState } from 'react';
 
 import { SaveScheduleButton } from './components/SaveScheduleButton';
 import { getStudentTimeSlots } from './functions';
 import { queryParams } from './queryParams';
+
+import { useFetchStudentCourseByTrimester } from '@/hooks/queries/course/use-fetch-student-course-by-trimester';
 
 import { PlannerSidebar } from '@/features/weekly-schedule/weekly-schedule-sidebar/components/PlannerSidebar/PlannerSidebar';
 import { WeeklyPlanner } from '@/features/weekly-schedule/weekly-planner/WeeklyPlanner';
@@ -44,6 +46,10 @@ export interface SubjectEvent {
 }
 
 function WeeklySchedulePage() {
+  const search = useSearch({ from: '/horario/' });
+  const trimesterId = search.trimester !== 'none' ? search.trimester : '';
+  const isPrincipal = search.is_principal;
+
   const [subjectEvents, setSubjectEvents] = useState<Event<SubjectEvent>[]>([
     // {
     //   id: 'm1',
@@ -190,6 +196,38 @@ function WeeklySchedulePage() {
     //   dayIndex: 5,
     // },
   ]);
+
+  // Fetch existing saved course (principal or secondary) and map to events
+  const courseQuery = useFetchStudentCourseByTrimester({
+    trimesterId,
+    params: { is_principal: isPrincipal },
+    queryOptions: { enabled: !!trimesterId },
+  });
+
+  useEffect(() => {
+    if (courseQuery.isSuccess) {
+      const sections = courseQuery.data.sections;
+      const events: Event<SubjectEvent>[] = [];
+      sections.forEach((sec) => {
+        sec.subject_schedule.forEach((sch) => {
+          events.push({
+            id: sch.id.ID,
+            title: sec.subject.name,
+            start_hour: formatTimeHour(sch.starting_hour, sch.starting_minute),
+            end_hour: formatTimeHour(sch.ending_hour, sch.ending_minute),
+            type: 'rowing' as any,
+            dayIndex: sch.day_of_week,
+            data: {
+              id: { ID: sec.subject_offer } as any,
+              subjectSectionId: { ID: sec.id } as any,
+              trimesterId: { ID: courseQuery.data.trimesterId } as any,
+            },
+          });
+        });
+      });
+      setSubjectEvents(events);
+    }
+  }, [courseQuery.isSuccess, courseQuery.data]);
 
   return (
     <SidebarProvider customWidth="20rem">

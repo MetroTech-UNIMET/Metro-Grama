@@ -10,6 +10,8 @@ import (
 	"metrograma/env"
 	"metrograma/models"
 	"net/http"
+	"net/url"
+	"strings"
 
 	"github.com/gorilla/sessions"
 	"github.com/labstack/echo-contrib/session"
@@ -42,6 +44,14 @@ func OauthGoogleLogin(c echo.Context) error {
 	oauthState := generateStateOauthCookie()
 
 	sess.Values["state"] = oauthState
+
+	// Store optional redirect path requested by caller (e.g. Swagger UI)
+	if r := c.QueryParam("redirect"); r != "" {
+		// Basic sanitization: allow relative root paths or same-host absolute URLs
+		if isAllowedRedirect(r, c.Request()) {
+			sess.Values["redirect"] = r
+		}
+	}
 	if err := sess.Save(c.Request(), c.Response()); err != nil {
 		return err
 	}
@@ -127,7 +137,13 @@ func OauthGoogleCallback(c echo.Context) error {
 		return err
 	}
 
-	return c.Redirect(http.StatusPermanentRedirect, registerResult.RedirectPath)
+	finalRedirect := registerResult.RedirectPath
+	if r, ok := sess.Values["redirect"].(string); ok && r != "" {
+		if isAllowedRedirect(r, c.Request()) {
+			finalRedirect = normalizeRedirect(r, c.Request())
+		}
+	}
+	return c.Redirect(http.StatusPermanentRedirect, finalRedirect)
 }
 
 func generateStateOauthCookie() string {
@@ -135,8 +151,34 @@ func generateStateOauthCookie() string {
 	rand.Read(b)
 	state := base64.URLEncoding.EncodeToString(b)
 	return state
-} 
+}
 
+// isAllowedRedirect performs minimal validation to avoid open redirect vulnerabilities.
+// It allows:
+//  1. Relative paths starting with '/'
+//  2. Absolute URLs whose host matches the incoming request host
+func isAllowedRedirect(target string, req *http.Request) bool {
+	if strings.HasPrefix(target, "/") {
+		return true
+	}
+	u, err := url.Parse(target)
+	if err != nil {
+		return false
+	}
+	if u.Host == req.Host && (u.Scheme == "http" || u.Scheme == "https") {
+		return true
+	}
+	return false
+}
+
+// normalizeRedirect converts a relative path into an absolute URL when an absolute was originally supplied.
+// If the target is an absolute URL it is returned as-is; if relative, it is returned unchanged (letting client resolve root path).
+func normalizeRedirect(target string, req *http.Request) string {
+	if strings.HasPrefix(target, "/") {
+		return target
+	}
+	return target
+}
 
 func GetGoogleUserInfo(client *http.Client) (*GoogleEmailData, error) {
 	email, err := client.Get("https://www.googleapis.com/oauth2/v3/userinfo")

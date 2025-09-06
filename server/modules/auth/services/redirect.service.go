@@ -30,4 +30,4 @@ func GetAuthResult(user models.MinimalUser, isVerified bool) *AuthResult {
 		RedirectPath: fmt.Sprintf("%s/materias", env.GetDotEnv("FRONTEND_ADDRS")),
 		Message:      "Login successful",
 	}
-} 
+}

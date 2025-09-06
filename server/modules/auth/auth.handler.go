@@ -71,6 +71,7 @@ func adminLogin(c echo.Context) error {
 // @Produce      json
 // @Param        payload  body  DTO.CompleteStudentDTO  true  "Complete student payload"
 // @Param        id_user  path  string  true  "User ID"
+// @Security     CookieAuth
 // @Success      202
 // @Failure      400  {object}  map[string]string
 // @Router       /auth/{id_user}/complete-student/ [post]

@@ -50,6 +50,7 @@ func extractData(c echo.Context) (*models.RecordID, []string, error) {
 // @Tags         enroll
 // @Accept       json
 // @Produce      json
+// @Security     CookieAuth
 // @Param        body  body  object  true  "{\"subjects\": [string]}"
 // @Success      201  {object}  map[string]string
 // @Failure      400  {object}  map[string]string
@@ -78,6 +79,7 @@ func createPassed(c echo.Context) error {
 // @Tags         enroll
 // @Accept       json
 // @Produce      json
+// @Security     CookieAuth
 // @Param        body  body  object  true  "{\"subjects\": [string]}"
 // @Success      201  {object}  map[string]string
 // @Failure      400  {object}  map[string]string
@@ -106,6 +108,7 @@ func deletePassed(c echo.Context) error {
 // @Tags         enroll
 // @Accept       json
 // @Produce      json
+// @Security     CookieAuth
 // @Success      200  {object}  map[string]interface{}
 // @Failure      401  {object}  map[string]string
 // @Failure      500  {object}  map[string]string

@@ -19,6 +19,15 @@ import (
 	echoSwagger "github.com/swaggo/echo-swagger"
 )
 
+// Swagger global metadata and security
+// @title           MetroGrama API
+// @version         1.0
+// @description     MetroGrama API documentation.<br><br><b>Google Login:</b> <a href="/api/auth/google/login?redirect=/swagger/index.html" target="_blank">Login with Google</a><br>After logging in and being redirected back, return to this page and use protected endpoints.
+// @BasePath        /api
+// @securityDefinitions.apikey CookieAuth
+// @in              cookie
+// @name            auth
+
 func main() {
 	env.LoadDotEnv()
 	db.InitSurrealDB()
@@ -52,9 +61,6 @@ func main() {
 
 	handlers.CreateHandlers(e)
 
-	docs.SwaggerInfo.Title = "MetroGrama API"
-	docs.SwaggerInfo.Description = "MetroGrama API documentation"
-	docs.SwaggerInfo.Version = "1.0"
 	docs.SwaggerInfo.Host = fmt.Sprintf("localhost:%s", env.GetDotEnv("PORT"))
 	docs.SwaggerInfo.BasePath = "/api"
 	docs.SwaggerInfo.Schemes = []string{"http"}

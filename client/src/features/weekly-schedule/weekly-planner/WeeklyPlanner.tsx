@@ -1,14 +1,14 @@
 // inspired from: https://codyhouse.co/ds/components/info/weekly-schedule
 import { useState } from 'react';
 import { format, type Locale } from 'date-fns';
-import { es } from 'date-fns/locale';
 
 import { WeeklyPlannerProvider } from './context';
 import { DaysColumns } from './components/DayColumn';
 import { MobileDayColumns } from './components/DayColumn/MobileDayColumns';
 import { MobileTabNavigation } from './components/MobileTabNavigation';
 import { PlannerGrid, PlannerGridProps } from './components/PlannerGrid';
-import { daysOfWeek } from './constants';
+
+import { daysOfWeek, defaultLocale } from '@/lib/constants/date';
 
 import { useResizeObserver } from '@/hooks/use-resize-observer';
 import { useScrollbarWidth } from '@/hooks/use-scrollbar-width';
@@ -41,7 +41,7 @@ interface CustomIntervalProps {
 
 export function WeeklyPlanner<T>({
   events,
-  locale = es,
+  locale = defaultLocale,
   shouldRenderTime,
   extraDecoration,
   rowHeight = '3.5rem',
@@ -49,7 +49,7 @@ export function WeeklyPlanner<T>({
   ...props
 }: WeeklyPlannerProps<T>) {
   const schedules: DaySchedule[] = Array.from({ length: 7 }, (_, dayIndex) => ({
-    day: new Date(new Date().setDate(new Date().getDate() - new Date().getDay() + dayIndex)),
+    day: daysOfWeek[dayIndex],
     events: events.filter((event) => event.dayIndex === dayIndex),
   }));
 
@@ -82,3 +82,4 @@ export function WeeklyPlanner<T>({
     </WeeklyPlannerProvider>
   );
 }
+// TODO - Allow overlapping events and show it

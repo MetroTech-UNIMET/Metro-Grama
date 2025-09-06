@@ -1,9 +1,11 @@
 import { createContext, use } from 'react';
-import { es, type Locale } from 'date-fns/locale';
 
 import { getTotalMinutes } from './utils';
 
+import { defaultLocale } from '@/lib/constants/date';
+
 import type { WeeklyPlannerProps } from './WeeklyPlanner';
+import type { Locale } from 'date-fns/locale';
 
 type WeeklyPlannerContextProps<T> = (WeeklyPlannerContexUniform | WeeklyPlannerContexCustom) & {
   locale: Locale;
@@ -51,7 +53,7 @@ export function WeeklyPlannerProvider<T>({
   return (
     <WeeklyPlannerContext.Provider
       value={{
-        locale: props.locale || es,
+        locale: props.locale || defaultLocale,
         type: props.type,
         start_hour,
         end_hour,

@@ -10,6 +10,8 @@ import useFetchCareersOptions from '@/hooks/queries/use-FetchCareersOptions';
 import { useSelectedTrimester } from '@/hooks/search-params/use-selected-trimester';
 import { useSelectedCareers } from '@/hooks/search-params/use-selected-careers';
 
+import { useDebounceValue } from '@/hooks/shadcn.io/debounce/use-debounce-value';
+
 import { useAuth } from '@/contexts/AuthenticationContext';
 import { normalize } from '@utils/strings';
 
@@ -20,7 +22,6 @@ import { Input } from '@ui/input';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarHeader, SidebarRail } from '@ui/sidebar';
 import { Skeleton } from '@ui/skeleton';
 import { Checkbox } from '@ui/checkbox';
-import { useDebounceValue } from '@/hooks/shadcn.io/debounce/use-debounce-value';
 
 import type { SubjectOfferWithSections } from '@/interfaces/SubjectOffer';
 import type { Id } from '@/interfaces/surrealDb';
@@ -65,8 +66,7 @@ function HomeSidebar({
 }) {
   const { user } = useAuth();
   const [showEnrollable, setShowEnrollable] = useState(false);
-  // Immediate input value (updates instantly for UX)
-  const [searchInput, setSearchInput] = useState('');
+
   // Debounced value (updates after delay)
   const [debouncedSearch, setDebouncedSearch] = useDebounceValue('', 300);
 
@@ -111,14 +111,11 @@ function HomeSidebar({
   return (
     <>
       <SidebarHeader>
-        {/* TODO - Hacerlo funcionar, pero creo que solo será un filtro a nivel de cliente debounced */}
         <Input
           placeholder="Busca por nombre de la materia..."
-          value={searchInput}
           onChange={(e) => {
             const v = e.target.value;
-            setSearchInput(v);
-            setDebouncedSearch(v); // debounced setter (from hook)
+            setDebouncedSearch(v);
           }}
         />
 

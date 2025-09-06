@@ -1,8 +1,9 @@
 import { useMemo } from 'react';
 import { format } from 'date-fns';
 
-import { daysOfWeek } from '../constants';
 import { useWeeklyPlannerContext } from '../context';
+
+import { daysOfWeek } from '@/lib/constants/date';
 
 import { TabsList, TabsTrigger } from '@ui/tabs';
 

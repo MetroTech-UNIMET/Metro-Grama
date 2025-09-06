@@ -11,7 +11,15 @@ export function useSelectedTrimester({ trimesterOptions }: Props) {
   const navigate = useNavigate();
   const search = useSearch({ from: '/horario/' });
 
-  const [selectedTrimester, setSelectedTrimester] = useState<TrimesterOption | undefined>(undefined);
+  const [selectedTrimester, setSelectedTrimester] = useState<TrimesterOption | undefined>(
+    search.trimester !== 'none'
+      ? {
+          label: search.trimester,
+          value: search.trimester,
+          data: undefined,
+        }
+      : undefined,
+  );
 
   const initializedRef = useRef(false);
   // Prefer URL trimester if present (and valid), else compute default from options
@@ -20,6 +28,7 @@ export function useSelectedTrimester({ trimesterOptions }: Props) {
     [search?.trimester],
   );
 
+  // TODO - Considerar usar queryClient.ensureQueryData en vez de pasar por props
   useEffect(() => {
     if (initializedRef.current) return;
     if (trimesterOptions.length === 0) return;

@@ -6,10 +6,10 @@ import { TanStackRouterDevtools } from '@tanstack/react-router-devtools';
 export const Route = createRootRoute({
   component: () => (
     <>
+      <Outlet />
+      
       <ReactQueryDevtools initialIsOpen={false} />
       <TanStackRouterDevtools initialIsOpen={false} />
-
-      <Outlet />
     </>
   ),
 });

@@ -21,7 +21,7 @@ BEGIN TRANSACTION;
 
     FOR $section in $sections {
         LET $sectionId = CREATE ONLY subject_section SET
-            classroom_code = $section.classroom_code,
+            classroom_code = $section.classroom_code ?? NONE,
             section_number = $section.section_number,
             subject_offer = $subject_offer_id
             RETURN  VALUE id;

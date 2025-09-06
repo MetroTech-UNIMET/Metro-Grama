@@ -1,6 +1,15 @@
-import { createRootRoute } from '@tanstack/react-router'
-import SuspenseLayout from '@/layouts/SuspenseLayout'
+import { createRootRoute } from '@tanstack/react-router';
+import { Outlet } from '@tanstack/react-router';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { TanStackRouterDevtools } from '@tanstack/react-router-devtools';
 
 export const Route = createRootRoute({
-  component: SuspenseLayout,
-})
+  component: () => (
+    <>
+      <ReactQueryDevtools initialIsOpen={false} />
+      <TanStackRouterDevtools initialIsOpen={false} />
+
+      <Outlet />
+    </>
+  ),
+});

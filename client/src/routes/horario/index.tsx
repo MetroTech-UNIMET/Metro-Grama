@@ -5,7 +5,10 @@ import { SaveScheduleButton } from './components/SaveScheduleButton';
 import { getStudentTimeSlots } from './functions';
 import { queryParams } from './queryParams';
 
-import { useFetchStudentCourseByTrimester } from '@/hooks/queries/course/use-fetch-student-course-by-trimester';
+import {
+  useFetchStudentCourseByTrimester,
+  fetchStudentCourseByTrimesterOptions,
+} from '@/hooks/queries/course/use-fetch-student-course-by-trimester';
 
 import { PlannerSidebar } from '@/features/weekly-schedule/weekly-schedule-sidebar/components/PlannerSidebar/PlannerSidebar';
 import { WeeklyPlanner } from '@/features/weekly-schedule/weekly-planner/WeeklyPlanner';
@@ -22,8 +25,49 @@ import type { SubjectOffer } from '@/interfaces/SubjectOffer';
 import type { SubjectSection } from '@/interfaces/SubjectSection';
 import type { Trimester } from '@/interfaces/Trimester';
 
+import { fetchTrimestersOptions } from '@/hooks/queries/trimester/use-FetchTrimesters';
+import { fetchCareersOptions } from '@/hooks/queries/use-FetchCareersOptions';
+import { fetchAnnualOfferByTrimesterOptions } from '@/hooks/queries/subject_offer/use-fetch-annual-offer-by-trimester';
+
 export const Route = createFileRoute('/horario/')({
-  validateSearch: (search) => queryParams.parse(search),
+  validateSearch: queryParams,
+  loaderDeps: ({ search: { trimester, is_principal, careers } }) => ({
+    trimester,
+    is_principal,
+    careers,
+  }),
+  loader: async ({ context, deps: { trimester, is_principal, careers } }) => {
+    const qc = context.queryClient;
+
+    const tasks: Promise<any>[] = [
+      qc.ensureQueryData(fetchTrimestersOptions()),
+      qc.ensureQueryData(fetchCareersOptions()),
+    ];
+
+    const trimesterId = trimester !== 'none' ? trimester : '';
+
+    if (trimesterId) {
+      tasks.push(
+        qc.ensureQueryData(
+          fetchStudentCourseByTrimesterOptions({
+            trimesterId,
+            params: { is_principal },
+            queryOptions: { enabled: true },
+          } as any),
+        ),
+      );
+      qc.ensureQueryData(
+        fetchAnnualOfferByTrimesterOptions({
+          trimesterId,
+          optionalQuery: { careers: (careers ?? []).map((c: string) => c) },
+          queryOptions: { enabled: true },
+        } as any),
+      );
+    }
+
+    const [trimesterOptions, careerOptions, studentCourse] = await Promise.all(tasks);
+    return { trimesterOptions, careerOptions, studentCourse };
+  },
   component: RouteComponent,
 });
 
@@ -270,6 +314,7 @@ function WeeklySchedulePage() {
           <WeeklyPlanner
             events={subjectEvents}
             type="custom-interval"
+            overlapping
             timeSlots={studentTimeSlots}
             shouldRenderTime={(_, index) => index % 3 !== 1}
             extraDecoration={(_, index) => (

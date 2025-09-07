@@ -4,10 +4,16 @@ import Graph from '@/features/grafo/Graph';
 import { StatusActions } from '@/features/grafo/behaviors/StatusActions';
 import { SubjectSheet, SubjectSheetContent } from '@/features/grafo/SubjectSheet';
 import { materiasSearchSchema } from './queryParams';
+import { fetchSubjectsGraphByCareerOptions } from '@/hooks/queries/subject/use-FecthSubjectsGraphByCareer';
 
 // TODO - Implementar loader con ensureQueryData
 export const Route = createFileRoute('/materias')({
   validateSearch: materiasSearchSchema,
+  loaderDeps: ({ search: { careers } }) => ({
+    careers,
+  }),
+  loader: async ({ context, deps: { careers } }) =>
+    context.queryClient.ensureQueryData(fetchSubjectsGraphByCareerOptions(careers)),
   component: GraphRoute,
 });
 

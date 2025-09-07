@@ -28,7 +28,7 @@ export type TrimesterOption = Option<string, Trimester>;
 
 export function fetchTrimestersSelectOptions({
   queryClient,
-  queryOptions: queryOpt,
+  queryOptions: queryOpt = {},
 }: Props<TrimesterOption[]> & {
   queryClient: ReturnType<typeof useQueryClient>;
 }) {

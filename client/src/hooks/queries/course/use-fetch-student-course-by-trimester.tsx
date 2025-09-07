@@ -13,7 +13,21 @@ interface Props<T = GetCourseByTrimesterResponse> {
 export function fetchStudentCourseByTrimesterOptions({ trimesterId, params, queryOptions: queryOpt }: Props) {
   return queryOptions({
     queryKey: ['course', 'student', trimesterId, params],
-    queryFn: () => getStudentCourseByTrimester(trimesterId, params),
+    queryFn: async () => {
+      try {
+        return await getStudentCourseByTrimester(trimesterId, params);
+      } catch (err: any) {
+        // If backend indicates no data found, return a safe empty shape instead of throwing
+        if (err?.response?.data?.message === 'No se encontraron datos para el trimestre') {
+          return {
+            trimesterId,
+            is_principal: params?.is_principal ?? true,
+            sections: [],
+          } as GetCourseByTrimesterResponse;
+        }
+        throw err;
+      }
+    },
     enabled: !!trimesterId,
     ...queryOpt,
   });

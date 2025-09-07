@@ -88,10 +88,8 @@ func getAnualOffer(c echo.Context) error {
 	if careers == "none" {
 		return echo.NewHTTPError(http.StatusBadRequest, "Escoja al menos 1 carrera para filtrar")
 	}
-	// Validación de subjectsFilter y presencia de sesión de estudiante cuando aplique
-	if _, _, err := parseSubjectsFilterAndStudentID(c); err != nil {
-		return err
-	}
+	// Always attempt to get student, ignore error here (no trimester filtering endpoint)
+	_, _ = middlewares.GetStudentFromSession(c)
 	offers, err := services.GetAllAnnualOffers(careers)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
@@ -119,44 +117,30 @@ func getAnualOfferById(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Escoja al menos 1 carrera para filtrar")
 	}
 
-	// Validación de subjectsFilter y studentId (sin modificar servicios)
-	subjectsFilter, studentId, err := parseSubjectsFilterAndStudentID(c)
-	if err != nil {
-		return err
+	// Always attempt to get student (may be nil if not logged in)
+	student, _ := middlewares.GetStudentFromSession(c)
+
+	subjectsFilter := c.QueryParam("subjectsFilter")
+	if subjectsFilter == "" {
+		subjectsFilter = "none"
+	}
+	if subjectsFilter != "none" && subjectsFilter != "enrollable" {
+		return echo.NewHTTPError(http.StatusBadRequest, "subjectsFilter inválido. Use 'enrollable' o 'none'")
+	}
+
+	var studentId models.RecordID
+	if student != nil {
+		studentId = student.ID
+	}
+	// If enrollable requested but no student, force empty response early (no error thrown per requirement not to throw)
+	if subjectsFilter == "enrollable" && student == nil {
+		return c.JSON(http.StatusOK, []any{})
 	}
 
 	qp := services.AnnualOfferQueryParams{Careers: careers, SubjectsFilter: subjectsFilter}
 	offers, err := services.GetAnnualOfferById(trimesterId, studentId, qp)
 	if err != nil {
-
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 	}
 	return c.JSON(http.StatusOK, offers)
-}
-
-// Helper: valida subjectsFilter y la presencia de studentId cuando aplique
-func parseSubjectsFilterAndStudentID(c echo.Context) (string, models.RecordID, error) {
-	sf := c.QueryParam("subjectsFilter")
-	if sf == "" {
-		sf = "none"
-	}
-	if sf != "none" && sf != "enrollable" {
-		return "", models.RecordID{}, echo.NewHTTPError(http.StatusBadRequest, "subjectsFilter inválido. Use 'enrollable' o 'none'")
-	}
-
-	var studentID models.RecordID
-	if sf == "enrollable" {
-		student, err := middlewares.GetStudentFromSession(c)
-		if err != nil {
-			return "", models.RecordID{}, err
-		}
-		// Debe existir en la sesión, establecido por el middleware de estudiante
-		if student == nil {
-			return "", models.RecordID{}, echo.NewHTTPError(http.StatusUnauthorized, "Debe iniciar sesión como estudiante para usar buscar materias inscribibles")
-		}
-		studentID = student.ID
-
-	}
-
-	return sf, studentID, nil
 }

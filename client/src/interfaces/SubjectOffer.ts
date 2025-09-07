@@ -12,4 +12,7 @@ export interface SubjectOffer {
 
 export interface SubjectOfferWithSections extends SubjectOffer {
   sections: SubjectSectionWithSchedules[];
+  careers: Id[];
+  is_enrolled?: boolean;
+  is_enrollable?: boolean;
 }

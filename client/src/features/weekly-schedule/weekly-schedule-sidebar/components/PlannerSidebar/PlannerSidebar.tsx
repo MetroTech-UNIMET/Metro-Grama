@@ -167,6 +167,7 @@ function HomeSidebar({
                   subjectOffer={offer}
                   onSelect={setSelectedSubject}
                   getIsSubjectSelected={getIsSubjectSelected}
+                  state={offer.is_enrolled ? 'isEnrolled' : offer.is_enrollable ? 'isEnrollable' : 'default'}
                 />
               ))}
             </>

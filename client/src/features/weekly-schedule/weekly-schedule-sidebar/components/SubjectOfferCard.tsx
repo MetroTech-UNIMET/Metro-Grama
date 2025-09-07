@@ -6,21 +6,28 @@ import { Badge } from '@ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@ui/tooltip';
 
 import type { SubjectOfferWithSections } from '@/interfaces/SubjectOffer';
+import { cn } from '@utils/className';
 
 interface Props {
   subjectOffer: SubjectOfferWithSections;
   onSelect: (subjectOffer: SubjectOfferWithSections) => void;
   getIsSubjectSelected: (subjectOffer: SubjectOfferWithSections) => boolean;
+
+  state: 'isEnrollable' | 'isEnrolled' | 'default';
 }
 // REVIEW - Puedo poner los amigos que la están viendo
-export default function SubjectOfferCard({ subjectOffer, onSelect, getIsSubjectSelected }: Props) {
+export default function SubjectOfferCard({ subjectOffer, onSelect, getIsSubjectSelected ,state}: Props) {
   const { subject } = subjectOffer;
 
   const numSections = subjectOffer.sections.length;
   const isSelected = useMemo(() => getIsSubjectSelected(subjectOffer), [getIsSubjectSelected, subjectOffer]);
 
   return (
-    <Card className="cursor-pointer transition-shadow hover:shadow-lg" onClick={() => onSelect(subjectOffer)}>
+    <Card className={cn("cursor-pointer transition-shadow hover:shadow-lg", {
+      'border-green-400 bg-green-50': state === 'isEnrolled',
+      'border-blue-400 bg-blue-50': state === 'isEnrollable',
+      'border-gray-200': state === 'default',
+    })} onClick={() => onSelect(subjectOffer)}>
       <CardHeader>
         <CardTitle className="text-lg">{subject.name}</CardTitle>
         <CardDescription>{subject.id.ID}</CardDescription>

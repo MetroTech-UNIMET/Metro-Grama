@@ -34,7 +34,8 @@ import { Spinner } from '@ui/spinner';
 import type { SubjectEvent } from '..';
 
 export function SaveScheduleButton() {
-  const { events } = useWeeklyPlannerContext<SubjectEvent>();
+  const { events, overlappingEventIds } = useWeeklyPlannerContext<SubjectEvent>();
+  const hasOverlaps = overlappingEventIds.size > 0;
 
   const navigate = useNavigate();
   const search = useSearch({ from: '/horario/' });
@@ -91,57 +92,67 @@ export function SaveScheduleButton() {
   }
 
   return (
-    <ButtonGroup
-      className={cn(
-        'mt-16 w-full text-lg',
-        // 'absolute top-10 right-1/2 z-20 w-56 translate-x-1/2',
-      )}
-    >
-      <Button
-        colors="primary"
-        className="w-full py-8"
-        disabled={events.length === 0}
-        onClick={() => saveSchedules(true)}
-      >
-        <Save className="!size-6" />
-        Guardar horario
-      </Button>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild className="rounded-l-none">
-          <Button colors="primary" className="min-w-10 border-l border-slate-100 py-8">
-            <ChevronDown className="!size-6" />
-            <span className="sr-only">Abrir opciones</span>
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent side="bottom" sideOffset={4} align="end" className="max-w-64 md:max-w-xs!">
-          <DropdownMenuGroup>
-            <DropdownMenuItem onSelect={() => saveSchedules(false)}>
-              <Save />
-              Guardar horario secundario
-            </DropdownMenuItem>
-          </DropdownMenuGroup>
-
-          <DropdownMenuSeparator />
-          <DropdownMenuLabel>Escoger horarios</DropdownMenuLabel>
-
-          <DropdownMenuRadioGroup
-            value={isPrincipal ? 'principal' : 'secundario'}
-            onValueChange={(value) => chooseScheduleToView(value === 'principal')}
-          >
-            <DropdownMenuRadioItem value="principal" customIcon={isPrincipal && isFetching ? CustomSpinner : undefined}>
-              Visualizar horario principal
-            </DropdownMenuRadioItem>
-
-            <DropdownMenuRadioItem
-              value="secundario"
-              customIcon={!isPrincipal && isFetching ? CustomSpinner : undefined}
+    <div className={cn('fixed right-1/2 bottom-10 z-20 flex w-full translate-x-1/2 flex-col items-center gap-2')}>
+      <ButtonGroup className={cn('w-full max-w-80 text-lg')}>
+        <Button
+          colors="primary"
+          className="w-full py-8"
+          disabled={events.length === 0 || hasOverlaps}
+          onClick={() => saveSchedules(true)}
+          title={hasOverlaps ? 'No puedes guardar mientras existan materias que se solapan' : undefined}
+        >
+          <Save className="!size-6" />
+          Guardar horario
+        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild className="rounded-l-none">
+            <Button
+              colors="primary"
+              className="min-w-10 border-l border-slate-100 py-8"
+              title={hasOverlaps ? 'No disponible por materias solapadas' : undefined}
             >
-              Visualizar horario secundario
-            </DropdownMenuRadioItem>
-          </DropdownMenuRadioGroup>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </ButtonGroup>
+              <ChevronDown className="!size-6" />
+              <span className="sr-only">Abrir opciones</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent side="bottom" sideOffset={4} align="end" className="max-w-64 md:max-w-xs!">
+            <DropdownMenuGroup>
+              <DropdownMenuItem onSelect={() => saveSchedules(false)} disabled={events.length === 0 || hasOverlaps}>
+                <Save />
+                Guardar horario secundario
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel>Escoger horarios</DropdownMenuLabel>
+
+            <DropdownMenuRadioGroup
+              value={isPrincipal ? 'principal' : 'secundario'}
+              onValueChange={(value) => chooseScheduleToView(value === 'principal')}
+            >
+              <DropdownMenuRadioItem
+                value="principal"
+                customIcon={isPrincipal && isFetching ? CustomSpinner : undefined}
+              >
+                Visualizar horario principal
+              </DropdownMenuRadioItem>
+
+              <DropdownMenuRadioItem
+                value="secundario"
+                customIcon={!isPrincipal && isFetching ? CustomSpinner : undefined}
+              >
+                Visualizar horario secundario
+              </DropdownMenuRadioItem>
+            </DropdownMenuRadioGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </ButtonGroup>
+      {hasOverlaps && (
+        <span className="text-destructive max-w-80 text-center text-xs font-medium">
+          No puedes guardar: existen materias que se solapan. Ajusta tu horario para continuar.
+        </span>
+      )}
+    </div>
   );
 }
 

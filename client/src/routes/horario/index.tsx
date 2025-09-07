@@ -1,5 +1,5 @@
 import { createFileRoute, useSearch } from '@tanstack/react-router';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { SaveScheduleButton } from './components/SaveScheduleButton';
 import { getStudentTimeSlots } from './functions';
@@ -9,6 +9,9 @@ import {
   useFetchStudentCourseByTrimester,
   fetchStudentCourseByTrimesterOptions,
 } from '@/hooks/queries/course/use-fetch-student-course-by-trimester';
+import { fetchTrimestersOptions } from '@/hooks/queries/trimester/use-FetchTrimesters';
+import { fetchCareersOptions } from '@/hooks/queries/use-FetchCareersOptions';
+import { fetchAnnualOfferByTrimesterOptions } from '@/hooks/queries/subject_offer/use-fetch-annual-offer-by-trimester';
 
 import { PlannerSidebar } from '@/features/weekly-schedule/weekly-schedule-sidebar/components/PlannerSidebar/PlannerSidebar';
 import { WeeklyPlanner } from '@/features/weekly-schedule/weekly-planner/WeeklyPlanner';
@@ -24,10 +27,7 @@ import type { Event } from '@/features/weekly-schedule/weekly-planner/types';
 import type { SubjectOffer } from '@/interfaces/SubjectOffer';
 import type { SubjectSection } from '@/interfaces/SubjectSection';
 import type { Trimester } from '@/interfaces/Trimester';
-
-import { fetchTrimestersOptions } from '@/hooks/queries/trimester/use-FetchTrimesters';
-import { fetchCareersOptions } from '@/hooks/queries/use-FetchCareersOptions';
-import { fetchAnnualOfferByTrimesterOptions } from '@/hooks/queries/subject_offer/use-fetch-annual-offer-by-trimester';
+import type { SubjectSchedule } from '@/interfaces/SubjectSchedule';
 
 export const Route = createFileRoute('/horario/')({
   validateSearch: queryParams,
@@ -68,6 +68,8 @@ export const Route = createFileRoute('/horario/')({
     const [trimesterOptions, careerOptions, studentCourse] = await Promise.all(tasks);
     return { trimesterOptions, careerOptions, studentCourse };
   },
+  // TODO - Skeleton con pendingComponent
+  // pendingComponent: () => <div>Loading...</div>,
   component: RouteComponent,
 });
 
@@ -94,152 +96,7 @@ function WeeklySchedulePage() {
   const trimesterId = search.trimester !== 'none' ? search.trimester : '';
   const isPrincipal = search.is_principal;
 
-  const [subjectEvents, setSubjectEvents] = useState<Event<SubjectEvent>[]>([
-    // {
-    //   id: 'm1',
-    //   start_hour: '09:30',
-    //   end_hour: '10:30',
-    //   title: 'Abs Circuit',
-    //   type: 'abs',
-    //   dayIndex: 1,
-    // },
-    // {
-    //   id: 'm2',
-    //   start_hour: '11:00',
-    //   end_hour: '12:30',
-    //   title: 'Rowing Workout',
-    //   type: 'rowing',
-    //   dayIndex: 1,
-    // },
-    // {
-    //   id: 'm3',
-    //   start_hour: '14:00',
-    //   end_hour: '15:15',
-    //   title: 'Yoga Level 1',
-    //   type: 'yoga1',
-    //   dayIndex: 1,
-    // },
-    // {
-    //   id: 't1',
-    //   start_hour: '10:00',
-    //   end_hour: '11:00',
-    //   title: 'Rowing Workout',
-    //   type: 'rowing',
-    //   dayIndex: 2,
-    // },
-    // {
-    //   id: 't2',
-    //   start_hour: '11:30',
-    //   end_hour: '13:00',
-    //   title: 'Restorative Yoga',
-    //   type: 'restorative',
-    //   dayIndex: 2,
-    // },
-    // {
-    //   id: 't3',
-    //   start_hour: '13:30',
-    //   end_hour: '15:00',
-    //   title: 'Abs Circuit',
-    //   type: 'abs',
-    //   dayIndex: 2,
-    // },
-    // {
-    //   id: 't4',
-    //   start_hour: '15:45',
-    //   end_hour: '16:45',
-    //   title: 'Yoga Level 1',
-    //   type: 'yoga1',
-    //   dayIndex: 2,
-    // },
-    // {
-    //   id: 'w1',
-    //   start_hour: '09:00',
-    //   end_hour: '10:15',
-    //   title: 'Restorative Yoga',
-    //   type: 'restorative',
-    //   dayIndex: 3,
-    // },
-    // {
-    //   id: 'w2',
-    //   start_hour: '10:45',
-    //   end_hour: '11:45',
-    //   title: 'Yoga Level 1',
-    //   type: 'yoga1',
-    //   dayIndex: 3,
-    // },
-    // {
-    //   id: 'w3',
-    //   start_hour: '12:00',
-    //   end_hour: '13:45',
-    //   title: 'Rowing Workout',
-    //   type: 'rowing',
-    //   dayIndex: 3,
-    // },
-    // {
-    //   id: 'w4',
-    //   start_hour: '13:45',
-    //   end_hour: '15:00',
-    //   title: 'Yoga Level 1',
-    //   type: 'yoga1',
-    //   dayIndex: 3,
-    // },
-    // {
-    //   id: 'th1',
-    //   start_hour: '09:30',
-    //   end_hour: '10:30',
-    //   title: 'Abs Circuit',
-    //   type: 'abs',
-    //   dayIndex: 4,
-    // },
-    // {
-    //   id: 'th2',
-    //   start_hour: '12:00',
-    //   end_hour: '13:45',
-    //   title: 'Restorative Yoga',
-    //   type: 'restorative',
-    //   dayIndex: 4,
-    // },
-    // {
-    //   id: 'th3',
-    //   start_hour: '15:30',
-    //   end_hour: '16:30',
-    //   title: 'Abs Circuit',
-    //   type: 'abs',
-    //   dayIndex: 4,
-    // },
-    // {
-    //   id: 'th4',
-    //   start_hour: '17:00',
-    //   end_hour: '18:00',
-    //   title: 'Rowing Workout',
-    //   type: 'rowing',
-    //   dayIndex: 4,
-    // },
-    // {
-    //   id: 'f1',
-    //   start_hour: '10:00',
-    //   end_hour: '11:00',
-    //   title: 'Rowing Workout',
-    //   type: 'rowing',
-    //   dayIndex: 5,
-    // },
-    // {
-    //   id: 'f2',
-    //   start_hour: '12:30',
-    //   end_hour: '14:00',
-    //   title: 'Abs Circuit',
-    //   type: 'abs',
-    //   dayIndex: 5,
-    // },
-    // {
-    //   id: 'f3',
-    //   start_hour: '15:45',
-    //   end_hour: '16:45',
-    //   title: 'Yoga Level 1',
-    //   type: 'yoga1',
-    //   dayIndex: 5,
-    // },
-  ]);
+  const [subjectEvents, setSubjectEvents] = useState<Event<SubjectEvent>[]>([]);
 
   // Fetch existing saved course (principal or secondary) and map to events
   const courseQuery = useFetchStudentCourseByTrimester({
@@ -273,14 +130,31 @@ function WeeklySchedulePage() {
     }
   }, [courseQuery.isSuccess, courseQuery.data]);
 
+  const getWouldCauseTripleOverlap = useCallback(
+    (schedules: SubjectSchedule[]) => {
+      return schedules.some((sch) => {
+        const schStart = sch.starting_hour * 60 + sch.starting_minute;
+        const schEnd = sch.ending_hour * 60 + sch.ending_minute;
+        const overlaps = subjectEvents.filter((ev) => {
+          if (ev.dayIndex !== sch.day_of_week) return false;
+          const [sH, sM] = ev.start_hour.split(':').map(Number);
+          const [eH, eM] = ev.end_hour.split(':').map(Number);
+          const evStart = sH * 60 + sM;
+          const evEnd = eH * 60 + eM;
+          return evStart < schEnd && schStart < evEnd; // overlap condition
+        });
+        return overlaps.length >= 2; // already two events there, adding would make 3
+      });
+    },
+    [subjectEvents],
+  );
+
   return (
     <SidebarProvider customWidth="20rem">
       <PlannerSidebar
         onAddSubject={(subject_offer, sectionIndex) => {
           const section = subject_offer.sections[sectionIndex];
           const schedules = section.schedules;
-
-          console.log(subject_offer);
 
           setSubjectEvents((prev) => [
             ...prev,
@@ -301,9 +175,15 @@ function WeeklySchedulePage() {
         getIsSubjectSelected={(subject_offer) =>
           subjectEvents.some((event) => event.title === subject_offer.subject.name)
         }
+        getIsSectionSelected={(subject_offer, sectionIndex) => {
+          const section = subject_offer.sections[sectionIndex];
+
+          return section.schedules.every((schedule) => subjectEvents.some((event) => event.id === schedule.id.ID));
+        }}
+        getWouldCauseTripleOverlap={getWouldCauseTripleOverlap}
       />
 
-      <SidebarInset className="relative">
+      <SidebarInset className="relative pb-16">
         <SidebarTrigger
           colors="primary"
           variant="default"

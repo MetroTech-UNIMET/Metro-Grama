@@ -24,46 +24,36 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarHeader, Si
 import { Skeleton } from '@ui/skeleton';
 import { Checkbox } from '@ui/checkbox';
 
+import { PlannerSidebarProvider, type PlannerSidebarContextValue } from '../../context/PlannerSidebarContext';
+
 import type { SubjectOfferWithSections } from '@/interfaces/SubjectOffer';
-import type { Id } from '@/interfaces/surrealDb';
 
-interface Props {
-  onAddSubject: (subjectOffer: SubjectOfferWithSections, sectionIndex: number) => void;
-  onRemoveSubject: (subjectOfferId: Id) => void;
-  getIsSubjectSelected: (subjectOffer: SubjectOfferWithSections) => boolean;
-}
+interface Props extends PlannerSidebarContextValue {}
 
-export function PlannerSidebar({ onAddSubject, onRemoveSubject, getIsSubjectSelected }: Props) {
+export function PlannerSidebar({ ...contextProps }: Props) {
   const [selectedSubject, setSelectedSubject] = useState<SubjectOfferWithSections | null>(null);
 
   return (
     <div>
-      <Sidebar>
-        {selectedSubject ? (
-          <SubjectOfferDetail
-            subjectOffer={selectedSubject}
-            onBack={() => setSelectedSubject(null)}
-            onAddSubject={onAddSubject}
-            onRemoveSubject={onRemoveSubject}
-            getIsSubjectSelected={getIsSubjectSelected}
-          />
-        ) : (
-          <HomeSidebar setSelectedSubject={setSelectedSubject} getIsSubjectSelected={getIsSubjectSelected} />
-        )}
-        <SidebarFooter />
-
-        <SidebarRail />
-      </Sidebar>
+      <PlannerSidebarProvider value={contextProps}>
+        <Sidebar>
+          {selectedSubject ? (
+            <SubjectOfferDetail subjectOffer={selectedSubject} onBack={() => setSelectedSubject(null)} />
+          ) : (
+            <HomeSidebar setSelectedSubject={setSelectedSubject} />
+          )}
+          <SidebarFooter />
+          <SidebarRail />
+        </Sidebar>
+      </PlannerSidebarProvider>
     </div>
   );
 }
 
 function HomeSidebar({
   setSelectedSubject,
-  getIsSubjectSelected,
 }: {
   setSelectedSubject: (subject: SubjectOfferWithSections | null) => void;
-  getIsSubjectSelected: Props['getIsSubjectSelected'];
 }) {
   const queryClient = useQueryClient();
 
@@ -169,7 +159,6 @@ function HomeSidebar({
                   key={`${offer.subject?.id.ID ?? 'no-id'}-${index}`}
                   subjectOffer={offer}
                   onSelect={setSelectedSubject}
-                  getIsSubjectSelected={getIsSubjectSelected}
                   state={offer.is_enrolled ? 'isEnrolled' : offer.is_enrollable ? 'isEnrollable' : 'default'}
                 />
               ))}

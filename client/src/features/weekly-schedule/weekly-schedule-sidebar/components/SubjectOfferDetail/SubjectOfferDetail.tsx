@@ -4,6 +4,8 @@ import { ArrowLeft } from 'lucide-react';
 import SubjectOfferForm from './SubjectOfferForm/SubjectOfferForm';
 import { SubjectOfferSchedulesList } from './SubjectOfferSchedulesList';
 import { useSubjectOfferDetailRouter } from '../../hooks/useSubjectOfferDetailRouter';
+import { usePlannerSidebarContext } from '../../context/PlannerSidebarContext';
+
 import { useFetchAnnualOfferByTrimester } from '@/hooks/queries/subject_offer/use-fetch-annual-offer-by-trimester';
 
 import { CardTitle, CardDescription } from '@ui/card';
@@ -11,25 +13,14 @@ import { SidebarContent, SidebarHeader } from '@ui/sidebar';
 import { Button } from '@ui/button';
 
 import type { SubjectOfferWithSections } from '@/interfaces/SubjectOffer';
-import type { Id } from '@/interfaces/surrealDb';
 
 interface Props {
   subjectOffer: SubjectOfferWithSections;
-
-  onAddSubject: (subjectOffer: SubjectOfferWithSections, sectionIndex: number) => void;
-  onRemoveSubject: (subjectOfferId: Id) => void;
-  getIsSubjectSelected: (subjectOffer: SubjectOfferWithSections) => boolean;
-
   onBack: () => void;
 }
 
-export default function SubjectOfferDetail({
-  subjectOffer,
-  onBack,
-  onAddSubject,
-  onRemoveSubject,
-  getIsSubjectSelected,
-}: Props) {
+export default function SubjectOfferDetail({ subjectOffer, onBack }: Props) {
+  const { getIsSubjectSelected } = usePlannerSidebarContext();
   // FIXME - Creo que despues de crear en un form me manda otra vez para el home y no al detalle
   const { view, go, back } = useSubjectOfferDetailRouter(subjectOffer);
   const handleHeaderBack = () => back(onBack);
@@ -58,8 +49,6 @@ export default function SubjectOfferDetail({
         ) : (
           <SubjectOfferSchedulesList
             subjectOffer={currentSubjectOffer}
-            onAddSubject={onAddSubject}
-            onRemoveSubject={onRemoveSubject}
             isSelected={isSelected}
             onRequestEdit={() => go('form')}
           />

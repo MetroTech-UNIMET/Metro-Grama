@@ -1,4 +1,7 @@
+import { useMemo } from 'react';
 import { Pencil, Plus, Trash } from 'lucide-react';
+
+import { usePlannerSidebarContext } from '../../context/PlannerSidebarContext';
 
 import { weekDayOptions } from '@/lib/constants/date';
 import { cn } from '@utils/className';
@@ -9,25 +12,14 @@ import { Button } from '@ui/button';
 
 import type { SubjectOfferWithSections } from '@/interfaces/SubjectOffer';
 import type { SubjectSchedule } from '@/interfaces/SubjectSchedule';
-import type { Id } from '@/interfaces/surrealDb';
 
 interface Props {
   subjectOffer: SubjectOfferWithSections;
-
   isSelected: boolean;
-  onAddSubject: (subjectOffer: SubjectOfferWithSections, sectionIndex: number) => void;
-  onRemoveSubject: (subjectOfferId: Id) => void;
-
   onRequestEdit?: () => void;
 }
 
-export function SubjectOfferSchedulesList({
-  subjectOffer,
-  onAddSubject,
-  isSelected,
-  onRemoveSubject,
-  onRequestEdit,
-}: Props) {
+export function SubjectOfferSchedulesList({ subjectOffer, isSelected, onRequestEdit }: Props) {
   const sections = subjectOffer.sections;
 
   return (
@@ -46,41 +38,77 @@ export function SubjectOfferSchedulesList({
         {(!sections || sections.length === 0) && <div className="text-muted-foreground text-sm">Sin horarios</div>}
 
         {sections?.map((section, sectionIndex) => (
-          <div key={sectionIndex} className="flex flex-col gap-2">
-            {/* <h4 className="text-center font-semibold">Sección {idx + 1}</h4> */}
-
-            {section.schedules.map((sch, idx) => (
-              <ScheduleItem key={idx} schedule={sch} />
-            ))}
-            <Button
-              colors={isSelected ? 'destructive' : 'primary'}
-              onClick={() => (isSelected ? onRemoveSubject(subjectOffer.id) : onAddSubject(subjectOffer, sectionIndex))}
-            >
-              {isSelected ? (
-                <>
-                  <Trash />
-                  Eliminar del horario
-                </>
-              ) : (
-                <>
-                  <Plus />
-                  Agregar Sección {sectionIndex + 1} al horario
-                </>
-              )}
-            </Button>
-          </div>
+          <SectionSchedules
+            key={sectionIndex}
+            section={section}
+            sectionIndex={sectionIndex}
+            subjectOffer={subjectOffer}
+            isSelected={isSelected}
+          />
         ))}
       </div>
     </SidebarGroup>
   );
 }
 
-function ScheduleItem({ schedule }: { schedule: SubjectSchedule }) {
+interface SectionSchedulesProps {
+  subjectOffer: SubjectOfferWithSections;
+  isSelected: boolean;
+
+  section: SubjectOfferWithSections['sections'][number];
+  sectionIndex: number;
+}
+
+function SectionSchedules({ section, sectionIndex, subjectOffer, isSelected }: SectionSchedulesProps) {
+  const { onAddSubject, onRemoveSubject, getWouldCauseTripleOverlap, getIsSectionSelected } =
+    usePlannerSidebarContext();
+  const isSectionSelected = getIsSectionSelected(subjectOffer, sectionIndex);
+
+  const wouldCauseTripleOverlap = useMemo(
+    () => getWouldCauseTripleOverlap(section.schedules),
+    [getWouldCauseTripleOverlap, section.schedules],
+  );
+  const sectionNumber = sectionIndex + 1;
+
+  return (
+    <div className="flex flex-col gap-2">
+      {section.schedules.map((sch, idx) => (
+        <ScheduleItem key={idx} schedule={sch} isSectionSelected={isSectionSelected} />
+      ))}
+      <Button
+        colors={isSelected ? 'destructive' : 'primary'}
+        disabled={!isSelected && wouldCauseTripleOverlap}
+        onClick={() => (isSelected ? onRemoveSubject(subjectOffer.id) : onAddSubject(subjectOffer, sectionIndex))}
+      >
+        {isSelected ? (
+          <>
+            <Trash />
+            Eliminar del horario
+          </>
+        ) : (
+          <>
+            <Plus />
+            Agregar Sección {sectionNumber} al horario
+          </>
+        )}
+      </Button>
+
+      {!isSelected && wouldCauseTripleOverlap && (
+        <span className="text-destructive text-sm">
+          No puedes agregar la <strong>sección {sectionNumber}</strong>: ya existen 2 materias{' '}
+          <strong>solapando</strong> en ese bloque de horario.
+        </span>
+      )}
+    </div>
+  );
+}
+
+function ScheduleItem({ schedule, isSectionSelected }: { schedule: SubjectSchedule; isSectionSelected: boolean }) {
   const startStr = formatTimeHour(schedule.starting_hour, schedule.starting_minute);
   const endStr = formatTimeHour(schedule.ending_hour, schedule.ending_minute);
 
   return (
-    <div className="flex flex-col gap-3 rounded-md border p-3">
+    <div className={cn('flex flex-col gap-3 rounded-md border p-3', isSectionSelected && 'border-primary')}>
       <div className="text-sm font-medium">
         {startStr} - {endStr}
       </div>

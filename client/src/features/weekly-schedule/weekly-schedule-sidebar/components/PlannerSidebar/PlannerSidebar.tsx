@@ -1,10 +1,11 @@
+import { useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
 import { useEffect, useMemo, useState } from 'react';
 
 import SubjectOfferCard from '../SubjectOfferCard';
 import SubjectOfferDetail from '../SubjectOfferDetail/SubjectOfferDetail';
 
 import { useFetchAnnualOfferByTrimester } from '@/hooks/queries/subject_offer/use-fetch-annual-offer-by-trimester';
-import { useFetchTrimestersOptions } from '@/hooks/queries/trimester/use-FetchTrimesters';
+import { fetchTrimestersSelectOptions } from '@/hooks/queries/trimester/use-FetchTrimesters';
 import useFetchCareersOptions from '@/hooks/queries/use-FetchCareersOptions';
 
 import { useSelectedTrimester } from '@/hooks/search-params/use-selected-trimester';
@@ -64,6 +65,8 @@ function HomeSidebar({
   setSelectedSubject: (subject: SubjectOfferWithSections | null) => void;
   getIsSubjectSelected: Props['getIsSubjectSelected'];
 }) {
+  const queryClient = useQueryClient();
+
   const { user } = useAuth();
   const [showEnrollable, setShowEnrollable] = useState(false);
 
@@ -79,7 +82,7 @@ function HomeSidebar({
     careerOptions: options,
   });
 
-  const trimesterQuery = useFetchTrimestersOptions();
+  const trimesterQuery = useSuspenseQuery(fetchTrimestersSelectOptions({ queryClient }));
   const { selectedTrimester, setSelectedTrimester } = useSelectedTrimester({
     trimesterOptions: trimesterQuery.data ?? [],
   });

@@ -15,12 +15,12 @@ export function MobileDayColumns({ schedules }: Props) {
   const { locale, overlappingEventIds } = useWeeklyPlannerContext();
 
   return (
-    <div>
+    <>
       {schedules.map((day) => {
         const value = format(day.day, 'EEE', { locale });
         return (
           <TabsContent key={`mobile-${day.day.toISOString()}`} value={value}>
-            <ul className="flex flex-col gap-4">
+            <ul className="flex flex-col flex-wrap gap-4">
               {day.events.length > 0 ? (
                 day.events.map((event) => (
                   <MobileEvent key={event.id} event={event} isOverlapping={overlappingEventIds.has(event.id)} />
@@ -32,6 +32,6 @@ export function MobileDayColumns({ schedules }: Props) {
           </TabsContent>
         );
       })}
-    </div>
+    </>
   );
 }

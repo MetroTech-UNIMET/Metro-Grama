@@ -12,7 +12,7 @@ export function MobileTabNavigation() {
   const weekdays = useMemo(() => daysOfWeek.map((day) => format(day, 'EEE', { locale })), [locale]);
 
   return (
-    <TabsList className="flex h-20 items-center gap-2 bg-transparent">
+    <TabsList className="flex flex-wrap h-full min-h-20 items-center gap-2 bg-transparent">
       {weekdays.map((day) => (
         <TabsTrigger key={day} className="h-20 grow basis-0 bg-gray-100 text-xl uppercase" value={day}>
           {day}

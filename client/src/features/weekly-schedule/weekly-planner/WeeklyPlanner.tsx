@@ -70,9 +70,9 @@ export function WeeklyPlanner<T>({
   });
 
   return (
-  <WeeklyPlannerProvider events={events} overlapping={overlapping} {...props}>
+    <WeeklyPlannerProvider events={events} overlapping={overlapping} {...props}>
       <Tabs defaultValue={format(daysOfWeek[0], 'EEE', { locale })} asChild>
-        <div ref={ref} className="relative" style={{ '--height-row': rowHeight } as React.CSSProperties}>
+        <div ref={ref} className="relative flex flex-col" style={{ '--height-row': rowHeight } as React.CSSProperties}>
           {!!isMobile && <MobileTabNavigation />}
 
           {!!isMobile ? <MobileDayColumns schedules={schedules} /> : <DaysColumns schedules={schedules} />}
@@ -85,4 +85,3 @@ export function WeeklyPlanner<T>({
     </WeeklyPlannerProvider>
   );
 }
-// TODO - Allow overlapping events and show it

@@ -65,7 +65,7 @@ export default function RegisterStudentForm() {
   async function onSubmit(data: RegisterStudentOutput) {
     if (!user) throw new Error('Para poder completar su perfil, necesita loguearse primero');
     await registerStudent(user.id.ID, data);
-  navigate({ to: '/' });
+    navigate({ to: '/' });
   }
 
   const formSubmit = useCallback(

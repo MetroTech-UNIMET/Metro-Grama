@@ -3,7 +3,7 @@ import axios from '@/axiosConfig';
 import type { GetCourseByTrimesterResponse } from './course.types';
 
 import type { Course } from '@/interfaces/Course';
-import type { CourseSchemaOutput } from '@/routes/horario/components/schema';
+import type { CourseSchemaOutput } from '@/routes/_navLayout/horario/components/schema';
 
 export async function createSchedule(data: CourseSchemaOutput) {
   return await axios.post<Course>('/course/', data);

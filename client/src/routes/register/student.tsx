@@ -2,8 +2,15 @@ import { createFileRoute } from '@tanstack/react-router';
 
 import RegisterStudentForm from './components/RegisterStudentForm/RegisterStudentForm';
 import AuthenticationContext from '@/contexts/AuthenticationContext';
+import { fetchTrimestersSelectOptions } from '@/hooks/queries/trimester/use-FetchTrimesters';
 
 export const Route = createFileRoute('/register/student')({
+  loader: ({ context }) =>
+    context.queryClient.ensureQueryData(
+      fetchTrimestersSelectOptions({
+        queryClient: context.queryClient,
+      }),
+    ),
   component: RegisterStudent,
 });
 

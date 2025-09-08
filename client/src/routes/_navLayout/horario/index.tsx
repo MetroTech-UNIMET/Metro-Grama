@@ -1,5 +1,5 @@
-import { createFileRoute, useSearch } from '@tanstack/react-router';
 import { useCallback, useEffect, useState } from 'react';
+import { createFileRoute, useSearch } from '@tanstack/react-router';
 
 import { SaveScheduleButton } from './components/SaveScheduleButton';
 import { getStudentTimeSlots } from './functions';
@@ -151,11 +151,11 @@ function WeeklySchedulePage() {
 
   return (
     <SidebarProvider customWidth="20rem">
+      {/* Memoized sidebar handlers */}
       <PlannerSidebar
-        onAddSubject={(subject_offer, sectionIndex) => {
+        onAddSubject={useCallback((subject_offer, sectionIndex) => {
           const section = subject_offer.sections[sectionIndex];
           const schedules = section.schedules;
-
           setSubjectEvents((prev) => [
             ...prev,
             ...schedules.map((schedule) => ({
@@ -168,18 +168,21 @@ function WeeklySchedulePage() {
               data: { id: subject_offer.id, subjectSectionId: section.id, trimesterId: subject_offer.trimester.id },
             })),
           ]);
-        }}
-        onRemoveSubject={(subject_offerId) => {
-          setSubjectEvents((prev) => [...prev.filter((event) => event.data.id.ID !== subject_offerId.ID)]);
-        }}
-        getIsSubjectSelected={(subject_offer) =>
-          subjectEvents.some((event) => event.title === subject_offer.subject.name)
-        }
-        getIsSectionSelected={(subject_offer, sectionIndex) => {
-          const section = subject_offer.sections[sectionIndex];
-
-          return section.schedules.every((schedule) => subjectEvents.some((event) => event.id === schedule.id.ID));
-        }}
+        }, [])}
+        onRemoveSubject={useCallback((subject_offerId) => {
+          setSubjectEvents((prev) => prev.filter((event) => event.data.id.ID !== subject_offerId.ID));
+        }, [])}
+        getIsSubjectSelected={useCallback(
+          (subject_offer) => subjectEvents.some((event) => event.title === subject_offer.subject.name),
+          [subjectEvents],
+        )}
+        getIsSectionSelected={useCallback(
+          (subject_offer, sectionIndex) => {
+            const section = subject_offer.sections[sectionIndex];
+            return section.schedules.every((schedule) => subjectEvents.some((event) => event.id === schedule.id.ID));
+          },
+          [subjectEvents],
+        )}
         getWouldCauseTripleOverlap={getWouldCauseTripleOverlap}
       />
 

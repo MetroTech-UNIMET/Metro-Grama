@@ -1,36 +1,27 @@
 'use client';
 
-import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { Home, Briefcase, Calendar, Shield, Settings } from 'lucide-react';
+import React from 'react';
+
+import {
+  computeIndicatorOffset,
+  dockContainerVariants,
+  dockIconVariants,
+  dockItemVariants,
+  dockTextVariants,
+} from './dockVariants';
+import { useMenuDockActive } from './hooks/useMenuDockActive';
+import { useUnderlineStyle } from './hooks/useUnderlineStyle';
+import { HorizontalLine, VerticalLine } from './ActiveIndicators';
 
 import { cn } from '@utils/className';
 
-type IconComponentType = React.ElementType<{ className?: string }>;
+import type { MenuDockProps, MenuDockItemBase } from './types';
 
-export interface MenuDockItem {
-  label: string;
-  icon: IconComponentType;
+type MenuItem = MenuDockItemBase & {
   onClick?: () => void;
-}
+};
 
-export interface MenuDockProps {
-  items?: MenuDockItem[];
-  className?: string;
-  variant?: 'default' | 'compact' | 'large';
-  orientation?: 'horizontal' | 'vertical';
-  showLabels?: boolean;
-  animated?: boolean;
-}
-
-const defaultItems: MenuDockItem[] = [
-  { label: 'home', icon: Home },
-  { label: 'work', icon: Briefcase },
-  { label: 'calendar', icon: Calendar },
-  { label: 'security', icon: Shield },
-  { label: 'settings', icon: Settings },
-];
-
-export const MenuDock: React.FC<MenuDockProps> = ({
+export const MenuDock: React.FC<MenuDockProps<MenuItem>> = ({
   items,
   className,
   variant = 'default',
@@ -38,94 +29,27 @@ export const MenuDock: React.FC<MenuDockProps> = ({
   showLabels = true,
   animated = true,
 }) => {
-  const finalItems = useMemo(() => {
-    const isValid = items && Array.isArray(items) && items.length >= 2 && items.length <= 8;
-    if (!isValid) {
-      console.warn("MenuDock: 'items' prop is invalid or missing. Using default items.", items);
-      return defaultItems;
-    }
-    return items;
-  }, [items]);
+  const { activeIndex, setActiveIndex } = useMenuDockActive(items);
 
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [underlineWidth, setUnderlineWidth] = useState(0);
-  const [underlineLeft, setUnderlineLeft] = useState(0);
+  const {
+    width: underlineWidth,
+    left: underlineLeft,
+    itemRefs,
+    textRefs,
+  } = useUnderlineStyle({
+    activeIndex,
+    showLabels,
+    orientation,
+  });
 
-  const textRefs = useRef<(HTMLSpanElement | null)[]>([]);
-  const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
-
-  useEffect(() => {
-    if (activeIndex >= finalItems.length) {
-      setActiveIndex(0);
-    }
-  }, [finalItems, activeIndex]);
-
-  useEffect(() => {
-    const updateUnderline = () => {
-      const activeButton = itemRefs.current[activeIndex];
-      const activeText = textRefs.current[activeIndex];
-
-      if (activeButton && activeText && showLabels && orientation === 'horizontal') {
-        const buttonRect = activeButton.getBoundingClientRect();
-        const textRect = activeText.getBoundingClientRect();
-        const containerRect = activeButton.parentElement?.getBoundingClientRect();
-
-        if (containerRect) {
-          setUnderlineWidth(textRect.width);
-          setUnderlineLeft(buttonRect.left - containerRect.left + (buttonRect.width - textRect.width) / 2);
-        }
-      }
-    };
-
-    updateUnderline();
-    window.addEventListener('resize', updateUnderline);
-    return () => window.removeEventListener('resize', updateUnderline);
-  }, [activeIndex, finalItems, showLabels, orientation]);
-
-  const handleItemClick = (index: number, item: MenuDockItem) => {
+  const handleItemClick = (index: number, item: MenuItem) => {
     setActiveIndex(index);
     item.onClick?.();
   };
 
-  const getVariantStyles = () => {
-    switch (variant) {
-      case 'compact':
-        return {
-          container: 'p-1',
-          item: 'p-2 min-w-12',
-          icon: 'h-4 w-4',
-          text: 'text-xs',
-        };
-      case 'large':
-        return {
-          container: 'p-3',
-          item: 'p-3 min-w-16',
-          icon: 'h-6 w-6',
-          text: 'text-base',
-        };
-      default:
-        return {
-          container: 'p-2',
-          item: 'p-2 min-w-14',
-          icon: 'h-5 w-5',
-          text: 'text-sm',
-        };
-    }
-  };
-
-  const styles = getVariantStyles();
-
   return (
-    <nav
-      className={cn(
-        'bg-card relative inline-flex items-center rounded-xl border shadow-sm',
-        orientation === 'horizontal' ? 'flex-row' : 'flex-col',
-        styles.container,
-        className,
-      )}
-      role="navigation"
-    >
-      {finalItems.map((item, index) => {
+    <nav className={cn(dockContainerVariants({ orientation, size: variant }), className)} role="navigation">
+      {items.map((item: MenuDockItemBase, index: number) => {
         const isActive = index === activeIndex;
         const IconComponent = item.icon;
 
@@ -138,9 +62,7 @@ export const MenuDock: React.FC<MenuDockProps> = ({
             className={cn(
               'relative flex flex-col items-center justify-center rounded-lg transition-all duration-200',
               'hover:bg-muted/50 focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none',
-              styles.item,
-              isActive && 'text-primary',
-              !isActive && 'text-muted-foreground hover:text-foreground',
+              dockItemVariants({ size: variant, active: isActive }),
             )}
             onClick={() => handleItemClick(index, item)}
             aria-label={item.label}
@@ -154,7 +76,7 @@ export const MenuDock: React.FC<MenuDockProps> = ({
                 orientation === 'vertical' && showLabels ? 'mb-1' : '',
               )}
             >
-              <IconComponent className={cn(styles.icon, 'transition-colors duration-200')} />
+              <IconComponent className={cn(dockIconVariants({ size: variant }))} />
             </div>
 
             {showLabels && (
@@ -162,11 +84,7 @@ export const MenuDock: React.FC<MenuDockProps> = ({
                 ref={(el) => {
                   textRefs.current[index] = el;
                 }}
-                className={cn(
-                  'font-medium capitalize transition-colors duration-200',
-                  styles.text,
-                  'whitespace-nowrap',
-                )}
+                className={cn(dockTextVariants({ size: variant }))}
               >
                 {item.label}
               </span>
@@ -175,35 +93,19 @@ export const MenuDock: React.FC<MenuDockProps> = ({
         );
       })}
 
-      {/* Animated underline for horizontal orientation with labels */}
-      {showLabels && orientation === 'horizontal' && (
-        <div
-          className={cn(
-            'bg-primary absolute bottom-2 h-0.5 rounded-full transition-all duration-300 ease-out',
-            animated ? 'transition-all duration-300' : '',
-          )}
-          style={{
-            width: `${underlineWidth}px`,
-            left: `${underlineLeft}px`,
-          }}
-        />
-      )}
-
-      {/* Active indicator for vertical orientation or no labels */}
-      {(!showLabels || orientation === 'vertical') && (
-        <div
-          className={cn(
-            'bg-primary absolute rounded-full transition-all duration-300',
-            orientation === 'vertical' ? 'left-1 h-6 w-1' : 'bottom-0.5 h-0.5 w-6',
-          )}
-          style={{
-            [orientation === 'vertical' ? 'top' : 'left']:
-              orientation === 'vertical'
-                ? `${activeIndex * (variant === 'large' ? 64 : variant === 'compact' ? 56 : 60) + (variant === 'large' ? 19 : variant === 'compact' ? 16 : 18)}px`
-                : `${activeIndex * (variant === 'large' ? 64 : variant === 'compact' ? 56 : 60) + (variant === 'large' ? 19 : variant === 'compact' ? 16 : 18)}px`,
-          }}
-        />
-      )}
+      <HorizontalLine
+        show={showLabels && orientation === 'horizontal'}
+        width={underlineWidth}
+        left={underlineLeft}
+        animated={animated}
+      />
+      <VerticalLine
+        show={!showLabels || orientation === 'vertical'}
+        offset={computeIndicatorOffset(activeIndex, variant)}
+        orientation={orientation}
+        variant={variant}
+        animated={animated}
+      />
     </nav>
   );
 };

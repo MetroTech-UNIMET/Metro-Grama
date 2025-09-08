@@ -38,7 +38,7 @@ export function SaveScheduleButton() {
   const hasOverlaps = overlappingEventIds.size > 0;
 
   const navigate = useNavigate();
-  const search = useSearch({ from: '/horario/' });
+  const search = useSearch({ from: '/_navLayout/horario/' });
 
   const { user } = useAuth();
 

@@ -6,8 +6,7 @@ import { SubjectSheet, SubjectSheetContent } from '@/features/grafo/SubjectSheet
 import { materiasSearchSchema } from './queryParams';
 import { fetchSubjectsGraphByCareerOptions } from '@/hooks/queries/subject/use-FecthSubjectsGraphByCareer';
 
-// TODO - Implementar loader con ensureQueryData
-export const Route = createFileRoute('/materias')({
+export const Route = createFileRoute('/_navLayout/materias/')({
   validateSearch: materiasSearchSchema,
   loaderDeps: ({ search: { careers } }) => ({
     careers,

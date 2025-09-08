@@ -29,7 +29,7 @@ import type { SubjectSection } from '@/interfaces/SubjectSection';
 import type { Trimester } from '@/interfaces/Trimester';
 import type { SubjectSchedule } from '@/interfaces/SubjectSchedule';
 
-export const Route = createFileRoute('/horario/')({
+export const Route = createFileRoute('/_navLayout/horario/')({
   validateSearch: queryParams,
   loaderDeps: ({ search: { trimester, is_principal, careers } }) => ({
     trimester,
@@ -92,7 +92,7 @@ export interface SubjectEvent {
 }
 
 function WeeklySchedulePage() {
-  const search = useSearch({ from: '/horario/' });
+  const search = useSearch({ from: '/_navLayout/horario/' });
   const trimesterId = search.trimester !== 'none' ? search.trimester : '';
   const isPrincipal = search.is_principal;
 

@@ -13,6 +13,7 @@ type QueryAnnualOffer struct {
 	Careers      []surrealModels.RecordID `json:"careers" swaggertype:"array,object"`
 	IsEnrolled   *bool                    `json:"is_enrolled,omitempty"`
 	IsEnrollable *bool                    `json:"is_enrollable,omitempty"`
+	Prelations   []models.SubjectEntity   `json:"prelations" `
 }
 
 type SectionsWithSchedules struct {

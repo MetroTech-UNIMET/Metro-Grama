@@ -9,6 +9,7 @@ import (
 	"metrograma/modules/auth/middlewares"
 	"metrograma/modules/subject_offer/services"
 	readpdf "metrograma/modules/subject_offer/services/read_anual_offer_PDF"
+	"metrograma/tools"
 
 	"github.com/labstack/echo/v4"
 	"github.com/surrealdb/surrealdb.go/pkg/models"
@@ -77,7 +78,7 @@ func uploadPDF(c echo.Context) error {
 // @Tags         subject_offer
 // @Accept       json
 // @Produce      json
-// @Param        careers         query     string  false  "careers filter (comma-separated RecordIDs)"
+// @Param        careers         query     string  true   "careers filter (comma-separated RecordIDs)"
 // @Param        subjectsFilter  query     string  false  "Filtro de materias: 'enrollable' o 'none' (default 'none')" Enums(enrollable,none) default(none)
 // @Description  Nota: Cuando subjectsFilter='enrollable' se requiere sesión de estudiante (student-id en la sesión). No enviar studentId por query.
 // @Success      200       {array}   DTO.QueryAnnualOffer
@@ -85,8 +86,12 @@ func uploadPDF(c echo.Context) error {
 // @Router       /subject_offer/ [get]
 func getAnualOffer(c echo.Context) error {
 	careers := c.QueryParam("careers")
-	if careers == "none" {
-		return echo.NewHTTPError(http.StatusBadRequest, "Escoja al menos 1 carrera para filtrar")
+	if careers == "" || careers == "none" {
+		return echo.NewHTTPError(http.StatusBadRequest, "El parámetro 'careers' es requerido y debe contener al menos 1 carrera")
+	}
+	// Validate parsed careers contains at least 1 valid RecordID
+	if ids := tools.StringToIdArray(careers); len(ids) == 0 {
+		return echo.NewHTTPError(http.StatusBadRequest, "El parámetro 'careers' debe contener al menos 1 carrera válida")
 	}
 	// Always attempt to get student, ignore error here (no trimester filtering endpoint)
 	_, _ = middlewares.GetStudentFromSession(c)
@@ -104,7 +109,7 @@ func getAnualOffer(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Param        trimesterId     path      string  true   "Trimester ID"
-// @Param        careers         query     string  false  "careers filter (comma-separated RecordIDs)"
+// @Param        careers         query     string  true   "careers filter (comma-separated RecordIDs)"
 // @Param        subjectsFilter  query     string  false  "Filtro de materias: 'enrollable' o 'none' (default 'none')" Enums(enrollable,none) default(none)
 // @Description  Nota: Cuando subjectsFilter='enrollable' se requiere sesión de estudiante (student-id en la sesión).
 // @Success      200       {array}   DTO.QueryAnnualOffer
@@ -113,8 +118,12 @@ func getAnualOffer(c echo.Context) error {
 func getAnualOfferById(c echo.Context) error {
 	trimesterId := c.Param("trimesterId")
 	careers := c.QueryParam("careers")
-	if careers == "none" {
-		return echo.NewHTTPError(http.StatusBadRequest, "Escoja al menos 1 carrera para filtrar")
+	if careers == "" || careers == "none" {
+		return echo.NewHTTPError(http.StatusBadRequest, "El parámetro 'careers' es requerido y debe contener al menos 1 carrera")
+	}
+	// Validate parsed careers contains at least 1 valid RecordID
+	if ids := tools.StringToIdArray(careers); len(ids) == 0 {
+		return echo.NewHTTPError(http.StatusBadRequest, "El parámetro 'careers' debe contener al menos 1 carrera válida")
 	}
 
 	// Always attempt to get student (may be nil if not logged in)

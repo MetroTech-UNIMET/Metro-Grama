@@ -11,6 +11,7 @@ import { useFetchAnnualOfferByTrimester } from '@/hooks/queries/subject_offer/us
 import { CardTitle, CardDescription } from '@ui/card';
 import { SidebarContent, SidebarHeader } from '@ui/sidebar';
 import { Button } from '@ui/button';
+import { Badge } from '@ui/badge';
 
 import type { SubjectOfferWithSections } from '@/interfaces/SubjectOffer';
 
@@ -72,6 +73,25 @@ function SubjectSidebarHeader({ subjectOffer, onBack }: Pick<Props, 'subjectOffe
         Modifica o agrega los horarios para el trimestre <strong>{subjectOffer.trimester.id.ID}</strong> para que todos
         los estudiantes puedan organizar sus horarios!
       </CardDescription>
+
+      {subjectOffer.prelations.length > 0 && (
+        <section>
+          <div className="text-muted-foreground mt-4 text-sm font-semibold">
+            Materias que desbloquea: {subjectOffer.prelations.length}{' '}
+          </div>
+
+          <div className="mt-2 flex flex-wrap gap-2">
+            {subjectOffer.prelations.map((prerequisite) => (
+              <Badge
+                key={prerequisite.id.ID}
+                variant="primary"
+              >
+                {prerequisite.name} ({prerequisite.id.ID})
+              </Badge>
+            ))}
+          </div>
+        </section>
+      )}
     </SidebarHeader>
   );
 }

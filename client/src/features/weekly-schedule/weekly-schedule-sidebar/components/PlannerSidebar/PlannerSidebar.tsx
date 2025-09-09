@@ -1,4 +1,4 @@
-import { useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
+import { useQueryClient, type UseQueryResult, useSuspenseQuery } from '@tanstack/react-query';
 import { useEffect, useMemo, useState } from 'react';
 
 import SubjectOfferCard from '../SubjectOfferCard';
@@ -6,7 +6,7 @@ import SubjectOfferDetail from '../SubjectOfferDetail/SubjectOfferDetail';
 
 import { useFetchAnnualOfferByTrimester } from '@/hooks/queries/subject_offer/use-fetch-annual-offer-by-trimester';
 import { fetchTrimestersSelectOptions } from '@/hooks/queries/trimester/use-FetchTrimesters';
-import useFetchCareersOptions from '@/hooks/queries/use-FetchCareersOptions';
+import useFetchCareersOptions, { type CareerOption } from '@/hooks/queries/use-FetchCareersOptions';
 
 import { useSelectedTrimester } from '@/hooks/search-params/use-selected-trimester';
 import { useSelectedCareers } from '@/hooks/search-params/use-selected-careers';
@@ -85,7 +85,8 @@ function HomeSidebar({
       subjectsFilter: user ? (showEnrollable ? 'enrollable' : 'none') : undefined,
     },
     queryOptions: {
-      enabled: !!selectedTrimester,
+      // enabled: false
+      enabled: !!selectedTrimester && selectedCareers.length > 0,
     },
   });
 
@@ -140,32 +141,65 @@ function HomeSidebar({
           </label>
         )}
       </SidebarHeader>
+
       <SidebarContent className="mt-4">
         <SidebarGroup title="Materias" className="gap-2">
-          {subjectsOfferQuery.isPending ? (
-            <>
-              {Array.from({ length: 10 }).map((_, index) => (
-                <Skeleton key={index} className="h-30" />
-              ))}
-            </>
-          ) : subjectsOfferQuery.isError ? (
-            <div>Error al cargar las materias</div>
-          ) : (
-            <>
-              {/* TODO - Hay un error donde el id del subject es null porque la materia no existen aun pero ya se creo la relación
-            Preguntarle a Pilar que hacer */}
-              {filteredData.map((offer, index) => (
-                <SubjectOfferCard
-                  key={`${offer.subject?.id.ID ?? 'no-id'}-${index}`}
-                  subjectOffer={offer}
-                  onSelect={setSelectedSubject}
-                  state={offer.is_enrolled ? 'isEnrolled' : offer.is_enrollable ? 'isEnrollable' : 'default'}
-                />
-              ))}
-            </>
-          )}
+          <SubjectsSection
+            selectedCareers={selectedCareers}
+            query={subjectsOfferQuery}
+            filteredData={filteredData}
+            onSelect={setSelectedSubject}
+          />
         </SidebarGroup>
       </SidebarContent>
+    </>
+  );
+}
+
+function SubjectsSection({
+  selectedCareers,
+  query,
+  filteredData,
+  onSelect,
+}: {
+  selectedCareers: CareerOption[];
+  query: UseQueryResult<SubjectOfferWithSections[]>;
+  filteredData: SubjectOfferWithSections[];
+  onSelect: (subject: SubjectOfferWithSections | null) => void;
+}) {
+  if (selectedCareers.length === 0) {
+    return <div className="text-muted-foreground text-sm">Escoja una carrera para ver la oferta académica</div>;
+  }
+
+  if (query.isPending) {
+    return (
+      <>
+        {Array.from({ length: 10 }).map((_, index) => (
+          <Skeleton key={index} className="h-30" />
+        ))}
+      </>
+    );
+  }
+
+  if (query.isError) {
+    return <div>Error al cargar las materias</div>;
+  }
+
+  if (!filteredData || filteredData.length === 0) {
+    return <div className="text-muted-foreground text-sm">No hay materias para los filtros seleccionados</div>;
+  }
+
+  // Data state
+  return (
+    <>
+      {filteredData.map((offer, index) => (
+        <SubjectOfferCard
+          key={`${offer.subject?.id.ID ?? 'no-id'}-${index}`}
+          subjectOffer={offer}
+          onSelect={onSelect}
+          state={offer.is_enrolled ? 'isEnrolled' : offer.is_enrollable ? 'isEnrollable' : 'default'}
+        />
+      ))}
     </>
   );
 }

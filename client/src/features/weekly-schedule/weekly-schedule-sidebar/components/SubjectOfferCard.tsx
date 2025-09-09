@@ -23,8 +23,10 @@ export default function SubjectOfferCard({ subjectOffer, onSelect, state }: Prop
 
   const { getIsSubjectSelected } = usePlannerSidebarContext();
 
-  const numSections = subjectOffer.sections.length;
   const isSelected = useMemo(() => getIsSubjectSelected(subjectOffer), [getIsSubjectSelected, subjectOffer]);
+
+  const numSections = subjectOffer.sections.length;
+  const numPrelations = subjectOffer.prelations.length;
 
   return (
     <Card
@@ -49,8 +51,8 @@ export default function SubjectOfferCard({ subjectOffer, onSelect, state }: Prop
       </CardHeader>
 
       <CardContent>
-        <div className="flex w-full justify-between">
-          <p>Desbloquea: 2</p>
+        <div className="flex w-full justify-between gap-2">
+          <p>Desbloquea: {numPrelations}</p>
 
           {numSections !== 0 ? (
             <Badge>

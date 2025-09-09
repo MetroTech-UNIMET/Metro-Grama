@@ -9,7 +9,7 @@ interface Props {
 
 export function useSelectedTrimester({ trimesterOptions }: Props) {
   const navigate = useNavigate();
-  const search = useSearch({ from: '/horario/' });
+  const search = useSearch({ from: '/_navLayout/horario/' });
 
   const [selectedTrimester, setSelectedTrimester] = useState<TrimesterOption | undefined>(
     search.trimester !== 'none'

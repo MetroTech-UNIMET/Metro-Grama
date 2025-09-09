@@ -9,7 +9,7 @@ interface Props {
 
 export function useSelectedCareers({ careerOptions }: Props) {
   const navigate = useNavigate();
-  const search = useSearch({ from: '/horario/' });
+  const search = useSearch({ from: '/_navLayout/horario/' });
 
   const [selectedCareers, setSelectedCareers] = useState<CareerOption[]>([]);
   const gotInitialValue = useRef(false);

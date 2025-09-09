@@ -4,11 +4,11 @@ import { createCareer, updateCareer } from '@/api/careersApi';
 import { getDirtyNestedFields } from '@utils/forms';
 import { idToSurrealId } from '@utils/queries';
 
-import type { CreateCareerFormType } from './schema';
+import type { CreateCareerFormInput } from './schema';
 import type { ArrayToObject, DirtyFields } from '@utils/forms';
 import type { CareerWithSubjects } from '@/interfaces/Career';
 
-function validateOnSubmit(data: CreateCareerFormType) {
+function validateOnSubmit(data: CreateCareerFormInput) {
   const allCodes: string[] = [];
   for (let trimester of data.subjects) {
     for (let subject of trimester) {
@@ -56,7 +56,7 @@ function validateOnSubmit(data: CreateCareerFormType) {
   return true;
 }
 
-export async function onCreate(data: CreateCareerFormType) {
+export async function onCreate(data: CreateCareerFormInput) {
   if (!validateOnSubmit(data)) throw new Error('Datos inválidos');
 
   const newData = transformCreateData(data);
@@ -70,8 +70,8 @@ export async function onCreate(data: CreateCareerFormType) {
 
 export async function onEdit(
   orinalData: CareerWithSubjects,
-  data: CreateCareerFormType,
-  dirtyFields: DirtyFields<CreateCareerFormType>,
+  data: CreateCareerFormInput,
+  dirtyFields: DirtyFields<CreateCareerFormInput>,
 ) {
   if (Object.keys(dirtyFields).length === 0)
     throw new Error('Para poder modificar, tiene que realizar un cambio en el formulario');
@@ -90,7 +90,7 @@ export async function onEdit(
   });
 
   const filtered = getDirtyNestedFields(data, dirtyFields) as Partial<
-    ArrayToObject<CreateCareerFormType, 'prelations'>
+    ArrayToObject<CreateCareerFormInput, 'prelations'>
   >;
 
   const transformed = transformEditData(filtered);
@@ -103,7 +103,7 @@ export async function onEdit(
   };
 }
 
-function transformCreateData(data: CreateCareerFormType) {
+function transformCreateData(data: CreateCareerFormInput) {
   return {
     ...data,
     subjects: data.subjects.map((trimester) =>
@@ -120,7 +120,7 @@ function transformCreateData(data: CreateCareerFormType) {
   };
 }
 
-function transformEditData(data: Partial<ArrayToObject<CreateCareerFormType, 'prelations'>>) {
+function transformEditData(data: Partial<ArrayToObject<CreateCareerFormInput, 'prelations'>>) {
   if (!data.subjects) return data;
 
   const transformedData: {

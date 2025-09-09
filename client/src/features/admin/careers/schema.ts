@@ -3,9 +3,6 @@ import { numberOfSubjectsByTrimester, numberOfTrimesters } from './constants';
 
 import type { Step } from '@/hooks/useFormStep';
 
-export type CreateCareerFormType = z.infer<typeof createCareerSchema>;
-export type CreateSubjectType = z.infer<typeof subjectSchema>;
-
 const subjectCodeOptionSchema = z.object({
   label: z.string(),
   value: z.string().length(7, {
@@ -40,7 +37,7 @@ const subjectSchema = z
       .max(3, {
         error: 'Esta materia no puede depender de más de 3 materias',
       })
-      .prefault([]),
+      .catch([]),
     subjectType: z.enum(['elective', 'existing', 'new']).prefault('new'),
   })
   .superRefine((data, ctx) => {
@@ -93,7 +90,13 @@ export const createCareerSchema = z.object({
   ...stepCareerSchema.shape,
   ...stepSubjects.shape,
 });
-export const defaultCreateCareerValues: CreateCareerFormType = {
+
+export type CreateCareerFormInput = z.input<typeof createCareerSchema>;
+export type CreateCareerTypeOutput = z.infer<typeof createCareerSchema>;
+
+export type CreateSubjectType = z.input<typeof subjectSchema>;
+
+export const defaultCreateCareerValues: CreateCareerFormInput = {
   name: '',
   emoji: '',
   id: '',

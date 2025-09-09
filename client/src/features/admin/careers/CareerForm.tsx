@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo } from 'react';
 import { type FieldErrors, type Path, useForm } from 'react-hook-form';
-import { standardSchemaResolver } from '@hookform/resolvers/standard-schema';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 
@@ -24,7 +24,7 @@ import { Spinner } from '@ui/spinner';
 import { Form } from '@ui/form';
 import { Button } from '@ui/button';
 
-import type { CreateCareerFormType, CreateSubjectType } from './schema';
+import type { CreateCareerFormInput, CreateSubjectType } from './schema';
 import type { CareerWithSubjects } from '@/interfaces/Career';
 
 interface Props {
@@ -40,8 +40,8 @@ export default function CareerForm({ mode, data }: Props) {
     removeAdditionalSubject,
   } = useSubjectOptions();
 
-  const form = useForm<CreateCareerFormType>({
-    resolver: standardSchemaResolver(createCareerSchema),
+  const form = useForm({
+    resolver: zodResolver(createCareerSchema),
     mode: 'onBlur',
     defaultValues: defaultCreateCareerValues,
   });
@@ -52,7 +52,7 @@ export default function CareerForm({ mode, data }: Props) {
 
     const subjectsById: Record<string, string> = {};
 
-    const defaultData: CreateCareerFormType = {
+    const defaultData: CreateCareerFormInput = {
       emoji: data.emoji,
       name: data.name,
       id: data.id.ID,
@@ -86,7 +86,7 @@ export default function CareerForm({ mode, data }: Props) {
     form.reset(defaultData);
   }, [data]);
 
-  async function onSubmit(formData: CreateCareerFormType) {
+  async function onSubmit(formData: CreateCareerFormInput) {
     let toastInfo: { title: string; description: string } = { title: '', description: '' };
     try {
       if (mode === 'create') {
@@ -140,7 +140,7 @@ export default function CareerForm({ mode, data }: Props) {
   );
 
   const onError = useCallback(
-    (errors: FieldErrors<CreateCareerFormType>, currentStep: number) => {
+    (errors: FieldErrors<CreateCareerFormInput>, currentStep: number) => {
       if (currentStep === 0) return;
 
       const subjects = getValues(`subjects.${currentStep - 1}`);
@@ -221,7 +221,7 @@ export default function CareerForm({ mode, data }: Props) {
                 const extracted = extractShema(step.schema);
                 const careerSchemaKeys = Object.keys(extracted.shape);
                 const hasError = careerSchemaKeys.some((key) => {
-                  return errors[key as keyof FieldErrors<CreateCareerFormType>] !== undefined;
+                  return errors[key as keyof FieldErrors<CreateCareerFormInput>] !== undefined;
                 });
                 return hasError;
               }
@@ -269,7 +269,7 @@ export default function CareerForm({ mode, data }: Props) {
   );
 }
 
-function transformErrors(errors: FieldErrors<CreateCareerFormType>, currentStep: number) {
+function transformErrors(errors: FieldErrors<CreateCareerFormInput>, currentStep: number) {
   if (currentStep === 0) return errors;
 
   const stepIndex = currentStep - 1;
@@ -277,7 +277,7 @@ function transformErrors(errors: FieldErrors<CreateCareerFormType>, currentStep:
   return { subjects: { [stepIndex]: subjectErrors } };
 }
 
-function filterPaths(paths: Path<CreateCareerFormType>[], steps: number) {
+function filterPaths(paths: Path<CreateCareerFormInput>[], steps: number) {
   if (steps === 0) return paths;
 
   const subjectPath = `subjects.${steps - 1}`;

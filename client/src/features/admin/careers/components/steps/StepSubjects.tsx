@@ -4,11 +4,11 @@ import { numberOfSubjectsByTrimester } from '../../constants';
 import type { CodeOption } from '../../hooks/useSubjectOptions';
 import type { Option } from '@ui/types/option.types';
 import type { UseFormReturn } from 'react-hook-form';
-import type { CreateCareerFormType } from '../../schema';
+import type { CreateCareerFormInput } from '../../schema';
 
 interface Props {
   trimesterIndex: number;
-  form: UseFormReturn<CreateCareerFormType>;
+  form: UseFormReturn<CreateCareerFormInput>;
   mode: 'create' | 'edit';
 
   codeOptions: CodeOption[];

@@ -12,7 +12,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, TooltipArrow 
 import { Skeleton } from '@ui/skeleton';
 
 import type { Option } from '@ui/types/option.types';
-import type { CreateCareerFormType, CreateSubjectType } from '../schema';
+import type { CreateCareerFormInput, CreateSubjectType } from '../schema';
 import type { FieldError, FieldErrors, UseFormResetField, UseFormSetValue, UseFormTrigger } from 'react-hook-form';
 import type { CodeOption } from '../hooks/useSubjectOptions';
 import type { Subject } from '@/interfaces/Subject';
@@ -20,9 +20,9 @@ import type { Subject } from '@/interfaces/Subject';
 type SubjectErrors = FieldErrors<CreateSubjectType> | undefined;
 
 interface Props {
-  setValue: UseFormSetValue<CreateCareerFormType>;
-  resetField: UseFormResetField<CreateCareerFormType>;
-  trigger: UseFormTrigger<CreateCareerFormType>;
+  setValue: UseFormSetValue<CreateCareerFormInput>;
+  resetField: UseFormResetField<CreateCareerFormInput>;
+  trigger: UseFormTrigger<CreateCareerFormInput>;
 
   subjectIndex: number;
   trimesterIndex: number;

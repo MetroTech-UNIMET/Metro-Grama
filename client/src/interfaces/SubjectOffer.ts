@@ -15,4 +15,5 @@ export interface SubjectOfferWithSections extends SubjectOffer {
   careers: Id[];
   is_enrolled?: boolean;
   is_enrollable?: boolean;
+  prelations: SubjectEntity[];
 }

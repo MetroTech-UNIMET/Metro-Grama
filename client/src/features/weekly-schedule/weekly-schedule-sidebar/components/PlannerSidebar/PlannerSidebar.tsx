@@ -11,7 +11,7 @@ import useFetchCareersOptions, { type CareerOption } from '@/hooks/queries/use-F
 import { useSelectedTrimester } from '@/hooks/search-params/use-selected-trimester';
 import { useSelectedCareers } from '@/hooks/search-params/use-selected-careers';
 
-import { useDebounceValue } from '@/hooks/shadcn.io/debounce/use-debounce-value';
+import { useSearchTerm } from '@/features/weekly-schedule/weekly-schedule-sidebar/hooks/search-params/use-search-term';
 
 import { useAuth } from '@/contexts/AuthenticationContext';
 import { normalize } from '@utils/strings';
@@ -60,8 +60,7 @@ function HomeSidebar({
   const { user } = useAuth();
   const [showEnrollable, setShowEnrollable] = useState(false);
 
-  // Debounced value (updates after delay)
-  const [debouncedSearch, setDebouncedSearch] = useDebounceValue('', 300);
+  const { term, setTerm, debouncedTerm: debouncedSearch } = useSearchTerm();
 
   useEffect(() => {
     if (!user && showEnrollable) setShowEnrollable(false);
@@ -85,7 +84,6 @@ function HomeSidebar({
       subjectsFilter: user ? (showEnrollable ? 'enrollable' : 'none') : undefined,
     },
     queryOptions: {
-      // enabled: false
       enabled: !!selectedTrimester && selectedCareers.length > 0,
     },
   });
@@ -95,23 +93,17 @@ function HomeSidebar({
 
     const termRaw = debouncedSearch.trim();
     if (!termRaw) return subjectsOfferQuery.data;
-    const term = normalize(termRaw);
+    const norm = normalize(termRaw);
     return subjectsOfferQuery.data.filter((offer) => {
       const name = normalize(offer.subject?.name ?? '');
-      return name.includes(term);
+      return name.includes(norm);
     });
   }, [subjectsOfferQuery.data, debouncedSearch]);
 
   return (
     <>
       <SidebarHeader>
-        <Input
-          placeholder="Busca por nombre de la materia..."
-          onChange={(e) => {
-            const v = e.target.value;
-            setDebouncedSearch(v);
-          }}
-        />
+        <Input placeholder="Busca por nombre de la materia..." value={term} onChange={(e) => setTerm(e.target.value)} />
 
         <CareerMultiDropdown
           value={selectedCareers}

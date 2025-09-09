@@ -24,4 +24,3 @@ if (!rootElement.innerHTML) {
     </QueryClientProvider>,
   );
 }
-ReactDOM.createRoot(rootElement);

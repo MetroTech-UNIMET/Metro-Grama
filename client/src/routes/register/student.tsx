@@ -5,12 +5,20 @@ import AuthenticationContext from '@/contexts/AuthenticationContext';
 import { fetchTrimestersSelectOptions } from '@/hooks/queries/trimester/use-FetchTrimesters';
 
 export const Route = createFileRoute('/register/student')({
-  loader: ({ context }) =>
-    context.queryClient.ensureQueryData(
-      fetchTrimestersSelectOptions({
-        queryClient: context.queryClient,
-      }),
-    ),
+  loader: async ({ context }) => {
+    try {
+      await context.queryClient.ensureQueryData(
+        fetchTrimestersSelectOptions({
+          queryClient: context.queryClient,
+          queryOptions: { retry: false },
+        }),
+      );
+    } catch {
+      // Swallow errors so the router doesn't trip the nearest error boundary.
+      // The UI components will read the query state and render an inline error.
+    }
+    return null;
+  },
   component: RegisterStudent,
 });
 

@@ -4,9 +4,9 @@ import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/comp
 import { CareerMultiDropdown } from '@components/CareerMultiDropdown';
 
 import type { FieldValues, Path } from 'react-hook-form';
-import type { MultipleSelectorProps } from '@/components/ui/derived/multidropdown';
 
-export interface FormMultipleSelectorFieldProps<T extends FieldValues> extends Omit<MultipleSelectorProps, 'selected'> {
+export interface FormMultipleSelectorFieldProps<T extends FieldValues>
+  extends Omit<React.ComponentProps<typeof CareerMultiDropdown>, 'value' | 'onChange'> {
   name: Path<T>;
   showErrors?: boolean;
   showColorsState?: boolean;

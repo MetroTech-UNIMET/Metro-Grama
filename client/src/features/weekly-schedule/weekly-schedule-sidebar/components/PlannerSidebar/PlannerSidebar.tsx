@@ -135,7 +135,7 @@ function HomeSidebar({
       </SidebarHeader>
 
       <SidebarContent className="mt-4">
-        <SidebarGroup title="Materias" className="gap-2">
+        <SidebarGroup className="gap-2">
           <SubjectsSection
             selectedCareers={selectedCareers}
             query={subjectsOfferQuery}

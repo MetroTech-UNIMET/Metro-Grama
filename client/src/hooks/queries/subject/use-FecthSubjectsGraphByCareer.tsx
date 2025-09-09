@@ -23,7 +23,7 @@ export function fetchSubjectsGraphByCareerOptions(careers: string) {
 
 export default function useFecthSubjectsGraphByCareer() {
   const [selectedCareers, setSelectedCareers] = useState<CareerOption[]>([]);
-  const search = useSearch({ from: "/materias" });
+  const search = useSearch({ from: "/_navLayout/materias/" });
   const navigate = useNavigate();
 
   const careers = search?.careers ?? "none";

@@ -1,10 +1,8 @@
-import { z } from 'zod';
+import { createStringIdSchema } from '@/lib/schemas/surreal';
+import z from 'zod/v4';
 
-// Centralized search/query param schema for /materias
-// Extend here when adding more params. Keep defaults explicit.
-export const materiasSearchSchema = z
-  .object({
-    careers: z.string().catch('none'),
-  })
+export const materiasSearchSchema = z.object({
+  careers: z.array(createStringIdSchema('career')),
+});
 
 export type MateriasSearch = z.infer<typeof materiasSearchSchema>;

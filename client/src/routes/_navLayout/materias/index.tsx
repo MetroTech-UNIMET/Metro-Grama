@@ -1,10 +1,14 @@
 import { createFileRoute } from '@tanstack/react-router';
-import GraphLayout from '@/layouts/GraphLayout';
+
+import { materiasSearchSchema } from './queryParams';
+
 import Graph from '@/features/grafo/Graph';
 import { StatusActions } from '@/features/grafo/behaviors/StatusActions';
 import { SubjectSheet, SubjectSheetContent } from '@/features/grafo/SubjectSheet';
-import { materiasSearchSchema } from './queryParams';
+
 import { fetchSubjectsGraphByCareerOptions } from '@/hooks/queries/subject/use-FecthSubjectsGraphByCareer';
+
+import GraphLayout from '@/layouts/GraphLayout';
 
 export const Route = createFileRoute('/_navLayout/materias/')({
   validateSearch: materiasSearchSchema,

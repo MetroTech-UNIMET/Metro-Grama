@@ -39,7 +39,6 @@ export function useSelectedCareers({ careerOptions, activeUrl, useStudentCareers
     if (gotInitialValue.current || !careerOptions.length) return;
 
     let ids: string[] = search?.careers ?? [];
-    console.log(ids)
 
     // If no careers provided in search and flag enabled, try student careers
     if (ids.length === 0 && useStudentCareersAsDefault && studentCareersData?.length) {
@@ -56,7 +55,7 @@ export function useSelectedCareers({ careerOptions, activeUrl, useStudentCareers
   // Keep URL in sync when careers change
   useEffect(() => {
     if (!gotInitialValue.current) return; // wait for initial value to be set
-    
+
     const newCareersParam = selectedCareers.map((c) => c.value).sort();
 
     const currentIds = ((search?.careers as string[]) ?? []).slice().join(',');

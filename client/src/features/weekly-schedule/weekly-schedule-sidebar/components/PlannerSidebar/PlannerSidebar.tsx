@@ -68,7 +68,7 @@ function HomeSidebar({
 
   const { options } = useFetchCareersOptions();
   const { selectedCareers, setSelectedCareers } = useSelectedCareers({
-    activeUrl: '/_navLayout/materias/',
+    activeUrl: '/_navLayout/horario/',
     careerOptions: options,
     useStudentCareersAsDefault: true,
   });

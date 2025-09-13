@@ -48,13 +48,16 @@ export const Route = createFileRoute('/_navLayout/horario/')({
 
     if (trimesterId) {
       tasks.push(
-        qc.ensureQueryData(
-          fetchStudentCourseByTrimesterOptions({
-            trimesterId,
-            params: { is_principal },
-            queryOptions: { enabled: true },
-          } as any),
-        ),
+        eatErrorsAsync(async () => {
+          () =>
+            qc.ensureQueryData(
+              fetchStudentCourseByTrimesterOptions({
+                trimesterId,
+                params: { is_principal },
+                queryOptions: { enabled: true },
+              } as any),
+            );
+        }),
       );
       qc.ensureQueryData(
         fetchAnnualOfferByTrimesterOptions({

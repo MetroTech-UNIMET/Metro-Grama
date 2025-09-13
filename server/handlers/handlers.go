@@ -5,6 +5,7 @@ import (
 	"metrograma/modules/auth"
 	"metrograma/modules/careers"
 	"metrograma/modules/interactions"
+	"metrograma/modules/student"
 	"metrograma/modules/subject_offer"
 	"metrograma/modules/subject_schedule"
 	"metrograma/modules/subjects"
@@ -23,6 +24,7 @@ func CreateHandlers(e *echo.Echo) {
 	auth.Handlers(apiGroup)
 	interactions.Handlers(apiGroup)
 	trimesters.Handlers(apiGroup)
+	student.Handlers(apiGroup)
 	subject_offer.Handlers(apiGroup)
 	subject_schedule.Handlers(apiGroup)
 

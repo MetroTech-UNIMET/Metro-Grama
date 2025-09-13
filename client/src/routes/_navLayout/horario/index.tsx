@@ -12,12 +12,14 @@ import {
 import { fetchTrimestersOptions } from '@/hooks/queries/trimester/use-FetchTrimesters';
 import { fetchCareersOptions } from '@/hooks/queries/use-FetchCareersOptions';
 import { fetchAnnualOfferByTrimesterOptions } from '@/hooks/queries/subject_offer/use-fetch-annual-offer-by-trimester';
+import { fetchStudentCareersOptions } from '@/hooks/queries/student/use-fetch-student-careers';
 
 import { PlannerSidebar } from '@/features/weekly-schedule/weekly-schedule-sidebar/components/PlannerSidebar/PlannerSidebar';
 import { WeeklyPlanner } from '@/features/weekly-schedule/weekly-planner/WeeklyPlanner';
 
 import AuthenticationContext from '@/contexts/AuthenticationContext';
 
+import { eatErrorsAsync } from '@utils/errors';
 import { cn } from '@utils/className';
 import { formatTimeHour } from '@utils/time';
 
@@ -67,6 +69,10 @@ export const Route = createFileRoute('/_navLayout/horario/')({
         } as any),
       );
     }
+
+    eatErrorsAsync(async () => {
+      qc.ensureQueryData(fetchStudentCareersOptions());
+    });
 
     const [trimesterOptions, careerOptions, studentCourse] = await Promise.all(tasks);
     return { trimesterOptions, careerOptions, studentCourse };

@@ -68,7 +68,9 @@ function HomeSidebar({
 
   const { options } = useFetchCareersOptions();
   const { selectedCareers, setSelectedCareers } = useSelectedCareers({
+    activeUrl: '/_navLayout/materias/',
     careerOptions: options,
+    useStudentCareersAsDefault: true,
   });
 
   const trimesterQuery = useSuspenseQuery(fetchTrimestersSelectOptions({ queryClient }));

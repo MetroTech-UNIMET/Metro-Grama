@@ -1,5 +1,9 @@
-import { cn } from '@utils/className';
+import { useMemo } from 'react';
 
+import { cn } from '@utils/className';
+import { idToSurrealId } from '@utils/queries';
+
+import { useFetchStudentCareers } from '@/hooks/queries/student/use-fetch-student-careers';
 import useFetchCareersOptions, { type CareerOption } from '@/hooks/queries/use-FetchCareersOptions';
 
 import MultipleSelector, { type MultipleSelectorProps } from '@ui/derived/multidropdown';
@@ -12,7 +16,6 @@ interface Props extends Omit<MultipleSelectorProps<`career:${string}`, Career>, 
   maxSelected?: number;
 }
 
-// FIXME - Width del input no se ajusta al tamaño cuando hay una sola badge
 export function CareerMultiDropdown({
   loadingSubjects = false,
   value,
@@ -23,14 +26,36 @@ export function CareerMultiDropdown({
   ...props
 }: Props) {
   const { options, isLoading, error } = useFetchCareersOptions();
+  const studentCareerQuery = useFetchStudentCareers();
 
-  value;
+  const groupedOptions = useMemo(() => {
+    if (!studentCareerQuery.data) return options;
+
+    const studentCareersSet = new Set(studentCareerQuery.data.map(({ Table, ID }) => idToSurrealId(ID, Table)));
+
+    const enrolledOptions = options
+      .filter((option) => studentCareersSet.has(option.value))
+      .map((option) => ({
+        ...option,
+        enrolled: 'Mis carreras',
+      }));
+    const otherOptions = options
+      .filter((option) => !studentCareersSet.has(option.value))
+      .map((option) => ({
+        ...option,
+        enrolled: 'Otras carreras',
+      }));
+
+    return [...enrolledOptions, ...otherOptions];
+  }, [options, studentCareerQuery.data]);
+
   return (
     <div className="relative w-full max-w-sm">
       <MultipleSelector
         value={value}
         onChange={onChange as (value: CareerOption[]) => void}
-        options={options}
+        options={groupedOptions}
+        groupBy="enrolled"
         maxSelected={maxSelected}
         placeholder={
           value?.length === maxSelected

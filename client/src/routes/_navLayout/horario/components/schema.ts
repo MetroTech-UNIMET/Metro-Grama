@@ -23,9 +23,3 @@ export const courseSchema = z
 
 export type CourseSchemaInput = z.input<typeof courseSchema>;
 export type CourseSchemaOutput = z.output<typeof courseSchema>;
-console.log(
-  createIdSchema('student').parse({
-    Table: 'student',
-    ID: 'exl5jkn6nfppkiam6ajq',
-  }),
-);

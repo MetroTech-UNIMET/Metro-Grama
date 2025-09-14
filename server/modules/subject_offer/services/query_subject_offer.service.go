@@ -38,9 +38,9 @@ FROM subject_offer
 WHERE in->belong->career ANYINSIDE $careers{{.ExtraWhere}}
 FETCH subject, trimester, prelations;`
 
-// buildAnnualOfferQuery constructs the query and params for annual offers combining optional filters.
+// buildSubjectOfferQuery constructs the query and params for annual offers combining optional filters.
 // If enrollable is provided (non-empty), the query will restrict to those subject IDs.
-func buildAnnualOfferQuery(trimesterId string, careers []surrealModels.RecordID, enrollable []surrealModels.RecordID, studentId *surrealModels.RecordID, enrolled []surrealModels.RecordID, subjectsFilter string) (string, map[string]any, error) {
+func buildSubjectOfferQuery(trimesterId string, careers []surrealModels.RecordID, enrollable []surrealModels.RecordID, studentId *surrealModels.RecordID, enrolled []surrealModels.RecordID, subjectsFilter string) (string, map[string]any, error) {
 	// Build dynamic extra WHERE clause parts (careers filter is always present in the template)
 	whereParts := make([]string, 0, 3)
 	params := map[string]any{}
@@ -100,13 +100,13 @@ type AnnualOfferQueryParams struct {
 	SubjectsFilter string
 }
 
-// GetAllAnnualOffers retrieves all subject_offer edges with their related subject and trimester.
-func GetAllAnnualOffers(careers string) ([]DTO.QueryAnnualOffer, error) {
+// GetAllSubjectOffers retrieves all subject_offer edges with their related subject and trimester.
+func GetAllSubjectOffers(careers string) ([]DTO.QueryAnnualOffer, error) {
 	careersArray := tools.StringToIdArray(careers)
 	if len(careersArray) == 0 {
 		return nil, errors.New("careers debe contener al menos 1 carrera válida")
 	}
-	query, params, err := buildAnnualOfferQuery("", careersArray, nil, nil, nil, "none")
+	query, params, err := buildSubjectOfferQuery("", careersArray, nil, nil, nil, "none")
 	if err != nil {
 		return nil, err
 	}
@@ -118,8 +118,8 @@ func GetAllAnnualOffers(careers string) ([]DTO.QueryAnnualOffer, error) {
 	return offers, nil
 }
 
-// GetAnnualOfferById retrieves subject_offer edges filtered by trimester ID.
-func GetAnnualOfferById(trimesterId string, studentId surrealModels.RecordID, queryParams AnnualOfferQueryParams) ([]DTO.QueryAnnualOffer, error) {
+// GetSubjectOfferById retrieves subject_offer edges filtered by trimester ID.
+func GetSubjectOfferById(trimesterId string, studentId surrealModels.RecordID, queryParams AnnualOfferQueryParams) ([]DTO.QueryAnnualOffer, error) {
 	var enrollable []surrealModels.RecordID
 	// Fetch enrollable subjects if requested or if student context is present
 	if queryParams.SubjectsFilter == "enrollable" || (studentId != (surrealModels.RecordID{}) && queryParams.SubjectsFilter == "none") {
@@ -150,7 +150,7 @@ func GetAnnualOfferById(trimesterId string, studentId surrealModels.RecordID, qu
 	if len(careersArray) == 0 {
 		return nil, errors.New("careers debe contener al menos 1 carrera válida")
 	}
-	query, params, err := buildAnnualOfferQuery(trimesterId, careersArray, enrollable, studentPtr, enrolled, queryParams.SubjectsFilter)
+	query, params, err := buildSubjectOfferQuery(trimesterId, careersArray, enrollable, studentPtr, enrolled, queryParams.SubjectsFilter)
 	if err != nil {
 		return nil, err
 	}

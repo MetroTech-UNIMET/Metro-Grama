@@ -18,8 +18,8 @@ import (
 func Handlers(e *echo.Group) {
 	subject_offerGroup := e.Group("/subject_offer")
 	subject_offerGroup.POST("/upload", uploadPDF)
-	subject_offerGroup.GET("/", getAnualOffer)
-	subject_offerGroup.GET("/:trimesterId", getAnualOfferById)
+	subject_offerGroup.GET("/", getSubjectOffer)
+	subject_offerGroup.GET("/:trimesterId", getSubjectOfferById)
 }
 
 // @Summary   Subir oferta académica (PDF)
@@ -72,7 +72,7 @@ func uploadPDF(c echo.Context) error {
 	return c.JSON(http.StatusCreated, map[string]any{"message": "Oferta académica procesada correctamente", "result": subjectOffer})
 }
 
-// getAnualOffer godoc
+// getSubjectOffer godoc
 // @Summary      List all subject_offer edges
 // @Description  Returns subject_offer edges with related subject and trimester. Optional filter by careers (CSV of record IDs). Use careers=none to get an error.
 // @Tags         subject_offer
@@ -84,7 +84,7 @@ func uploadPDF(c echo.Context) error {
 // @Success      200       {array}   DTO.QueryAnnualOffer
 // @Failure      500       {object}  map[string]string
 // @Router       /subject_offer/ [get]
-func getAnualOffer(c echo.Context) error {
+func getSubjectOffer(c echo.Context) error {
 	careers := c.QueryParam("careers")
 	if careers == "" || careers == "none" {
 		return echo.NewHTTPError(http.StatusBadRequest, "El parámetro 'careers' es requerido y debe contener al menos 1 carrera")
@@ -95,7 +95,7 @@ func getAnualOffer(c echo.Context) error {
 	}
 	// Always attempt to get student, ignore error here (no trimester filtering endpoint)
 	_, _ = middlewares.GetStudentFromSession(c)
-	offers, err := services.GetAllAnnualOffers(careers)
+	offers, err := services.GetAllSubjectOffers(careers)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
@@ -115,7 +115,7 @@ func getAnualOffer(c echo.Context) error {
 // @Success      200       {array}   DTO.QueryAnnualOffer
 // @Failure      500       {object}  map[string]string
 // @Router       /subject_offer/{trimesterId} [get]
-func getAnualOfferById(c echo.Context) error {
+func getSubjectOfferById(c echo.Context) error {
 	trimesterId := c.Param("trimesterId")
 	careers := c.QueryParam("careers")
 	if careers == "" || careers == "none" {
@@ -147,7 +147,7 @@ func getAnualOfferById(c echo.Context) error {
 	}
 
 	qp := services.AnnualOfferQueryParams{Careers: careers, SubjectsFilter: subjectsFilter}
-	offers, err := services.GetAnnualOfferById(trimesterId, studentId, qp)
+	offers, err := services.GetSubjectOfferById(trimesterId, studentId, qp)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 	}

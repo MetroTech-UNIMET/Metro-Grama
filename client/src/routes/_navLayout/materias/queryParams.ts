@@ -1,8 +1,9 @@
-import { createStringIdSchema } from '@/lib/schemas/surreal';
 import z from 'zod/v4';
 
+import { careersQueryParam } from '@/routes/-common_queryParams/careers';
+
 export const materiasSearchSchema = z.object({
-  careers: z.array(createStringIdSchema('career')),
+  careers: careersQueryParam,
 });
 
 export type MateriasSearch = z.infer<typeof materiasSearchSchema>;

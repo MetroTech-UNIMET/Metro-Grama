@@ -45,17 +45,16 @@ export function useSelectedCareers({ careerOptions, activeUrl, useStudentCareers
       ids = studentCareersData.map((c) => idToSurrealId(c.ID, c.Table)).slice();
     }
 
+    gotInitialValue.current = true;
     if (ids.length === 0) return; // still nothing to initialize with
 
     const initial = careerOptions.filter((option) => ids.includes(option.value));
     setSelectedCareers(initial);
-    gotInitialValue.current = true;
   }, [search?.careers, careerOptions, useStudentCareersAsDefault, studentCareersData]);
 
   // Keep URL in sync when careers change
   useEffect(() => {
-    if (!gotInitialValue.current) return; // wait for initial value to be set
-
+    if (!gotInitialValue.current) return;
     const newCareersParam = selectedCareers.map((c) => c.value).sort();
 
     const currentIds = ((search?.careers as string[]) ?? []).slice().join(',');

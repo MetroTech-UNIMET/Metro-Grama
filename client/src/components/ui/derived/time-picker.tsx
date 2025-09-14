@@ -34,10 +34,10 @@ const AM_VALUE = 0;
 const PM_VALUE = 1;
 
 export interface TimePickerProps {
-  /** Selected time value */
-  value: Date | undefined;
+  /** Selected time value (can be undefined to represent no selection) */
+  value?: Date;
   /** Callback function called when the selected time changes */
-  onChange: (date: Date | undefined) => void;
+  onChange: (date: Date) => void; // keeping signature; picker only emits once a concrete time is chosen
 
   className?: string;
 
@@ -65,28 +65,38 @@ export function TimePicker({
 }: TimePickerProps) {
   const { before: min, after: max } = disableHours || {};
 
-  // Fallback date so date-fns helpers always receive a valid Date (they don't accept undefined)
-  const safeValue = useMemo(() => value ?? new Date(), [value]);
-
   // hours24h = HH
   // hours12h = hh
   const formatStr = useMemo(
     () => (use12HourFormat ? 'yyyy-MM-dd hh:mm:ss.SSS a xxxx' : 'yyyy-MM-dd HH:mm:ss.SSS xxxx'),
     [use12HourFormat],
   );
-  const [ampm, setAmpm] = useState(value ? (format(value, 'a') === 'AM' ? AM_VALUE : PM_VALUE) : AM_VALUE);
-  const [hour, setHour] = useState(value ? (use12HourFormat ? +format(value, 'hh') : value.getHours()) : 0);
-  const [minute, setMinute] = useState(value?.getMinutes() ?? 0);
-  const [second, setSecond] = useState(value?.getSeconds() ?? 0);
+  // Keep a stable base date to build times when value is undefined (placeholder state)
+  const placeholderBaseRef = useRef<Date>(new Date());
+  const baseDate = value ?? placeholderBaseRef.current;
+  const [ampm, setAmpm] = useState(format(baseDate, 'a') === 'AM' ? AM_VALUE : PM_VALUE);
+  const [hour, setHour] = useState(use12HourFormat ? +format(baseDate, 'hh') : baseDate.getHours());
+  const [minute, setMinute] = useState(baseDate.getMinutes());
+  const [second, setSecond] = useState(baseDate.getSeconds());
+  const [dirty, setDirty] = useState(false); // user has interacted and a concrete time should be emitted
 
+  // Sync local state when external value changes
   useEffect(() => {
-    if (!value) {
-      onChange(undefined);
-      return;
-    }
-    // value is guaranteed to be defined here, but we still use safeValue (a Date) to satisfy typing
-    onChange(buildTime({ use12HourFormat, value: safeValue, formatStr, hour, minute, second, ampm }));
-  }, [hour, minute, second, ampm, formatStr, use12HourFormat]);
+    if (!value) return; // nothing to sync if still undefined
+    setAmpm(format(value, 'a') === 'AM' ? AM_VALUE : PM_VALUE);
+    setHour(use12HourFormat ? +format(value, 'hh') : value.getHours());
+    setMinute(value.getMinutes());
+    setSecond(value.getSeconds());
+    setDirty(false);
+  }, [value, use12HourFormat]);
+
+  // Emit changes only on user interaction (dirty). External value changes won't re-emit.
+  useEffect(() => {
+    if (!dirty) return;
+    const currentBase = value ?? placeholderBaseRef.current;
+    onChange(buildTime({ use12HourFormat, value: currentBase, formatStr, hour, minute, second, ampm }));
+    // When parent controls value it will update and reset dirty in the sync effect.
+  }, [hour, minute, second, ampm, formatStr, use12HourFormat, value, dirty]);
 
   const _hourIn24h = useMemo(() => {
     return use12HourFormat ? (hour % 12) + ampm * 12 : hour;
@@ -97,7 +107,7 @@ export function TimePicker({
       Array.from({ length: use12HourFormat ? 12 : 24 }, (_, i) => {
         let disabled = false;
         const hourValue = use12HourFormat ? (i === 0 ? 12 : i) : i;
-        const hDate = setHours(safeValue, use12HourFormat ? i + ampm * 12 : i);
+        const hDate = setHours(baseDate, use12HourFormat ? i + ampm * 12 : i);
         const hStart = startOfHour(hDate);
         const hEnd = endOfHour(hDate);
 
@@ -110,10 +120,10 @@ export function TimePicker({
           disabled,
         };
       }),
-    [safeValue, min, max, use12HourFormat, ampm],
+    [baseDate, min, max, use12HourFormat, ampm],
   );
   const minutes: SimpleTimeOption[] = useMemo(() => {
-    const anchorDate = setHours(safeValue, _hourIn24h);
+    const anchorDate = setHours(baseDate, _hourIn24h);
     return Array.from({ length: 60 }, (_, i) => {
       let disabled = false;
       const mDate = setMinutes(anchorDate, i);
@@ -127,9 +137,9 @@ export function TimePicker({
         disabled,
       };
     });
-  }, [safeValue, min, max, _hourIn24h]);
+  }, [baseDate, min, max, _hourIn24h]);
   const seconds: SimpleTimeOption[] = useMemo(() => {
-    const anchorDate = setMilliseconds(setMinutes(setHours(safeValue, _hourIn24h), minute), 0);
+    const anchorDate = setMilliseconds(setMinutes(setHours(baseDate, _hourIn24h), minute), 0);
     const _min = min ? setMilliseconds(min, 0) : undefined;
     const _max = max ? setMilliseconds(max, 0) : undefined;
     return Array.from({ length: 60 }, (_, i) => {
@@ -143,10 +153,10 @@ export function TimePicker({
         disabled,
       };
     });
-  }, [safeValue, minute, min, max, _hourIn24h]);
+  }, [baseDate, minute, min, max, _hourIn24h]);
   const ampmOptions = useMemo(() => {
-    const startD = startOfDay(safeValue);
-    const endD = endOfDay(safeValue);
+    const startD = startOfDay(baseDate);
+    const endD = endOfDay(baseDate);
     return [
       { value: AM_VALUE, label: 'AM' },
       { value: PM_VALUE, label: 'PM' },
@@ -158,7 +168,7 @@ export function TimePicker({
       if (max && start > max) disabled = true;
       return { ...v, disabled };
     });
-  }, [safeValue, min, max]);
+  }, [baseDate, min, max]);
 
   const [open, setOpen] = useState(false);
 
@@ -180,47 +190,65 @@ export function TimePicker({
   const onHourChange = useCallback(
     (v: SimpleTimeOption) => {
       if (min) {
-        let newTime = buildTime({ use12HourFormat, value: safeValue, formatStr, hour: v.value, minute, second, ampm });
+        let newTime = buildTime({ use12HourFormat, value: baseDate, formatStr, hour: v.value, minute, second, ampm });
         if (newTime < min) {
           setMinute(min.getMinutes());
           setSecond(min.getSeconds());
         }
       }
       if (max) {
-        let newTime = buildTime({ use12HourFormat, value: safeValue, formatStr, hour: v.value, minute, second, ampm });
+        let newTime = buildTime({ use12HourFormat, value: baseDate, formatStr, hour: v.value, minute, second, ampm });
         if (newTime > max) {
           setMinute(max.getMinutes());
           setSecond(max.getSeconds());
         }
       }
       setHour(v.value);
+      setDirty(true);
     },
-    [setHour, use12HourFormat, safeValue, formatStr, minute, second, ampm],
+    [setHour, use12HourFormat, baseDate, formatStr, minute, second, ampm],
   );
 
   const onMinuteChange = useCallback(
     (v: SimpleTimeOption) => {
       if (min) {
-        let newTime = buildTime({ use12HourFormat, value: safeValue, formatStr, hour: v.value, minute, second, ampm });
+        let newTime = buildTime({
+          use12HourFormat,
+          value: baseDate,
+          formatStr,
+          hour: hour,
+          minute: v.value,
+          second,
+          ampm,
+        });
         if (newTime < min) {
           setSecond(min.getSeconds());
         }
       }
       if (max) {
-        let newTime = buildTime({ use12HourFormat, value: safeValue, formatStr, hour: v.value, minute, second, ampm });
+        let newTime = buildTime({
+          use12HourFormat,
+          value: baseDate,
+          formatStr,
+          hour: hour,
+          minute: v.value,
+          second,
+          ampm,
+        });
         if (newTime > max) {
-          setSecond(newTime.getSeconds());
+          setSecond(max.getSeconds());
         }
       }
       setMinute(v.value);
+      setDirty(true);
     },
-    [setMinute, use12HourFormat, safeValue, formatStr, hour, second, ampm],
+    [setMinute, use12HourFormat, baseDate, formatStr, hour, second, ampm],
   );
 
   const onAmpmChange = useCallback(
     (v: SimpleTimeOption) => {
       if (min) {
-        let newTime = buildTime({ use12HourFormat, value: safeValue, formatStr, hour, minute, second, ampm: v.value });
+        let newTime = buildTime({ use12HourFormat, value: baseDate, formatStr, hour, minute, second, ampm: v.value });
         if (newTime < min) {
           const minH = min.getHours() % 12;
           setHour(minH === 0 ? 12 : minH);
@@ -229,7 +257,7 @@ export function TimePicker({
         }
       }
       if (max) {
-        let newTime = buildTime({ use12HourFormat, value: safeValue, formatStr, hour, minute, second, ampm: v.value });
+        let newTime = buildTime({ use12HourFormat, value: baseDate, formatStr, hour, minute, second, ampm: v.value });
         if (newTime > max) {
           const maxH = max.getHours() % 12;
           setHour(maxH === 0 ? 12 : maxH);
@@ -238,16 +266,14 @@ export function TimePicker({
         }
       }
       setAmpm(v.value);
+      setDirty(true);
     },
-    [setAmpm, use12HourFormat, safeValue, formatStr, hour, minute, second, min, max],
+    [setAmpm, use12HourFormat, baseDate, formatStr, hour, minute, second, min, max],
   );
 
   const display = useMemo(() => {
-    if (hideSeconds) {
-      if (!value) return '--:--';
-      return format(value, use12HourFormat ? 'hh:mm a' : 'HH:mm');
-    }
-    if (!value) return '--:--:--';
+    if (!value) return hideSeconds ? '--:--' : '--:--:--';
+    if (hideSeconds) return format(value, use12HourFormat ? 'hh:mm a' : 'HH:mm');
     return format(value, use12HourFormat ? 'hh:mm:ss a' : 'HH:mm:ss');
   }, [value, use12HourFormat, hideSeconds]);
 
@@ -275,10 +301,10 @@ export function TimePicker({
             <ScrollArea className="h-full flex-grow">
               <div className="flex grow flex-col items-stretch overflow-y-auto pe-2 pb-48">
                 {hours.map((v) => (
-                  <div ref={v.value === hour ? hourRef : undefined} key={v.value}>
+                  <div ref={value && v.value === hour ? hourRef : undefined} key={v.value}>
                     <TimeItem
                       option={v}
-                      selected={v.value === hour}
+                      selected={!!value && v.value === hour}
                       onSelect={onHourChange}
                       disabled={v.disabled}
                       className="h-8"
@@ -290,10 +316,10 @@ export function TimePicker({
             <ScrollArea className="h-full flex-grow">
               <div className="flex grow flex-col items-stretch overflow-y-auto pe-2 pb-48">
                 {minutes.map((v) => (
-                  <div ref={v.value === minute ? minuteRef : undefined} key={v.value}>
+                  <div ref={value && v.value === minute ? minuteRef : undefined} key={v.value}>
                     <TimeItem
                       option={v}
-                      selected={v.value === minute}
+                      selected={!!value && v.value === minute}
                       onSelect={onMinuteChange}
                       disabled={v.disabled}
                       className="h-8"
@@ -306,11 +332,14 @@ export function TimePicker({
               <ScrollArea className="h-full flex-grow">
                 <div className="flex grow flex-col items-stretch overflow-y-auto pe-2 pb-48">
                   {seconds.map((v) => (
-                    <div ref={v.value === second ? secondRef : undefined} key={v.value}>
+                    <div ref={value && v.value === second ? secondRef : undefined} key={v.value}>
                       <TimeItem
                         option={v}
-                        selected={v.value === second}
-                        onSelect={(v) => setSecond(v.value)}
+                        selected={!!value && v.value === second}
+                        onSelect={(v) => {
+                          setSecond(v.value);
+                          setDirty(true);
+                        }}
                         className="h-8"
                         disabled={v.disabled}
                       />
@@ -326,7 +355,7 @@ export function TimePicker({
                     <TimeItem
                       key={v.value}
                       option={v}
-                      selected={v.value === ampm}
+                      selected={!!value && v.value === ampm}
                       onSelect={onAmpmChange}
                       className="h-8"
                       disabled={v.disabled}

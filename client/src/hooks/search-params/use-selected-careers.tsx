@@ -61,7 +61,7 @@ export function useSelectedCareers({ careerOptions, activeUrl, useStudentCareers
     const nextIds = newCareersParam.slice().join(',');
     if (currentIds !== nextIds) {
       navigate({
-        to: activeUrl === '/_navLayout/horario/' ? '/horario' : '/materias',
+        to: transformActiveUrlToBasePath(activeUrl),
         search: { ...search, careers: newCareersParam },
         replace: true,
       });
@@ -69,4 +69,15 @@ export function useSelectedCareers({ careerOptions, activeUrl, useStudentCareers
   }, [selectedCareers, navigate, search?.careers, search]);
 
   return { selectedCareers, setSelectedCareers };
+}
+
+function transformActiveUrlToBasePath(activeUrl: Props['activeUrl']) {
+  switch (activeUrl) {
+    case '/_navLayout/horario/':
+      return '/horario';
+    case '/_navLayout/materias/':
+      return '/materias';
+    default:
+      return '/';
+  }
 }

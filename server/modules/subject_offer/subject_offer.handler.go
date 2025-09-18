@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"regexp"
+	"strings"
 
 	"metrograma/modules/auth/middlewares"
 	"metrograma/modules/subject_offer/services"
@@ -19,7 +21,22 @@ func Handlers(e *echo.Group) {
 	subject_offerGroup := e.Group("/subject_offer")
 	subject_offerGroup.POST("/upload", uploadPDF)
 	subject_offerGroup.GET("/", getSubjectOffer)
+	subject_offerGroup.GET("/annual/:year", getAnnualOfferByYear)
 	subject_offerGroup.GET("/:trimesterId", getSubjectOfferById)
+}
+
+var academicYearRegexp = regexp.MustCompile(`^[0-9]{4}$`)
+
+func validateAcademicYear(year string) error {
+	if !academicYearRegexp.MatchString(year) {
+		return echo.NewHTTPError(http.StatusBadRequest, "Año académico inválido. Use el patrón 2122, 2223, 2324.")
+	}
+	start := int(year[0]-'0')*10 + int(year[1]-'0')
+	end := int(year[2]-'0')*10 + int(year[3]-'0')
+	if start == 99 || end != start+1 {
+		return echo.NewHTTPError(http.StatusBadRequest, "Año académico inválido. Use el patrón 2122, 2223, 2324.")
+	}
+	return nil
 }
 
 // @Summary   Subir oferta académica (PDF)
@@ -152,4 +169,49 @@ func getSubjectOfferById(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 	}
 	return c.JSON(http.StatusOK, offers)
+}
+
+// getAnnualOfferByYear godoc
+// @Summary      Lista oferta anual por año académico
+// @Description  Devuelve materias con su período (trimester plan) y los trimestres en los que se ofrece dentro del año académico dado.
+// @Tags         subject_offer
+// @Accept       json
+// @Produce      json
+// @Param        career  query string true  "Filtro de carreras (RecordID)"
+// @Param        year     path  string true  "Año académico (e.g. 2425)"
+// @Success      200 {array} DTO.QueryAnnualOfferYear
+// @Failure      400 {object} map[string]string
+// @Failure      500 {object} map[string]string
+// @Router       /subject_offer/annual/{year} [get]
+func getAnnualOfferByYear(c echo.Context) error {
+	career := c.QueryParam("career")
+	year := c.Param("year")
+	if career == "" || career == "none" {
+		return echo.NewHTTPError(http.StatusBadRequest, "El parámetro 'careers' es requerido y debe contener al menos 1 carrera")
+	}
+
+	if year == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "El parámetro 'year' es requerido")
+	}
+	if err := validateAcademicYear(year); err != nil {
+		return err
+	}
+
+	parts := strings.Split(career, ":")
+	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "El parámetro 'career' debe ser un RecordID válido (formato: career:id)")
+	}
+
+	carreerId := models.NewRecordID(
+		parts[0], parts[1],
+	)
+
+	result, err := services.QueryAnnualOfferByYear(carreerId, year)
+	if err != nil {
+		if he, ok := err.(*echo.HTTPError); ok {
+			return he
+		}
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+	return c.JSON(http.StatusOK, result)
 }

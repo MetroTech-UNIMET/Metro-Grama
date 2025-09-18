@@ -37,7 +37,7 @@ export function FilterByTimeRange({ value, onChange, onReset, className }: Props
             value={value ? strToDate(value.start) : undefined}
             onChange={(d) => {
               const startStr = d ? dateToStr(d) : '';
-              if (!startStr) return
+              if (!startStr) return;
 
               // Ensure start is not after end
               if (startStr > (value?.end ?? '')) {
@@ -56,7 +56,7 @@ export function FilterByTimeRange({ value, onChange, onReset, className }: Props
             value={value ? strToDate(value.end) : undefined}
             onChange={(d) => {
               const endStr = d ? dateToStr(d) : '';
-              if (!endStr) return
+              if (!endStr) return;
 
               // Ensure end is not before start
               if (endStr < (value?.start ?? '')) {

@@ -1,13 +1,18 @@
 import { Outlet } from '@tanstack/react-router';
-import { Home, Calendar } from 'lucide-react';
+import { Home, Calendar, LayoutList } from 'lucide-react';
 
 import MenuDockLink, { type DockLinkItem } from '@ui/shadcn-io/menu-dock/menu-dock-link';
+
+const LayoutListInverted = () => <LayoutList className="rotate-180" />;
 
 const items: DockLinkItem[] = [
   {
     label: 'Materias',
     to: '/materias',
     icon: Home,
+    search: (prev) => ({
+      careers: prev?.careers ?? [],
+    }),
   },
   {
     label: 'Horario',
@@ -16,8 +21,20 @@ const items: DockLinkItem[] = [
       careers: prev?.careers ?? [],
       trimester: 'none',
       is_principal: true,
+      search: '',
+      orderBy: 'name',
+      filterByDays: [],
     }),
     icon: Calendar,
+  },
+  {
+    label: 'Oferta anual',
+    to: '/oferta',
+    search: (prev) => ({
+      careers: prev?.careers ?? [],
+      year: 'none',
+    }),
+    icon: LayoutListInverted,
   },
 ];
 

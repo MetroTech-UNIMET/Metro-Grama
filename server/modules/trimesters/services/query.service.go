@@ -7,12 +7,21 @@ import (
 	"metrograma/models"
 
 	"github.com/surrealdb/surrealdb.go"
+	"github.com/surrealdb/surrealdb.go/contrib/surrealql"
 )
 
-const getAllTrimestersQuery = "SELECT * FROM trimester;"
+// GetAllTrimesters retrieves trimesters, optionally excluding future ones when noFuture is true.
+func GetAllTrimesters(noFuture bool) ([]models.TrimesterEntity, error) {
+	// Build query using surrealql without passing external params
+	qb := surrealql.Select("trimester")
+	if noFuture {
+		qb = qb.Where("starting_date < time::now()")
+	}
+	qb = qb.OrderBy("starting_date DESC")
 
-func GetAllTrimesters() ([]models.TrimesterEntity, error) {
-	result, err := surrealdb.Query[[]models.TrimesterEntity](context.Background(), db.SurrealDB, getAllTrimestersQuery, nil)
+	sql, vars := qb.Build()
+
+	result, err := surrealdb.Query[[]models.TrimesterEntity](context.Background(), db.SurrealDB, sql, vars)
 	if err != nil {
 		return []models.TrimesterEntity{}, err
 	}

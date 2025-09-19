@@ -1,8 +1,8 @@
-import { QueryClient } from '@tanstack/query-core';
+import type { QueryClient, QueryKey } from '@tanstack/query-core';
 
 export async function fetchAndSetQueryData<T>(
   queryClient: QueryClient,
-  queryKey: (string | number | object)[],
+  queryKey: QueryKey,
   fetchFn: () => Promise<T>,
 ): Promise<T> {
   let data = queryClient.getQueryData<T>(queryKey);

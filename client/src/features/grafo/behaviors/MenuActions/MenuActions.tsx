@@ -1,26 +1,23 @@
-import { useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
+import { useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
 
-import { useEnrollmentMutations } from "./mutations/use-enrollment-mutations";
-import { useStatusActions } from "../StatusActions";
+import { useEnrollmentMutations } from './mutations/use-enrollment-mutations';
+import { useStatusActions } from '../StatusActions';
 
-import { useSubjectSheet } from "@/features/grafo/SubjectSheet";
-import { useAuth } from "@/contexts/AuthenticationContext";
-import { useLazyGraphinContext } from "@/hooks/lazy-loading/use-LazyGraphin";
+import { useSubjectSheet } from '@/features/grafo/SubjectSheet';
+import { useAuth } from '@/contexts/AuthenticationContext';
+import { useLazyGraphinContext } from '@/hooks/lazy-loading/use-LazyGraphin';
 
-import { GoogleLink } from "@ui/link";
-import {
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuTrigger,
-} from "@ui/context-menu";
-import { CardTitle } from "@ui/card";
+import { GoogleLink } from '@ui/link';
+import { ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '@ui/context-menu';
+import { CardTitle } from '@ui/card';
 
-import type { INode } from "@antv/g6";
-import type { Subject } from "@/interfaces/Subject";
-import type { IG6GraphEvent } from "@antv/graphin";
-import type { Node4j } from "@/interfaces/Graph";
-import { Spinner } from "@ui/spinner";
+import type { INode } from '@antv/g6';
+import type { Subject } from '@/interfaces/Subject';
+import type { IG6GraphEvent } from '@antv/graphin';
+import type { Node4j } from '@/interfaces/Graph';
+import { Spinner } from '@ui/spinner';
+import { DialogTrigger } from '@ui/dialog';
 
 interface SubjectNode extends INode {
   _cfg: {
@@ -32,9 +29,10 @@ interface SubjectNode extends INode {
 
 interface MenuNodeProps {
   node: SubjectNode;
+  selectSubjectDialog: MenuActionsProps['selectSubjectDialog'];
 }
 
-function MenuNode({ node }: MenuNodeProps) {
+function MenuNode({ node, selectSubjectDialog }: MenuNodeProps) {
   const { selectSubject } = useSubjectSheet();
   const { nodeActions } = useStatusActions();
   const { user } = useAuth();
@@ -57,42 +55,44 @@ function MenuNode({ node }: MenuNodeProps) {
         unenrollMutation.mutate(viewedNodes);
       }
     } else {
-      toast(`Materias ${enabled ? "marcadas" : "desmarcadas"} exitosamente`, {
-        description: "Si quiere que persista al volver a abrir, inicie sesión",
+      toast(`Materias ${enabled ? 'marcadas' : 'desmarcadas'} exitosamente`, {
+        description: 'Si quiere que persista al volver a abrir, inicie sesión',
         action: <GoogleLink className="mt-2" />,
-        className: "flex flex-col items-baseline space-x-0",
+        className: 'flex flex-col items-baseline space-x-0',
       });
     }
   }
 
   return (
     <ContextMenuContent className="max-w-64">
-      <CardTitle className="px-2 py-1 text-sm font-semibold border-b border-muted">
+      <CardTitle className="border-muted border-b px-2 py-1 text-sm font-semibold">
         {subjectCode} - {subjectName}
       </CardTitle>
       <ContextMenuItem
         onClick={() => markViewed(node)}
         disabled={enrollMutation.isPending || unenrollMutation.isPending}
       >
-        <Spinner
-          size="small"
-          show={enrollMutation.isPending || unenrollMutation.isPending}
-        />
+        <Spinner size="small" show={enrollMutation.isPending || unenrollMutation.isPending} />
 
-        {node?.hasState("viewed")
-          ? "Desmarcar como materia vista"
-          : "Marcar como materia vista"}
+        {node?.hasState('viewed') ? 'Desmarcar como materia vista' : 'Marcar como materia vista'}
       </ContextMenuItem>
-      <ContextMenuItem onClick={() => selectSubject(subject)}>
-        Ver detalles
-      </ContextMenuItem>
+
+      <DialogTrigger asChild onClick={() => selectSubjectDialog(subject)}>
+        <ContextMenuItem>Marcar materia</ContextMenuItem>
+      </DialogTrigger>
+
+      <ContextMenuItem onClick={() => selectSubject(subject)}>Ver detalles</ContextMenuItem>
     </ContextMenuContent>
   );
 }
 
 const longTouchDuration = 1000;
 
-export function MenuActions() {
+interface MenuActionsProps {
+  selectSubjectDialog: (subject: Subject) => void;
+}
+
+export function MenuActions({ selectSubjectDialog }: MenuActionsProps) {
   const graphinContext = useLazyGraphinContext();
 
   const [node, setNode] = useState<SubjectNode | null>(null);
@@ -112,7 +112,7 @@ export function MenuActions() {
       const x = e.canvasX;
       const y = e.canvasY;
 
-      const contextMenuEvent = new MouseEvent("contextmenu", {
+      const contextMenuEvent = new MouseEvent('contextmenu', {
         bubbles: true,
         clientX: x,
         clientY: y,
@@ -138,26 +138,26 @@ export function MenuActions() {
       if (shouldClose) close();
     }
 
-    graph.on("node:contextmenu", handleOpenContextMenu);
+    graph.on('node:contextmenu', handleOpenContextMenu);
 
-    graph.on("node:touchstart", handleNodeTouchStart);
-    graph.on("node:touchmove", handleNodeTouchMove);
-    graph.on("node:touchend", handleNodeTouchEnd);
+    graph.on('node:touchstart', handleNodeTouchStart);
+    graph.on('node:touchmove', handleNodeTouchMove);
+    graph.on('node:touchend', handleNodeTouchEnd);
 
-    graph.on("canvas:click", close);
-    graph.on("canvas:drag", close);
-    graph.on("canvas:touchstart", close);
+    graph.on('canvas:click', close);
+    graph.on('canvas:drag', close);
+    graph.on('canvas:touchstart', close);
 
     return () => {
-      graph.off("node:contextmenu", handleOpenContextMenu);
+      graph.off('node:contextmenu', handleOpenContextMenu);
 
-      graph.off("node:touchstart", handleNodeTouchStart);
-      graph.off("node:touchmove", handleNodeTouchMove);
-      graph.off("node:touchend", handleNodeTouchEnd);
+      graph.off('node:touchstart', handleNodeTouchStart);
+      graph.off('node:touchmove', handleNodeTouchMove);
+      graph.off('node:touchend', handleNodeTouchEnd);
 
-      graph.off("canvas:click", handleNodeTouchEnd);
-      graph.off("canvas:drag", close);
-      graph.off("canvas:touchstart", close);
+      graph.off('canvas:click', handleNodeTouchEnd);
+      graph.off('canvas:drag', close);
+      graph.off('canvas:touchstart', close);
     };
   }, [graphinContext]);
 
@@ -181,7 +181,7 @@ export function MenuActions() {
         <div ref={hiddenTriggerRef} />
       </ContextMenuTrigger>
 
-      {node && <MenuNode node={node} />}
+      {node && <MenuNode node={node} selectSubjectDialog={selectSubjectDialog} />}
     </>
   );
 }

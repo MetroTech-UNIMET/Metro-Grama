@@ -2,6 +2,8 @@ import SearchPrelations from './behaviors/Search-Prelations';
 import { MenuActions } from './behaviors/MenuActions';
 import UpdateNodeStatusOnGraphChange from './behaviors/Update-Node-Status-OnGraphChange';
 import CreditsMenu from './behaviors/CreditsMenu';
+
+import EnrollDialog from './EnrollDialog/EnrollDialog';
 // import SideBarGraph from "./SideBarGraph";
 
 import { ShowAxiosError } from '@components/ShowAxiosError';
@@ -10,6 +12,7 @@ import { CareerMultiDropdown } from '@components/CareerMultiDropdown';
 import { Spinner } from '@ui/spinner';
 import GoogleLogin from '@ui/derived/GoogleLogin';
 import { ContextMenu } from '@ui/context-menu';
+import { Dialog } from '@ui/dialog';
 
 import useSubjectGraph from '@/features/grafo/hooks/useSubjectGraph/useSubjectGraph';
 
@@ -21,9 +24,13 @@ import { useSelectedCareers } from '@/hooks/search-params/use-selected-careers';
 import useLazyGraphin from '@/hooks/lazy-loading/use-LazyGraphin';
 
 import type { AxiosError } from 'axios';
+import { Subject } from '@/interfaces/Subject';
+import { useState } from 'react';
 
 export default function Graph() {
   const careerOptionsQuery = useFetchCareersOptions();
+
+  const [selectedSubjectDialog, setSelectedSubjectDialog] = useState<Subject | null>(null);
 
   const { selectedCareers, setSelectedCareers } = useSelectedCareers({
     activeUrl: '/_navLayout/materias/',
@@ -74,23 +81,27 @@ export default function Graph() {
         </>
       ) : (
         <div className="h-full overflow-hidden">
-          <ContextMenu>
-            <Graphin
-              data={graph}
-              style={{
-                backgroundColor: 'transparent',
-                position: 'relative',
-              }}
-              layout={{ type: 'dagre' }}
-            >
-              <Hoverable bindType="node" />
-              <SearchPrelations />
-              <MenuActions />
-              <CreditsMenu />
+          <Dialog open={!!selectedSubjectDialog} onOpenChange={(open) => !open && setSelectedSubjectDialog(null)}>
+            <ContextMenu>
+              <Graphin
+                data={graph}
+                style={{
+                  backgroundColor: 'transparent',
+                  position: 'relative',
+                }}
+                layout={{ type: 'dagre' }}
+              >
+                <Hoverable bindType="node" />
+                <SearchPrelations />
+                <MenuActions selectSubjectDialog={setSelectedSubjectDialog} />
+                <CreditsMenu />
 
-              <UpdateNodeStatusOnGraphChange graphData={graph} />
-            </Graphin>
-          </ContextMenu>
+                <UpdateNodeStatusOnGraphChange graphData={graph} />
+              </Graphin>
+            </ContextMenu>
+
+            <EnrollDialog selectedSubjectDialog={selectedSubjectDialog} />
+          </Dialog>
         </div>
       )}
     </>

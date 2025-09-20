@@ -3,6 +3,7 @@ package enroll
 import (
 	"fmt"
 	authMiddlewares "metrograma/modules/auth/middlewares"
+	DTO "metrograma/modules/interactions/enroll/DTO"
 	"metrograma/modules/interactions/enroll/services"
 	"net/http"
 
@@ -13,7 +14,8 @@ import (
 func Handlers(e *echo.Group) {
 	enrollGroup := e.Group("/enroll", authMiddlewares.StudentAuth)
 
-	enrollGroup.POST("/", createPassed)
+	// POST /enroll/:subject - subject is a code like BPTFI01
+	enrollGroup.POST("/:subject", createPassed)
 	enrollGroup.DELETE("/", deletePassed)
 	enrollGroup.GET("/", getEnrolledSubjects)
 }
@@ -51,25 +53,45 @@ func extractData(c echo.Context) (*models.RecordID, []string, error) {
 // @Accept       json
 // @Produce      json
 // @Security     CookieAuth
-// @Param        body  body  object  true  "{\"subjects\": [string]}"
+// @Param        subject  path  string            true  "Subject code (e.g., BPTFI01)"
+// @Param        body     body  DTO.CreateEnrolled  true  "Enrollment payload"
 // @Success      201  {object}  map[string]string
 // @Failure      400  {object}  map[string]string
 // @Failure      401  {object}  map[string]string
 // @Failure      500  {object}  map[string]string
 // @Router       /enroll/ [post]
 func createPassed(c echo.Context) error {
-	userId, subjects, err := extractData(c)
-	if err != nil {
-		return err
+	// Get studentId from middleware
+	raw := c.Get("student-id")
+	if raw == nil {
+		return echo.NewHTTPError(http.StatusUnauthorized)
+	}
+	studentId, ok := raw.(models.RecordID)
+	if !ok {
+		return echo.NewHTTPError(http.StatusUnauthorized, "Invalid user ID")
 	}
 
-	if err := services.EnrollStudent(*userId, subjects); err != nil {
+	// Bind DTO
+	var input DTO.CreateEnrolled
+	if err := c.Bind(&input); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
+	}
+
+	// Build subject RecordID from path param and inject into DTO
+	subjectCode := c.Param("subject")
+	if subjectCode == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "Missing subject code in path")
+	}
+	subjectId := models.NewRecordID("subject", subjectCode)
+
+	// Call service
+	if err := services.EnrollStudent(studentId, subjectId, input); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
-	fmt.Println("Enrolled the subjects successfully")
+	fmt.Println("Enrolled the subject successfully")
 
 	return c.JSON(http.StatusCreated, map[string]string{
-		"message": "You enrolled the subjects successfully",
+		"message": "You enrolled the subject successfully",
 	})
 }
 

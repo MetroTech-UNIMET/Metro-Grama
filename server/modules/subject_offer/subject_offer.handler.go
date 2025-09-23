@@ -21,6 +21,8 @@ import (
 func Handlers(e *echo.Group) {
 	subject_offerGroup := e.Group("/subject_offer")
 
+	// TODO - Si se encuetnra con una materia que no existe, igual la añade a la oferta.
+	// Pero no pararece /annual/:year dado que no está en belong
 	subject_offerGroup.POST("/upload", uploadPDF)
 	subject_offerGroup.POST("/:subjectId", createSubjectOffer)
 

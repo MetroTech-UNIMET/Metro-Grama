@@ -5,33 +5,44 @@ import (
 	"metrograma/db"
 	"metrograma/modules/subject_offer/DTO"
 
+	"github.com/surrealdb/surrealdb.go/contrib/surrealql"
 	surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
 
 	"github.com/surrealdb/surrealdb.go"
 )
 
-// TODO - Filtar aquellas que tienen trimesters vacíos
-// Surreal query to get the annual offer (subjects with their curriculum period and the trimesters
-// where they are offered in the specified academic year).
-// $career : record<career>
-// $year   : string (e.g. "2425")
-const queryAnnualOfferYear = `
-SELECT in as subject, trimester as period,
-    (SELECT VALUE out FROM subject_offer
-        WHERE in = $parent.in AND string::starts_with(record::id(out), $year)) AS trimesters
-FROM belong
-WHERE $career INSIDE ->career
-ORDER BY period
-FETCH subject;`
-
 // QueryAnnualOfferByYear returns subjects (curriculum period + offered trimesters) for the given careers and academic year.
 func QueryAnnualOfferByYear(career surrealModels.RecordID, year string) ([]DTO.QueryAnnualOfferYear, error) {
+	qb_SubQuery := surrealql.Select("subject_offer").
+		Field("VALUE out").
+		Where("in = $parent.in").
+		Where("string::starts_with(record::id(out), $year)")
+
+	subQueryString := "(" + qb_SubQuery.String() + ") AS trimesters"
+
+	qb := surrealql.
+		Select("belong").
+		FieldNameAs("in", "subject").
+		FieldNameAs("trimester", "period").
+		Field(subQueryString).
+		Where("? INSIDE ->career", career).
+		OrderBy("period").
+		Fetch("subject")
 
 	params := map[string]any{
-		"career": career,
-		"year":   year,
+		"year": year,
 	}
-	res, err := surrealdb.Query[[]DTO.QueryAnnualOfferYear](context.Background(), db.SurrealDB, queryAnnualOfferYear, params)
+
+	sql, vars := qb.Build()
+
+	if vars == nil {
+		vars = map[string]any{}
+	}
+	for k, v := range params {
+		vars[k] = v
+	}
+
+	res, err := surrealdb.Query[[]DTO.QueryAnnualOfferYear](context.Background(), db.SurrealDB, sql, vars)
 	if err != nil {
 		return nil, err
 	}

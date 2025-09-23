@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"fmt"
 	"metrograma/db"
 	"metrograma/models"
 
@@ -18,14 +17,11 @@ func UnRelateSubjectFromTrimester(subjectId surrealModels.RecordID, trimesterId 
 		Where("in = ? AND out = ?", subjectId, trimesterId).
 		Return("BEFORE")
 	sql, vars := qb.Build()
-	fmt.Println("SQL:", sql)
 
 	result, err := surrealdb.Query[[]models.SubjectOfferEntity](context.Background(), db.SurrealDB, sql, vars)
 	if err != nil {
-		fmt.Println("ERROR:", err)
 		return models.SubjectOfferEntity{}, err
 	}
-	fmt.Println("RESULT:", result)
 
 	subjectOffer := (*result)[0].Result
 	return subjectOffer[0], nil

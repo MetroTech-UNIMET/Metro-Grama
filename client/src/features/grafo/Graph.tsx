@@ -1,7 +1,9 @@
+import { useState } from 'react';
+
 import SearchPrelations from './behaviors/Search-Prelations';
-import { MenuActions } from './behaviors/MenuActions';
-import UpdateNodeStatusOnGraphChange from './behaviors/Update-Node-Status-OnGraphChange';
+import { MenuActions, type SubjectNode } from './behaviors/MenuActions';
 import CreditsMenu from './behaviors/CreditsMenu';
+import UpdateNodeStatusOnGraphChange from './behaviors/Update-Node-Status-OnGraphChange';
 
 import EnrollDialog from './EnrollDialog/EnrollDialog';
 // import SideBarGraph from "./SideBarGraph";
@@ -24,13 +26,11 @@ import { useSelectedCareers } from '@/hooks/search-params/use-selected-careers';
 import useLazyGraphin from '@/hooks/lazy-loading/use-LazyGraphin';
 
 import type { AxiosError } from 'axios';
-import { Subject } from '@/interfaces/Subject';
-import { useState } from 'react';
 
 export default function Graph() {
   const careerOptionsQuery = useFetchCareersOptions();
 
-  const [selectedSubjectDialog, setSelectedSubjectDialog] = useState<Subject | null>(null);
+  const [selectedSubjectDialog, setSelectedSubjectDialog] = useState<SubjectNode | null>(null);
 
   const { selectedCareers, setSelectedCareers } = useSelectedCareers({
     activeUrl: '/_navLayout/materias/',
@@ -100,7 +100,10 @@ export default function Graph() {
               </Graphin>
             </ContextMenu>
 
-            <EnrollDialog selectedSubjectDialog={selectedSubjectDialog} />
+            <EnrollDialog
+              selectedSubjectNode={selectedSubjectDialog}
+              afterSubmit={() => setSelectedSubjectDialog(null)}
+            />
           </Dialog>
         </div>
       )}

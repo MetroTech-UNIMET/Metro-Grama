@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
-import { useEnrollmentMutations } from './mutations/use-enrollment-mutations';
 import { useStatusActions } from '../StatusActions';
 
 import { useSubjectSheet } from '@/features/grafo/SubjectSheet';
@@ -11,15 +10,14 @@ import { useLazyGraphinContext } from '@/hooks/lazy-loading/use-LazyGraphin';
 import { GoogleLink } from '@ui/link';
 import { ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from '@ui/context-menu';
 import { CardTitle } from '@ui/card';
+import { DialogTrigger } from '@ui/dialog';
 
 import type { INode } from '@antv/g6';
 import type { Subject } from '@/interfaces/Subject';
 import type { IG6GraphEvent } from '@antv/graphin';
 import type { Node4j } from '@/interfaces/Graph';
-import { Spinner } from '@ui/spinner';
-import { DialogTrigger } from '@ui/dialog';
 
-interface SubjectNode extends INode {
+export interface SubjectNode extends INode {
   _cfg: {
     model: {
       data: Node4j<Subject>;
@@ -36,7 +34,6 @@ function MenuNode({ node, selectSubjectDialog }: MenuNodeProps) {
   const { selectSubject } = useSubjectSheet();
   const { nodeActions } = useStatusActions();
   const { user } = useAuth();
-  const { enrollMutation, unenrollMutation } = useEnrollmentMutations();
 
   const subject = (node._cfg?.model?.data).data;
 
@@ -44,23 +41,13 @@ function MenuNode({ node, selectSubjectDialog }: MenuNodeProps) {
   const subjectName = subject.name;
 
   function markViewed(node: INode) {
-    // TODO - Refactorizar logica de no cambiar el state a menos que haya sido exitoso
-    const { nodes, enabled } = nodeActions.enableViewedNode(node);
-    const viewedNodes = Array.from(nodes);
+    const { enabled } = nodeActions.enableViewedNode(node);
 
-    if (user) {
-      if (enabled) {
-        enrollMutation.mutate(viewedNodes);
-      } else {
-        unenrollMutation.mutate(viewedNodes);
-      }
-    } else {
-      toast(`Materias ${enabled ? 'marcadas' : 'desmarcadas'} exitosamente`, {
-        description: 'Si quiere que persista al volver a abrir, inicie sesión',
-        action: <GoogleLink className="mt-2" />,
-        className: 'flex flex-col items-baseline space-x-0',
-      });
-    }
+    toast(`Materias ${enabled ? 'marcadas' : 'desmarcadas'} exitosamente`, {
+      description: 'Si quiere guardar su progreso al volver a ingresar, inicie sesión',
+      action: <GoogleLink className="mt-2" />,
+      className: 'flex flex-col items-baseline space-x-0',
+    });
   }
 
   return (
@@ -68,18 +55,18 @@ function MenuNode({ node, selectSubjectDialog }: MenuNodeProps) {
       <CardTitle className="border-muted border-b px-2 py-1 text-sm font-semibold">
         {subjectCode} - {subjectName}
       </CardTitle>
-      <ContextMenuItem
-        onClick={() => markViewed(node)}
-        disabled={enrollMutation.isPending || unenrollMutation.isPending}
-      >
-        <Spinner size="small" show={enrollMutation.isPending || unenrollMutation.isPending} />
 
-        {node?.hasState('viewed') ? 'Desmarcar como materia vista' : 'Marcar como materia vista'}
-      </ContextMenuItem>
+      {!user && (
+        <ContextMenuItem onClick={() => markViewed(node)}>
+          {node?.hasState('viewed') ? 'Desmarcar como materia vista' : 'Marcar como materia vista'}
+        </ContextMenuItem>
+      )}
 
-      <DialogTrigger asChild onClick={() => selectSubjectDialog(subject)}>
-        <ContextMenuItem>Marcar materia</ContextMenuItem>
-      </DialogTrigger>
+      {node?.hasState('accesible') && user && (
+        <DialogTrigger asChild onClick={() => selectSubjectDialog(node)}>
+          <ContextMenuItem>Marcar materia</ContextMenuItem>
+        </DialogTrigger>
+      )}
 
       <ContextMenuItem onClick={() => selectSubject(subject)}>Ver detalles</ContextMenuItem>
     </ContextMenuContent>
@@ -89,7 +76,7 @@ function MenuNode({ node, selectSubjectDialog }: MenuNodeProps) {
 const longTouchDuration = 1000;
 
 interface MenuActionsProps {
-  selectSubjectDialog: (subject: Subject) => void;
+  selectSubjectDialog: (subjectNode: SubjectNode) => void;
 }
 
 export function MenuActions({ selectSubjectDialog }: MenuActionsProps) {

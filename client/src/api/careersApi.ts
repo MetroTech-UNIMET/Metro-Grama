@@ -1,5 +1,4 @@
 import axios from "@/axiosConfig";
-import { idToSurrealId } from "@utils/queries";
 
 import type { Career, CareerWithSubjects } from "@/interfaces/Career";
 
@@ -21,9 +20,7 @@ export async function updateCareer(oldCareer: CareerWithSubjects, newCareer: any
 }
 
 export async function getCompleteCareer(id: string): Promise<CareerWithSubjects> {
-  
-  const surrealId = idToSurrealId(id, "career");
-  const response = await axios.get(`/careers/withSubjects/${surrealId}`);
+  const response = await axios.get(`/careers/withSubjects/${id}`);
 
   return response.data;
 }

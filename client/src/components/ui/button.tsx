@@ -16,7 +16,7 @@ const colors = {
   // 'text-neutral-50 hover:bg-neutral-800 dark:bg-neutral-800 dark:text-neutral-50 dark:hover:bg-neutral-700',
   primary: 'bg-primary text-neutral-50 hover:bg-primary/90 hover:ring-1 ring-secondary active:bg-primary-900',
   secondary:
-    'bg-secondary text-neutral-900 hover:bg-neutral-100/80 dark:bg-neutral-800 dark:text-neutral-50 dark:hover:bg-neutral-800/80',
+    'bg-secondary-300 text-secondary-950 hover:bg-secondary-300/80 dark:bg-neutral-800 dark:text-neutral-50 dark:hover:bg-neutral-800/80',
   success:
     'bg-success text-success-foreground hover:bg-green-700/90 dark:bg-green-900 dark:text-neutral-50 dark:hover:bg-green-900/90',
   destructive:

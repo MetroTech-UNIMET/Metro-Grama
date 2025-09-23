@@ -1,33 +1,36 @@
 import { useEffect, useState } from 'react';
+import { useSearch } from '@tanstack/react-router';
 
-import { useAcademicYear } from './hooks/use-academic-year';
-import { useSelectedCareer } from './hooks/use-selected-career';
+import { OfferHeader } from './components/OfferHeader';
+
+import { useAcademicYear } from './hooks/search-params/use-academic-year';
+import { useMutationCreateOfferForSubject } from './hooks/mutations/use-mutation-createOfferForSubject';
+
 import { numberToRoman } from './utils/numberToRoman';
 
 import { cn } from '@utils/className';
 
-import useFetchCareersOptions from '@/hooks/queries/use-FetchCareersOptions';
 import { useFetchAnnualOfferByYear } from '@/hooks/queries/subject_offer/use-fetch-annual-offer-by-year';
 
-import AutoComplete from '@ui/derived/autocomplete';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
+import { Spinner } from '@/components/ui/spinner';
+
+import type { Id } from '@/interfaces/surrealDb';
+import type { SubjectEntity } from '@/interfaces/Subject';
 
 type OfferedCols = { T1: boolean; T2: boolean; T3: boolean; I: boolean };
 
+// TODO - Considerar usar rate limiting tanto en cliente como en server
 export function OfertaAcademicTable() {
-  const { year, setYear, debouncedYear } = useAcademicYear();
-  const careerOptionsQuery = useFetchCareersOptions();
-  const { selectedCareer, setSelectedCareer } = useSelectedCareer({
-    careerOptions: careerOptionsQuery.options,
-    useStudentCareersAsDefault: true,
-  });
+  const { debouncedYear } = useAcademicYear();
+  const search = useSearch({ from: '/_navLayout/oferta/' });
 
   const { data, isLoading } = useFetchAnnualOfferByYear({
     year: debouncedYear || undefined,
-    career: selectedCareer?.value,
+    career: search.career,
   });
 
   // Keep only user edits for trimesters, keyed by subject code/id
@@ -36,7 +39,7 @@ export function OfertaAcademicTable() {
   // Seed offeredEdits when data is fetched (do not compute in render)
   useEffect(() => {
     if (!data || data.length === 0) return;
-    
+
     setOfferedEdits((prev) => {
       const next = { ...prev };
       for (const item of data) {
@@ -70,25 +73,8 @@ export function OfertaAcademicTable() {
 
   return (
     <Card className="space-y-4 p-4">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <AutoComplete
-          options={careerOptionsQuery.options || []}
-          isLoading={careerOptionsQuery.isLoading}
-          value={selectedCareer}
-          onSelect={(option) => setSelectedCareer(option as any)}
-          placeholder="Selecciona carrera"
-        />
-        <div className="flex items-center gap-2 text-sm">
-          <span>Año:</span>
-          <input
-            type="text"
-            value={year}
-            onChange={(e) => setYear(e.target.value)}
-            placeholder="2324"
-            className="bg-background h-8 w-20 rounded border border-gray-300 px-2 text-sm"
-          />
-        </div>
-      </div>
+      <OfferHeader />
+
       <Separator />
 
       <Table className="min-w-[900px]">
@@ -124,14 +110,15 @@ export function OfertaAcademicTable() {
                 <TableCell className="w-28 p-2 align-top font-mono text-xs">{code}</TableCell>
                 <TableCell className="p-2 align-top">{name}</TableCell>
                 {(['T1', 'T2', 'T3', 'I'] as const).map((col) => (
-                  <TableCell key={col} className="p-2 text-center">
-                    <Checkbox
-                      checked={offered[col]}
-                      onCheckedChange={() => toggleOffer(code, col)}
-                      className="mx-auto"
-                      disabled={isLoading}
-                    />
-                  </TableCell>
+                  <OfferCell
+                    key={col}
+                    subject={item.subject}
+                    col={col}
+                    checked={offered[col]}
+                    academicYear={(debouncedYear || '').trim()}
+                    disabled={isLoading}
+                    onToggle={() => toggleOffer(code, col)}
+                  />
                 ))}
               </TableRow>
             );
@@ -139,5 +126,56 @@ export function OfertaAcademicTable() {
         </TableBody>
       </Table>
     </Card>
+  );
+}
+
+type OfferCellProps = {
+  subject: SubjectEntity;
+  col: keyof OfferedCols;
+  checked: boolean;
+  academicYear: string;
+  disabled?: boolean;
+  onToggle: () => void;
+};
+
+function OfferCell({ subject, col, checked, academicYear, disabled, onToggle }: OfferCellProps) {
+  // const [localPending, setLocalPending] = useState(false);
+  const { createOfferMutation, deleteOfferMutation } = useMutationCreateOfferForSubject(subject);
+  const mutationsPending = createOfferMutation.isPending || deleteOfferMutation.isPending;
+
+  const handleChange = () => {
+    if (disabled || mutationsPending) return;
+    // Optimistic parent update
+
+    onToggle();
+    const symbol = col === 'T1' ? '1' : col === 'T2' ? '2' : col === 'T3' ? '3' : 'INTENSIVO';
+    const trimesterId: Id<string> = { Table: 'trimester', ID: `${academicYear}-${symbol}` };
+
+    // If on error, toggle again
+    if (checked) {
+      deleteOfferMutation.mutate(
+        { trimesterId },
+        {
+          onError: () => onToggle(),
+        },
+      );
+    } else {
+      createOfferMutation.mutate(
+        { trimesterId },
+        {
+          onError: () => onToggle(),
+        },
+      );
+    }
+  };
+
+  return (
+    <TableCell className="p-2 text-center">
+      {mutationsPending ? (
+        <Spinner size="small" className="mx-auto" />
+      ) : (
+        <Checkbox checked={checked} onCheckedChange={handleChange} className="mx-auto" disabled={disabled} />
+      )}
+    </TableCell>
   );
 }

@@ -1,3 +1,6 @@
-import type { UndefinedInitialDataOptions } from '@tanstack/react-query';
+import type { DefaultError, UndefinedInitialDataOptions } from '@tanstack/react-query';
 
-export type OptionalQueryOptions<T> = Omit<UndefinedInitialDataOptions<T>, 'queryKey' | 'queryFn'>;
+export type OptionalQueryOptions<T, Error = DefaultError> = Omit<
+  UndefinedInitialDataOptions<T, Error>,
+  'queryKey' | 'queryFn'
+>;

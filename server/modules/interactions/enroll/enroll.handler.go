@@ -1,11 +1,12 @@
 package enroll
 
 import (
-	"fmt"
 	authMiddlewares "metrograma/modules/auth/middlewares"
 	DTO "metrograma/modules/interactions/enroll/DTO"
 	"metrograma/modules/interactions/enroll/services"
 	"net/http"
+	"strconv"
+	"strings"
 
 	"github.com/labstack/echo/v4"
 	"github.com/surrealdb/surrealdb.go/pkg/models"
@@ -77,7 +78,6 @@ func createPassed(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
 	}
 
-	// Build subject RecordID from path param and inject into DTO
 	subjectCode := c.Param("subject")
 	if subjectCode == "" {
 		return echo.NewHTTPError(http.StatusBadRequest, "Missing subject code in path")
@@ -85,13 +85,17 @@ func createPassed(c echo.Context) error {
 	subjectId := models.NewRecordID("subject", subjectCode)
 
 	// Call service
-	if err := services.EnrollStudent(studentId, subjectId, input); err != nil {
+	enrollment, err := services.EnrollStudent(studentId, subjectId, input)
+	if err != nil {
+		if strings.HasPrefix(err.Error(), "Database index `unique_relationships_by_trimester` already contains") {
+			return echo.NewHTTPError(http.StatusConflict, "Ya marcaste esta materia en este trimestre")
+		}
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
-	fmt.Println("Enrolled the subject successfully")
 
-	return c.JSON(http.StatusCreated, map[string]string{
-		"message": "You enrolled the subject successfully",
+	return c.JSON(http.StatusCreated, map[string]any{
+		"message": "Marcaste la materia correctamente!",
+		"data":    enrollment,
 	})
 }
 
@@ -117,7 +121,6 @@ func deletePassed(c echo.Context) error {
 	if err := services.UnenrollStudent(*userId, subjects); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
-	fmt.Println("Unenrolled the subjects successfully")
 
 	return c.JSON(http.StatusCreated, map[string]string{
 		"message": "You unenrolled the subjects successfully",
@@ -131,19 +134,31 @@ func deletePassed(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Security     CookieAuth
+// @Param        onlyPassed  query  bool  false  "Only return passed subjects (grade >= 10)"
 // @Success      200  {object}  map[string]interface{}
 // @Failure      401  {object}  map[string]string
 // @Failure      500  {object}  map[string]string
 // @Router       /enroll/ [get]
 func getEnrolledSubjects(c echo.Context) error {
 	studentId := c.Get("student-id").(models.RecordID)
+	// Optional: onlyPassed query param (defaults to false)
+	onlyPassedStr := c.QueryParam("onlyPassed")
+	opts := services.GetEnrolledSubjectsOptions{}
+	if onlyPassedStr != "" {
+		v, err := strconv.ParseBool(onlyPassedStr)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, "Invalid onlyPassed parameter")
+		}
+		opts.OnlyPassed = v
+	}
 
-	subjects, err := services.GetEnrolledSubjects(studentId)
+	subjects, err := services.GetEnrolledSubjects(studentId, opts)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 
-	return c.JSON(http.StatusOK, map[string]interface{}{
-		"subjects": subjects,
+	return c.JSON(http.StatusOK, map[string]any{
+		"message": "Materias marcadas obtenidas correctamente",
+		"data":    subjects,
 	})
 }

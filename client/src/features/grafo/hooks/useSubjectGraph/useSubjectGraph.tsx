@@ -1,11 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 
-import { getEnrolledSubjects } from '@/api/interactions/enrollApi';
-import { getCareers } from '@/api/careersApi';
-import { notRetryOnUnauthorized } from '@utils/queries';
-import { useStatusActions } from '@/features/grafo/behaviors/StatusActions';
-
 import {
   isNodeViewed,
   isNodeAccessible,
@@ -14,6 +9,11 @@ import {
   checkDependencies,
 } from './functions';
 import { edgeStyle, useNodeStyle } from './graph-styles';
+
+import { useFetchEnrolledSubjects } from '@/hooks/queries/student/use-fetch-enrolled-subjects';
+
+import { getCareers } from '@/api/careersApi';
+import { useStatusActions } from '@/features/grafo/behaviors/StatusActions';
 
 import type { GraphinData } from '@antv/graphin';
 import type { AxiosError } from 'axios';
@@ -32,10 +32,8 @@ export default function useSubjectGraph(data: Graph<Subject> | undefined, select
 
   const { nodeStatuses, setSubjectWithCredits } = useStatusActions();
 
-  const { data: enrolledSubjects, error: errorEnrolledSubjects } = useQuery<string[], AxiosError>({
-    queryKey: ['enrolledSubjects', 'studentId'],
-    queryFn: getEnrolledSubjects,
-    retry: notRetryOnUnauthorized,
+  const { data: enrolledSubjects, error: errorEnrolledSubjects } = useFetchEnrolledSubjects({
+    params: { onlyPassed: true },
   });
 
   const { getNodeStyle } = useNodeStyle(selectedCareers, careers);

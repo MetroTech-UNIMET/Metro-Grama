@@ -4,7 +4,7 @@ import (
 	surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
 )
 
-type AnnualOfferEntity struct {
+type SubjectOfferEntity struct {
 	Id        surrealModels.RecordID `json:"id" swaggertype:"object"`
 	Subject   SubjectEntity          `json:"subject"`
 	Trimester TrimesterEntity        `json:"trimester"`

@@ -7,7 +7,7 @@ import (
 )
 
 type QueryAnnualOffer struct {
-	models.AnnualOfferEntity
+	models.SubjectOfferEntity
 	// Schedules []models.SubjectScheduleEntity `json:"schedules"`
 	Sections     []SectionsWithSchedules  `json:"sections"`
 	Careers      []surrealModels.RecordID `json:"careers" swaggertype:"array,object"`

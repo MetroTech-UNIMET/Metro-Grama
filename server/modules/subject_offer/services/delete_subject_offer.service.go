@@ -1,0 +1,32 @@
+package services
+
+import (
+	"context"
+	"fmt"
+	"metrograma/db"
+	"metrograma/models"
+
+	"github.com/surrealdb/surrealdb.go"
+	"github.com/surrealdb/surrealdb.go/contrib/surrealql"
+	surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
+)
+
+func UnRelateSubjectFromTrimester(subjectId surrealModels.RecordID, trimesterId surrealModels.RecordID) (models.SubjectOfferEntity, error) {
+	// TODO - Add ONLY
+	qb := surrealql.
+		Delete(("subject_offer")).
+		Where("in = ? AND out = ?", subjectId, trimesterId).
+		Return("BEFORE")
+	sql, vars := qb.Build()
+	fmt.Println("SQL:", sql)
+
+	result, err := surrealdb.Query[[]models.SubjectOfferEntity](context.Background(), db.SurrealDB, sql, vars)
+	if err != nil {
+		fmt.Println("ERROR:", err)
+		return models.SubjectOfferEntity{}, err
+	}
+	fmt.Println("RESULT:", result)
+
+	subjectOffer := (*result)[0].Result
+	return subjectOffer[0], nil
+}

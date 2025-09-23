@@ -4,11 +4,13 @@ import (
 	"context"
 	"fmt"
 	"metrograma/db"
+	"metrograma/models"
 	"metrograma/modules/subject_offer/DTO"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
 	"github.com/surrealdb/surrealdb.go"
+	"github.com/surrealdb/surrealdb.go/contrib/surrealql"
 	surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
 )
 
@@ -72,7 +74,6 @@ FOR $offer IN $subject_offers {
     
     LET $notExistings = array::difference($trimesterIds, $existings);
 
-
     RELATE $subjectId->subject_offer->$notExistings;
 };
 
@@ -84,4 +85,19 @@ func relateSubjectsToTrimesters(offers []subjectOfferForSurreal) error {
 	}
 	_, err := surrealdb.Query[any](context.Background(), db.SurrealDB, relateQuery, queryParams)
 	return err
+}
+
+func RelateSubjectToTrimester(subjectId surrealModels.RecordID, trimesterId surrealModels.RecordID) (models.SubjectOfferEntity, error) {
+	// TODO - Add ONLY
+	qb := surrealql.Relate(subjectId, "subject_offer", trimesterId)
+	sql, vars := qb.Build()
+
+	result, err := surrealdb.Query[[]models.SubjectOfferEntity](context.Background(), db.SurrealDB, sql, vars)
+	if err != nil {
+		return models.SubjectOfferEntity{}, err
+	}
+
+	subjectOffer := (*result)[0].Result
+	return subjectOffer[0], nil
+
 }

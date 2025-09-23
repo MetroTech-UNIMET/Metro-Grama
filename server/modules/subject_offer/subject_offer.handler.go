@@ -9,17 +9,23 @@ import (
 	"strings"
 
 	"metrograma/modules/auth/middlewares"
+	"metrograma/modules/subject_offer/DTO"
 	"metrograma/modules/subject_offer/services"
 	readpdf "metrograma/modules/subject_offer/services/read_anual_offer_PDF"
 	"metrograma/tools"
 
 	"github.com/labstack/echo/v4"
-	"github.com/surrealdb/surrealdb.go/pkg/models"
+	surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
 )
 
 func Handlers(e *echo.Group) {
 	subject_offerGroup := e.Group("/subject_offer")
+
 	subject_offerGroup.POST("/upload", uploadPDF)
+	subject_offerGroup.POST("/:subjectId", createSubjectOffer)
+
+	subject_offerGroup.DELETE("/:subjectId", deleteSubjectOffer)
+
 	subject_offerGroup.GET("/", getSubjectOffer)
 	subject_offerGroup.GET("/annual/:year", getAnnualOfferByYear)
 	subject_offerGroup.GET("/:trimesterId", getSubjectOfferById)
@@ -154,7 +160,7 @@ func getSubjectOfferById(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "subjectsFilter inválido. Use 'enrollable' o 'none'")
 	}
 
-	var studentId models.RecordID
+	var studentId surrealModels.RecordID
 	if student != nil {
 		studentId = student.ID
 	}
@@ -202,7 +208,7 @@ func getAnnualOfferByYear(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "El parámetro 'career' debe ser un RecordID válido (formato: career:id)")
 	}
 
-	carreerId := models.NewRecordID(
+	carreerId := surrealModels.NewRecordID(
 		parts[0], parts[1],
 	)
 
@@ -214,4 +220,76 @@ func getAnnualOfferByYear(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 	return c.JSON(http.StatusOK, result)
+}
+
+// createSubjectOffer godoc
+// @Summary      Create subject_offer relation
+// @Description  Creates a relation between a subject (path param) and a trimester (body)
+// @Tags         subject_offer
+// @Accept       json
+// @Produce      json
+// @Param        subjectId   path  string                     true  "Subject ID"
+// @Param        payload     body  DTO.CreateSubjectOfferRequest  true  "Create subject offer payload"
+// @Security     CookieAuth
+// @Success      202
+// @Failure      400  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /subject_offer/{subjectId} [post]
+func createSubjectOffer(c echo.Context) error {
+	subjectIdParam := c.Param("subjectId")
+	if subjectIdParam == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "subjectId es requerido")
+	}
+	subjectId := surrealModels.NewRecordID("subject", subjectIdParam)
+
+	var body DTO.CreateSubjectOfferRequest
+	if err := c.Bind(&body); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	if err := c.Validate(body); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	subjectOffer, err := services.RelateSubjectToTrimester(subjectId, body.TrimesterId)
+
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+	return c.JSON(http.StatusCreated, map[string]any{"message": "Relación creada correctamente", "data": subjectOffer})
+}
+
+// createSubjectOffer godoc
+// @Summary      Delete subject_offer relation
+// @Description  Deletes a relation between a subject (path param) and a trimester (body)
+// @Tags         subject_offer
+// @Accept       json
+// @Produce      json
+// @Param        subjectId   path  string                     true  "Subject ID"
+// @Param        payload     body  DTO.CreateSubjectOfferRequest  true  "Create subject offer payload"
+// @Security     CookieAuth
+// @Success      202
+// @Failure      400  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /subject_offer/{subjectId} [delete]
+func deleteSubjectOffer(c echo.Context) error {
+	subjectIdParam := c.Param("subjectId")
+	if subjectIdParam == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "subjectId es requerido")
+	}
+	subjectId := surrealModels.NewRecordID("subject", subjectIdParam)
+
+	var body DTO.CreateSubjectOfferRequest
+	if err := c.Bind(&body); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+	if err := c.Validate(body); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	subjectOffer, err := services.UnRelateSubjectFromTrimester(subjectId, body.TrimesterId)
+
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+	return c.JSON(http.StatusCreated, map[string]any{"message": "Relación creada correctamente", "data": subjectOffer})
 }

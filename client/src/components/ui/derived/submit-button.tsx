@@ -1,36 +1,36 @@
-import { cn } from "@/lib/utils/className";
+import { useFormContext } from 'react-hook-form';
 
-import { Button } from "../button";
-import { Spinner } from "@/components/ui/spinner";
-import { useFormContext } from "react-hook-form";
+import { Button } from '../button';
+
+import { cn } from '@/lib/utils/className';
+
+import { Spinner } from '@/components/ui/spinner';
 
 interface Props extends React.ComponentProps<typeof Button> {}
 
-export default function SubmitButton({
-  disabled,
-  children,
-  className,
-  ...props
-}: Props) {
-  const {
-    formState: { isSubmitting },
-  } = useFormContext();
-
+export function LoadingButton({ disabled, children, isLoading, className, ...props }: Props & { isLoading: boolean }) {
   return (
-    <Button type="submit" className={cn("group gap-x-2", className)} {...props}>
-      {isSubmitting && (
+    <Button className={cn('group gap-x-2', className)} {...props}>
+      {isLoading && (
         <Spinner
-        // className={cn("h-6 w-6", {
-        //   "border-secondary group-hover:border-primary":
-        //     props.variant === "outline-solid",
-        //   "border-secondary": props.colors === "primary",
-        //   "border-primary": !(
-        //     props.variant === "outline-solid" || props.colors === "primary"
-        //   ),
-        // })}
+          className={cn('h-6 w-6', {
+            'text-secondary group-hover:text-primary': props.variant === 'outline',
+            'text-white': props.colors === 'primary',
+            'text-primary': !(props.variant === 'outline' || props.colors === 'primary'),
+          })}
         />
       )}
       {children}
     </Button>
+  );
+}
+
+export default function SubmitButton({ disabled, ...props }: Props) {
+  const {
+    formState: { isSubmitting, isSubmitSuccessful },
+  } = useFormContext();
+
+  return (
+    <LoadingButton disabled={disabled || isSubmitting || isSubmitSuccessful} isLoading={isSubmitting} {...props} />
   );
 }

@@ -24,7 +24,7 @@ func GetCareerWithSubjectsById(careerId string) (any, error) {
 	type SubjectComplex struct {
 		Subject    models.SubjectEntity     `json:"subject"`
 		Trimester  int                      `json:"trimester"`
-		Prelations []surrealModels.RecordID `json:"prelations"`
+		Prelations []surrealModels.RecordID `json:"prelations" swaggertype:"array,object"`
 	}
 
 	type CareerWithSubjectsResponse struct {
@@ -66,7 +66,7 @@ SELECT *, $subjects FROM ONLY $id;
 	for index, subjectComplex := range careerWithSubjectsResponse.Subjects {
 		subject := models.CareerSubjectWithoutType{
 			Name:       subjectComplex.Subject.Name,
-			Code:       subjectComplex.Subject.ID.String(),
+			Code:       subjectComplex.Subject.ID,
 			Credits:    subjectComplex.Subject.Credits,
 			BPCredits:  subjectComplex.Subject.BPCredits,
 			Prelations: subjectComplex.Prelations,
@@ -87,4 +87,4 @@ SELECT *, $subjects FROM ONLY $id;
 	}
 
 	return careerWithSubjects, nil
-} 
+}

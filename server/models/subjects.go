@@ -23,10 +23,10 @@ type SubjectCareer struct {
 }
 
 type SubjectForm struct {
-	Name       string          `json:"name" validate:"required"`
-	Code       string          `json:"code" validate:"required"`
-	Careers    []SubjectCareer `json:"careers" validate:"required"`
-	PrecedesID []string        `json:"precedesID" validate:"required"`
+	Name       string                 `json:"name" validate:"required"`
+	Code       surrealModels.RecordID `json:"code" validate:"required"`
+	Careers    []SubjectCareer        `json:"careers" validate:"required"`
+	PrecedesID []string               `json:"precedesID" validate:"required"`
 }
 
 type SubjectNode struct {

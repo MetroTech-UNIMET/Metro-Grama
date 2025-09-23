@@ -1,16 +1,15 @@
 package services
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"metrograma/db"
 	"metrograma/models"
 	"metrograma/tools"
 	"strings"
-	"text/template"
 
 	"github.com/surrealdb/surrealdb.go"
+	"github.com/surrealdb/surrealdb.go/contrib/surrealql"
 	surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
 )
 
@@ -41,14 +40,30 @@ func useGetSubjectsQuery(careers string) (*[]surrealdb.QueryResult[[]models.Subj
 			"careersId": careersArray,
 		})
 	}
-}
+	// baseQuery := surrealql.Select(surrealModels.Table("belong")).Field("in as subject").
+	// 	Field("array::group(out) as careers").
+	// 	GroupBy("subject").
+	// 	Fetch("subject")
 
-const getSubjectsQueryTemplate = `SELECT id as code, name, BPCredits, credits, 
-    ->belong->career as careers
-    FROM subject
-    {{if .CareersNotEmpty}}
-    WHERE array::intersect(->belong->career, $careers) != []
-    {{end}}`
+	// if careers == "all" || careers == "" {
+	// 	baseQuery = baseQuery.
+	// 		Field("array::group(in->precede.out) as prelations")
+
+	// 	sql, vars := baseQuery.Build()
+
+	// 	return surrealdb.Query[[]models.SubjectsByCareers](context.Background(), db.SurrealDB, sql, vars)
+	// } else {
+	// 	careersArray := tools.StringToIdArray(careers)
+
+	// 	baseQuery = baseQuery.
+	// 		Field(surrealql.Expr("array::group(in->precede.out[WHERE ->belong.out ANYINSIDE ?]) as prelation", careersArray)).
+	// 		Where("out in ?", careersArray)
+
+	// 	sql, vars := baseQuery.Build()
+
+	// 	return surrealdb.Query[[]models.SubjectsByCareers](context.Background(), db.SurrealDB, sql, vars)
+	// }
+}
 
 func GetSubjects(careers string) ([]models.SubjectNode, error) {
 	careersArray := []surrealModels.RecordID{}
@@ -57,31 +72,18 @@ func GetSubjects(careers string) ([]models.SubjectNode, error) {
 	}
 	careersNotEmpty := len(careersArray) > 0
 
-	tmpl, err := template.New("query").Parse(getSubjectsQueryTemplate)
-	if err != nil {
-		return []models.SubjectNode{}, err
+	qb := surrealql.Select(surrealModels.Table("subject")).FieldNameAs("id", "code").FieldName("name").FieldName("BPCredits").FieldName("credits").
+		Field("->belong->career as careers")
+
+	if careersNotEmpty {
+		qb = qb.Where("array::intersect(->belong->career, $careers) != []")
 	}
 
-	var queryBuffer bytes.Buffer
-	err = tmpl.Execute(&queryBuffer, struct {
-		CareersNotEmpty bool
-	}{
-		CareersNotEmpty: careersNotEmpty,
-	})
-	if err != nil {
-		return []models.SubjectNode{}, err
-	}
+	sql, vars := qb.Build()
 
-	query := queryBuffer.String()
-
-	queryParams := map[string]any{
-		"careers": careersArray,
-	}
-
-	result, err := surrealdb.Query[[]models.SubjectNode](context.Background(), db.SurrealDB, query, queryParams)
+	result, err := surrealdb.Query[[]models.SubjectNode](context.Background(), db.SurrealDB, sql, vars)
 
 	if err != nil {
-		fmt.Println(err)
 		return []models.SubjectNode{}, err
 	}
 
@@ -138,24 +140,6 @@ func GetSubjectsGraph(careers string) (models.Graph[models.SubjectNode], error) 
 	}, nil
 }
 
-func GetEnrolledSubjects(studentId surrealModels.RecordID) ([]surrealModels.RecordID, error) {
-	const q = `SELECT VALUE out FROM enroll 
-	WHERE in = $studentId AND passed=true`
-
-	params := map[string]any{
-		"studentId": studentId,
-	}
-
-	res, err := surrealdb.Query[[]surrealModels.RecordID](context.Background(), db.SurrealDB, q, params)
-	if err != nil {
-		return nil, err
-	}
-
-	ids := (*res)[0].Result
-
-	return ids, nil
-}
-
 // getEnrollableSubjects returns the list of subject RecordIDs that are enrollable for a given student.
 // It runs a transaction in SurrealDB utilizing a helper function fn::is_subject_enrollable.
 func GetEnrollableSubjects(studentId surrealModels.RecordID) ([]surrealModels.RecordID, error) {
@@ -166,6 +150,9 @@ RETURN SELECT VALUE id
 	FROM subject
 	WHERE fn::is_subject_enrollable(id, $studentId, $enrolled) = true;
 COMMIT TRANSACTION;`
+
+	// qb := surrealql.Begin().
+	// Let(surrealql.Select("enroll").Field("VALUE out").WhereEq("in", studentId).Where("grade >= 10"), "enrolled")
 
 	params := map[string]any{
 		"studentId": studentId,

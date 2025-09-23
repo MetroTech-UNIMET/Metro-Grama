@@ -17,7 +17,7 @@ func GetAllTrimesters(noFuture bool) ([]models.TrimesterEntity, error) {
 	if noFuture {
 		qb = qb.Where("starting_date < time::now()")
 	}
-	qb = qb.OrderBy("starting_date DESC")
+	qb = qb.OrderByDesc("starting_date")
 
 	sql, vars := qb.Build()
 

@@ -27,7 +27,7 @@ const (
 var subjectMockData = map[SubjectCase]models.SubjectForm{
 	SubjectSuccess: {
 		Name: "Esta materia no exite :p",
-		Code: "QWERT12",
+		Code: surrealModels.NewRecordID("subject", "QWERT12"),
 		Careers: []models.SubjectCareer{
 			{
 				Trimester: 9,
@@ -40,7 +40,7 @@ var subjectMockData = map[SubjectCase]models.SubjectForm{
 	},
 	SubjectWithNonExistingPrecedesSubjects: {
 		Name: "Esta materia no exite :p",
-		Code: "QWERT12",
+		Code: surrealModels.NewRecordID("subject", "QWERT12"),
 		Careers: []models.SubjectCareer{
 			{
 				Trimester: 9,
@@ -53,7 +53,7 @@ var subjectMockData = map[SubjectCase]models.SubjectForm{
 	},
 	SubjectWithNonExistingCareer: {
 		Name: "Esta materia no exite :p",
-		Code: "QWERT12",
+		Code: surrealModels.NewRecordID("subject", "QWERT12"),
 		Careers: []models.SubjectCareer{
 			{
 				Trimester: 9,
@@ -66,7 +66,7 @@ var subjectMockData = map[SubjectCase]models.SubjectForm{
 	},
 	SubjectInvalidBody: {
 		Name: "",
-		Code: "",
+		Code: surrealModels.NewRecordID("subject", ""),
 		Careers: []models.SubjectCareer{
 			{
 				Trimester: 0,
@@ -253,4 +253,4 @@ func TestBasicSubjectsGraph(t *testing.T) {
 		}
 		assert.Equal(t, matchs, len(edgesMock))
 	}
-} 
+}

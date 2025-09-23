@@ -50,22 +50,16 @@ const GoogleSvg = (
 
 export const GoogleLink = ({ className = '' }: { className?: string }) => {
   const location = useLocation();
-  const currentPath = React.useMemo(() => {
-    // Combine pathname + search (if any). location.pathname already starts with '/'
+
+  const href = React.useMemo(() => {
     const search = location.search ?? '';
-    return `${location.pathname}${search}`;
+    const currentPath = `${location.pathname}${search}`;
+
+    return `${baseApiUrl}/auth/google/login?redirect=${encodeURIComponent(currentPath)}`;
   }, [location.pathname, location.search]);
 
-  const href = React.useMemo(
-    () => `${baseApiUrl}/auth/google/login?redirect=${encodeURIComponent(currentPath)}`,
-    [currentPath]
-  );
-
   return (
-    <a
-      href={href}
-      className={cn(buttonVariants({ variant: 'outline', className: 'gap-4' }), className)}
-    >
+    <a href={href} className={cn(buttonVariants({ variant: 'outline', className: 'gap-4' }), className)}>
       {GoogleSvg}
       Inicia sesión con Google
     </a>

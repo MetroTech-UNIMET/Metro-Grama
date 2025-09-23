@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"metrograma/db"
+	enrollServices "metrograma/modules/interactions/enroll/services"
 	"metrograma/modules/subject_offer/DTO"
 	subjectservices "metrograma/modules/subjects/services"
 	"metrograma/tools"
@@ -137,7 +138,7 @@ func GetSubjectOfferById(trimesterId string, studentId surrealModels.RecordID, q
 	var enrolled []surrealModels.RecordID
 	studentPtr := &studentId
 	if studentId != (surrealModels.RecordID{}) {
-		ids, err := subjectservices.GetEnrolledSubjects(studentId)
+		ids, err := enrollServices.GetPassedSubjectsIds(studentId)
 		if err != nil {
 			return nil, err
 		}

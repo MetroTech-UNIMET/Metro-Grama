@@ -25,7 +25,7 @@ type OfferedCols = { T1: boolean; T2: boolean; T3: boolean; I: boolean };
 
 // TODO - Considerar usar rate limiting tanto en cliente como en server
 export function OfertaAcademicTable() {
-  const { debouncedYear } = useAcademicYear();
+  const { year, setYear, debouncedYear } = useAcademicYear();
   const search = useSearch({ from: '/_navLayout/oferta/' });
 
   const { data, isLoading } = useFetchAnnualOfferByYear({
@@ -73,7 +73,7 @@ export function OfertaAcademicTable() {
 
   return (
     <Card className="space-y-4 p-4">
-      <OfferHeader />
+      <OfferHeader year={year} setYear={setYear} />
 
       <Separator />
 

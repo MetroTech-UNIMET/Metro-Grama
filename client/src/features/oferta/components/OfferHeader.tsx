@@ -1,9 +1,9 @@
 import { useRef, type ChangeEvent } from 'react';
 import { Upload } from 'lucide-react';
+import { toast } from 'sonner';
 
 import { pdfFileSchema } from './schema';
 
-import { useAcademicYear } from '../hooks/search-params/use-academic-year';
 import { useSelectedCareer } from '../hooks/search-params/use-selected-career';
 import { useMutationUploadAnnualOfferPDF } from '../hooks/mutations/use-mutation-uploadAnnualOfferPDF';
 
@@ -12,12 +12,15 @@ import useFetchCareersOptions from '@/hooks/queries/use-FetchCareersOptions';
 import AutoComplete from '@ui/derived/autocomplete';
 import { Button } from '@ui/button';
 import { Spinner } from '@ui/spinner';
-import { toast } from 'sonner';
 
-export function OfferHeader() {
+interface Props {
+  year: string | undefined;
+  setYear: (year: string) => void;
+}
+
+export function OfferHeader({ year, setYear }: Props) {
   const careerOptionsQuery = useFetchCareersOptions();
 
-  const { year, setYear } = useAcademicYear();
   const { selectedCareer, setSelectedCareer } = useSelectedCareer({
     careerOptions: careerOptionsQuery.options,
     useStudentCareersAsDefault: true,

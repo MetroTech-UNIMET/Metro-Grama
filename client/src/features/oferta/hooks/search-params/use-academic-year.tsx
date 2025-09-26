@@ -10,7 +10,6 @@ export function useAcademicYear() {
   const [year, setYear] = useState(search.year);
   const [debouncedYear] = useDebounceValue(year, 300);
 
-  console.log({ year, debouncedYear,search });
   // Keep URL in sync when the debounced value changes and is stable
   useEffect(() => {
     const current = search?.year ?? '';

@@ -18,13 +18,11 @@ func QueryAnnualOfferByYear(career surrealModels.RecordID, year string) ([]DTO.Q
 		Where("in = $parent.in").
 		Where("string::starts_with(record::id(out), $year)")
 
-	subQueryString := "(" + qb_SubQuery.String() + ") AS trimesters"
-
 	qb := surrealql.
 		Select("belong").
 		FieldNameAs("in", "subject").
 		FieldNameAs("trimester", "period").
-		Field(subQueryString).
+		Field(surrealql.Expr(qb_SubQuery).As("trimesters")).
 		Where("? INSIDE ->career", career).
 		OrderBy("period").
 		Fetch("subject")

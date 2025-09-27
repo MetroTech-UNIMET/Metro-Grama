@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 
 import { useStatusActions } from '../StatusActions';
 
-import { useSubjectSheet } from '@/features/grafo/SubjectSheet';
+import { useSubjectSheet } from '@/features/grafo/SubjectSheet/SubjectSheet';
 import { useAuth } from '@/contexts/AuthenticationContext';
 import { useLazyGraphinContext } from '@/hooks/lazy-loading/use-LazyGraphin';
 
@@ -120,9 +120,8 @@ export function MenuActions({ selectSubjectDialog }: MenuActionsProps) {
       handleNodeTouchStart(e);
     }
 
-    function handleNodeTouchEnd(shouldClose = false) {
+    function handleNodeTouchEnd() {
       clearTimerRef();
-      if (shouldClose) close();
     }
 
     graph.on('node:contextmenu', handleOpenContextMenu);

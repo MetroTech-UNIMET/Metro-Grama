@@ -4,7 +4,7 @@ import { materiasSearchSchema } from './queryParams';
 
 import Graph from '@/features/grafo/Graph';
 import { StatusActions } from '@/features/grafo/behaviors/StatusActions';
-import { SubjectSheet, SubjectSheetContent } from '@/features/grafo/SubjectSheet';
+import { SubjectSheet, SubjectSheetContent } from '@/features/grafo/SubjectSheet/SubjectSheet';
 
 import { fetchSubjectsGraphByCareerOptions } from '@/hooks/queries/subject/use-FecthSubjectsGraphByCareer';
 

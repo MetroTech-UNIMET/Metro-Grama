@@ -16,13 +16,13 @@ func QuerySubjectStats(subjectId surrealModels.RecordID) ([]DTO.SubjectStat, err
 		surrealql.Expr("count()").As("count"),
 	).
 		Field(
-			surrealql.Expr("math::mean(difficulty)").As("difficulty"),
+			surrealql.Expr("math::mean(<float>difficulty ?? 0f)").As("difficulty"),
 		).
 		Field(
-			surrealql.Expr("math::mean(grade)").As("grade"),
+			surrealql.Expr("math::mean(<float>grade)").As("grade"),
 		).
 		Field(
-			surrealql.Expr("math::mean(workload)").As("workload"),
+			surrealql.Expr("math::mean(<float>workload ?? 0f)").As("workload"),
 		).
 		Field("trimester").
 		FieldNameAs("trimester.starting_date", "date").

@@ -1,17 +1,13 @@
-import { Outlet } from "@tanstack/react-router";
+import { Outlet } from '@tanstack/react-router';
 
-import AuthenticationContext, {
-  OnlyAdmin,
-} from "@/contexts/AuthenticationContext";
+import { OnlyAdmin } from '@/contexts/AuthenticationContext';
 
 export default function AdminLayout() {
   return (
     <>
-      <AuthenticationContext>
-        <OnlyAdmin>
-          <Outlet />
-        </OnlyAdmin>
-      </AuthenticationContext>
+      <OnlyAdmin>
+        <Outlet />
+      </OnlyAdmin>
     </>
   );
 }

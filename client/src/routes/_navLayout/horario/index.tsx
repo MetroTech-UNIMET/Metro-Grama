@@ -17,8 +17,6 @@ import { fetchStudentCareersOptions } from '@/hooks/queries/student/use-fetch-st
 import { PlannerSidebar } from '@/features/weekly-schedule/weekly-schedule-sidebar/components/PlannerSidebar/PlannerSidebar';
 import { WeeklyPlanner } from '@/features/weekly-schedule/weekly-planner/WeeklyPlanner';
 
-import AuthenticationContext from '@/contexts/AuthenticationContext';
-
 import { eatErrorsAsync } from '@utils/errors';
 import { cn } from '@utils/className';
 import { formatTimeHour } from '@utils/time';
@@ -85,9 +83,7 @@ export const Route = createFileRoute('/_navLayout/horario/')({
 function RouteComponent() {
   return (
     <>
-      <AuthenticationContext>
-        <WeeklySchedulePage />
-      </AuthenticationContext>
+      <WeeklySchedulePage />
     </>
   );
 }

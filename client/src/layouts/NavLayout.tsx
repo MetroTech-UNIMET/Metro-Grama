@@ -1,5 +1,5 @@
 import { Outlet } from '@tanstack/react-router';
-import { Home, Calendar, LayoutList } from 'lucide-react';
+import { Home, Calendar, LayoutList, User  } from 'lucide-react';
 
 import MenuDockLink, { type DockLinkItem } from '@ui/shadcn-io/menu-dock/menu-dock-link';
 
@@ -35,6 +35,11 @@ const items: DockLinkItem[] = [
       year: 'none',
     }),
     icon: LayoutListInverted,
+  },
+  {
+    label: 'Perfil',
+    to: '/profile',
+    icon: User,
   },
 ];
 

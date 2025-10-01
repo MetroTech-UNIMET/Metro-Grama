@@ -2,18 +2,19 @@ import type { Id } from './surrealDb';
 import type { StudentEntity } from './Student';
 
 export interface User {
-  id: Id;
-  careerID: string;
-  email: string;
+  id: Id<'user'>;
   firstName: string;
   lastName: string;
+  email: string;
   pictureUrl: string;
-  role: Id<UserRole>;
+  role: Id<'role', UserRole>;
+  phone: string | null;
   created: string;
+  verified: boolean;
 }
 
 export interface StudentUser extends User {
-  role: Id<'student'>;
+  role: Id<'role', 'student'>;
   student: StudentEntity;
 }
 

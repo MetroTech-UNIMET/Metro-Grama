@@ -1,4 +1,4 @@
-export interface Id<T = string> {
-    Table: string;
-    ID: T
+export interface Id<TableName = string, IdType = string> {
+    Table: TableName;
+    ID: IdType;
 }

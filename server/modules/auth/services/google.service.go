@@ -138,11 +138,7 @@ func OauthGoogleCallback(c echo.Context) error {
 	}
 
 	finalRedirect := registerResult.RedirectPath
-	if r, ok := sess.Values["redirect"].(string); ok && r != "" {
-		if isAllowedRedirect(r, c.Request()) {
-			finalRedirect = normalizeRedirect(r, c.Request())
-		}
-	}
+
 	return c.Redirect(http.StatusPermanentRedirect, finalRedirect)
 }
 
@@ -169,15 +165,6 @@ func isAllowedRedirect(target string, req *http.Request) bool {
 		return true
 	}
 	return false
-}
-
-// normalizeRedirect converts a relative path into an absolute URL when an absolute was originally supplied.
-// If the target is an absolute URL it is returned as-is; if relative, it is returned unchanged (letting client resolve root path).
-func normalizeRedirect(target string, req *http.Request) string {
-	if strings.HasPrefix(target, "/") {
-		return target
-	}
-	return target
 }
 
 func GetGoogleUserInfo(client *http.Client) (*GoogleEmailData, error) {

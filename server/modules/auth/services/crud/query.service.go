@@ -8,15 +8,20 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/surrealdb/surrealdb.go"
+	"github.com/surrealdb/surrealdb.go/contrib/surrealql"
 	surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
 )
 
-var existUserByEmailQuery = "SELECT id, role FROM ONLY user WHERE email = $email"
-
 func ExistUserByEmail(email string) (models.MinimalUser, error) {
-	result, err := surrealdb.Query[models.MinimalUser](context.Background(), db.SurrealDB, existUserByEmailQuery, map[string]any{
-		"email": email,
-	})
+	// TODO - Add ONLY
+	qb := surrealql.Select("user").
+		FieldName("id").
+		FieldName("role").
+		WhereEq("email", email)
+
+	sql, args := qb.Build()
+
+	result, err := surrealdb.Query[[]models.MinimalUser](context.Background(), db.SurrealDB, sql, args)
 
 	if err != nil {
 		return models.MinimalUser{}, err
@@ -26,9 +31,12 @@ func ExistUserByEmail(email string) (models.MinimalUser, error) {
 		return models.MinimalUser{}, echo.NewHTTPError(http.StatusUnauthorized, "incorrect credentials")
 	}
 
-	user := (*result)[0].Result
+	users := (*result)[0].Result
+	if len(users) == 0 {
+		return models.MinimalUser{}, echo.NewHTTPError(http.StatusUnauthorized, "incorrect credentials")
+	}
 
-	return user, nil
+	return users[0], nil
 }
 
 func ExistUser(id surrealModels.RecordID) (models.MinimalUser, error) {

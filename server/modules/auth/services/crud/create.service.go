@@ -4,7 +4,6 @@ import (
 	"context"
 	"metrograma/db"
 	"metrograma/models"
-	"metrograma/tools"
 
 	"github.com/surrealdb/surrealdb.go"
 	surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
@@ -68,7 +67,7 @@ import (
 // 	verified=$verified,
 // 	password=crypto::bcrypt::generate($password);`
 
-func CreateSimpleUser(user models.SimpleUserSigninForm) error {
+func CreateSimpleUser(user models.SimpleUserSigninForm) (models.UserEntity, error) {
 	queryParams := map[string]any{
 		"firstName":  user.FirstName,
 		"lastName":   user.LastName,
@@ -76,13 +75,14 @@ func CreateSimpleUser(user models.SimpleUserSigninForm) error {
 		"email":      user.Email,
 		"password":   user.Password,
 		"verified":   user.Verified,
+		"role":       surrealModels.NewRecordID("role", user.Role),
 	}
 
 	data, err := surrealdb.Create[models.UserEntity](context.Background(), db.SurrealDB, surrealModels.Table("user"), queryParams)
 
 	// data, err := db.SurrealDB.Query(createSimpleUserQuery, queryParams)
 	if err != nil {
-		return err
+		return models.UserEntity{}, err
 	}
-	return tools.GetSurrealErrorMsgs(*data)
+	return *data, nil
 }

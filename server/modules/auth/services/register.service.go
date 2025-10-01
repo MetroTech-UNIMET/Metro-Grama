@@ -38,16 +38,16 @@ func RegisterUser(userForm models.SimpleUserSigninForm) (*AuthResult, error) {
 		return nil, fmt.Errorf("the email domain %s is not allowed", domain)
 	}
 
-	// Create the user
-	if err := crudServices.CreateSimpleUser(userForm); err != nil {
-		return nil, err
-	}
+	createdUser, err := crudServices.CreateSimpleUser(userForm)
 
-	// Get the created user
-	createdUser, err := crudServices.ExistUserByEmail(userForm.Email)
 	if err != nil {
 		return nil, err
 	}
 
-	return GetAuthResult(createdUser, userForm.Verified), nil
-} 
+	minimalUser := models.MinimalUser{
+		ID:   createdUser.ID,
+		Role: createdUser.Role,
+	}
+
+	return GetAuthResult(minimalUser, userForm.Verified), nil
+}

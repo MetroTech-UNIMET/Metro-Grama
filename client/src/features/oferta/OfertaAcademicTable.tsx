@@ -149,7 +149,7 @@ function OfferCell({ subject, col, checked, academicYear, disabled, onToggle }: 
 
     onToggle();
     const symbol = col === 'T1' ? '1' : col === 'T2' ? '2' : col === 'T3' ? '3' : 'INTENSIVO';
-    const trimesterId: Id<string> = { Table: 'trimester', ID: `${academicYear}-${symbol}` };
+    const trimesterId: Id<'trimester', `${string}-${string}`> = { Table: 'trimester', ID: `${academicYear}-${symbol}` };
 
     // If on error, toggle again
     if (checked) {

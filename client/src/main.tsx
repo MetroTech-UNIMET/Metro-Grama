@@ -4,6 +4,7 @@ import { RouterProvider } from '@tanstack/react-router';
 
 import { createAppRouter } from './lib/config/tanstack';
 import './index.css';
+import AuthenticationContext, { useAuth } from './contexts/AuthenticationContext';
 
 const { router, queryClient } = createAppRouter();
 declare module '@tanstack/react-router' {
@@ -16,9 +17,17 @@ const rootElement = document.getElementById('root')!;
 
 if (!rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement);
+
   root.render(
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
+      <AuthenticationContext>
+        <InnerApp />
+      </AuthenticationContext>
     </QueryClientProvider>,
   );
+}
+
+function InnerApp() {
+  const auth = useAuth();
+  return <RouterProvider router={router} context={{ auth }} />;
 }

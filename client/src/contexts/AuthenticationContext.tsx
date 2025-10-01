@@ -1,24 +1,34 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 import { logOutGoogle } from '@/api/authApi';
-import { getUserProfile } from '@/api/usersApi';
 
-import { notRetryOnUnauthorized } from '@utils/queries';
-
+import { fetchStudentMyUserOptions, useFetchMyUser, type UserType } from '@/hooks/queries/student/use-fetch-my-user';
 import type { AxiosError } from 'axios';
-import type { StudentUser, User } from '@/interfaces/User';
 
-type UserType = StudentUser | User;
-
-interface AuthContextProps {
-  user: UserType | null;
-  loadingAuth: boolean;
-  errorAuth: unknown;
-
+export type AuthContextProps = (SucessAuth | LoadingAuth | UnauthenticatedAuth) & {
+  ensureData: () => Promise<UserType | null>;
   logOut: () => void;
-}
+};
+
+type SucessAuth = {
+  user: UserType;
+  status: 'authenticated';
+  errorAuth: null;
+};
+
+type LoadingAuth = {
+  user: null;
+  status: 'loading';
+  errorAuth: null | AxiosError<unknown, any>;
+};
+
+type UnauthenticatedAuth = {
+  user: null;
+  status: 'unauthenticated';
+  errorAuth: AxiosError<unknown, any> | null;
+};
 
 const AuthContext = createContext<AuthContextProps | null>(null);
 
@@ -32,12 +42,7 @@ export function useAuth() {
 
 export default function AuthenticationContext({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
-
-  const { data, isLoading, error } = useQuery<UserType | null, AxiosError>({
-    queryKey: ['users', 'profile'],
-    queryFn: getUserProfile,
-    retry: notRetryOnUnauthorized,
-  });
+  const myUserQuery = useFetchMyUser();
 
   const logOutMutation = useMutation({
     mutationFn: logOutGoogle,
@@ -46,25 +51,47 @@ export default function AuthenticationContext({ children }: { children: React.Re
       toast.error('Error al cerrar sesión');
     },
     onSuccess: async () => {
-      setUser(null);
-      return await queryClient.invalidateQueries({
-        queryKey: ['users', 'profile'],
-      });
+      return await queryClient.setQueryData(['users', 'profile'], null);
     },
   });
 
-  const [user, setUser] = useState<UserType | null>(null);
+  const logOut: () => void = () => logOutMutation.mutate();
 
-  useEffect(() => {
-    setUser(data ?? null);
-  }, [data]);
-
-  const value = {
-    user,
-    loadingAuth: isLoading,
-    errorAuth: error,
-    logOut: logOutMutation.mutate,
+  const ensureData = async (): Promise<UserType | null> => {
+    try {
+      return await queryClient.ensureQueryData(fetchStudentMyUserOptions());
+    } catch {
+      return null;
+    }
   };
+
+  let value: AuthContextProps;
+
+  if (myUserQuery.isPending) {
+    value = {
+      user: null,
+      status: 'loading',
+      errorAuth: myUserQuery.error,
+      logOut,
+      ensureData,
+    };
+  } else if (myUserQuery.data) {
+    value = {
+      user: myUserQuery.data,
+      status: 'authenticated',
+      errorAuth: null,
+      logOut,
+      ensureData,
+    };
+  } else {
+    value = {
+      user: null,
+      status: 'unauthenticated',
+      errorAuth: myUserQuery.error,
+      logOut,
+      ensureData,
+    };
+  }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
@@ -82,3 +109,4 @@ export function OnlyAdmin({ children }: { children: React.ReactNode }) {
 
   return children;
 }
+

@@ -7,10 +7,14 @@ import { TooltipProvider } from '@ui/tooltip';
 import { Toaster } from '@ui/sonner';
 
 import type { QueryClient } from '@tanstack/react-query';
+import type { AuthContextProps } from '@/contexts/AuthenticationContext';
 
-export const Route = createRootRouteWithContext<{
+interface RootRouteContext {
+  auth: AuthContextProps;
   queryClient: QueryClient;
-}>()({
+}
+
+export const Route = createRootRouteWithContext<RootRouteContext>()({
   component: () => (
     <>
       <TooltipProvider>

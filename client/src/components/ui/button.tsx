@@ -14,9 +14,11 @@ const variant = {
 const colors = {
   neutral: '',
   // 'text-neutral-50 hover:bg-neutral-800 dark:bg-neutral-800 dark:text-neutral-50 dark:hover:bg-neutral-700',
-  primary: 'bg-primary text-neutral-50 hover:bg-primary/90 hover:ring-1 ring-secondary active:bg-primary-900',
+  primary: 'bg-primary text-neutral-50 hover:bg-primary/90 active:bg-primary-900',
   secondary:
-    'bg-secondary-300 text-secondary-950 hover:bg-secondary-300/80 dark:bg-neutral-800 dark:text-neutral-50 dark:hover:bg-neutral-800/80',
+    'bg-secondary-600 text-white hover:bg-secondary-600/80 active:bg-secondary-700',
+  tertiary:
+    'bg-tertiary-600 text-white hover:bg-tertiary-600/80 active:bg-tertiary-700',
   success:
     'bg-success text-success-foreground hover:bg-green-700/90 dark:bg-green-900 dark:text-neutral-50 dark:hover:bg-green-900/90',
   destructive:
@@ -65,7 +67,7 @@ const buttonVariants = cva(
       {
         colors: 'secondary',
         variant: 'outline',
-        className: 'border-secondary border-2 hover:bg-secondary-300 active:bg-secondary-100',
+        className: 'border-secondary-600 border-2 text-secondary-600 hover:bg-secondary-600 hover:text-white active:bg-secondary-100',
       },
       {
         colors: 'primary',
@@ -83,6 +85,13 @@ const buttonVariants = cva(
         variant: 'ghost',
         className:
           'text-secondary bg-transparent hover:bg-secondary/10 dark:hover:bg-secondary/20 active:bg-secondary/20 dark:active:bg-secondary/30',
+      },
+
+      {
+        colors: 'tertiary',
+        variant: 'outline',
+        className:
+          'text-tertiary-600 border-tertiary-600 border-2 hover:bg-tertiary-600 hover:text-white active:bg-tertiary-700',
       },
 
       {

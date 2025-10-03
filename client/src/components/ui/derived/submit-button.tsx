@@ -8,7 +8,7 @@ import { Spinner } from '@/components/ui/spinner';
 
 interface Props extends React.ComponentProps<typeof Button> {}
 
-export function LoadingButton({ disabled, children, isLoading, className, ...props }: Props & { isLoading: boolean }) {
+export function LoadingButton({ children, isLoading, className, ...props }: Props & { isLoading: boolean }) {
   return (
     <Button className={cn('group gap-x-2', className)} {...props}>
       {isLoading && (

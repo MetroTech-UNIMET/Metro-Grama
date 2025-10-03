@@ -3,14 +3,14 @@ import { UserX } from 'lucide-react';
 import { useEliminateFriend } from '@/hooks/mutations/friend/use-eliminate-friend';
 
 import { LoadingButton } from '@ui/derived/submit-button';
+import { Button } from '@ui/button';
 
-interface Props {
-  userToAddId: string;
+interface Props extends React.ComponentProps<typeof Button> {
+  userToRejectId: string;
 }
 
-// Exclusively rejects/cancels a pending friend request
-export function RejectFriendButton({ userToAddId }: Props) {
-  const eliminateMutation = useEliminateFriend({ studentId: userToAddId });
+export function RejectFriendButton({ userToRejectId, disabled, ...props }: Props) {
+  const eliminateMutation = useEliminateFriend({ studentId: userToRejectId });
 
   return (
     <LoadingButton
@@ -19,9 +19,11 @@ export function RejectFriendButton({ userToAddId }: Props) {
       className="transition-colors"
       isLoading={eliminateMutation.isPending}
       onClick={() => eliminateMutation.mutate()}
-      disabled={eliminateMutation.isPending}
+      disabled={eliminateMutation.isPending || disabled}
+      {...props}
     >
-      <UserX /> Rechazar
+      {!eliminateMutation.isPending && <UserX />}
+      Rechazar
     </LoadingButton>
   );
 }

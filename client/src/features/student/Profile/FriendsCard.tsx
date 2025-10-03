@@ -1,4 +1,11 @@
 import { Link } from '@tanstack/react-router';
+import { useIsMutating } from '@tanstack/react-query';
+
+import { RejectFriendButton } from './buttons/RejectFriendButton';
+import { AcceptFriendButton } from './buttons/AcceptFriendButton';
+
+import { getAcceptFriendMutationKey } from '@/hooks/mutations/friend/use-accept-friend';
+import { getEliminateFriendMutationKey } from '@/hooks/mutations/friend/use-eliminate-friend';
 
 import { Avatar, AvatarImage, AvatarFallback } from '@ui/avatar';
 import { Card, CardHeader, CardTitle, CardContent } from '@ui/card';
@@ -42,9 +49,10 @@ export function FriendsCard({ friends, pending_friends, friend_applications }: P
             )}
           </TabsContent>
 
+          {/* TODO - Agregar boton de aceptar y rechazar */}
           <TabsContent value="por-aceptar" className="space-y-3">
             {friend_applications?.length ? (
-              friend_applications.map((f: StudentWithUser) => <FriendRow key={f.id.ID} student={f} />)
+              friend_applications.map((f: StudentWithUser) => <FriendRow key={f.id.ID} student={f} approvable />)
             ) : (
               <div className="text-muted-foreground text-sm">No tienes solicitudes por aceptar</div>
             )}
@@ -55,24 +63,55 @@ export function FriendsCard({ friends, pending_friends, friend_applications }: P
   );
 }
 
-const FriendRow = ({ student }: { student: StudentWithUser }) => {
+interface FriendRowProps {
+  student: StudentWithUser;
+
+  approvable?: boolean;
+}
+
+function FriendRow({ student, approvable }: FriendRowProps) {
   const sName = `${student.user.firstName} ${student.user.lastName}`.trim();
   const sInitials = `${student.user.firstName?.[0] ?? ''}${student.user.lastName?.[0] ?? ''}`.toUpperCase();
-  const sid = (student.id as any)?.ID ?? String((student as any).id ?? '');
-  return (
-    <Link
-      to="/student/$studentId"
-      params={{ studentId: sid }}
-      className="hover:bg-muted flex items-center gap-3 rounded-md p-2 transition-colors"
-    >
+  const studentId = student.id.ID;
+
+  const rootClasses = 'hover:bg-muted flex gap-3 rounded-md p-2 transition-colors max-md:flex-col';
+
+  const isAccepting = useIsMutating({ mutationKey: getAcceptFriendMutationKey(studentId) }) > 0;
+  const isRejecting = useIsMutating({ mutationKey: getEliminateFriendMutationKey(studentId) }) > 0;
+
+  const studentInfo = (
+    <>
       <Avatar className="h-8 w-8">
         <AvatarImage src={student.user.pictureUrl} alt={sName} />
         <AvatarFallback>{sInitials || 'ST'}</AvatarFallback>
       </Avatar>
-      <div className="text-sm">
+      <main className="text-sm">
         <div className="leading-none font-medium">{sName}</div>
         <div className="text-muted-foreground">{student.user.email}</div>
+      </main>
+    </>
+  );
+
+  console.log({ isAccepting, isRejecting });
+
+  if (approvable) {
+    return (
+      <div className={rootClasses}>
+        <Link to="/student/$studentId" params={{ studentId: studentId }} className="flex flex-row items-center gap-3">
+          {studentInfo}
+        </Link>
+
+        <aside className="mx-auto flex flex-row gap-2 text-sm md:ml-auto">
+          <AcceptFriendButton userToAcceptId={studentId} disabled={isAccepting || isRejecting} />
+          <RejectFriendButton userToRejectId={studentId} disabled={isAccepting || isRejecting} />
+        </aside>
       </div>
+    );
+  }
+
+  return (
+    <Link to="/student/$studentId" params={{ studentId: studentId }} className={rootClasses}>
+      <div className="flex flex-row items-center gap-3">{studentInfo}</div>
     </Link>
   );
-};
+}

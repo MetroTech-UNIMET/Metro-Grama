@@ -9,20 +9,21 @@ interface Props extends React.ComponentProps<typeof Button> {
   userToAcceptId: string;
 }
 
-// Exclusively accepts a pending friend request
-export function AcceptFriendButton({ userToAcceptId, ...props }: Props) {
+export function AcceptFriendButton({ userToAcceptId, disabled, ...props }: Props) {
   const acceptMutation = useAcceptFriend({ studentId: userToAcceptId });
 
   return (
     <LoadingButton
       size="sm"
       colors="secondary"
+      className="transition-colors"
       isLoading={acceptMutation.isPending}
       onClick={() => acceptMutation.mutate()}
-      disabled={acceptMutation.isPending}
+      disabled={acceptMutation.isPending || disabled}
       {...props}
     >
-      <UserPlus /> Aceptar
+      {!acceptMutation.isPending && <UserPlus />}
+      Aceptar
     </LoadingButton>
   );
 }

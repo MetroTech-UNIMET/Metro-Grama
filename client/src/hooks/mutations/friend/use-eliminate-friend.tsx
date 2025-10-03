@@ -12,11 +12,15 @@ interface Props {
   studentId: string;
 }
 
+export function getEliminateFriendMutationKey(studentId: string) {
+  return ['friend', 'eliminate', studentId] as const;
+}
+
 export function useEliminateFriend({ studentId }: Props) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationKey: ['friend', 'eliminate', studentId],
+    mutationKey: getEliminateFriendMutationKey(studentId),
     mutationFn: () => eliminateFriend(studentId),
     onSuccess: async () => {
       const friendship_status = (await queryClient.ensureQueryData(fetchStudentByIdOptions({ studentId })))

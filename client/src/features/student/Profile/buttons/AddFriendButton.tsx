@@ -24,32 +24,30 @@ export function AddFriendButton({ userToAddId, friendshipStatus }: Props) {
     }
   }
 
+  const isLoading = addMutation.isPending || eliminateMutation.isPending;
+
+  const icon = isLoading ? undefined : friendshipStatus === 'accepted' ? (
+    <UserCheck />
+  ) : friendshipStatus === 'pending' ? (
+    <UserX />
+  ) : (
+    <UserPlus />
+  );
+
   return (
     <LoadingButton
       size="sm"
       colors={friendshipStatus === 'pending' ? 'destructive' : 'secondary'}
       className="transition-colors"
-      isLoading={addMutation.isPending || eliminateMutation.isPending}
+      isLoading={isLoading}
       onClick={handleOnClick}
-      disabled={addMutation.isPending || eliminateMutation.isPending}
+      disabled={isLoading}
     >
-      {friendshipStatus === 'accepted' && (
-        <>
-          <UserCheck /> Amigos
-        </>
-      )}
+      {friendshipStatus === 'accepted' && <>{icon} Amigos</>}
 
-      {friendshipStatus === 'pending' && (
-        <>
-          <UserX /> Cancelar solicitud
-        </>
-      )}
+      {friendshipStatus === 'pending' && <>{icon} Cancelar solicitud</>}
 
-      {friendshipStatus === 'none' && (
-        <>
-          <UserPlus /> Agregar amigo
-        </>
-      )}
+      {friendshipStatus === 'none' && <>{icon} Agregar amigo</>}
     </LoadingButton>
   );
 }

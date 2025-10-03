@@ -11,11 +11,15 @@ interface Props {
   studentId: string;
 }
 
+export function getAcceptFriendMutationKey(studentId: string) {
+  return ['friend', 'accept', studentId] as const;
+}
+
 export function useAcceptFriend({ studentId }: Props) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationKey: ['friend', 'accept', studentId],
+    mutationKey: getAcceptFriendMutationKey(studentId),
     mutationFn: () => acceptFriend(studentId),
     onSuccess: async () => {
       const studentDetails = await queryClient.ensureQueryData(fetchStudentDetailsOptions());

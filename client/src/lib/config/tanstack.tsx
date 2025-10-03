@@ -2,8 +2,10 @@ import { QueryClient } from '@tanstack/react-query';
 import { createRouter } from '@tanstack/react-router';
 import { setupRouterSsrQueryIntegration } from '@tanstack/react-router-ssr-query';
 
-import { routeTree } from '@/routeTree.gen';
+import ErrorPage from '@components/ErrorPage';
+import LoadingPage from '@components/LoadingPage';
 
+import { routeTree } from '@/routeTree.gen';
 
 export function createAppRouter() {
   const queryClient = new QueryClient({
@@ -19,6 +21,8 @@ export function createAppRouter() {
     context: { queryClient, auth: null as any },
     scrollRestoration: true,
     defaultPreload: 'intent',
+    defaultPendingComponent: () => <LoadingPage />,
+    defaultErrorComponent: (props) => <ErrorPage title="Hubo un error inesperado" {...props} />,
   });
 
   setupRouterSsrQueryIntegration({
@@ -28,5 +32,5 @@ export function createAppRouter() {
     // handleRedirects: true,
     wrapQueryClient: false,
   });
-  return {router, queryClient}
+  return { router, queryClient };
 }

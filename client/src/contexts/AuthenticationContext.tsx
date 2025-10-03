@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
@@ -109,4 +109,3 @@ export function OnlyAdmin({ children }: { children: React.ReactNode }) {
 
   return children;
 }
-

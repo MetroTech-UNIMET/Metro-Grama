@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"metrograma/db"
@@ -31,8 +32,10 @@ func AcceptFriendshipRequest(me surrealModels.RecordID, other surrealModels.Reco
 		Return("*")
 
 	// TODO - Add ONLY
+	// TODO - Sync created
 	Create_QB := surrealql.Relate("$me", "friend", "$other").
 		Set("status", "accepted")
+		// Set("created", "$result[0].created")
 
 	qb := surrealql.Begin().
 		Let("result", Update_QB).
@@ -48,6 +51,9 @@ func AcceptFriendshipRequest(me surrealModels.RecordID, other surrealModels.Reco
 
 	vars["me"] = me
 	vars["other"] = other
+
+	fmt.Println("SQL:", sql)
+	fmt.Println("VARS:", vars)
 
 	res, err := surrealdb.Query[[]models.FriendEntity](context.Background(), db.SurrealDB, sql, vars)
 	if err != nil {

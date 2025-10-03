@@ -29,12 +29,7 @@ func RelateFriends(me surrealModels.RecordID, other surrealModels.RecordID) (mod
 			tb.Throw("Ya eres amigo de esta persona")
 		}).
 		End().
-		If("count($exists) != 1").
-		Then(func(tb *surrealql.ThenBuilder) {
-			tb.Throw("Error creando la relación de amistad")
-		}).
-		End().
-		Let("friendship", surrealql.Relate("$me", "friend", "$other").Set("created", "$exists[0].created")).
+		Let("friendship", surrealql.Relate("$me", "friend", "$other")).
 		Return("$friendship")
 
 	sql, vars := tx.Build()

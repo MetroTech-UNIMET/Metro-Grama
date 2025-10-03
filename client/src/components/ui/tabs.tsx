@@ -9,7 +9,7 @@ import { cva, type VariantProps } from 'class-variance-authority';
 const tabsListVariants = cva('inline-flex h-9', {
   variants: {
     variant: {
-      default: 'items-center justify-center rounded-lg bg-muted p-1 text-muted-foreground',
+      default: 'items-center justify-start rounded-lg bg-muted p-1 text-muted-foreground  flex-wrap h-auto space-y-1',
       table: 'max-md:mb-2 md:translate-y-px gap-3 md:gap-1 max-md:h-10 overflow-x-auto',
     },
   },

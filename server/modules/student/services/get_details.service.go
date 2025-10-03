@@ -25,8 +25,8 @@ func GetStudentDetails(studentId surrealModels.RecordID, loggedUserId *surrealMo
 
 	if loggedUserId == nil {
 		qb = qb.
-			Field(surrealql.Expr("<-(friend WHERE status == 'pending').in").As("pending_friends")).
-			Field(surrealql.Expr("->(friend WHERE  status == 'pending').out").As("friend_applications")).
+			Field(surrealql.Expr("->(friend WHERE  status == 'pending').out").As("pending_friends")).
+			Field(surrealql.Expr("<-(friend WHERE status == 'pending').in").As("friend_applications")).
 			Fetch("pending_friends", "pending_friends.user", "friend_applications", "friend_applications.user")
 
 	} else {

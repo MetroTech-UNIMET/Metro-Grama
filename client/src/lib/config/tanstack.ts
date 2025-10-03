@@ -16,7 +16,7 @@ export function createAppRouter() {
 
   const router = createRouter({
     routeTree,
-    context: { queryClient },
+    context: { queryClient, auth: null as any },
     scrollRestoration: true,
     defaultPreload: 'intent',
   });

@@ -6,7 +6,7 @@ import { StudentUser } from '@/interfaces/User';
 
 export async function checkIsAuthenticated(auth: AuthContextProps) {
   let shouldRedirect = false;
-  let data: UserType | null = null;
+  let data: UserType | null = auth.user;
 
   if (auth.status === 'loading') {
     data = await auth.ensureData();
@@ -22,9 +22,7 @@ export async function checkIsAuthenticated(auth: AuthContextProps) {
     });
 
   if (!data)
-    throw redirect({
-      to: '/',
-    });
+    throw Error('checkIsAuthenticated: data is null but should not be');
 
   return data;
 }

@@ -5,4 +5,6 @@ export interface FriendEntity {
   in: Id<'student'>;
   out: Id<'student'>;
   created: string;
+
+  status: 'pending' | 'accepted' | 'rejected';
 }

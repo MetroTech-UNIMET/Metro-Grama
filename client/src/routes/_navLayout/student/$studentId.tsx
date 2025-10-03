@@ -1,6 +1,8 @@
 import { createFileRoute, redirect } from '@tanstack/react-router';
+import { useSuspenseQuery } from '@tanstack/react-query';
 
-import Profile from '@/features/student/Profile';
+import Profile from '@/features/student/Profile/Profile';
+import ProfileSkeleton from '@/features/student/Profile/Profile.skeleton';
 import ErrorPage from '@components/ErrorPage';
 
 import { fetchStudentByIdOptions } from '@/hooks/queries/student/use-fetch-student-by-id';
@@ -10,13 +12,14 @@ import { checkIsAuthenticated, checkIsStudent } from '@utils/auth';
 export const Route = createFileRoute('/_navLayout/student/$studentId')({
   loader: ({ context: { queryClient }, params: { studentId } }) =>
     queryClient.ensureQueryData(fetchStudentByIdOptions({ studentId })),
-  pendingComponent: () => <div className="p-4">Cargando perfil…</div>,
-
+  
+  // Skeleton loading matching Profile layout
+  pendingComponent: () => <ProfileSkeleton />,
   errorComponent: (props) => <ErrorPage title="Error cargando perfil" {...props} />,
   beforeLoad: async ({ params, context }) => {
     const user = await checkIsAuthenticated(context.auth);
 
-    // Si es admin pueden tener amigos y tener/ver perfiles?
+    // REVIEW Si es admin pueden tener amigos y tener/ver perfiles?
     if (!checkIsStudent(user))
       throw redirect({
         to: '/',
@@ -29,7 +32,9 @@ export const Route = createFileRoute('/_navLayout/student/$studentId')({
     }
   },
   component: function StudentProfileRoute() {
-    const data = Route.useLoaderData();
-    return <Profile data={data} />;
+    const { studentId } = Route.useParams();
+    const { data } = useSuspenseQuery(fetchStudentByIdOptions({ studentId }));
+    
+    return <Profile data={data!} />;
   },
 });

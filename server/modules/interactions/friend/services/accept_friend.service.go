@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	"metrograma/db"
@@ -51,9 +50,6 @@ func AcceptFriendshipRequest(me surrealModels.RecordID, other surrealModels.Reco
 
 	vars["me"] = me
 	vars["other"] = other
-
-	fmt.Println("SQL:", sql)
-	fmt.Println("VARS:", vars)
 
 	res, err := surrealdb.Query[[]models.FriendEntity](context.Background(), db.SurrealDB, sql, vars)
 	if err != nil {

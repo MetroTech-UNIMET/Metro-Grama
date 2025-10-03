@@ -15,8 +15,9 @@ export function LoadingButton({ disabled, children, isLoading, className, ...pro
         <Spinner
           className={cn('h-6 w-6', {
             'text-secondary group-hover:text-primary': props.variant === 'outline',
-            'text-white': props.colors === 'primary',
-            'text-primary': !(props.variant === 'outline' || props.colors === 'primary'),
+            'text-white':
+              ['primary', 'secondary', 'tertiary', 'destructive'].includes(props.colors || 'primary') &&
+              props.variant !== 'outline',
           })}
         />
       )}

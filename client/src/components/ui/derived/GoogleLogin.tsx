@@ -6,9 +6,9 @@ import { Skeleton } from "@ui/skeleton";
 import { LogOutIcon } from "lucide-react";
 
 export default function GoogleLogin() {
-  const { user, loadingAuth, logOut } = useAuth();
+  const { user, status, logOut } = useAuth();
 
-  if (loadingAuth) return <AvatarSkeleton />;
+  if (status === "loading") return <AvatarSkeleton />;
 
   if (user) {
     const initials = user.firstName[0] + user.lastName[0];

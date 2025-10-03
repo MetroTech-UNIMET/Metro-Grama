@@ -3,6 +3,8 @@ import { toast } from 'sonner';
 
 import { acceptFriend } from '@/api/interactions/friendApi';
 
+import { fetchStudentDetailsOptions } from '@/hooks/queries/student/use-fetch-student-details';
+
 import type { OtherStudentDetails } from '@/interfaces/Student';
 
 interface Props {
@@ -13,10 +15,24 @@ export function useAcceptFriend({ studentId }: Props) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationKey: ['friend', 'accept'],
+    mutationKey: ['friend', 'accept', studentId],
     mutationFn: () => acceptFriend(studentId),
-    onSuccess: () => {
+    onSuccess: async () => {
+      const studentDetails = await queryClient.ensureQueryData(fetchStudentDetailsOptions());
+
       toast.success('Solicitud de amistad aceptada');
+
+      queryClient.setQueryData(['student', 'details', 'my-id'], (oldData: typeof studentDetails | undefined) => {
+        if (!oldData) return oldData;
+
+        const accepted = (oldData.friend_applications || []).find((app) => app.id.ID === studentId);
+
+        return {
+          ...oldData,
+          friends: accepted ? [...(oldData.friends || []), accepted] : oldData.friends,
+          friend_applications: (oldData.friend_applications || []).filter((app) => app.id.ID !== studentId),
+        } as typeof studentDetails;
+      });
 
       queryClient.setQueryData(['student', 'details', studentId], (oldData: OtherStudentDetails | undefined) => {
         if (!oldData) return oldData;

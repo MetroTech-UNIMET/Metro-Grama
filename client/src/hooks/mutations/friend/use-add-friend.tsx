@@ -13,7 +13,7 @@ export function useAddFriend({ studentId }: Props) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationKey: ['friend', 'add'],
+    mutationKey: ['friend', 'add', studentId],
     mutationFn: () => addFriend(studentId),
     onSuccess: () => {
       toast.success('Solicitud de amistad enviada');

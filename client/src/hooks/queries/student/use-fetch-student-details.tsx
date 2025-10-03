@@ -10,7 +10,7 @@ interface Props<T = MyStudentDetails> {
 
 export function fetchStudentDetailsOptions({ queryOptions: queryOpt }: Props = {}) {
   return queryOptions({
-    queryKey: ['student', 'details'],
+    queryKey: ['student', 'details', 'my-id'],
     queryFn: () => getStudentDetails(),
     ...queryOpt,
   });

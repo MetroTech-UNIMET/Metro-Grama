@@ -16,10 +16,26 @@ func GetStudentDetails(studentId surrealModels.RecordID, loggedUserId *surrealMo
 	// TODO - Add ONLY
 	qb := surrealql.Select(studentId).
 		Field(surrealql.Expr("->study.out").As("careers")).
-		Field(surrealql.Expr("->(enroll WHERE grade >= 10)").As("passed_subjects")).
 		Field(surrealql.Expr("->(friend WHERE status == 'accepted').out").As("friends")).
 		Field("*").
 		Fetch("user", "careers", "passed_subjects", "friends", "friends.user")
+
+	passed_subjects_Qb := surrealql.Select("$parent->enroll").
+		FieldName("trimester").
+		Field(surrealql.Expr(`array::group({
+        subject: out,
+        grade: grade,
+        difficulty: difficulty,
+        workload: workload
+    })`).As("subjects")).
+		Field(surrealql.Expr("math::mean(<float>grade)").As("average_grade")).
+		FieldNameAs("trimester.starting_date", "starting_date").
+		Where("grade >= 10").
+		GroupBy("trimester").
+		OrderBy("starting_date").
+		Fetch("subjects.subject")
+
+	qb = qb.Field(surrealql.Expr(passed_subjects_Qb).As("passed_subjects"))
 
 	extraParams := map[string]any{}
 
@@ -51,3 +67,19 @@ func GetStudentDetails(studentId surrealModels.RecordID, loggedUserId *surrealMo
 
 	return &data, nil
 }
+
+// REVIEW - Forma de ordenar despues de group
+// SELECT * FROM (SELECT count(), importance, a FROM [
+//     {
+//         a: 10,
+//         importance: 1
+//     },
+//     {
+//         a: 20,
+//         importance: 2
+//     },
+//     {
+//         a: 20,
+//         importance: 1
+//     }
+// ] GROUP BY a) ORDER BY importance DESC;

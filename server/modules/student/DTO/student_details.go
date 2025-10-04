@@ -3,18 +3,35 @@ package DTO
 import (
 	"encoding/json"
 	"metrograma/models"
+
+	surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
 )
 
 type StudentDetails struct {
 	models.StudentWithUser
-	Careers        []models.CareerEntity    `json:"careers"`
-	PassedSubjects []models.EnrollEntity    `json:"passed_subjects"`
-	Friends        []models.StudentWithUser `json:"friends"`
+	Careers                   []models.CareerEntity       `json:"careers"`
+	PassedSubjectsByTrimester []PassedSubjectsByTrimester `json:"passed_subjects"`
+	Friends                   []models.StudentWithUser    `json:"friends"`
 
 	FriendshipStatus          string                   `json:"friendship_status,omitempty"`
 	ReceivingFriendshipStatus string                   `json:"receiving_friendship_status,omitempty"`
 	PendingFriends            []models.StudentWithUser `json:"pending_friends,omitempty"`
 	FriendApplications        []models.StudentWithUser `json:"friend_applications,omitempty"`
+}
+
+// PassedSubjectEntry is a condensed view of a single passed subject.
+type PassedSubjectEntry struct {
+	Difficulty int                  `json:"difficulty"`
+	Grade      int                  `json:"grade"`
+	Subject    models.SubjectEntity `json:"subject"`
+	Workload   int                  `json:"workload"`
+}
+
+// PassedSubjectsByTrimester groups passed subjects for a given trimester.
+type PassedSubjectsByTrimester struct {
+	Subjects     []PassedSubjectEntry   `json:"subjects"`
+	Trimester    surrealModels.RecordID `json:"trimester" swaggertype:"object"`
+	AverageGrade float64                `json:"average_grade"`
 }
 
 // MarshalJSON ensures that slice fields are omitted only when nil, and included as [] when empty.
@@ -23,7 +40,6 @@ func (s *StudentDetails) MarshalJSON() ([]byte, error) {
 	type base struct {
 		models.StudentWithUser
 		Careers                   []models.CareerEntity `json:"careers"`
-		PassedSubjects            []models.EnrollEntity `json:"passed_subjects"`
 		FriendshipStatus          string                `json:"friendship_status"`
 		ReceivingFriendshipStatus string                `json:"receiving_friendship_status"`
 	}
@@ -31,7 +47,6 @@ func (s *StudentDetails) MarshalJSON() ([]byte, error) {
 	b := base{
 		StudentWithUser:           s.StudentWithUser,
 		Careers:                   s.Careers,
-		PassedSubjects:            s.PassedSubjects,
 		FriendshipStatus:          s.FriendshipStatus,
 		ReceivingFriendshipStatus: s.ReceivingFriendshipStatus,
 	}
@@ -47,6 +62,10 @@ func (s *StudentDetails) MarshalJSON() ([]byte, error) {
 		return nil, err
 	}
 
+	if s.PassedSubjectsByTrimester != nil {
+		m["passed_subjects"] = s.PassedSubjectsByTrimester
+	}
+
 	if s.Friends != nil {
 		m["friends"] = s.Friends
 	}
@@ -58,34 +77,4 @@ func (s *StudentDetails) MarshalJSON() ([]byte, error) {
 	}
 
 	return json.Marshal(m)
-}
-
-// UnmarshalJSON preserves the distinction between absent (nil) and present-but-empty slices.
-func (s *StudentDetails) UnmarshalJSON(data []byte) error {
-	type alias struct {
-		models.StudentWithUser
-		Careers                   []models.CareerEntity `json:"careers"`
-		PassedSubjects            []models.EnrollEntity `json:"passed_subjects"`
-		FriendshipStatus          string                `json:"friendship_status"`
-		ReceivingFriendshipStatus string                `json:"receiving_friendship_status"`
-
-		Friends            []models.StudentWithUser `json:"friends"`
-		PendingFriends     []models.StudentWithUser `json:"pending_friends"`
-		FriendApplications []models.StudentWithUser `json:"friend_applications"`
-	}
-
-	var a alias
-	if err := json.Unmarshal(data, &a); err != nil {
-		return err
-	}
-
-	s.StudentWithUser = a.StudentWithUser
-	s.Careers = a.Careers
-	s.PassedSubjects = a.PassedSubjects
-	s.FriendshipStatus = a.FriendshipStatus
-	s.ReceivingFriendshipStatus = a.ReceivingFriendshipStatus
-	s.Friends = a.Friends
-	s.PendingFriends = a.PendingFriends
-	s.FriendApplications = a.FriendApplications
-	return nil
 }

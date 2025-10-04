@@ -1,12 +1,13 @@
-import { FriendsCard } from './FriendsCard';
 import { AddFriendButton } from './buttons/AddFriendButton';
+import { AcceptFriendButton } from './buttons/AcceptFriendButton';
+import { FriendsCard } from './cards/FriendsCard';
+import { SubjectsCard } from './cards/SubjectsCard';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@ui/avatar';
 import { Badge } from '@ui/badge';
 
 import type { MyStudentDetails, OtherStudentDetails } from '@/interfaces/Student';
-import { AcceptFriendButton } from './buttons/AcceptFriendButton';
 
 interface Props {
   data: OtherStudentDetails | MyStudentDetails;
@@ -18,12 +19,14 @@ export default function Profile({ data }: Props) {
 
   const isSelf = isMyProfile(data);
 
+  console.log(data.user.pictureUrl);
+
   return (
     <>
       {!isSelf && data.receiving_friendship_status === 'pending' && (
         <div
           role="alert"
-          className="bg-secondary-600 border-secondary-300 flex w-full gap-4 border p-3 text-sm text-white items-center justify-center"
+          className="bg-secondary-600 border-secondary-300 flex w-full items-center justify-center gap-4 border p-3 text-sm text-white"
         >
           <span>
             <strong>{name}</strong> quiere ser tu amigo, aceptalo!{' '}
@@ -31,7 +34,7 @@ export default function Profile({ data }: Props) {
           <AcceptFriendButton userToAcceptId={data.id.ID} colors="tertiary" variant="outline" className="" />
         </div>
       )}
-      <div className="mx-auto max-w-2xl space-y-4 p-4">
+      <div className="mx-auto max-w-4xl space-y-4 p-4">
         <Card>
           <CardHeader className="flex-row items-center gap-4">
             <Avatar className="h-14 w-14">
@@ -43,16 +46,36 @@ export default function Profile({ data }: Props) {
               <div className="text-muted-foreground text-sm">{data.user.email}</div>
             </div>
           </CardHeader>
-          <CardContent className="grid gap-2">
-            <div className="text-sm">
-              <span className="font-medium">Cédula:</span> {data.id_card}
-            </div>
-            <div className="text-sm">
-              <span className="font-medium">Teléfono:</span> {data.user.phone || '—'}
-            </div>
-            <div className="text-sm">
-              <span className="font-medium">Verificado:</span> {data.user.verified ? 'Sí' : 'No'}
-            </div>
+          <CardContent className="flex flex-row flex-wrap justify-between gap-2">
+            <aside className="grid gap-2">
+              <div className="text-sm">
+                <span className="font-medium">Cédula:</span> {data.id_card}
+              </div>
+              <div className="text-sm">
+                <span className="font-medium">Teléfono:</span> {data.user.phone || '—'}
+              </div>
+              <div className="text-sm">
+                <span className="font-medium">Verificado:</span> {data.user.verified ? 'Sí' : 'No'}
+              </div>
+            </aside>
+
+            <aside className="grid gap-2">
+              <div className="text-sm">
+                <span className="font-medium">Carreras:</span>{' '}
+                {data.careers.length === 0 && <span className="text-muted-foreground">Sin carreras</span>}
+              </div>
+              {data.careers.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {data.careers.map((c) => (
+                    <Badge key={c.id.ID} variant="secondary" className="h-fit">
+                      {c.emoji} {c.name}
+                    </Badge>
+                  ))}
+                </div>
+              )}
+            </aside>
+
+            {/* TODO - SI yo ya recibi una solicitud y se la mando, deberia ser un accept */}
 
             {!isSelf && (
               <div className="pt-2">
@@ -62,41 +85,7 @@ export default function Profile({ data }: Props) {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Carreras</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-wrap gap-2">
-            {data.careers.length === 0 ? (
-              <div className="text-muted-foreground text-sm">Sin carreras</div>
-            ) : (
-              data.careers.map((c) => (
-                <Badge key={c.id.ID} variant="secondary">
-                  {c.emoji} {c.name}
-                </Badge>
-              ))
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Materias aprobadas</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {data.passed_subjects.length === 0 ? (
-              <div className="text-muted-foreground text-sm">Aún no hay materias aprobadas</div>
-            ) : (
-              <ul className="list-disc pl-6 text-sm">
-                {data.passed_subjects.map((enr) => (
-                  <li key={enr.id.ID}>
-                    <span className="font-medium">{enr.out.ID}</span> · Nota: {enr.grade}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </CardContent>
-        </Card>
+        <SubjectsCard passed_subjects={data.passed_subjects} />
 
         {isSelf && (
           <FriendsCard

@@ -1,8 +1,8 @@
 import { Link } from '@tanstack/react-router';
 import { useIsMutating } from '@tanstack/react-query';
 
-import { RejectFriendButton } from './buttons/RejectFriendButton';
-import { AcceptFriendButton } from './buttons/AcceptFriendButton';
+import { RejectFriendButton } from '../buttons/RejectFriendButton';
+import { AcceptFriendButton } from '../buttons/AcceptFriendButton';
 
 import { getAcceptFriendMutationKey } from '@/hooks/mutations/friend/use-accept-friend';
 import { getEliminateFriendMutationKey } from '@/hooks/mutations/friend/use-eliminate-friend';

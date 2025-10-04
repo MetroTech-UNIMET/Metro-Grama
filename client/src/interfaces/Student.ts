@@ -1,13 +1,14 @@
 import type { Career } from './Career';
 import type { EnrollEntity } from './Enroll';
-import { FriendEntity } from './Friend';
+import type { FriendEntity } from './Friend';
+import type { SubjectEntity } from './Subject';
 import type { Id } from './surrealDb';
 import type { User } from './User';
 
 export interface StudentEntity {
-  id: Id;
+  id: Id<'student'>;
   id_card: string;
-  user: Id;
+  user: Id<'user'>;
   // user: User;
 }
 
@@ -17,8 +18,19 @@ export interface StudentWithUser extends Omit<StudentEntity, 'user'> {
 
 interface StudentDetails extends StudentWithUser {
   careers: Career[];
-  passed_subjects: EnrollEntity[];
+  passed_subjects: {
+    subjects: PassedSubjectEntry[];
+    trimester: Id<'trimester'>;
+    average_grade: number;
+  }[];
   friends: StudentWithUser[];
+}
+
+export interface PassedSubjectEntry {
+  difficulty: EnrollEntity['difficulty'];
+  grade: EnrollEntity['grade'];
+  subject: SubjectEntity;
+  workload: EnrollEntity['workload'];
 }
 
 export interface MyStudentDetails extends StudentDetails {

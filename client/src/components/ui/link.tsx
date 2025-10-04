@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link as RouterLink, useLocation } from '@tanstack/react-router';
+import { type LinkComponentProps, Link, useLocation } from '@tanstack/react-router';
 
 import { cn } from '@utils/className';
 
@@ -8,15 +8,13 @@ import { buttonVariants } from './button';
 
 import type { VariantProps } from 'class-variance-authority';
 
-export interface LinkComponentProps
-  extends React.ComponentPropsWithRef<typeof RouterLink>,
-    VariantProps<typeof buttonVariants> {}
+export interface ButtonLinkProps extends LinkComponentProps, VariantProps<typeof buttonVariants> {}
 
-export const ButtonLink = ({ className, variant, size, children, ...props }: LinkComponentProps) => {
+export const ButtonLink = ({ className, variant, size, children, ...props }: ButtonLinkProps) => {
   return (
-    <RouterLink {...props} className={cn(buttonVariants({ variant, size, className }))}>
+    <Link {...props} className={cn(buttonVariants({ variant, size, className }))}>
       {children}
-    </RouterLink>
+    </Link>
   );
 };
 

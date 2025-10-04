@@ -1,12 +1,15 @@
-import { AvatarImage, AvatarFallback, Avatar } from '@ui/avatar';
-import { Card, CardHeader, CardTitle, CardContent } from '@ui/card';
 import { Settings } from 'lucide-react';
 
+import { AvatarImage, AvatarFallback, Avatar } from '@ui/avatar';
+import { Card, CardHeader, CardTitle, CardContent } from '@ui/card';
+
 import { AddFriendButton } from '../buttons/AddFriendButton';
-import { MyStudentDetails, OtherStudentDetails } from '@/interfaces/Student';
-import { Button } from '@ui/button';
 import { isMyProfile } from '../utils';
+
 import { Badge } from '@ui/badge';
+import { ButtonLink } from '@ui/link';
+
+import type { MyStudentDetails, OtherStudentDetails } from '@/interfaces/Student';
 
 type StudentDetails = MyStudentDetails | OtherStudentDetails;
 
@@ -32,11 +35,13 @@ export function StudentCard({ data }: Props) {
           <div className="text-muted-foreground text-sm">{data.user.email}</div>
         </div>
 
-        <div className='ml-auto'>
-          <Button variant="ghost" size="big-icon" aria-label="Settings">
-            <Settings className="h-4 w-4" />
-          </Button>
-        </div>
+        {isSelf && (
+          <div className="ml-auto">
+            <ButtonLink to="/profile/settings" variant="ghost" size="big-icon" aria-label="Settings">
+              <Settings className="h-4 w-4" />
+            </ButtonLink>
+          </div>
+        )}
       </CardHeader>
       <CardContent className="flex flex-row flex-wrap justify-between gap-2">
         <aside className="grid gap-2">

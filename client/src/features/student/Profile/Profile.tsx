@@ -15,8 +15,6 @@ export default function Profile({ data }: Props) {
 
   const isSelf = isMyProfile(data);
 
-  console.log(data.user.pictureUrl);
-
   return (
     <>
       {!isSelf && data.receiving_friendship_status === 'pending' && (

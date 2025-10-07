@@ -7,6 +7,7 @@ import (
 	"metrograma/modules/interactions/course/DTO"
 
 	surrealdb "github.com/surrealdb/surrealdb.go"
+	"github.com/surrealdb/surrealdb.go/contrib/surrealql"
 	surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
 )
 
@@ -17,21 +18,26 @@ func GetSectionsWithSchedules(studentId surrealModels.RecordID, trimesterId stri
 		sectionField = "secondary_sections"
 	}
 
-	// Build dynamic query using provided pattern; returns array of section records directly
-	query := fmt.Sprintf(`SELECT VALUE 
-		(SELECT *, subject_offer.in as subject,
-				(SELECT * FROM subject_schedule WHERE subject_section = $parent.id ORDER BY day_of_week, starting_hour, starting_minute) AS subject_schedule
-				FROM $parent.%s FETCH subject)
-FROM ONLY course
-WHERE out = $trimesterId
-	AND in  = $studentId;`, sectionField)
+	schedule_Subquery := surrealql.Select("subject_schedule").Field("*").
+		Where("subject_section = $parent.id").
+		OrderBy("day_of_week").
+		OrderBy("starting_hour").
+		OrderBy("starting_minute")
 
-	params := map[string]any{
-		"trimesterId": surrealModels.NewRecordID("trimester", trimesterId),
-		"studentId":   studentId,
-	}
+	section_Subquery := surrealql.Select(fmt.Sprintf("$parent.%s", sectionField)).
+		Field("*").
+		Alias("subject", "subject_offer.in").
+		Alias("subject_schedule", schedule_Subquery).
+		Fetch("subject")
 
-	res, err := surrealdb.Query[[]DTO.QueryCourse](context.Background(), db.SurrealDB, query, params)
+	qb := surrealql.SelectOnly("course").
+		Value(section_Subquery).
+		WhereEq("out", surrealModels.NewRecordID("trimester", trimesterId)).
+		WhereEq("in", studentId)
+
+	sql, vars := qb.Build()
+
+	res, err := surrealdb.Query[[]DTO.QueryCourse](context.Background(), db.SurrealDB, sql, vars)
 	if err != nil {
 		return nil, err
 	}

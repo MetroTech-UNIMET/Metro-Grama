@@ -15,6 +15,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/surrealdb/surrealdb.go"
+	"github.com/surrealdb/surrealdb.go/contrib/surrealql"
 	surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
 )
 
@@ -39,9 +40,34 @@ FROM subject_offer
 WHERE in->belong->career ANYINSIDE $careers{{.ExtraWhere}}
 FETCH subject, trimester, prelations;`
 
+// TODO - usar surrealql
 // buildSubjectOfferQuery constructs the query and params for annual offers combining optional filters.
 // If enrollable is provided (non-empty), the query will restrict to those subject IDs.
 func buildSubjectOfferQuery(trimesterId string, careers []surrealModels.RecordID, enrollable []surrealModels.RecordID, studentId *surrealModels.RecordID, enrolled []surrealModels.RecordID, subjectsFilter string) (string, map[string]any, error) {
+	schedules_Qb := surrealql.
+		Select("subject_schedule").
+		Field("*").
+		Where("subject_section = $parent.id")
+
+	sections_Qb := surrealql.
+		Select("subject_section").
+		Field("*").
+		Field(surrealql.Expr(schedules_Qb).As("schedules")).
+		Where("subject_offer = $parent.id").
+		OrderBy("section_number")
+
+	qb := surrealql.Select("subject_offer").
+		Field("id").
+		FieldNameAs("in", "subject").
+		FieldNameAs("out", "trimester").
+		Field(surrealql.Expr(sections_Qb).As("sections")).
+		Field(surrealql.Expr("in->belong->career").As("careers")).
+		Field(surrealql.Expr(`in->(precede
+			WHERE out->belong->career ANYINSIDE  ?
+		).out`, careers).As("prelations")).
+		Where("in->belong->career ANYINSIDE ?", careers).
+		Fetch("subject", "trimester", "prelations")
+
 	// Build dynamic extra WHERE clause parts (careers filter is always present in the template)
 	whereParts := make([]string, 0, 3)
 	params := map[string]any{}
@@ -54,11 +80,13 @@ func buildSubjectOfferQuery(trimesterId string, careers []surrealModels.RecordID
 	params["careers"] = careers
 
 	if trimesterId != "" {
+		qb = qb.Where("out.id = ?", surrealModels.NewRecordID("trimester", trimesterId))
 		whereParts = append(whereParts, "out.id = $trimesterId")
 		params["trimesterId"] = surrealModels.NewRecordID("trimester", trimesterId)
 	}
 
 	if subjectsFilter == "enrollable" && len(enrollable) > 0 {
+		qb = qb.Where("in.id IN ?", enrollable)
 		whereParts = append(whereParts, "in.id IN $enrollable")
 		params["enrollable"] = enrollable
 	}
@@ -74,6 +102,9 @@ func buildSubjectOfferQuery(trimesterId string, careers []surrealModels.RecordID
 		params["studentId"] = *studentId
 		params["enrolled"] = enrolled
 		params["enrollable"] = enrollable
+		qb = qb.
+			Field(surrealql.Expr("in IN ?", enrolled).As("is_enrolled")).
+			Field(surrealql.Expr("in IN ?", enrollable).As("is_enrollable"))
 		extraSelects = ", in IN $enrolled as is_enrolled, in IN $enrollable as is_enrollable"
 	}
 
@@ -92,6 +123,10 @@ func buildSubjectOfferQuery(trimesterId string, careers []surrealModels.RecordID
 	if err != nil {
 		return "", nil, err
 	}
+
+	// sql, vars := qb.Build()
+	// fmt.Println("Built SQL:\n", sql, "\nVars:", vars)
+
 	return buf.String(), params, nil
 }
 

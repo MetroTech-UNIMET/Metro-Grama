@@ -3,7 +3,7 @@ import { BicepsFlexed, Hourglass, Star } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@ui/tabs';
 
-import type { MyStudentDetails, OtherStudentDetails, PassedSubjectEntry } from '@/interfaces/Student';
+import type { MyStudentDetails, OtherStudentDetails, PassedSubjectEntry } from '@/api/interactions/student.types';
 
 interface Props {
   // Array of groups: { trimester: RecordID; subjects: [{ subject: SubjectEntity; grade; difficulty; workload }] }

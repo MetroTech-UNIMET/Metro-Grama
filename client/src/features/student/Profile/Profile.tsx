@@ -4,7 +4,7 @@ import { SubjectsCard } from './cards/SubjectsCard';
 import { StudentCard } from './cards/StudentCard';
 import { isMyProfile } from './utils';
 
-import type { MyStudentDetails, OtherStudentDetails } from '@/interfaces/Student';
+import type { MyStudentDetails, OtherStudentDetails } from '@/api/interactions/student.types';
 
 interface Props {
   data: OtherStudentDetails | MyStudentDetails;

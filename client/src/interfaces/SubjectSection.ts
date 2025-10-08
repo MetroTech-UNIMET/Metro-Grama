@@ -7,7 +7,7 @@ export interface SubjectSection {
   classroom_code: string | null;
   section_number: number;
 
-  subject_offer: Id;
+  subject_offer: Id<'subject_offer'>;
 }
 
 export interface SubjectSectionWithSchedules extends SubjectSection {

@@ -9,7 +9,7 @@ import { isMyProfile } from '../utils';
 import { Badge } from '@ui/badge';
 import { ButtonLink } from '@ui/link';
 
-import type { MyStudentDetails, OtherStudentDetails } from '@/interfaces/Student';
+import type { MyStudentDetails, OtherStudentDetails } from '@/api/interactions/student.types';
 
 type StudentDetails = MyStudentDetails | OtherStudentDetails;
 
@@ -35,12 +35,14 @@ export function StudentCard({ data }: Props) {
           <div className="text-muted-foreground text-sm">{data.user.email}</div>
         </div>
 
-        {isSelf && (
+        {isSelf ? (
           <div className="ml-auto">
             <ButtonLink to="/profile/settings" variant="ghost" size="big-icon" aria-label="Settings">
               <Settings className="h-4 w-4" />
             </ButtonLink>
           </div>
+        ) : (
+          <AddFriendButton userToAddId={data.id.ID} friendshipStatus={data.friendship_status} className="max-sm:mr-auto ml-auto" />
         )}
       </CardHeader>
       <CardContent className="flex flex-row flex-wrap justify-between gap-2">
@@ -56,12 +58,9 @@ export function StudentCard({ data }: Props) {
           </div>
         </aside>
 
-        <aside className="grid gap-2">
-          <div className="text-sm">
-            <span className="font-medium">Carreras:</span>{' '}
-            {data.careers.length === 0 && <span className="text-muted-foreground">Sin carreras</span>}
-          </div>
-          {data.careers.length > 0 && (
+        <aside className="space-y-2">
+          <div className="h-fit text-sm font-medium">Carreras:</div>{' '}
+          {data.careers.length > 0 ? (
             <div className="flex flex-wrap gap-2">
               {data.careers.map((c) => (
                 <Badge key={c.id.ID} variant="secondary" className="h-fit">
@@ -69,16 +68,12 @@ export function StudentCard({ data }: Props) {
                 </Badge>
               ))}
             </div>
+          ) : (
+            <span className="text-muted-foreground">Sin carreras</span>
           )}
         </aside>
 
         {/* TODO - SI yo ya recibi una solicitud y se la mando, deberia ser un accept */}
-
-        {!isSelf && (
-          <div className="pt-2">
-            <AddFriendButton userToAddId={data.id.ID} friendshipStatus={data.friendship_status} />
-          </div>
-        )}
       </CardContent>
     </Card>
   );

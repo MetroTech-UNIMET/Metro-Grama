@@ -1,7 +1,7 @@
 import type { Id } from './surrealDb';
 
 export interface Trimester {
-  id: Id;
+  id: Id<'trimester'>;
   starting_date: string;
   ending_date: string;
   intensive: boolean;

@@ -2,6 +2,7 @@ import { AcceptFriendButton } from './buttons/AcceptFriendButton';
 import { FriendsCard } from './cards/FriendsCard';
 import { SubjectsCard } from './cards/SubjectsCard';
 import { StudentCard } from './cards/StudentCard';
+import { SchedulesCard } from './cards/SchedulesCard';
 import { isMyProfile } from './utils';
 
 import type { MyStudentDetails, OtherStudentDetails } from '@/api/interactions/student.types';
@@ -28,7 +29,7 @@ export default function Profile({ data }: Props) {
           <AcceptFriendButton userToAcceptId={data.id.ID} colors="tertiary" variant="outline" className="" />
         </div>
       )}
-      <div className="mx-auto max-w-4xl space-y-4 p-4">
+      <div className="mx-auto max-w-6xl space-y-4 p-4 pb-16">
         <StudentCard data={data} />
 
         <SubjectsCard passed_subjects={data.passed_subjects} />
@@ -40,6 +41,8 @@ export default function Profile({ data }: Props) {
             friend_applications={data.friend_applications}
           />
         )}
+
+        <SchedulesCard current_courses={data.current_courses} next_courses={data.next_courses} />
       </div>
     </>
   );

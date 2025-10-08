@@ -3,6 +3,7 @@ package DTO
 import (
 	"encoding/json"
 	"metrograma/models"
+	"metrograma/modules/interactions/course/DTO"
 
 	surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
 )
@@ -17,6 +18,14 @@ type StudentDetails struct {
 	ReceivingFriendshipStatus string                   `json:"receiving_friendship_status,omitempty"`
 	PendingFriends            []models.StudentWithUser `json:"pending_friends,omitempty"`
 	FriendApplications        []models.StudentWithUser `json:"friend_applications,omitempty"`
+
+	CurrentCourses studentCourse `json:"current_courses,omitempty"`
+	NextCourses    studentCourse `json:"next_courses,omitempty"`
+}
+
+type studentCourse struct {
+	Principal []DTO.QueryCourse `json:"principal"`
+	Secondary []DTO.QueryCourse `json:"secondary"`
 }
 
 // PassedSubjectEntry is a condensed view of a single passed subject.
@@ -42,6 +51,8 @@ func (s *StudentDetails) MarshalJSON() ([]byte, error) {
 		Careers                   []models.CareerEntity `json:"careers"`
 		FriendshipStatus          string                `json:"friendship_status"`
 		ReceivingFriendshipStatus string                `json:"receiving_friendship_status"`
+		CurrentCourses            studentCourse         `json:"current_courses"`
+		NextCourses               studentCourse         `json:"next_courses"`
 	}
 
 	b := base{
@@ -49,6 +60,8 @@ func (s *StudentDetails) MarshalJSON() ([]byte, error) {
 		Careers:                   s.Careers,
 		FriendshipStatus:          s.FriendshipStatus,
 		ReceivingFriendshipStatus: s.ReceivingFriendshipStatus,
+		CurrentCourses:            s.CurrentCourses,
+		NextCourses:               s.NextCourses,
 	}
 
 	// Marshal base, then convert to a map to conditionally add fields

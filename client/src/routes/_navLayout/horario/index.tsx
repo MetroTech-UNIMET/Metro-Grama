@@ -16,10 +16,10 @@ import { fetchStudentCareersOptions } from '@/hooks/queries/student/use-fetch-st
 
 import { PlannerSidebar } from '@/features/weekly-schedule/weekly-schedule-sidebar/components/PlannerSidebar/PlannerSidebar';
 import { WeeklyPlanner } from '@/features/weekly-schedule/weekly-planner/WeeklyPlanner';
+import { schedulesToSubjectEvents, sectionToSubjectEvents } from '@/features/weekly-schedule/weekly-planner/functions';
 
 import { eatErrorsAsync } from '@utils/errors';
 import { cn } from '@utils/className';
-import { formatTimeHour } from '@utils/time';
 
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@ui/sidebar';
 
@@ -29,6 +29,7 @@ import type { SubjectSection } from '@/interfaces/SubjectSection';
 import type { Trimester } from '@/interfaces/Trimester';
 import type { SubjectSchedule } from '@/interfaces/SubjectSchedule';
 
+// FIXME - Al cambiar de trimestre se queda en un bucle intercambiando
 export const Route = createFileRoute('/_navLayout/horario/')({
   validateSearch: queryParams,
   loaderDeps: ({ search: { trimester, is_principal, careers } }) => ({
@@ -113,24 +114,10 @@ function WeeklySchedulePage() {
   useEffect(() => {
     if (courseQuery.isSuccess) {
       const sections = courseQuery.data.sections;
-      const events: Event<SubjectEvent>[] = [];
-      sections.forEach((sec) => {
-        sec.subject_schedule.forEach((sch) => {
-          events.push({
-            id: sch.id.ID,
-            title: sec.subject.name,
-            start_hour: formatTimeHour(sch.starting_hour, sch.starting_minute),
-            end_hour: formatTimeHour(sch.ending_hour, sch.ending_minute),
-            type: 'rowing' as any,
-            dayIndex: sch.day_of_week,
-            data: {
-              id: { ID: sec.subject_offer } as any,
-              subjectSectionId: { ID: sec.id } as any,
-              trimesterId: { ID: courseQuery.data.trimesterId } as any,
-            },
-          });
-        });
-      });
+      const events: Event<SubjectEvent>[] = sections.flatMap((sec) =>
+        sectionToSubjectEvents(sec, courseQuery.data.trimesterId),
+      );
+
       setSubjectEvents(events);
     }
   }, [courseQuery.isSuccess, courseQuery.data]);
@@ -163,15 +150,13 @@ function WeeklySchedulePage() {
           const schedules = section.schedules;
           setSubjectEvents((prev) => [
             ...prev,
-            ...schedules.map((schedule) => ({
-              id: schedule.id.ID,
-              title: subject_offer.subject.name,
-              start_hour: formatTimeHour(schedule.starting_hour, schedule.starting_minute),
-              end_hour: formatTimeHour(schedule.ending_hour, schedule.ending_minute),
-              type: 'rowing' as any,
-              dayIndex: schedule.day_of_week,
-              data: { id: subject_offer.id, subjectSectionId: section.id, trimesterId: subject_offer.trimester.id },
-            })),
+            ...schedules.map((schedule) =>
+              schedulesToSubjectEvents(schedule, {
+                subjectName: subject_offer.subject.name,
+                trimesterId: subject_offer.trimester.id.ID,
+                subjectOfferId: subject_offer.id,
+              }),
+            ),
           ]);
         }, [])}
         onRemoveSubject={useCallback((subject_offerId) => {

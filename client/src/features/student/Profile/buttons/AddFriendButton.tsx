@@ -1,18 +1,21 @@
 import { UserCheck, UserX, UserPlus } from 'lucide-react';
 
+import { cn } from '@utils/className';
+
 import { useEliminateFriend } from '@/hooks/mutations/friend/use-eliminate-friend';
 import { useAddFriend } from '@/hooks/mutations/friend/use-add-friend';
 
 import { LoadingButton } from '@ui/derived/submit-button';
 
-import type { OtherStudentDetails } from '@/interfaces/Student';
+import type { OtherStudentDetails } from '@/api/interactions/student.types';
 
-interface Props {
+interface Props
+  extends Omit<React.ComponentProps<typeof LoadingButton>, 'isLoading' | 'onClick' | 'disabled' | 'children'> {
   userToAddId: string;
   friendshipStatus: OtherStudentDetails['friendship_status'];
 }
 
-export function AddFriendButton({ userToAddId, friendshipStatus }: Props) {
+export function AddFriendButton({ userToAddId, friendshipStatus, className, ...props }: Props) {
   const addMutation = useAddFriend({ studentId: userToAddId });
   const eliminateMutation = useEliminateFriend({ studentId: userToAddId });
 
@@ -38,10 +41,11 @@ export function AddFriendButton({ userToAddId, friendshipStatus }: Props) {
     <LoadingButton
       size="sm"
       colors={friendshipStatus === 'pending' ? 'destructive' : 'secondary'}
-      className="transition-colors"
+      className={cn('transition-colors', className)}
       isLoading={isLoading}
       onClick={handleOnClick}
       disabled={isLoading}
+      {...props}
     >
       {friendshipStatus === 'accepted' && <>{icon} Amigos</>}
 

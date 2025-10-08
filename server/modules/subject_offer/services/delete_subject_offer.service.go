@@ -11,18 +11,17 @@ import (
 )
 
 func UnRelateSubjectFromTrimester(subjectId surrealModels.RecordID, trimesterId surrealModels.RecordID) (models.SubjectOfferEntity, error) {
-	// TODO - Add ONLY
 	qb := surrealql.
-		Delete(("subject_offer")).
+		DeleteOnly("subject_offer").
 		Where("in = ? AND out = ?", subjectId, trimesterId).
 		Return("BEFORE")
 	sql, vars := qb.Build()
 
-	result, err := surrealdb.Query[[]models.SubjectOfferEntity](context.Background(), db.SurrealDB, sql, vars)
+	result, err := surrealdb.Query[models.SubjectOfferEntity](context.Background(), db.SurrealDB, sql, vars)
 	if err != nil {
 		return models.SubjectOfferEntity{}, err
 	}
 
 	subjectOffer := (*result)[0].Result
-	return subjectOffer[0], nil
+	return subjectOffer, nil
 }

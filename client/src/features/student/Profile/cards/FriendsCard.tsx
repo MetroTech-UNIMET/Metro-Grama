@@ -21,13 +21,13 @@ interface Props {
 
 export function FriendsCard({ friends, pending_friends, friend_applications }: Props) {
   return (
-    <Card>
+    <Card className="pb-2">
       <CardHeader>
         <CardTitle>Amigos</CardTitle>
       </CardHeader>
-      <CardContent>
-        <Tabs defaultValue="amigos">
-          <TabsList className="mb-2">
+      <CardContent className="max-h-86 overflow-y-auto">
+        <Tabs defaultValue="amigos" className="relative">
+          <TabsList className="sticky top-0 z-10">
             <TabsTrigger value="amigos">Amigos</TabsTrigger>
             <TabsTrigger value="pendientes">Solicitudes pendientes</TabsTrigger>
             <TabsTrigger value="por-aceptar">Solicitudes por aceptar</TabsTrigger>
@@ -49,7 +49,6 @@ export function FriendsCard({ friends, pending_friends, friend_applications }: P
             )}
           </TabsContent>
 
-          {/* TODO - Agregar boton de aceptar y rechazar */}
           <TabsContent value="por-aceptar" className="space-y-3">
             {friend_applications?.length ? (
               friend_applications.map((f: StudentWithUser) => <FriendRow key={f.id.ID} student={f} approvable />)
@@ -91,8 +90,6 @@ function FriendRow({ student, approvable }: FriendRowProps) {
       </main>
     </>
   );
-
-  console.log({ isAccepting, isRejecting });
 
   if (approvable) {
     return (

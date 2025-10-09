@@ -25,7 +25,7 @@ export function CareerMultiDropdown({
   placeholder,
   ...props
 }: Props) {
-  const { options, isLoading, error } = useFetchCareersOptions();
+  const { data: options, isLoading, error } = useFetchCareersOptions();
   const studentCareerQuery = useFetchStudentCareers();
 
   const groupedOptions = useMemo(() => {

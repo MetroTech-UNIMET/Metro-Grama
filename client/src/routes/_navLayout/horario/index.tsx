@@ -29,7 +29,8 @@ import type { SubjectSection } from '@/interfaces/SubjectSection';
 import type { Trimester } from '@/interfaces/Trimester';
 import type { SubjectSchedule } from '@/interfaces/SubjectSchedule';
 
-// FIXME - Al cambiar de trimestre se queda en un bucle intercambiando
+// TODO - Skeleton con pendingComponent y usar suspense
+// TODO - ErrorComponent
 export const Route = createFileRoute('/_navLayout/horario/')({
   validateSearch: queryParams,
   loaderDeps: ({ search: { trimester, is_principal, careers } }) => ({
@@ -153,8 +154,9 @@ function WeeklySchedulePage() {
             ...schedules.map((schedule) =>
               schedulesToSubjectEvents(schedule, {
                 subjectName: subject_offer.subject.name,
-                trimesterId: subject_offer.trimester.id.ID,
+                trimesterId: subject_offer.trimester.id,
                 subjectOfferId: subject_offer.id,
+                subjectSectionId: section.id,
               }),
             ),
           ]);

@@ -9,8 +9,9 @@ export function sectionToSubjectEvents(section: SubjectSectionWithSubject, trime
   return section.subject_schedule.map((subjectSchedule) =>
     schedulesToSubjectEvents(subjectSchedule, {
       subjectName: section.subject.name,
-      trimesterId,
+      trimesterId: { Table: 'trimester', ID: trimesterId },
       subjectOfferId: section.subject_offer,
+      subjectSectionId: section.id,
     }),
   );
 }
@@ -19,7 +20,8 @@ export function schedulesToSubjectEvents(
   subjectSchedule: SubjectSchedule,
   extraData: {
     subjectName: string;
-    trimesterId: string;
+    trimesterId: SubjectEvent['trimesterId'];
+    subjectSectionId: SubjectEvent['subjectSectionId'];
     subjectOfferId: SubjectEvent['id'];
   },
 ): Event<SubjectEvent> {
@@ -32,8 +34,8 @@ export function schedulesToSubjectEvents(
     dayIndex: subjectSchedule.day_of_week,
     data: {
       id: extraData.subjectOfferId,
-      subjectSectionId: subjectSchedule.id,
-      trimesterId: { ID: extraData.trimesterId, Table: 'trimester' },
+      subjectSectionId: extraData.subjectSectionId,
+      trimesterId: extraData.trimesterId,
     },
   };
 }

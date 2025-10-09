@@ -8,7 +8,7 @@ import { FilterByDays } from '../FilterByDays/FilterByDays';
 import { FilterByTimeRange } from '../FilterByTimeRange/FilterByTimeRange';
 
 import { fetchTrimestersSelectOptions } from '@/hooks/queries/trimester/use-FetchTrimesters';
-import { fetchCareersOptionsOptions } from '@/hooks/queries/career/use-fetch-careers';
+import { useSuspenseCareersOptions } from '@/hooks/queries/career/use-fetch-careers';
 
 import { useSelectedCareers } from '@/hooks/search-params/use-selected-careers';
 import { useSelectedTrimester } from '@/hooks/search-params/use-selected-trimester';
@@ -37,7 +37,7 @@ export function PlannerSidebarHeader({ showEnrollable, setShowEnrollable }: Prop
 
   const { user } = useAuth();
 
-  const { data: options } = useSuspenseQuery(fetchCareersOptionsOptions());
+  const { data: options } = useSuspenseCareersOptions();
   const { selectedCareers, setSelectedCareers } = useSelectedCareers({
     activeUrl: '/_navLayout/horario/',
     careerOptions: options,

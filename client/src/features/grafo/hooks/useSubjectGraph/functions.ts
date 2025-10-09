@@ -3,7 +3,7 @@ import { idToSurrealId } from '@utils/queries';
 import type { Subject } from '@/interfaces/Subject';
 import type { NodeStyleIcon } from '@antv/graphin/lib/typings/type';
 import type { NodeStatuses } from '@/features/grafo/behaviors/StatusActions';
-import type { CareerOption } from '@/hooks/queries/use-FetchCareersOptions';
+import type { CareerOption } from '@/hooks/queries/career/use-fetch-careers';
 import type { Career } from '@/interfaces/Career';
 import type { Node4j } from '@/interfaces/Graph';
 

@@ -1,4 +1,4 @@
-import { useQuery, queryOptions, useQueryClient } from '@tanstack/react-query';
+import { useQuery, queryOptions, useQueryClient, type QueryClient, useSuspenseQuery } from '@tanstack/react-query';
 import { getCareers } from '@/api/careersApi';
 
 import type { Option } from '@ui/types/option.types';
@@ -15,14 +15,12 @@ export function fetchCareersOptions() {
 }
 
 export function useFetchCareers() {
-  const query = useQuery(fetchCareersOptionsOptions());
+  const query = useQuery(fetchCareersOptions());
 
   return query;
 }
 
-export function fetchCareersOptionsOptions() {
-  const queryClient = useQueryClient();
-
+export function fetchCareersOptionsOptions(queryClient: QueryClient) {
   return queryOptions({
     queryKey: ['careers', 'options'],
     queryFn: async () => {
@@ -39,7 +37,17 @@ export function fetchCareersOptionsOptions() {
 }
 
 export function useFetchCareersOptions() {
-  const query = useQuery(fetchCareersOptionsOptions());
+  const queryClient = useQueryClient();
+
+  const query = useQuery(fetchCareersOptionsOptions(queryClient));
+
+  return { ...query, data: query.data ?? [] };
+}
+
+export function useSuspenseCareersOptions() {
+  const queryClient = useQueryClient();
+
+  const query = useSuspenseQuery(fetchCareersOptionsOptions(queryClient));
 
   return { ...query, data: query.data ?? [] };
 }

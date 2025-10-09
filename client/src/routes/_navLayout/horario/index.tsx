@@ -43,7 +43,7 @@ export const Route = createFileRoute('/_navLayout/horario/')({
 
     const tasks: Promise<any>[] = [
       qc.ensureQueryData(fetchTrimestersOptions()),
-      qc.ensureQueryData(fetchCareersOptionsOptions()),
+      qc.ensureQueryData(fetchCareersOptionsOptions(qc)),
     ];
 
     const trimesterId = trimester !== 'none' ? trimester : '';

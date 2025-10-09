@@ -4,8 +4,11 @@ import (
 	"context"
 	"maps"
 	"metrograma/db"
-	"metrograma/modules/interactions/course/services"
+	courseServices "metrograma/modules/interactions/course/services"
+	friendServices "metrograma/modules/interactions/friend/services"
+	studentPreferenceServices "metrograma/modules/preferences/student_preferences/services"
 	studentDTO "metrograma/modules/student/DTO"
+	"metrograma/modules/student/utils"
 
 	surrealdb "github.com/surrealdb/surrealdb.go"
 	"github.com/surrealdb/surrealdb.go/contrib/surrealql"
@@ -14,28 +17,58 @@ import (
 
 // GetStudentDetails returns the student with user, careers, and passed subjects (enroll edges)
 func GetStudentDetails(studentId surrealModels.RecordID, loggedUserId *surrealModels.RecordID) (*studentDTO.StudentDetails, error) {
+	studentPreferences, err := studentPreferenceServices.GetStudentPreferencesByStudent(studentId)
+	if err != nil {
+		return nil, err
+	}
+
+	isFriend := false
+	isFriendOfAFriend := false
+
+	if loggedUserId != nil {
+		friend, err := friendServices.IsFriend(*loggedUserId, studentId)
+		if err != nil {
+			return nil, err
+		}
+		isFriend = friend
+
+		friendOfAFriend, err := friendServices.IsFriendOfAFriend(*loggedUserId, studentId)
+		if err != nil {
+			return nil, err
+		}
+		isFriendOfAFriend = friendOfAFriend
+	}
+
 	qb := surrealql.SelectOnly(studentId).
 		Alias("careers", "->study.out").
-		Alias("friends", "->(friend WHERE status == 'accepted').out").
 		Field("*").
 		Fetch("user", "careers", "passed_subjects", "friends", "friends.user")
 
-	passed_subjects_Qb := surrealql.Select("$parent->enroll").
-		FieldName("trimester").
-		Alias("subjects", `array::group({
-				subject: out,
-				grade: grade,
-				difficulty: difficulty,
-				workload: workload
-		})`).
-		Alias("average_grade", "math::mean(<float>grade)").
-		FieldNameAs("trimester.starting_date", "starting_date").
-		Where("grade >= 10").
-		GroupBy("trimester").
-		OrderBy("starting_date").
-		Fetch("subjects.subject")
+	qb = utils.ApplyIfVisible(qb, loggedUserId, studentPreferences.ShowSubjects, isFriend, isFriendOfAFriend,
+		func(q *surrealql.SelectQuery) *surrealql.SelectQuery {
+			passed_subjects_Qb := surrealql.Select("$parent->enroll").
+				FieldName("trimester").
+				Alias("subjects", `array::group({
+						subject: out,
+						grade: grade,
+						difficulty: difficulty,
+						workload: workload
+				})`).
+				Alias("average_grade", "math::mean(<float>grade)").
+				FieldNameAs("trimester.starting_date", "starting_date").
+				Where("grade >= 10").
+				GroupBy("trimester").
+				OrderBy("starting_date").
+				Fetch("subjects.subject")
+			return qb.Alias("passed_subjects", passed_subjects_Qb)
+		},
+	)
 
-	qb = qb.Alias("passed_subjects", passed_subjects_Qb)
+	qb = utils.ApplyIfVisible(qb, loggedUserId, studentPreferences.ShowFriends, isFriend, isFriendOfAFriend,
+		func(q *surrealql.SelectQuery) *surrealql.SelectQuery {
+			return qb.Alias("friends", "->(friend WHERE status == 'accepted').out")
+		},
+	)
 
 	extraParams := map[string]any{}
 
@@ -52,10 +85,11 @@ func GetStudentDetails(studentId surrealModels.RecordID, loggedUserId *surrealMo
 		extraParams["my_id"] = *loggedUserId
 	}
 
-	if true {
-		qb = qb.Alias("current_courses", getScheduleSubquery(studentId, "current")).
-			Alias("next_courses", getScheduleSubquery(studentId, "next"))
-	}
+	qb = utils.ApplyIfVisible(qb, loggedUserId, studentPreferences.ShowSchedule, isFriend, isFriendOfAFriend,
+		func(q *surrealql.SelectQuery) *surrealql.SelectQuery {
+			return addSheduleSubquery(q, studentId)
+		},
+	)
 
 	query, params := qb.Build()
 
@@ -74,10 +108,15 @@ func GetStudentDetails(studentId surrealModels.RecordID, loggedUserId *surrealMo
 	return &data, nil
 }
 
+func addSheduleSubquery(qb *surrealql.SelectQuery, studentId surrealModels.RecordID) *surrealql.SelectQuery {
+	return qb.Alias("current_courses", getScheduleSubquery(studentId, "current")).
+		Alias("next_courses", getScheduleSubquery(studentId, "next"))
+}
+
 func getScheduleSubquery(studentId surrealModels.RecordID, trimesterTime string) *surrealql.SelectQuery {
 	qb := surrealql.SelectOnly("course").
-		Alias("principal", services.GetSectionSubquery(true)).
-		Alias("secondary", services.GetSectionSubquery(false)).
+		Alias("principal", courseServices.GetSectionSubquery(true)).
+		Alias("secondary", courseServices.GetSectionSubquery(false)).
 		WhereEq("in", studentId)
 
 	if trimesterTime == "current" {

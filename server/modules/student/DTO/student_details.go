@@ -11,7 +11,7 @@ import (
 type StudentDetails struct {
 	models.StudentWithUser
 	Careers                   []models.CareerEntity       `json:"careers"`
-	PassedSubjectsByTrimester []PassedSubjectsByTrimester `json:"passed_subjects"`
+	PassedSubjectsByTrimester []passedSubjectsByTrimester `json:"passed_subjects"`
 	Friends                   []models.StudentWithUser    `json:"friends"`
 
 	FriendshipStatus          string                   `json:"friendship_status,omitempty"`
@@ -28,17 +28,17 @@ type studentCourse struct {
 	Secondary []DTO.QueryCourse `json:"secondary"`
 }
 
-// PassedSubjectEntry is a condensed view of a single passed subject.
-type PassedSubjectEntry struct {
+// passedSubjectEntry is a condensed view of a single passed subject.
+type passedSubjectEntry struct {
 	Difficulty int                  `json:"difficulty"`
 	Grade      int                  `json:"grade"`
 	Subject    models.SubjectEntity `json:"subject"`
 	Workload   int                  `json:"workload"`
 }
 
-// PassedSubjectsByTrimester groups passed subjects for a given trimester.
-type PassedSubjectsByTrimester struct {
-	Subjects     []PassedSubjectEntry   `json:"subjects"`
+// passedSubjectsByTrimester groups passed subjects for a given trimester.
+type passedSubjectsByTrimester struct {
+	Subjects     []passedSubjectEntry   `json:"subjects"`
 	Trimester    surrealModels.RecordID `json:"trimester" swaggertype:"object"`
 	AverageGrade float64                `json:"average_grade"`
 }

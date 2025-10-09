@@ -83,12 +83,16 @@ github.com/mattn/go-isatty v0.0.20 h1:xfD0iDuEKnDkl03q4limB+vH+GxLEtL/jb4xVJSWWE
 github.com/mattn/go-isatty v0.0.20/go.mod h1:W+V8PltTTMOvKvAeJH7IuucS94S2C6jfK/D7dTCTo3Y=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
+github.com/rdbell/echo-pretty-logger v1.0.0 h1:mOT5Tk3VErvVSrpVzwuzOcW0S48+Vb/juwzdrel2ioI=
+github.com/rdbell/echo-pretty-logger v1.0.0/go.mod h1:uvJhQDUtOCsyhRGuYcfI2RICdTUdIahSwv37kExhZKQ=
 github.com/rogpeppe/go-internal v1.12.0 h1:exVL4IDcn6na9z1rAb56Vxr+CgyK3nn3O+epU5NdKM8=
 github.com/rogpeppe/go-internal v1.12.0/go.mod h1:E+RYuTGaKKdloAfM02xzb0FW3Paa99yedzYV+kq4uf4=
 github.com/stretchr/testify v1.11.1 h1:7s2iGBzp5EwR7/aIZr8ao5+dra3wiQyKjjFuvgVKu7U=
 github.com/stretchr/testify v1.11.1/go.mod h1:wZwfW3scLgRK+23gO65QZefKpKQRnfz6sD981Nm4B6U=
 github.com/surrealdb/surrealdb.go v1.0.0 h1:snFI5N3AB7fT+UQIc35OzkFl6wh56ZtUmiS5wg+L6vo=
 github.com/surrealdb/surrealdb.go v1.0.0/go.mod h1:NAvd5SLxlPxp+zc4L0z+JNeaJgkedynJVo9DQaG5E4c=
+github.com/surrealdb/surrealdb.go v1.0.1-0.20251009014637-c1fd9e37cea4 h1:V1uvsQAL7F7+ttBUg7Be4FsarE8cfxmL+9hfBZbh5SU=
+github.com/surrealdb/surrealdb.go v1.0.1-0.20251009014637-c1fd9e37cea4/go.mod h1:NAvd5SLxlPxp+zc4L0z+JNeaJgkedynJVo9DQaG5E4c=
 github.com/swaggo/echo-swagger v1.4.1 h1:Yf0uPaJWp1uRtDloZALyLnvdBeoEL5Kc7DtnjzO/TUk=
 github.com/swaggo/echo-swagger v1.4.1/go.mod h1:C8bSi+9yH2FLZsnhqMZLIZddpUxZdBYuNHbtaS1Hljc=
 github.com/swaggo/files/v2 v2.0.2 h1:Bq4tgS/yxLB/3nwOMcul5oLEUKa877Ykgz3CJMVbQKU=

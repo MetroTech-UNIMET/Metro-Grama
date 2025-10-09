@@ -12,6 +12,8 @@ import (
 	"github.com/gorilla/sessions"
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
+	prettylogger "github.com/rdbell/echo-pretty-logger"
+
 	echoMiddleware "github.com/labstack/echo/v4/middleware"
 
 	docs "metrograma/docs"
@@ -40,6 +42,8 @@ func main() {
 	e.Use(middlewares.Cors())
 	e.Use(echoMiddleware.BodyLimit("2M"))
 	// e.Use(echoMiddleware.Logger())
+
+	e.Use(prettylogger.Logger)
 	e.Use(echoMiddleware.Gzip())
 	e.Use(echoMiddleware.Decompress())
 	e.Use(echoMiddleware.StaticWithConfig(echoMiddleware.StaticConfig{

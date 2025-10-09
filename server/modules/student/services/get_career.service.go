@@ -5,18 +5,18 @@ import (
 	"metrograma/db"
 
 	surrealdb "github.com/surrealdb/surrealdb.go"
+	"github.com/surrealdb/surrealdb.go/contrib/surrealql"
 	surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
 )
 
-const getStudentCareersQuery = `SELECT VALUE ->study.out FROM ONLY $studentId;`
-
 // GetStudentCareers returns the career record IDs linked to a student through the study relation
 func GetStudentCareers(studentId surrealModels.RecordID) ([]surrealModels.RecordID, error) {
-	params := map[string]any{
-		"studentId": studentId,
-	}
+	qb := surrealql.SelectOnly(studentId).
+		Value("->study.out")
 
-	res, err := surrealdb.Query[[]surrealModels.RecordID](context.Background(), db.SurrealDB, getStudentCareersQuery, params)
+	sql, params := qb.Build()
+
+	res, err := surrealdb.Query[[]surrealModels.RecordID](context.Background(), db.SurrealDB, sql, params)
 	if err != nil {
 		return nil, err
 	}

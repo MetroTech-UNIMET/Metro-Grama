@@ -7,6 +7,7 @@ import (
 	"metrograma/models"
 
 	"github.com/surrealdb/surrealdb.go"
+	"github.com/surrealdb/surrealdb.go/contrib/surrealql"
 	surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
 )
 
@@ -32,18 +33,22 @@ func GetCareerWithSubjectsById(careerId string) (any, error) {
 		Subjects []SubjectComplex `json:"subjects"`
 	}
 
-	rows, err := surrealdb.Query[CareerWithSubjectsResponse](context.Background(), db.SurrealDB, `
-LET $subjects = SELECT
-    in as subject,
-    trimester as trimester,
-    in<-precede.in as prelations
-    FROM belong
-    where out == $id
-	ORDER BY trimester
-    FETCH subject;
+	qb := surrealql.SelectOnly("id").
+		Alias("subjects",
+			surrealql.Select("belong").
+				Alias("subject", "in").
+				Field("trimester").
+				Alias("prelations", "in<-precede.in").
+				Where("out == $id").
+				OrderBy("trimester").
+				Fetch("subject"),
+		).Field("*")
 
-SELECT *, $subjects FROM ONLY $id;
-`, map[string]any{"id": surrealModels.NewRecordID("career", careerId)})
+	sql, params := qb.Build()
+
+	params["$id"] = surrealModels.NewRecordID("career", careerId)
+
+	rows, err := surrealdb.Query[CareerWithSubjectsResponse](context.Background(), db.SurrealDB, sql, params)
 
 	if err != nil {
 		return models.CareerWithSubjects{}, fmt.Errorf("error getting career: %v", err)

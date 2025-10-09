@@ -2,67 +2,43 @@ package services
 
 import (
 	"context"
-	"fmt"
 	"metrograma/db"
 	"metrograma/models"
 	"metrograma/tools"
+	"net/http"
 	"strings"
 
+	"github.com/labstack/echo/v4"
 	"github.com/surrealdb/surrealdb.go"
 	"github.com/surrealdb/surrealdb.go/contrib/surrealql"
 	surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
 )
 
 func useGetSubjectsQuery(careers string) (*[]surrealdb.QueryResult[[]models.SubjectsByCareers], error) {
-	baseQuery := `
-	SELECT
-	in as subject,
-	array::group(out) as careers,
-  array::group(in->precede.out$prelationsConditions) as prelations	
-  FROM belong
-	$condition
-	GROUP BY subject
-	FETCH subject;
-`
+	// TODO - Encontrar mejor manera de filtrar un -> path condicionalmente
+	qb := surrealql.Select("belong").
+		Alias("subject", "in").
+		Alias("careers", "array::group(out)").
+		Alias("prelations", "array::group(in->precede.out$prelationsConditions)").
+		GroupBy("subject").
+		Fetch("subject")
 
 	if careers == "all" || careers == "" {
-		baseQuery = strings.Replace(baseQuery, "$condition", "", 1)
-		baseQuery = strings.Replace(baseQuery, "$prelationsConditions", "", 1)
+		sql, vars := qb.Build()
+		sql = strings.Replace(sql, "$prelationsConditions", "", 1)
 
-		return surrealdb.Query[[]models.SubjectsByCareers](context.Background(), db.SurrealDB, baseQuery, nil)
+		return surrealdb.Query[[]models.SubjectsByCareers](context.Background(), db.SurrealDB, sql, vars)
 	} else {
 		careersArray := tools.StringToIdArray(careers)
 
-		baseQuery = strings.Replace(baseQuery, "$condition", "WHERE out IN $careersId", 1)
-		baseQuery = strings.Replace(baseQuery, "$prelationsConditions", "[WHERE ->belong.out ANYINSIDE $careersId]", 1)
+		qb = qb.Where("out IN $careersId")
+		sql, vars := qb.Build()
+		sql = strings.Replace(sql, "$prelationsConditions", "[WHERE ->belong.out ANYINSIDE $careersId]", 1)
 
-		return surrealdb.Query[[]models.SubjectsByCareers](context.Background(), db.SurrealDB, baseQuery, map[string]any{
-			"careersId": careersArray,
-		})
+		vars["careersId"] = careersArray
+
+		return surrealdb.Query[[]models.SubjectsByCareers](context.Background(), db.SurrealDB, sql, vars)
 	}
-	// baseQuery := surrealql.Select(surrealModels.Table("belong")).Field("in as subject").
-	// 	Field("array::group(out) as careers").
-	// 	GroupBy("subject").
-	// 	Fetch("subject")
-
-	// if careers == "all" || careers == "" {
-	// 	baseQuery = baseQuery.
-	// 		Field("array::group(in->precede.out) as prelations")
-
-	// 	sql, vars := baseQuery.Build()
-
-	// 	return surrealdb.Query[[]models.SubjectsByCareers](context.Background(), db.SurrealDB, sql, vars)
-	// } else {
-	// 	careersArray := tools.StringToIdArray(careers)
-
-	// 	baseQuery = baseQuery.
-	// 		Field(surrealql.Expr("array::group(in->precede.out[WHERE ->belong.out ANYINSIDE ?]) as prelation", careersArray)).
-	// 		Where("out in ?", careersArray)
-
-	// 	sql, vars := baseQuery.Build()
-
-	// 	return surrealdb.Query[[]models.SubjectsByCareers](context.Background(), db.SurrealDB, sql, vars)
-	// }
 }
 
 func GetSubjects(careers string) ([]models.SubjectNode, error) {
@@ -90,7 +66,7 @@ func GetSubjects(careers string) ([]models.SubjectNode, error) {
 	subjects := (*result)[0].Result
 
 	if len(subjects) == 0 {
-		return []models.SubjectNode{}, fmt.Errorf("there is no subjects belonging to this careers")
+		return []models.SubjectNode{}, echo.NewHTTPError(http.StatusNotFound, "No hay materias para las carreras proporcionadas")
 	}
 
 	return subjects, nil
@@ -103,11 +79,11 @@ func GetSubjectsGraph(careers string) (models.Graph[models.SubjectNode], error) 
 		return models.Graph[models.SubjectNode]{}, err
 	}
 
-	subjectsByCareers := (*result)[0].Result
-
-	if len(subjectsByCareers) == 0 {
-		return models.Graph[models.SubjectNode]{}, fmt.Errorf("there is no subjects belonging to this careers")
+	if len((*result)[0].Result) == 0 {
+		return models.Graph[models.SubjectNode]{}, echo.NewHTTPError(http.StatusNotFound, "No hay materias para las carreras proporcionadas")
 	}
+
+	subjectsByCareers := (*result)[0].Result
 
 	nodes := make([]models.Node[models.SubjectNode], len(subjectsByCareers))
 	edges := make([]models.Edge, 0)
@@ -152,7 +128,8 @@ RETURN SELECT VALUE id
 COMMIT TRANSACTION;`
 
 	// qb := surrealql.Begin().
-	// Let(surrealql.Select("enroll").Field("VALUE out").WhereEq("in", studentId).Where("grade >= 10"), "enrolled")
+	// 	Let("enrolled", surrealql.Select("enroll").Field("VALUE out").WhereEq("in", "$studentId").Where("passed = true")).
+	// 	Return(surrealql.Select("subject").Value("VALUE id").Where("fn::is_subject_enrollable(id, $studentId, $enrolled) = true"))
 
 	params := map[string]any{
 		"studentId": studentId,

@@ -6,8 +6,6 @@ import { SubjectOfferSchedulesList } from './SubjectOfferSchedulesList';
 import { useSubjectOfferDetailRouter } from '../../hooks/useSubjectOfferDetailRouter';
 import { usePlannerSidebarContext } from '../../context/PlannerSidebarContext';
 
-import { useFetchAnnualOfferByTrimester } from '@/hooks/queries/subject_offer/use-fetch-annual-offer-by-trimester';
-
 import { CardTitle, CardDescription } from '@ui/card';
 import { SidebarContent, SidebarHeader } from '@ui/sidebar';
 import { Button } from '@ui/button';
@@ -26,30 +24,18 @@ export default function SubjectOfferDetail({ subjectOffer, onBack }: Props) {
   const { view, go, back } = useSubjectOfferDetailRouter(subjectOffer);
   const handleHeaderBack = () => back(onBack);
 
-  // Always prefer the freshest data from react-query
-  const trimesterId = subjectOffer.trimester.id.ID;
-  const { data: offers } = useFetchAnnualOfferByTrimester({ trimesterId });
-
-  const currentSubjectOffer = useMemo(
-    () => offers?.find((o) => o.id.ID === subjectOffer.id.ID) ?? subjectOffer,
-    [offers, subjectOffer],
-  );
-
-  const isSelected = useMemo(
-    () => getIsSubjectSelected(currentSubjectOffer),
-    [currentSubjectOffer, getIsSubjectSelected],
-  );
+  const isSelected = useMemo(() => getIsSubjectSelected(subjectOffer), [subjectOffer, getIsSubjectSelected]);
 
   return (
     <>
-      <SubjectSidebarHeader subjectOffer={currentSubjectOffer} onBack={handleHeaderBack} />
+      <SubjectSidebarHeader subjectOffer={subjectOffer} onBack={handleHeaderBack} />
 
       <SidebarContent>
         {view === 'form' ? (
-          <SubjectOfferForm subjectOffer={currentSubjectOffer} onBack={handleHeaderBack} />
+          <SubjectOfferForm subjectOffer={subjectOffer} onBack={handleHeaderBack} />
         ) : (
           <SubjectOfferSchedulesList
-            subjectOffer={currentSubjectOffer}
+            subjectOffer={subjectOffer}
             isSelected={isSelected}
             onRequestEdit={() => go('form')}
           />
@@ -82,10 +68,7 @@ function SubjectSidebarHeader({ subjectOffer, onBack }: Pick<Props, 'subjectOffe
 
           <div className="mt-2 flex flex-wrap gap-2">
             {subjectOffer.prelations.map((prerequisite) => (
-              <Badge
-                key={prerequisite.id.ID}
-                variant="primary"
-              >
+              <Badge key={prerequisite.id.ID} variant="primary">
                 {prerequisite.name} ({prerequisite.id.ID})
               </Badge>
             ))}

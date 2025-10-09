@@ -9,22 +9,20 @@ export type CareerOption = Option<`career:${string}`, Career>;
 export function fetchCareersOptions() {
   return queryOptions({
     queryKey: ['careers'],
-    queryFn: getCareers,
+    queryFn: async () => {
+      const careers = await getCareers();
+      const data: CareerOption[] =
+        careers?.map((career) => ({
+          value: `${career.id.Table}:${career.id.ID}` as `career:${string}`,
+          label: `${career.emoji} ${career.name}`,
+        })) ?? [];
+      return data;
+    },
   });
 }
 
 export default function useFetchCareersOptions() {
-  const { data, isLoading, error } = useQuery(fetchCareersOptions());
+  const query = useQuery(fetchCareersOptions());
 
-  const options: CareerOption[] =
-    data?.map((career) => ({
-      value: `${career.id.Table}:${career.id.ID}` as `career:${string}`,
-      label: `${career.emoji} ${career.name}`,
-    })) ?? [];
-
-  return {
-    options,
-    isLoading,
-    error,
-  };
+  return { ...query, data: query.data ?? [] };
 }

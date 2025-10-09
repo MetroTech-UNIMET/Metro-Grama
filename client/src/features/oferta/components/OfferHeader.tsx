@@ -22,7 +22,7 @@ export function OfferHeader({ year, setYear }: Props) {
   const careerOptionsQuery = useFetchCareersOptions();
 
   const { selectedCareer, setSelectedCareer } = useSelectedCareer({
-    careerOptions: careerOptionsQuery.options,
+    careerOptions: careerOptionsQuery.data,
     useStudentCareersAsDefault: true,
   });
 
@@ -58,7 +58,7 @@ export function OfferHeader({ year, setYear }: Props) {
     <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
       <div className="flex flex-wrap items-center gap-4">
         <AutoComplete
-          options={careerOptionsQuery.options || []}
+          options={careerOptionsQuery.data || []}
           isLoading={careerOptionsQuery.isLoading}
           value={selectedCareer}
           onSelect={(option) => setSelectedCareer(option as any)}

@@ -34,7 +34,7 @@ export default function Graph() {
 
   const { selectedCareers, setSelectedCareers } = useSelectedCareers({
     activeUrl: '/_navLayout/materias/',
-    careerOptions: careerOptionsQuery.options,
+    careerOptions: careerOptionsQuery.data,
     useStudentCareersAsDefault: true,
   });
 

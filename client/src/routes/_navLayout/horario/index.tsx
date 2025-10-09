@@ -10,7 +10,7 @@ import {
   fetchStudentCourseByTrimesterOptions,
 } from '@/hooks/queries/course/use-fetch-student-course-by-trimester';
 import { fetchTrimestersOptions } from '@/hooks/queries/trimester/use-FetchTrimesters';
-import { fetchCareersOptions } from '@/hooks/queries/use-FetchCareersOptions';
+import { fetchCareersOptionsOptions } from '@/hooks/queries/career/use-fetch-careers';
 import { fetchAnnualOfferByTrimesterOptions } from '@/hooks/queries/subject_offer/use-fetch-annual-offer-by-trimester';
 import { fetchStudentCareersOptions } from '@/hooks/queries/student/use-fetch-student-careers';
 
@@ -31,8 +31,6 @@ import type { Trimester } from '@/interfaces/Trimester';
 import type { SubjectSchedule } from '@/interfaces/SubjectSchedule';
 import ErrorPage from '@components/ErrorPage';
 
-// TODO - Skeleton con pendingComponent y usar suspense
-// TODO - ErrorComponent
 export const Route = createFileRoute('/_navLayout/horario/')({
   validateSearch: queryParams,
   loaderDeps: ({ search: { trimester, is_principal, careers } }) => ({
@@ -45,7 +43,7 @@ export const Route = createFileRoute('/_navLayout/horario/')({
 
     const tasks: Promise<any>[] = [
       qc.ensureQueryData(fetchTrimestersOptions()),
-      qc.ensureQueryData(fetchCareersOptions()),
+      qc.ensureQueryData(fetchCareersOptionsOptions()),
     ];
 
     const trimesterId = trimester !== 'none' ? trimester : '';

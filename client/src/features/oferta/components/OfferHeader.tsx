@@ -7,7 +7,7 @@ import { pdfFileSchema } from './schema';
 import { useSelectedCareer } from '../hooks/search-params/use-selected-career';
 import { useMutationUploadAnnualOfferPDF } from '../hooks/mutations/use-mutation-uploadAnnualOfferPDF';
 
-import useFetchCareersOptions from '@/hooks/queries/use-FetchCareersOptions';
+import { useFetchCareersOptions } from '@/hooks/queries/career/use-fetch-careers';
 
 import AutoComplete from '@ui/derived/autocomplete';
 import { Button } from '@ui/button';

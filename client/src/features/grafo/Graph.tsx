@@ -19,7 +19,7 @@ import { Dialog } from '@ui/dialog';
 import useSubjectGraph from '@/features/grafo/hooks/useSubjectGraph/useSubjectGraph';
 
 import useFecthSubjectsGraphByCareer from '@/hooks/queries/subject/use-FecthSubjectsGraphByCareer';
-import useFetchCareersOptions from '@/hooks/queries/use-FetchCareersOptions';
+import { useFetchCareersOptions } from '@/hooks/queries/career/use-fetch-careers';
 
 import { useSelectedCareers } from '@/hooks/search-params/use-selected-careers';
 

@@ -4,7 +4,7 @@ import { cn } from '@utils/className';
 import { idToSurrealId } from '@utils/queries';
 
 import { useFetchStudentCareers } from '@/hooks/queries/student/use-fetch-student-careers';
-import useFetchCareersOptions, { type CareerOption } from '@/hooks/queries/use-FetchCareersOptions';
+import { type CareerOption, useFetchCareersOptions } from '@/hooks/queries/career/use-fetch-careers';
 
 import MultipleSelector, { type MultipleSelectorProps } from '@ui/derived/multidropdown';
 import { Spinner } from '@ui/spinner';

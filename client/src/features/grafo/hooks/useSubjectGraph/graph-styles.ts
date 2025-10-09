@@ -4,7 +4,7 @@ import { getNormalIcon, getCustomIconProps } from './functions';
 import useLazyGraphIcons from '../../../../hooks/lazy-loading/use-LazyGraphIcons';
 
 import type { Subject } from '@/interfaces/Subject';
-import type { CareerOption } from '@/hooks/queries/use-FetchCareersOptions';
+import type { CareerOption } from '@/hooks/queries/career/use-fetch-careers';
 import type { Career } from '@/interfaces/Career';
 import type { Node4j } from '@/interfaces/Graph';
 

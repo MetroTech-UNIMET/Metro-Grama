@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import { useLayoutEffect } from '@tanstack/react-router';
+import { useRef, useState } from 'react';
 
 interface UseUnderlineArgs {
   activeIndex: number;
@@ -13,20 +14,29 @@ export function useUnderlineStyle({ activeIndex, showLabels, orientation }: UseU
   const [width, setWidth] = useState(0);
   const [left, setLeft] = useState(0);
 
-  useEffect(() => {
-    if (!showLabels || orientation !== 'horizontal') return;
-    if (activeIndex < 0) return;
+  useLayoutEffect(() => {
+    if (!showLabels || orientation !== 'horizontal' || activeIndex < 0) {
+      setWidth(0);
+      setLeft(0);
+      return;
+    }
+
     const activeButton = itemRefs.current[activeIndex];
     const activeText = textRefs.current[activeIndex];
-    if (activeButton && activeText) {
-      const buttonRect = activeButton.getBoundingClientRect();
-      const textRect = activeText.getBoundingClientRect();
-      const containerRect = activeButton.parentElement?.getBoundingClientRect();
-      if (containerRect) {
-        setWidth(textRect.width);
-        setLeft(buttonRect.left - containerRect.left + (buttonRect.width - textRect.width) / 2);
-      }
+    const container = activeButton?.parentElement;
+
+    if (!activeButton || !activeText || !container) {
+      setWidth(0);
+      setLeft(0);
+      return;
     }
+
+    const buttonRect = activeButton.getBoundingClientRect();
+    const textRect = activeText.getBoundingClientRect();
+    const containerRect = container.getBoundingClientRect();
+
+    setWidth(textRect.width);
+    setLeft(buttonRect.left - containerRect.left + (buttonRect.width - textRect.width) / 2);
   }, [activeIndex, showLabels, orientation]);
 
   return { width, left, itemRefs, textRefs };

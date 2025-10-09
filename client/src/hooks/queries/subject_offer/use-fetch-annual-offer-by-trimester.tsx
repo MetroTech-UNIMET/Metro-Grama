@@ -19,13 +19,14 @@ export function useFetchAnnualOfferByTrimester({ queryOptions, trimesterId, opti
 export function fetchAnnualOfferByTrimesterOptions({ trimesterId, optionalQuery, queryOptions: queryOpt }: Props) {
   const optionalQuerParams: Query_AnnualOffers = {
     ...optionalQuery,
-    careers: optionalQuery?.careers?.sort(),
+    careers: optionalQuery?.careers?.sort() ?? [],
     subjectsFilter: optionalQuery?.subjectsFilter || 'none',
   };
+
   return queryOptions({
     queryKey: ['subjects', 'offer', trimesterId, optionalQuerParams],
     queryFn: () => getAnualOffersByTrimester(trimesterId, optionalQuery),
-    enabled: !!trimesterId,
+    enabled: !!trimesterId && (optionalQuerParams?.careers?.length ?? 0) > 0,
     ...queryOpt,
   });
 }

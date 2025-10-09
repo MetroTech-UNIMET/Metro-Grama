@@ -1,20 +1,14 @@
-import { useQueryClient, type UseQueryResult, useSuspenseQuery } from '@tanstack/react-query';
 import { useEffect, useMemo, useState } from 'react';
+import { useSearch } from '@tanstack/react-router';
 
 import { PlannerSidebarHeader } from './PlannerSidebarHeader';
 import SubjectOfferCard from '../SubjectOfferCard';
 import SubjectOfferDetail from '../SubjectOfferDetail/SubjectOfferDetail';
 
+import { PlannerSidebarProvider, type PlannerSidebarContextValue } from '../../context/PlannerSidebarContext';
+
 import { useFetchAnnualOfferByTrimester } from '@/hooks/queries/subject_offer/use-fetch-annual-offer-by-trimester';
-import { fetchTrimestersSelectOptions } from '@/hooks/queries/trimester/use-FetchTrimesters';
-import useFetchCareersOptions, { type CareerOption } from '@/hooks/queries/use-FetchCareersOptions';
-
-import { useSelectedTrimester } from '@/hooks/search-params/use-selected-trimester';
-import { useSelectedCareers } from '@/hooks/search-params/use-selected-careers';
-
-import { useSearchTerm } from '@/features/weekly-schedule/weekly-schedule-sidebar/hooks/search-params/use-search-term';
-import { useFilterByDays } from '@/features/weekly-schedule/weekly-schedule-sidebar/hooks/search-params/use-filter-by-days';
-import { useFilterByTimeRange } from '@/features/weekly-schedule/weekly-schedule-sidebar/hooks/search-params/use-filter-by-time-range';
+import { useDebounceValue } from '@/hooks/shadcn.io/debounce/use-debounce-value';
 
 import { useAuth } from '@/contexts/AuthenticationContext';
 import { normalize } from '@utils/strings';
@@ -22,9 +16,8 @@ import { normalize } from '@utils/strings';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarRail } from '@ui/sidebar';
 import { Skeleton } from '@ui/skeleton';
 
-import { PlannerSidebarProvider, type PlannerSidebarContextValue } from '../../context/PlannerSidebarContext';
-
 import type { SubjectOfferWithSections } from '@/interfaces/SubjectOffer';
+import type { UseQueryResult } from '@tanstack/react-query';
 
 interface Props extends PlannerSidebarContextValue {}
 
@@ -53,11 +46,7 @@ function HomeSidebar({
 }: {
   setSelectedSubject: (subject: SubjectOfferWithSections | null) => void;
 }) {
-  const queryClient = useQueryClient();
-
-  const { debouncedTerm: debouncedSearch } = useSearchTerm();
-  const { selectedDays } = useFilterByDays();
-  const { timeRange } = useFilterByTimeRange();
+  // TODO - Usar hook useSearch
 
   const { user } = useAuth();
   const [showEnrollable, setShowEnrollable] = useState(false);
@@ -65,29 +54,24 @@ function HomeSidebar({
     if (!user && showEnrollable) setShowEnrollable(false);
   }, [user, showEnrollable]);
 
-  const { options } = useFetchCareersOptions();
-  const { selectedCareers } = useSelectedCareers({
-    activeUrl: '/_navLayout/horario/',
-    careerOptions: options,
-    useStudentCareersAsDefault: true,
-  });
-
-  const trimesterQuery = useSuspenseQuery(fetchTrimestersSelectOptions({ queryClient }));
-  const { selectedTrimester } = useSelectedTrimester({
-    trimesterOptions: trimesterQuery.data ?? [],
-  });
+  const params = useSearch({ from: '/_navLayout/horario/' });
 
   const subjectsOfferQuery = useFetchAnnualOfferByTrimester({
-    trimesterId: selectedTrimester?.value ?? '',
+    trimesterId: params.trimester,
     optionalQuery: {
-      careers: selectedCareers.map((c) => c.value),
+      careers: params.careers,
       // Only send subjectsFilter when a user exists; backend defaults to 'none' otherwise
       subjectsFilter: user ? (showEnrollable ? 'enrollable' : 'none') : undefined,
     },
     queryOptions: {
-      enabled: !!selectedTrimester && selectedCareers.length > 0,
+      enabled: !!params.trimester && params.careers.length > 0,
     },
   });
+
+  const [debouncedSearch] = useDebounceValue(params.search, 1000);
+
+  const selectedDays = params.filterByDays;
+  const timeRange = params.filterByTimeRange;
 
   const filteredData = useMemo(() => {
     if (!subjectsOfferQuery.data) return [] as SubjectOfferWithSections[];
@@ -138,7 +122,7 @@ function HomeSidebar({
       <SidebarContent className="mt-4">
         <SidebarGroup className="gap-2">
           <SubjectsSection
-            selectedCareers={selectedCareers}
+            selectedCareers={params.careers}
             query={subjectsOfferQuery}
             filteredData={filteredData}
             onSelect={setSelectedSubject}
@@ -155,7 +139,7 @@ function SubjectsSection({
   filteredData,
   onSelect,
 }: {
-  selectedCareers: CareerOption[];
+  selectedCareers: string[];
   query: UseQueryResult<SubjectOfferWithSections[]>;
   filteredData: SubjectOfferWithSections[];
   onSelect: (subject: SubjectOfferWithSections | null) => void;

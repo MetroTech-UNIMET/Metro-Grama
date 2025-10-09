@@ -8,12 +8,7 @@ import { SubjectSectionWithSubject } from './course.types';
 
 interface StudentDetails extends StudentWithUser {
   careers: Career[];
-  passed_subjects: {
-    subjects: PassedSubjectEntry[];
-    trimester: Id<'trimester'>;
-    average_grade: number;
-  }[];
-  friends: StudentWithUser[];
+
   next_courses: StudentCourse;
   current_courses: StudentCourse;
 }
@@ -31,11 +26,20 @@ export interface StudentCourse {
 }
 
 export interface MyStudentDetails extends StudentDetails {
+  passed_subjects: {
+    subjects: PassedSubjectEntry[];
+    trimester: Id<'trimester'>;
+    average_grade: number;
+  }[];
+  friends: StudentWithUser[];
   pending_friends: StudentWithUser[];
   friend_applications: StudentWithUser[];
 }
 
 export interface OtherStudentDetails extends StudentDetails {
+  passed_subjects?: MyStudentDetails['passed_subjects'];
+  friends?: MyStudentDetails['friends'];
+
   receiving_friendship_status: FriendEntity['status'] | 'none';
   friendship_status: FriendEntity['status'] | 'none';
 }

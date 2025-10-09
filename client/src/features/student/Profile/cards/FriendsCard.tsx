@@ -62,6 +62,23 @@ export function FriendsCard({ friends, pending_friends, friend_applications }: P
   );
 }
 
+export function OnlyFriendsCard({ friends }: Pick<Props, 'friends'>) {
+  return (
+    <Card className="pb-2">
+      <CardHeader>
+        <CardTitle>Amigos</CardTitle>
+      </CardHeader>
+      <CardContent className="max-h-86 space-y-3 overflow-y-auto">
+        {friends?.length ? (
+          friends.map((f) => <FriendRow key={f.id.ID} student={f} />)
+        ) : (
+          <div className="text-muted-foreground text-sm">Aún no tienes amigos :c</div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 interface FriendRowProps {
   student: StudentWithUser;
 

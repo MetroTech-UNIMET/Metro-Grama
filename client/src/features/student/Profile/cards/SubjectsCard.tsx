@@ -3,11 +3,10 @@ import { BicepsFlexed, Hourglass, Star } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@ui/tabs';
 
-import type { MyStudentDetails, OtherStudentDetails, PassedSubjectEntry } from '@/api/interactions/student.types';
+import type { MyStudentDetails, PassedSubjectEntry } from '@/api/interactions/student.types';
 
 interface Props {
-  // Array of groups: { trimester: RecordID; subjects: [{ subject: SubjectEntity; grade; difficulty; workload }] }
-  passed_subjects: (MyStudentDetails | OtherStudentDetails)['passed_subjects'];
+  passed_subjects: MyStudentDetails['passed_subjects'];
 }
 
 export function SubjectsCard({ passed_subjects }: Props) {

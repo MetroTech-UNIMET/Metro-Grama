@@ -1,5 +1,5 @@
 import { AcceptFriendButton } from './buttons/AcceptFriendButton';
-import { FriendsCard } from './cards/FriendsCard';
+import { FriendsCard, OnlyFriendsCard } from './cards/FriendsCard';
 import { SubjectsCard } from './cards/SubjectsCard';
 import { StudentCard } from './cards/StudentCard';
 import { SchedulesCard } from './cards/SchedulesCard';
@@ -32,14 +32,16 @@ export default function Profile({ data }: Props) {
       <div className="mx-auto max-w-6xl space-y-4 p-4 pb-16">
         <StudentCard data={data} />
 
-        <SubjectsCard passed_subjects={data.passed_subjects} />
+        {data.passed_subjects && <SubjectsCard passed_subjects={data.passed_subjects} />}
 
-        {isSelf && (
+        {isSelf ? (
           <FriendsCard
             friends={data.friends}
             pending_friends={data.pending_friends}
             friend_applications={data.friend_applications}
           />
+        ) : (
+          data.friends && <OnlyFriendsCard friends={data.friends} />
         )}
 
         <SchedulesCard current_courses={data.current_courses} next_courses={data.next_courses} />

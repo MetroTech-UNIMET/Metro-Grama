@@ -2,12 +2,11 @@ import axios from '@/axiosConfig';
 
 import type { SuccessResponse } from '../types';
 import type { Id } from '@/interfaces/surrealDb';
-import type { MyStudentDetails,OtherStudentDetails } from '@/interfaces/Student';
-
+import type { MyStudentDetails, OtherStudentDetails } from './student.types';
 
 export async function getStudentCareers() {
   const { data } = await axios.get<SuccessResponse<Id[]>>('/student/career');
-  return data.data
+  return data.data;
 }
 
 export async function getStudentDetails() {

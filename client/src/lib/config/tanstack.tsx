@@ -12,6 +12,8 @@ export function createAppRouter() {
     defaultOptions: {
       queries: {
         refetchOnWindowFocus: false,
+        refetchOnMount: false,
+        staleTime: 1000 * 60 * 10, // 10 minutes
       },
     },
   });

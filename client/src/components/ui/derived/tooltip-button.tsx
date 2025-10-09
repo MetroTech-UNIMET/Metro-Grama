@@ -18,12 +18,7 @@ export default function TooltipButton({
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <Button
-          {...buttonProps}
-          variant={variant}
-          size={size}
-          className={cn(className)}
-        ></Button>
+        <Button {...buttonProps} variant={variant} size={size} className={cn(className)} />
       </TooltipTrigger>
 
       <TooltipContent className={cn('bg-primary-800 font-bold text-white', contentClassName)}>

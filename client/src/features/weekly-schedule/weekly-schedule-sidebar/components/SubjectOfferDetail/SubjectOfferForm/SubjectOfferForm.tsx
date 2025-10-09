@@ -150,7 +150,7 @@ function SectionField({
               <Trash />
             </TooltipButton>
 
-            <PopoverTrigger>
+            <PopoverTrigger asChild>
               <TooltipButton
                 type="button"
                 variant="outline"

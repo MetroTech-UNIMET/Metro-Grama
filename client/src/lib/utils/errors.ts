@@ -6,7 +6,7 @@ export function eatErrors(fn: () => void) {
   }
 }
 
-export async function eatErrorsAsync(fn: () => Promise<void>) {
+export async function eatErrorsAsync<T>(fn: () => Promise<T>) {
   try {
     return await fn();
   } catch (error) {

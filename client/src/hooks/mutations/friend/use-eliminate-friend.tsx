@@ -6,7 +6,7 @@ import { eliminateFriend } from '@/api/interactions/friendApi';
 import { fetchStudentByIdOptions } from '@/hooks/queries/student/use-fetch-student-by-id';
 import { fetchStudentDetailsOptions } from '@/hooks/queries/student/use-fetch-student-details';
 
-import type { OtherStudentDetails } from '@/interfaces/Student';
+import type { OtherStudentDetails } from '@/api/interactions/student.types';
 
 interface Props {
   studentId: string;

@@ -16,6 +16,7 @@ import { fetchStudentCareersOptions } from '@/hooks/queries/student/use-fetch-st
 
 import { PlannerSidebar } from '@/features/weekly-schedule/weekly-schedule-sidebar/components/PlannerSidebar/PlannerSidebar';
 import { WeeklyPlanner } from '@/features/weekly-schedule/weekly-planner/WeeklyPlanner';
+import WeeklyScheduleSkeleton from '@/features/weekly-schedule/weekly-planner/WeeklyPlanner.skeleton';
 import { schedulesToSubjectEvents, sectionToSubjectEvents } from '@/features/weekly-schedule/weekly-planner/functions';
 
 import { eatErrorsAsync } from '@utils/errors';
@@ -28,6 +29,7 @@ import type { SubjectOffer } from '@/interfaces/SubjectOffer';
 import type { SubjectSection } from '@/interfaces/SubjectSection';
 import type { Trimester } from '@/interfaces/Trimester';
 import type { SubjectSchedule } from '@/interfaces/SubjectSchedule';
+import ErrorPage from '@components/ErrorPage';
 
 // TODO - Skeleton con pendingComponent y usar suspense
 // TODO - ErrorComponent
@@ -50,35 +52,30 @@ export const Route = createFileRoute('/_navLayout/horario/')({
 
     if (trimesterId) {
       tasks.push(
-        eatErrorsAsync(async () => {
-          () =>
-            qc.ensureQueryData(
-              fetchStudentCourseByTrimesterOptions({
-                trimesterId,
-                params: { is_principal },
-                queryOptions: { enabled: true },
-              } as any),
-            );
-        }),
+        eatErrorsAsync(async () =>
+          qc.ensureQueryData(
+            fetchStudentCourseByTrimesterOptions({
+              trimesterId,
+              params: { is_principal },
+            }),
+          ),
+        ),
       );
       qc.ensureQueryData(
         fetchAnnualOfferByTrimesterOptions({
           trimesterId,
           optionalQuery: { careers: (careers ?? []).map((c: string) => c) },
-          queryOptions: { enabled: true },
-        } as any),
+        }),
       );
     }
 
-    eatErrorsAsync(async () => {
-      qc.ensureQueryData(fetchStudentCareersOptions());
-    });
+    eatErrorsAsync(async () => qc.ensureQueryData(fetchStudentCareersOptions()));
 
     const [trimesterOptions, careerOptions, studentCourse] = await Promise.all(tasks);
     return { trimesterOptions, careerOptions, studentCourse };
   },
-  // TODO - Skeleton con pendingComponent
-  // pendingComponent: () => <div>Loading...</div>,
+  pendingComponent: WeeklyScheduleSkeleton,
+  errorComponent: (props) => <ErrorPage title="Error cargando horario" {...props} />,
   component: RouteComponent,
 });
 

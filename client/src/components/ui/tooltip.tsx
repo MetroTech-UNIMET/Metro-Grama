@@ -4,12 +4,77 @@ import * as React from 'react';
 import { Tooltip as TooltipPrimitive } from 'radix-ui';
 
 import { cn } from '@/lib/utils/className';
+import { useMediaQuery } from '@/hooks/media-query/use-media-query';
+
+const useHasHover = () => useMediaQuery('(hover: hover)');
+
+type TooltipTriggerContextType = {
+  supportMobileTap: boolean;
+  open: boolean;
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+};
+
+const TooltipTriggerContext = React.createContext<TooltipTriggerContextType>({
+  supportMobileTap: false,
+  open: false,
+  setOpen: () => {},
+});
 
 const TooltipProvider = TooltipPrimitive.Provider;
 
-const Tooltip = TooltipPrimitive.Root;
+// const Tooltip = TooltipPrimitive.Root;
 
-const TooltipTrigger = TooltipPrimitive.Trigger;
+function Tooltip({ children, ...props }: TooltipPrimitive.TooltipProps & { supportMobileTap?: boolean }) {
+  const [open, setOpen] = React.useState<boolean>(props.defaultOpen ?? false);
+  const hasHover = useHasHover();
+
+  return (
+    <TooltipPrimitive.Root
+      delayDuration={!hasHover && props.supportMobileTap ? 0 : props.delayDuration}
+      onOpenChange={setOpen}
+      open={open}
+    >
+      <TooltipTriggerContext.Provider
+        value={{
+          open,
+          setOpen,
+          supportMobileTap: props.supportMobileTap ?? false,
+        }}
+      >
+        {children}
+      </TooltipTriggerContext.Provider>
+    </TooltipPrimitive.Root>
+  );
+}
+Tooltip.displayName = TooltipPrimitive.Root.displayName;
+
+function TooltipTrigger({
+  children,
+  onClick: onClickProp,
+  ...props
+}: React.ComponentProps<typeof TooltipPrimitive.Trigger>) {
+  const hasHover = useHasHover();
+  const { setOpen, supportMobileTap } = React.useContext(TooltipTriggerContext);
+
+  const onClick = React.useCallback(
+    (e: React.MouseEvent<HTMLButtonElement>) => {
+      if (!hasHover && supportMobileTap) {
+        e.preventDefault();
+        setOpen(true);
+      } else {
+        onClickProp?.(e);
+      }
+    },
+    [setOpen, hasHover, supportMobileTap, onClickProp],
+  );
+
+  return (
+    <TooltipPrimitive.Trigger {...props} onClick={onClick}>
+      {children}
+    </TooltipPrimitive.Trigger>
+  );
+}
+TooltipTrigger.displayName = TooltipPrimitive.Trigger.displayName;
 
 const TooltipArrow = TooltipPrimitive.Arrow;
 

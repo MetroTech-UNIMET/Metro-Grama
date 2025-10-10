@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
 
 import {
   isNodeViewed,
@@ -11,24 +10,18 @@ import {
 import { edgeStyle, useNodeStyle } from './graph-styles';
 
 import { useFetchEnrolledSubjects } from '@/hooks/queries/student/use-fetch-enrolled-subjects';
+import { useFetchCareers, type CareerOption } from '@/hooks/queries/career/use-fetch-careers';
 
-import { getCareers } from '@/api/careersApi';
 import { useStatusActions } from '@/features/grafo/behaviors/StatusActions';
 
 import type { GraphinData } from '@antv/graphin';
 import type { AxiosError } from 'axios';
 import type { Subject } from '@/interfaces/Subject';
-import type { CareerOption } from '@/hooks/queries/career/use-fetch-careers';
 import type { NodeStatuses } from '@/features/grafo/behaviors/StatusActions';
-import type { Career } from '@/interfaces/Career';
 import type { Graph, Node4j } from '@/interfaces/Graph';
 
 export default function useSubjectGraph(data: Graph<Subject> | undefined, selectedCareers: CareerOption[]) {
-  const { data: careers } = useQuery<Career[]>({
-    queryKey: ['careers'],
-    queryFn: getCareers,
-  });
-  console.log(careers);
+  const careersQuery = useFetchCareers();
 
   const [graph, setGraph] = useState<GraphinData>({ nodes: [], edges: [] });
 
@@ -38,7 +31,7 @@ export default function useSubjectGraph(data: Graph<Subject> | undefined, select
     params: { onlyPassed: true },
   });
 
-  const { getNodeStyle } = useNodeStyle(selectedCareers, careers);
+  const { getNodeStyle } = useNodeStyle(selectedCareers, careersQuery.data);
 
   useEffect(() => {
     if (data?.nodes.length === 0) {

@@ -12,6 +12,7 @@ import (
 	"metrograma/modules/subject_schedule"
 	"metrograma/modules/subjects"
 	"metrograma/modules/trimesters"
+	"metrograma/modules/users"
 
 	"github.com/labstack/echo/v4"
 )
@@ -21,6 +22,7 @@ func CreateHandlers(e *echo.Echo) {
 	health.Handlers(apiGroup)
 	subjects.Handlers(apiGroup)
 	careers.Handlers(apiGroup)
+	users.Handlers(apiGroup)
 	auth.Handlers(apiGroup)
 	interactions.Handlers(apiGroup)
 	preferences.Handlers(apiGroup)

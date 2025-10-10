@@ -5,7 +5,7 @@ import { Slot as SlotPrimitive } from 'radix-ui';
 import { VariantProps, cva } from 'class-variance-authority';
 import { Menu } from 'lucide-react';
 
-import { useIsMobile } from '@/hooks/use-is-mobile';
+import { useIsMobile } from '@/hooks/media-query/use-is-mobile';
 import { cn } from '@/lib/utils/className';
 
 import { Button } from '@/components/ui/button';

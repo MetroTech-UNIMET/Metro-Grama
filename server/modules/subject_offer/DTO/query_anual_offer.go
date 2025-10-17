@@ -9,18 +9,19 @@ import (
 type QueryAnnualOffer struct {
 	models.SubjectOfferEntity
 	// Schedules []models.SubjectScheduleEntity `json:"schedules"`
-	Sections     []SectionsWithSchedules  `json:"sections"`
-	Careers      []surrealModels.RecordID `json:"careers" swaggertype:"array,object"`
-	IsEnrolled   *bool                    `json:"is_enrolled,omitempty"`
-	IsEnrollable *bool                    `json:"is_enrollable,omitempty"`
-	Prelations   []models.SubjectEntity   `json:"prelations" `
+	Sections         []SectionsWithSchedules  `json:"sections"`
+	Careers          []surrealModels.RecordID `json:"careers" swaggertype:"array,object"`
+	IsEnrolled       *bool                    `json:"is_enrolled,omitempty"`
+	IsEnrollable     *bool                    `json:"is_enrollable,omitempty"`
+	Prelations       []models.SubjectEntity   `json:"prelations"`
+	
+	DifferentFriends int                      `json:"differentFriends"`
 }
 
 type SectionsWithSchedules struct {
 	models.SubjectSectionEntity
 	Schedules []models.SubjectScheduleEntity `json:"schedules"`
 
-	DifferentFriends int                      `json:"differentFriends"`
 	Friends          []models.StudentWithUser `json:"friends"`
 	FriendsOfAfriend []FriendOfAFriend        `json:"friends_of_a_friend"`
 }

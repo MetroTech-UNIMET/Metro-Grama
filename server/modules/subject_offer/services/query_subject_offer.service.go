@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"fmt"
 	"maps"
 	"metrograma/db"
 	enrollServices "metrograma/modules/interactions/enroll/services"
@@ -32,10 +33,7 @@ func getBaseSubjectOfferQuery(careers []surrealModels.RecordID, includeFriends b
 		OrderBy("section_number")
 
 	if includeFriends {
-		sections_Qb.Alias("differentFriends", `array::union(
-				$friends_PlanToSee.filter(|$v| $this.id INSIDE $v.plan_to_see).id, 
-				$friendOfAfriend_PlanToSee.filter(|$v| $this.id INSIDE $v.plan_to_see).friendOfAfriend
-		).len()`)
+
 		sections_Qb.Alias("friends", "$friends_PlanToSee.filter(|$v| $this.id INSIDE $v.plan_to_see)")
 		sections_Qb.Alias("friends_of_a_friend", "$friendOfAfriend_PlanToSee.filter(|$v| $this.id INSIDE $v.plan_to_see).{commonFriend, friendOfAfriend}")
 	}
@@ -53,14 +51,24 @@ func getBaseSubjectOfferQuery(careers []surrealModels.RecordID, includeFriends b
 		Fetch("subject", "trimester", "prelations")
 
 	if includeFriends {
-		subjectOffer_Qb = subjectOffer_Qb.Fetch(
-			"sections.friends",
-			"sections.friends.user",
+		friends_PTS_Qb := surrealql.Select("$friends_PlanToSee").
+			Value("id").
+			Where("$parent.in IN plan_to_see.subject_offer.in")
 
-			"sections.friends_of_a_friend.commonFriend",
-			"sections.friends_of_a_friend.commonFriend.user",
-			"sections.friends_of_a_friend.friendOfAfriend",
-			"sections.friends_of_a_friend.friendOfAfriend.user")
+		friendOfAfriend_PTS_Qb := surrealql.Select("$friendOfAfriend_PlanToSee").
+			Value("commonFriend").
+			Where("$parent.in IN plan_to_see.subject_offer.in")
+
+		subjectOffer_Qb = subjectOffer_Qb.
+			Alias("differentFriends", "array::union(?,  ?).len()", friends_PTS_Qb, friendOfAfriend_PTS_Qb).
+			Fetch(
+				"sections.friends",
+				"sections.friends.user",
+
+				"sections.friends_of_a_friend.commonFriend",
+				"sections.friends_of_a_friend.commonFriend.user",
+				"sections.friends_of_a_friend.friendOfAfriend",
+				"sections.friends_of_a_friend.friendOfAfriend.user")
 	}
 
 	return subjectOffer_Qb
@@ -69,7 +77,9 @@ func getBaseSubjectOfferQuery(careers []surrealModels.RecordID, includeFriends b
 func constructTransactionVariables(qb *surrealql.TransactionQuery) *surrealql.TransactionQuery {
 	friendsOfAfriend_Qb := surrealql.Select("$loggedUser.{2+path}(->friend->student)").
 		Alias("commonFriend", "$this[0]").
-		Alias("friendOfAfriend", "$this[1]").Where("$this[1] != $loggedUser")
+		Alias("friendOfAfriend", "$this[1]").
+		Where("$this[1] != $loggedUser").
+		Where("$this[1] NOT IN $friends")
 
 	friendsOfAFriendPlanToSee_Qb := surrealql.Select("$friendsOfAfriend").
 		Alias("commonFriend", "$this.commonFriend").
@@ -81,16 +91,16 @@ func constructTransactionVariables(qb *surrealql.TransactionQuery) *surrealql.Tr
 	friendsPlanToSee_Qb := surrealql.Select("$friends").
 		Field("*").
 		Alias("plan_to_see", `<set>array::union(
-				$course.principal_sections ?? [],
-				$course.secondary_sections ?? [])`)
+				$friendCourse.principal_sections ?? [],
+				$friendCourse.secondary_sections ?? [])`)
 
 	qb = qb.
-		Let("friendsOfAfriend", friendsOfAfriend_Qb).
-		Let("course", surrealql.Expr("$friendsOfAfriend.friendOfAfriend->(course WHERE out = $trimester)[0][0]")).
-		Let("friendOfAfriend_PlanToSee", friendsOfAFriendPlanToSee_Qb).
 		Let("friends", surrealql.Expr("$loggedUser->friend->student")).
 		Let("friendCourse", surrealql.Expr("$friends->(course WHERE out = $trimester)[0][0]")).
-		Let("friends_PlanToSee", friendsPlanToSee_Qb)
+		Let("friends_PlanToSee", friendsPlanToSee_Qb).
+		Let("friendsOfAfriend", friendsOfAfriend_Qb).
+		Let("course", surrealql.Expr("$friendsOfAfriend.friendOfAfriend->(course WHERE out = $trimester)[0][0]")).
+		Let("friendOfAfriend_PlanToSee", friendsOfAFriendPlanToSee_Qb)
 
 	return qb
 }
@@ -169,7 +179,6 @@ func GetSubjectOfferById(trimesterId string, studentId surrealModels.RecordID, q
 	if trimesterId != "" {
 		subjectOffer_Qb = subjectOffer_Qb.Where("out.id = $trimester")
 		extraParams["trimester"] = surrealModels.NewRecordID("trimester", trimesterId)
-		// subjectOffer_Qb = subjectOffer_Qb.Where("out.id = ?", surrealModels.NewRecordID("trimester", trimesterId))
 	}
 
 	if queryParams.SubjectsFilter == "enrollable" && len(enrollable) > 0 {
@@ -188,6 +197,7 @@ func GetSubjectOfferById(trimesterId string, studentId surrealModels.RecordID, q
 	maps.Copy(params, extraParams)
 
 	result, err := surrealdb.Query[[]DTO.QueryAnnualOffer](context.Background(), db.SurrealDB, query, params)
+	fmt.Printf("Query: %s\nParams: %+v\n", query, params)
 	if err != nil {
 		return nil, err
 	}

@@ -87,7 +87,7 @@ func completeStudent(c echo.Context) error {
 
 	idUser := c.Param("id_user")
 
-	user, err := services.CompleteUser(idUser, payload)
+	user, err := services.CompleteStudent(idUser, payload)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}

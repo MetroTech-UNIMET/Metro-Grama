@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 
 import { addFriend } from '@/api/interactions/friendApi';
 
-import type { OtherStudentDetails } from '@/interfaces/Student';
+import type { OtherStudentDetails } from '@/api/interactions/student.types';
 
 interface Props {
   studentId: string;
@@ -20,9 +20,12 @@ export function useAddFriend({ studentId }: Props) {
 
       queryClient.setQueryData(['student', 'details', studentId], (oldData: OtherStudentDetails | undefined) => {
         if (!oldData) return oldData;
+        const isPending = oldData.receiving_friendship_status === 'pending';
+
         return {
           ...oldData,
-          friendship_status: 'pending',
+          friendship_status: isPending ? 'accepted' : 'pending',
+          receiving_friendship_status: isPending ? 'none' : oldData.receiving_friendship_status,
         };
       });
     },

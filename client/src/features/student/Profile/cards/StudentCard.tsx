@@ -1,11 +1,12 @@
 import { Settings } from 'lucide-react';
 
-import { AvatarImage, AvatarFallback, Avatar } from '@ui/avatar';
-import { Card, CardHeader, CardTitle, CardContent } from '@ui/card';
-
 import { AddFriendButton } from '../buttons/AddFriendButton';
 import { isMyProfile } from '../utils';
 
+import { getInitials } from '@utils/strings';
+
+import { AvatarImage, AvatarFallback, Avatar } from '@ui/avatar';
+import { Card, CardHeader, CardTitle, CardContent } from '@ui/card';
 import { Badge } from '@ui/badge';
 import { ButtonLink } from '@ui/link';
 
@@ -19,7 +20,7 @@ interface Props {
 
 export function StudentCard({ data }: Props) {
   const name = `${data.user.firstName} ${data.user.lastName}`.trim();
-  const initials = `${data.user.firstName?.[0] ?? ''}${data.user.lastName?.[0] ?? ''}`.toUpperCase();
+  const initials = getInitials(data.user.firstName, data.user.lastName);
 
   const isSelf = isMyProfile(data);
 
@@ -42,7 +43,11 @@ export function StudentCard({ data }: Props) {
             </ButtonLink>
           </div>
         ) : (
-          <AddFriendButton userToAddId={data.id.ID} friendshipStatus={data.friendship_status} className="max-sm:mr-auto ml-auto" />
+          <AddFriendButton
+            userToAddId={data.id.ID}
+            friendshipStatus={data.friendship_status}
+            className="ml-auto max-sm:mr-auto"
+          />
         )}
       </CardHeader>
       <CardContent className="flex flex-row flex-wrap justify-between gap-2">

@@ -17,12 +17,13 @@ export interface SubjectOfferWithSections extends SubjectOffer {
   is_enrolled?: boolean;
   is_enrollable?: boolean;
   prelations: SubjectEntity[];
+
+  differentFriends: number;
 }
 
 interface SubjectOfferSections extends SubjectSectionWithSchedules {
   friends?: StudentWithUser[];
   friends_of_a_friend?: FriendOfAfriend[];
-  differentFriends: number;
 }
 
 interface FriendOfAfriend {

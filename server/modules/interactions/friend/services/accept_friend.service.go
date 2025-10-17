@@ -24,15 +24,7 @@ func AcceptFriendshipRequest(me surrealModels.RecordID, other surrealModels.Reco
 		return models.FriendEntity{}, echo.NewHTTPError(http.StatusBadRequest, "No puedes agregarte a ti mismo")
 	}
 
-	Update_QB := surrealql.UpdateOnly("friend").
-		Set("status", "accepted").
-		Where("in = $other AND out = $me AND status = 'pending'").
-		Return("*")
-
-	// TODO - Sync created
-	Create_QB := surrealql.RelateOnly("$me", "friend", "$other").
-		Set("status", "accepted")
-		// Set("created", "$result.created")
+	Update_QB, Create_QB := getAcceptFriendQueries()
 
 	qb := surrealql.Begin().
 		Let("result", Update_QB).
@@ -56,4 +48,18 @@ func AcceptFriendshipRequest(me surrealModels.RecordID, other surrealModels.Reco
 
 	return friend, nil
 
+}
+
+func getAcceptFriendQueries() (*surrealql.UpdateQuery, *surrealql.RelateQuery) {
+	Update_QB := surrealql.UpdateOnly("friend").
+		Set("status", "accepted").
+		Where("in = $other AND out = $me AND status = 'pending'").
+		Return("*")
+
+	// TODO - Sync created
+	Create_QB := surrealql.RelateOnly("$me", "friend", "$other").
+		Set("status", "accepted")
+	// Set("created", "$result.created")
+
+	return Update_QB, Create_QB
 }

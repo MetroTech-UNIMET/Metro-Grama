@@ -22,14 +22,32 @@ func RelateFriends(me surrealModels.RecordID, other surrealModels.RecordID) (mod
 		return models.FriendEntity{}, echo.NewHTTPError(http.StatusBadRequest, "No puedes agregarte a ti mismo")
 	}
 
+	exists_Qb := surrealql.
+		Select("friend").
+		Field("*").
+		Where("(in = $other AND out = $me) OR (in = $me AND out = $other)")
+
+	Update_QB, Create_QB := getAcceptFriendQueries()
+
 	tx := surrealql.Begin().
-		Let("exists", surrealql.Select("friend").Field("*").Where("in = $other AND out = $me) OR (in = $me AND out = $other")).
-		If("count($exists) > 0").
+		Let("exists", exists_Qb).
+		If("count($exists) = 0").
+		Then(func(tb *surrealql.ThenBuilder) {
+			tb.Let("friendship", surrealql.RelateOnly("$me", "friend", "$other"))
+		}).
+		End().
+		If("count($exists) = 1 AND array::first($exists).status = 'pending'").
+		Then(func(tb *surrealql.ThenBuilder) {
+			tb.
+				Let("result", Update_QB).
+				Let("friendship", Create_QB)
+		}).
+		End().
+		If("count($exists) >= 2").
 		Then(func(tb *surrealql.ThenBuilder) {
 			tb.Throw("Ya eres amigo de esta persona")
 		}).
 		End().
-		Let("friendship", surrealql.Relate("$me", "friend", "$other")).
 		Return("$friendship")
 
 	sql, vars := tx.Build()
@@ -37,7 +55,7 @@ func RelateFriends(me surrealModels.RecordID, other surrealModels.RecordID) (mod
 	vars["me"] = me
 	vars["other"] = other
 
-	res, err := surrealdb.Query[[]models.FriendEntity](context.Background(), db.SurrealDB, sql, vars)
+	res, err := surrealdb.Query[models.FriendEntity](context.Background(), db.SurrealDB, sql, vars)
 	if err != nil {
 		// Map friendly conflict to HTTP 409
 		if strings.Contains(err.Error(), "already_friends") {
@@ -50,8 +68,6 @@ func RelateFriends(me surrealModels.RecordID, other surrealModels.RecordID) (mod
 		return models.FriendEntity{}, echo.NewHTTPError(http.StatusInternalServerError, "No se recibió respuesta de la transacción")
 	}
 	last := (*res)[len(*res)-1].Result
-	if len(last) == 0 {
-		return models.FriendEntity{}, echo.NewHTTPError(http.StatusInternalServerError, "No se pudo crear la relación de amistad")
-	}
-	return last[0], nil
+
+	return last, nil
 }

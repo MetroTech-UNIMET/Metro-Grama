@@ -20,9 +20,9 @@ interface Props {
   onBack: () => void;
 }
 
+// TODO - Considerar poner cuantas personas planean ver esta materia en tal sección
 export default function SubjectOfferDetail({ subjectOffer, onBack }: Props) {
   const { getIsSubjectSelected } = usePlannerSidebarContext();
-  // FIXME - Creo que despues de crear en un form me manda otra vez para el home y no al detalle
   const { view, go, back } = useSubjectOfferDetailRouter(subjectOffer);
   const handleHeaderBack = () => back(onBack);
 
@@ -34,7 +34,7 @@ export default function SubjectOfferDetail({ subjectOffer, onBack }: Props) {
 
       <SidebarContent>
         {view === 'form' ? (
-          <SubjectOfferForm subjectOffer={subjectOffer} onBack={handleHeaderBack} />
+          <SubjectOfferForm subjectOffer={subjectOffer} onBack={() => go('list')} />
         ) : (
           <SubjectOfferSchedulesList
             subjectOffer={subjectOffer}
@@ -48,6 +48,10 @@ export default function SubjectOfferDetail({ subjectOffer, onBack }: Props) {
 }
 
 function SubjectSidebarHeader({ subjectOffer, onBack }: Pick<Props, 'subjectOffer' | 'onBack'>) {
+  const maxFriends = useMemo(
+    () => Math.max(...subjectOffer.sections.map((section) => section.differentFriends)),
+    [subjectOffer],
+  );
   return (
     <SidebarHeader>
       <Button colors="secondary" variant="outline" className="rounded-full" onClick={onBack}>

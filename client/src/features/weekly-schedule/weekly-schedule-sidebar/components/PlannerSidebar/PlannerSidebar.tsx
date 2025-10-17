@@ -22,16 +22,50 @@ import type { UseQueryResult } from '@tanstack/react-query';
 interface Props extends PlannerSidebarContextValue {}
 
 export function PlannerSidebar({ ...contextProps }: Props) {
-  const [selectedSubject, setSelectedSubject] = useState<SubjectOfferWithSections | null>(null);
+  const [selectedSubjectId, setSelectedSubjectId] = useState<string | null>(null);
+
+  const params = useSearch({ from: '/_navLayout/horario/' });
+
+  const freshOfferQuery = useFetchAnnualOfferByTrimester({
+    trimesterId: params.trimester,
+    optionalQuery: {
+      careers: params.careers,
+      // Do not pass subjectsFilter here to avoid filtering out the selected subject
+    },
+    queryOptions: {
+      enabled: !!selectedSubjectId && !!params.trimester && params.careers.length > 0,
+    },
+  });
+
+  const selectedSubject = useMemo<SubjectOfferWithSections | null>(() => {
+    if (!selectedSubjectId) return null;
+    const data = freshOfferQuery.data ?? [];
+    return data.find((o) => o.id.ID === selectedSubjectId) ?? null;
+  }, [selectedSubjectId, freshOfferQuery.data]);
+
+  // If after revalidation the subject is gone, exit detail view gracefully
+  useEffect(() => {
+    if (selectedSubjectId && freshOfferQuery.isSuccess && !selectedSubject) {
+      setSelectedSubjectId(null);
+    }
+  }, [selectedSubjectId, freshOfferQuery.isSuccess, selectedSubject]);
 
   return (
     <div>
       <PlannerSidebarProvider value={contextProps}>
         <Sidebar>
-          {selectedSubject ? (
-            <SubjectOfferDetail subjectOffer={selectedSubject} onBack={() => setSelectedSubject(null)} />
+          {selectedSubjectId ? (
+            freshOfferQuery.isSuccess && selectedSubject ? (
+              <SubjectOfferDetail subjectOffer={selectedSubject} onBack={() => setSelectedSubjectId(null)} />
+            ) : (
+              <SidebarContent className="mt-4">
+                <SidebarGroup className="gap-2">
+                  <Skeleton className="h-30" />
+                </SidebarGroup>
+              </SidebarContent>
+            )
           ) : (
-            <HomeSidebar setSelectedSubject={setSelectedSubject} />
+            <HomeSidebar setSelectedSubject={(s) => setSelectedSubjectId(s ? s.id.ID : null)} />
           )}
           <SidebarFooter />
           <SidebarRail />
@@ -46,8 +80,6 @@ function HomeSidebar({
 }: {
   setSelectedSubject: (subject: SubjectOfferWithSections | null) => void;
 }) {
-  // TODO - Usar hook useSearch
-
   const { user } = useAuth();
   const [showEnrollable, setShowEnrollable] = useState(false);
   useEffect(() => {

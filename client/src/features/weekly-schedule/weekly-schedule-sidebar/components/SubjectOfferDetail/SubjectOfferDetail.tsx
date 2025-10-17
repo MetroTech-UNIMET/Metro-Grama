@@ -48,10 +48,8 @@ export default function SubjectOfferDetail({ subjectOffer, onBack }: Props) {
 }
 
 function SubjectSidebarHeader({ subjectOffer, onBack }: Pick<Props, 'subjectOffer' | 'onBack'>) {
-  const maxFriends = useMemo(
-    () => Math.max(...subjectOffer.sections.map((section) => section.differentFriends)),
-    [subjectOffer],
-  );
+  const differentFriends = subjectOffer.differentFriends;
+  
   return (
     <SidebarHeader>
       <Button colors="secondary" variant="outline" className="rounded-full" onClick={onBack}>
@@ -82,7 +80,7 @@ function SubjectSidebarHeader({ subjectOffer, onBack }: Pick<Props, 'subjectOffe
         </section>
       )}
 
-      {maxFriends > 0 && <FriendsPopover subjectOffer={subjectOffer} totalFriends={maxFriends} />}
+      {differentFriends > 0 && <FriendsPopover subjectOffer={subjectOffer} totalFriends={differentFriends} />}
     </SidebarHeader>
   );
 }

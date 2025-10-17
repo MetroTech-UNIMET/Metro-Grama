@@ -23,11 +23,8 @@ export default function SubjectOfferCard({ subjectOffer, onSelect, state }: Prop
   const { getIsSubjectSelected } = usePlannerSidebarContext();
 
   const isSelected = useMemo(() => getIsSubjectSelected(subjectOffer), [getIsSubjectSelected, subjectOffer]);
-  const maxFriends = useMemo(
-    () => Math.max(...subjectOffer.sections.map((section) => section.differentFriends)),
-    [subjectOffer],
-  );
 
+  const differentFriends = subjectOffer.differentFriends;
   const numSections = subjectOffer.sections.length;
   const numPrelations = subjectOffer.prelations.length;
 
@@ -66,17 +63,16 @@ export default function SubjectOfferCard({ subjectOffer, onSelect, state }: Prop
           )}
         </div>
 
-        {maxFriends > 0 && (
+        {differentFriends > 0 && (
           <Tooltip>
             <TooltipTrigger>
               <div className="relative">
-                <span className="absolute -top-2 left-full font-bold">{maxFriends}</span>
+                <span className="absolute -top-2 left-full font-bold">{differentFriends}</span>
                 <User />
               </div>
             </TooltipTrigger>
             <TooltipContent>
-              {/* REVIEw - Pensar si vale la pena poner como minimo */}
-              {maxFriends} amig{maxFriends !== 1 ? 'os' : 'o'} como mínimo planean inscribir esta materia
+              {differentFriends} amig{differentFriends !== 1 ? 'os' : 'o'} planean inscribir esta materia
             </TooltipContent>
           </Tooltip>
         )}

@@ -3,6 +3,8 @@ import { ArrowLeft } from 'lucide-react';
 
 import SubjectOfferForm from './SubjectOfferForm/SubjectOfferForm';
 import { SubjectOfferSchedulesList } from './SubjectOfferSchedulesList';
+import { FriendsPopover } from './FriendsPopover/FriendsPopover';
+
 import { useSubjectOfferDetailRouter } from '../../hooks/useSubjectOfferDetailRouter';
 import { usePlannerSidebarContext } from '../../context/PlannerSidebarContext';
 
@@ -75,6 +77,8 @@ function SubjectSidebarHeader({ subjectOffer, onBack }: Pick<Props, 'subjectOffe
           </div>
         </section>
       )}
+
+      {maxFriends > 0 && <FriendsPopover subjectOffer={subjectOffer} totalFriends={maxFriends} />}
     </SidebarHeader>
   );
 }

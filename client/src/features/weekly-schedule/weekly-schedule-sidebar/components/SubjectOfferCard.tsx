@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Target } from 'lucide-react';
+import { Target, User } from 'lucide-react';
 
 import { usePlannerSidebarContext } from '../context/PlannerSidebarContext';
 
@@ -17,13 +17,16 @@ interface Props {
 
   state: 'isEnrollable' | 'isEnrolled' | 'default';
 }
-// REVIEW - Puedo poner los amigos que la están viendo
 export default function SubjectOfferCard({ subjectOffer, onSelect, state }: Props) {
   const { subject } = subjectOffer;
 
   const { getIsSubjectSelected } = usePlannerSidebarContext();
 
   const isSelected = useMemo(() => getIsSubjectSelected(subjectOffer), [getIsSubjectSelected, subjectOffer]);
+  const maxFriends = useMemo(
+    () => Math.max(...subjectOffer.sections.map((section) => section.differentFriends)),
+    [subjectOffer],
+  );
 
   const numSections = subjectOffer.sections.length;
   const numPrelations = subjectOffer.prelations.length;
@@ -50,7 +53,7 @@ export default function SubjectOfferCard({ subjectOffer, onSelect, state }: Prop
         )}
       </CardHeader>
 
-      <CardContent>
+      <CardContent className="space-y-2">
         <div className="flex w-full justify-between gap-2">
           <p>Desbloquea: {numPrelations}</p>
 
@@ -62,6 +65,21 @@ export default function SubjectOfferCard({ subjectOffer, onSelect, state }: Prop
             <Badge>Sin secciones</Badge>
           )}
         </div>
+
+        {maxFriends > 0 && (
+          <Tooltip>
+            <TooltipTrigger>
+              <div className="relative">
+                <span className="absolute -top-2 left-full font-bold">{maxFriends}</span>
+                <User />
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              {/* REVIEw - Pensar si vale la pena poner como minimo */}
+              {maxFriends} amig{maxFriends !== 1 ? 'os' : 'o'} como mínimo planean inscribir esta materia
+            </TooltipContent>
+          </Tooltip>
+        )}
       </CardContent>
     </Card>
   );

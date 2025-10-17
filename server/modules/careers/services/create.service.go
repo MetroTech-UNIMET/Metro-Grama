@@ -107,13 +107,14 @@ func processCareerForm(careerForm models.CareerCreateForm, electivesTrimesters [
 
 				err := tools.ExistRecord(id)
 
-				if careerSubject.SubjectType == "new" {
+				switch careerSubject.SubjectType {
+				case "new":
 					if err == nil {
 						fmt.Printf("subject %s already exists \n", careerSubject.Code)
 						errChan <- fmt.Errorf("subject %s already exists", careerSubject.Code)
 						return
 					}
-				} else if careerSubject.SubjectType == "existing" {
+				case "existing":
 					if err != nil {
 						fmt.Printf("subject %s does not exist \n", careerSubject.Code)
 						errChan <- fmt.Errorf("subject %s does not exist", careerSubject.Code)
@@ -143,8 +144,7 @@ func processCareerForm(careerForm models.CareerCreateForm, electivesTrimesters [
 		for _, subjectID := range trimesterSubjects {
 			subjectPresence[subjectID] = true
 		}
-		fmt.Println(subjectPresence, "\n")
 	}
 
 	return nil
-} 
+}

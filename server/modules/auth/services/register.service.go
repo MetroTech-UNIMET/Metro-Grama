@@ -5,19 +5,24 @@ import (
 	"metrograma/models"
 	crudServices "metrograma/modules/auth/services/crud"
 	"strings"
+
+	"github.com/labstack/echo/v4"
 )
 
 // RegisterUser handles the registration process and returns the appropriate redirect path
 func RegisterUser(userForm models.SimpleUserSigninForm) (*AuthResult, error) {
 	// Check if user already exists
 	existingUser, err := crudServices.ExistUserByEmail(userForm.Email)
-	if err == nil {
+	if err != nil && err == echo.ErrNotFound {
+		return nil, err
+	}
+	if existingUser != nil {
 		// User already exists, get their verification status
 		user, err := crudServices.GetUser(existingUser.ID)
 		if err != nil {
 			return nil, err
 		}
-		return GetAuthResult(existingUser, user.Verified), nil
+		return GetAuthResult(*existingUser, user.Verified), nil
 	}
 
 	// Determine role and redirect path based on email domain

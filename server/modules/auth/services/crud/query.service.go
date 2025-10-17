@@ -12,7 +12,7 @@ import (
 	surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
 )
 
-func ExistUserByEmail(email string) (models.MinimalUser, error) {
+func ExistUserByEmail(email string) (*models.MinimalUser, error) {
 	qb := surrealql.SelectOnly("user").
 		FieldName("id").
 		FieldName("role").
@@ -23,16 +23,15 @@ func ExistUserByEmail(email string) (models.MinimalUser, error) {
 	result, err := surrealdb.Query[models.MinimalUser](context.Background(), db.SurrealDB, sql, args)
 
 	if err != nil {
-		return models.MinimalUser{}, err
-	}
-
-	if result == nil {
-		return models.MinimalUser{}, echo.NewHTTPError(http.StatusUnauthorized, "incorrect credentials")
+		return nil, err
 	}
 
 	user := (*result)[0].Result
+	if user.ID.ID == nil {
+		return nil, echo.NewHTTPError(http.StatusNotFound, "incorrect credentials")
+	}
 
-	return user, nil
+	return &user, nil
 }
 
 func ExistUser(id surrealModels.RecordID) (models.MinimalUser, error) {

@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useRef, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 
 import { SubjectSheetBody } from './SubjectSheetBody';
 
@@ -30,11 +30,7 @@ export function SubjectSheet({ children }: { children: React.ReactNode }) {
 
   return (
     <SubjectSheetContext.Provider value={{ subject, selectSubject }}>
-      <Sheet
-        open={subject !== null}
-        // modal={true}
-        onOpenChange={subject !== null ? () => selectSubject(null) : undefined}
-      >
+      <Sheet open={subject !== null} onOpenChange={subject !== null ? () => selectSubject(null) : undefined}>
         {children}
       </Sheet>
     </SubjectSheetContext.Provider>
@@ -42,12 +38,13 @@ export function SubjectSheet({ children }: { children: React.ReactNode }) {
 }
 
 export function SubjectSheetContent() {
-  const sheetRef = useRef<HTMLDivElement>(null);
+  const [sheetRef, setSheetRef] = useState<HTMLDivElement | null>(null);
+
   const { subject, selectSubject } = useSubjectSheet();
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (sheetRef.current && !sheetRef.current.contains(event.target as Node)) {
+      if (sheetRef && !sheetRef.contains(event.target as Node)) {
         selectSubject(null);
       }
     }
@@ -56,7 +53,11 @@ export function SubjectSheetContent() {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, []);
+  }, [sheetRef]);
 
-  return <SheetContent ref={sheetRef}>{subject && <SubjectSheetBody subject={subject} />}</SheetContent>;
+  return (
+    <SheetContent ref={setSheetRef} className="sm:max-w-md">
+      {subject && <SubjectSheetBody subject={subject} popoverContainer={sheetRef ?? undefined} />}
+    </SheetContent>
+  );
 }

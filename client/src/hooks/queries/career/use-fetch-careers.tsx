@@ -5,7 +5,9 @@ import type { Option } from '@ui/types/option.types';
 import type { Career } from '@/interfaces/Career';
 import { fetchAndSetQueryData } from '@utils/tanstack-query';
 
-export type CareerOption = Option<`career:${string}`, Career>;
+export type CareerOption = Option<`career:${string}`, Career> & {
+  id: string
+}
 
 export function fetchCareersOptions() {
   return queryOptions({
@@ -30,6 +32,7 @@ export function fetchCareersOptionsOptions(queryClient: QueryClient) {
         careers?.map((career) => ({
           value: `${career.id.Table}:${career.id.ID}` as `career:${string}`,
           label: `${career.emoji} ${career.name}`,
+          id: `${career.id.Table}:${career.id.ID}`,
         })) ?? [];
       return data;
     },

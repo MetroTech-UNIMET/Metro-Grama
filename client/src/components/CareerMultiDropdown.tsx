@@ -10,10 +10,13 @@ import MultipleSelector, { type MultipleSelectorProps } from '@ui/derived/multid
 import { Spinner } from '@ui/spinner';
 
 import type { Career } from '@/interfaces/Career';
+import type { Option } from '@ui/types/option.types';
 
-interface Props extends Omit<MultipleSelectorProps<`career:${string}`, Career>, 'options'> {
+interface Props extends Omit<MultipleSelectorProps<`career:${string}`, Career>, 'options' | 'onChange' | 'value'> {
   loadingSubjects?: boolean;
   maxSelected?: number;
+  value?: CareerOption[];
+  onChange?: (value: CareerOption[]) => void;
 }
 
 export function CareerMultiDropdown({
@@ -53,7 +56,7 @@ export function CareerMultiDropdown({
     <div className="relative w-full max-w-sm">
       <MultipleSelector
         value={value}
-        onChange={onChange as (value: CareerOption[]) => void}
+        onChange={onChange as (value: Option<`career:${string}`, Career>[]) => void}
         options={groupedOptions}
         groupBy="enrolled"
         maxSelected={maxSelected}

@@ -3,7 +3,7 @@ import { useState, useRef, useCallback, type KeyboardEvent, type InputHTMLAttrib
 import { Check } from 'lucide-react';
 import { Command as CommandPrimitive } from 'cmdk';
 
-import { CommandInput, CommandGroup, CommandItem, CommandList } from '@/components/ui/command';
+import { CommandInput, CommandGroup, CommandItem, CommandList, Command } from '@/components/ui/command';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
@@ -48,6 +48,8 @@ export interface AutoCompleteProps<TValue = string | number, TData = undefined>
   popoverContainer?: HTMLElement;
 }
 
+// FIXME - No hace focus al item
+// FIXME - No me permite scrollear con el mouse el emnu
 export default function AutoComplete<TValue extends string | number = string | number, TData = undefined>({
   options: inputOptions,
   placeholder,
@@ -70,6 +72,7 @@ export default function AutoComplete<TValue extends string | number = string | n
   isLoading = false,
   CustomSelectItem,
   isOptionDisabled,
+  ...props
 }: AutoCompleteProps<TValue, TData>) {
   const valueIsOption = typeof value === 'object';
 
@@ -120,6 +123,7 @@ export default function AutoComplete<TValue extends string | number = string | n
   const handleSelectOption = useCallback(
     (selectedOption: Option<TValue, TData>) => {
       // setInputValue(customOnSelectLabeling(selectedOption));
+
       setSelected(selectedOption);
       onSelect?.(selectedOption);
       onValueChange?.(selectedOption);
@@ -130,11 +134,7 @@ export default function AutoComplete<TValue extends string | number = string | n
         },
       } as React.ChangeEvent<HTMLInputElement>);
 
-      // This is a hack to prevent the input from being focused after the user selects an option
-      // We can call this hack: "The next tick"
-      setTimeout(() => {
-        inputRef?.current?.blur();
-      }, 0);
+      inputRef?.current?.blur();
     },
     [onSelect, onValueChange, onChangeProps, saveAsOption],
   );
@@ -176,13 +176,21 @@ export default function AutoComplete<TValue extends string | number = string | n
 
   const handleBlur = useCallback(
     (event: React.FocusEvent<HTMLInputElement, Element>) => {
-      setOpen(false);
+      // Skip blur if focus is moving to the Command list (cmdk-list), e.g., when clicking its scrollbar
+      const rt = (event.relatedTarget as HTMLElement | null) || (document.activeElement as HTMLElement | null);
+      if (rt && (rt.hasAttribute('cmdk-list') || rt.closest('[cmdk-list]'))) {
+        // Keep the popover open and restore focus to the input
+        setTimeout(() => inputRef.current?.focus(), 0);
+        return;
+      }
+
       setInputIsFocused(false);
+      // setOpen(false);
 
       if (!selected && !inputValue) return;
 
       if (!allowFreeInput) setInputValue(selected?.label || '');
-      else if (selected?.label !== inputValue && selected?.value !== inputValue) {
+      else if (selected?.label !== inputValue) {
         // REVIEW - Pensar si tiene sentido buscar una opcion con el mismo label
         let optionToSelect: Option<TValue, TData> | undefined;
 
@@ -213,31 +221,42 @@ export default function AutoComplete<TValue extends string | number = string | n
 
   return (
     <Popover open={isOpen || inputIsFocused} onOpenChange={setOpen}>
-      <CommandPrimitive
-        onKeyDown={handleKeyDown}
-        //  filter={(
-        //   value, search
-        // ) => {
-        //   const present = filterIgnoringAccents(value, search);
-        //   return present ? 1 : 0;
-        // }}
+      <Command
+        className="h-auto"
+        // {...commandProps}
+        onKeyDown={(e) => {
+          handleKeyDown(e);
+          // commandProps?.onKeyDown?.(e);
+        }}
+        // className={cn('h-fit overflow-visible bg-transparent', commandProps?.className)}
+        // shouldFilter={
+        //   commandProps?.shouldFilter !== undefined ? commandProps.shouldFilter : !onSearch
+        // }
+        // When onSearch is provided, we don't want to filter the options. You can still override it.
+        // filter={commandFilter()}
       >
         <PopoverAnchor asChild>
           <div className="h-full">
             <PopoverTrigger asChild>
               <CommandInput
+                // {...inputProps}
                 ref={inputRef}
                 value={inputValue}
-                onValueChange={isLoading ? undefined : setInputValue}
-                onBlur={handleBlur}
-                onFocus={() => {
-                  !onlyInput && setOpen(true);
-                  setInputIsFocused(true);
+                disabled={disabled}
+                onValueChange={(value) => {
+                  setInputValue(value);
+                  // inputProps?.onValueChange?.(value);
                 }}
                 placeholder={placeholder}
-                disabled={disabled}
                 className={cn('h-full text-base', className)}
                 inputWrapperClassName={cn('h-full', inputWrapperClassName)}
+                onFocus={() => {
+                  // triggerSearchOnFocus && onSearch?.(debouncedSearchTerm);
+                  setInputIsFocused(true);
+                  // inputProps?.onFocus?.(e);
+                }}
+                onBlur={handleBlur}
+                {...props}
               />
             </PopoverTrigger>
           </div>
@@ -249,6 +268,9 @@ export default function AutoComplete<TValue extends string | number = string | n
           onOpenAutoFocus={(e) => {
             e.preventDefault();
             inputRef.current?.focus();
+          }}
+          onEscapeKeyDown={(e) => {
+            handleBlur(e as unknown as React.FocusEvent<HTMLInputElement, Element>);
           }}
           container={popoverContainer}
         >
@@ -265,53 +287,55 @@ export default function AutoComplete<TValue extends string | number = string | n
                 </div>
               </CommandPrimitive.Loading>
             ) : null}
-            {Object.keys(options).length > 0 && !isLoading
-              ? Object.entries(options).map(([groupName, groupOptions]) => (
-                  <CommandGroup key={groupName} heading={groupName || undefined}>
-                    {groupOptions.map((option) => {
-                      const isSelected = selected?.value === option.value;
-                      const disabled = isOptionDisabled?.(option);
+            {Object.entries(options).map(([key, dropdowns]) => (
+              <CommandGroup key={key} heading={key} className="h-full overflow-auto">
+                <>
+                  {dropdowns.map((option) => {
+                    const isSelected = selected?.value === option.value;
+                    const disabled = isOptionDisabled?.(option) ?? option.disabled;
 
-                      return CustomSelectItem ? (
-                        <CommandPrimitive.Item
-                          key={option.value}
-                          value={option.label}
-                          keywords={groupBy ? [String(option[groupBy])] : undefined}
-                          disabled={disabled}
-                          onMouseDown={(event) => {
-                            event.preventDefault();
-                            event.stopPropagation();
-                          }}
-                          onSelect={() => !disabled && handleSelectOption(option)}
-                          asChild
-                        >
-                          <CustomSelectItem option={option} isSelected={isSelected} />
-                        </CommandPrimitive.Item>
-                      ) : (
-                        <CommandItem
-                          key={option.value}
-                          value={option.label}
-                          keywords={groupBy ? [String(option[groupBy])] : undefined}
-                          disabled={disabled}
-                          onMouseDown={(event) => {
-                            event.preventDefault();
-                            event.stopPropagation();
-                          }}
-                          onSelect={() => !disabled && handleSelectOption(option)}
-                          className={cn(
-                            'flex w-full cursor-pointer items-center gap-2',
-                            disabled && 'text-muted-foreground cursor-default',
-                            !isSelected && 'pl-8',
-                          )}
-                        >
-                          {isSelected ? <Check className="w-4" /> : null}
+                    return CustomSelectItem ? (
+                      <CommandPrimitive.Item
+                        key={option.value}
+                        value={option.label}
+                        disabled={disabled}
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                        }}
+                        onSelect={() => !disabled && handleSelectOption(option)}
+                        asChild
+                      >
+                        {/* <div>
                           {option.label}
-                        </CommandItem>
-                      );
-                    })}
-                  </CommandGroup>
-                ))
-              : null}
+                        </div> */}
+                        <CustomSelectItem option={option} isSelected={isSelected} />
+                      </CommandPrimitive.Item>
+                    ) : (
+                      <CommandItem
+                        key={option.value}
+                        value={option.label}
+                        disabled={disabled}
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                        }}
+                        onSelect={() => !disabled && handleSelectOption(option)}
+                        className={cn(
+                          'flex w-full cursor-pointer items-center gap-2',
+                          disabled && 'text-muted-foreground cursor-default',
+                          !isSelected && 'pl-8',
+                        )}
+                      >
+                        {isSelected ? <Check className="w-4 shrink-0" /> : null}
+
+                        {option.label}
+                      </CommandItem>
+                    );
+                  })}
+                </>
+              </CommandGroup>
+            ))}
             {!isLoading ? (
               <CommandPrimitive.Empty className="rounded-sm px-2 py-3 text-center text-sm select-none">
                 {emptyIndicator}
@@ -319,11 +343,7 @@ export default function AutoComplete<TValue extends string | number = string | n
             ) : null}
           </CommandList>
         </PopoverContent>
-
-        <CommandList>
-          <CommandPrimitive.Empty className="hidden" />
-        </CommandList>
-      </CommandPrimitive>
+      </Command>
     </Popover>
   );
 }

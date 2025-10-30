@@ -1,10 +1,11 @@
-import React, { useEffect, forwardRef } from 'react';
+import React, { useEffect } from 'react';
 import { Command as CommandPrimitive, useCommandState } from 'cmdk';
 import { X } from 'lucide-react';
 
 import { transToGroupOption } from '../utils/options';
 
 import { cn } from '@/lib/utils/className';
+import { useDebounceValue } from '@/hooks/shadcn.io/debounce/use-debounce-value';
 
 import { Spinner } from '@ui/spinner';
 import { Badge } from '@/components/ui/badge';
@@ -12,7 +13,7 @@ import { Command, CommandGroup, CommandItem, CommandList } from '@/components/ui
 import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 import type { Option, GroupOption } from '../types/option.types';
-import { useDebounceValue } from '@/hooks/shadcn.io/debounce/use-debounce-value';
+import type { BaseCustomCommand } from './custom-command-items/types';
 
 interface CommonProps {
   id?: string;
@@ -83,6 +84,8 @@ export interface MultipleSelectorProps<TValue = string | number, TData = undefin
 
   popoverContainer?: HTMLElement;
   showSpinner?: boolean;
+  /** Custom component to render more data than the value or label */
+  CustomSelectItem?: React.ComponentType<BaseCustomCommand<TValue, TData>>;
 }
 
 export interface MultipleSelectorRef<TValue = string | number, TData = undefined> {
@@ -90,7 +93,7 @@ export interface MultipleSelectorRef<TValue = string | number, TData = undefined
   input: HTMLInputElement;
 }
 
-function removePickedOption<TValue extends string | number = string | number, TData = undefined>(
+function removePickedOption<TValue = string | number, TData = undefined>(
   groupOption: GroupOption<TValue, TData>,
   picked: Option<TValue, TData>[],
 ) {
@@ -108,24 +111,21 @@ function removePickedOption<TValue extends string | number = string | number, TD
  *
  * @reference: https://github.com/hsuanyi-chou/shadcn-ui-expansions/issues/34#issuecomment-1949561607
  **/
-const CommandEmpty = forwardRef<HTMLDivElement, React.ComponentProps<typeof CommandPrimitive.Empty>>(
-  ({ className, ...props }, forwardedRef) => {
-    const render = useCommandState((state) => state.filtered.count === 0);
+const CommandEmpty = ({ className, ...props }: React.ComponentProps<typeof CommandPrimitive.Empty>) => {
+  const render = useCommandState((state) => state.filtered.count === 0);
 
-    if (!render) return null;
+  if (!render) return null;
 
-    return (
-      <div
-        ref={forwardedRef}
-        className={cn('py-6 text-center text-sm', className)}
-        // eslint-disable-next-line react/no-unknown-property -- temp fix for cmdk
-        cmdk-empty=""
-        role="presentation"
-        {...props}
-      />
-    );
-  },
-);
+  return (
+    <div
+      className={cn('py-6 text-center text-sm', className)}
+      // eslint-disable-next-line react/no-unknown-property -- temp fix for cmdk
+      cmdk-empty=""
+      role="presentation"
+      {...props}
+    />
+  );
+};
 
 CommandEmpty.displayName = 'CommandEmpty';
 
@@ -158,7 +158,9 @@ function MultipleSelector<TValue extends string | number = string | number, TDat
   inputProps,
   showSpinner = false,
   popoverContainer,
+  CustomSelectItem,
   isOptionDisabled,
+  ...props
 }: MultipleSelectorProps<TValue, TData>) {
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [open, setOpen] = React.useState(false);
@@ -216,7 +218,9 @@ function MultipleSelector<TValue extends string | number = string | number, TDat
       if (input) {
         if (e.key === 'Delete' || e.key === 'Backspace') {
           if (input.value === '' && selected.length > 0) {
-            handleUnselect(selected[selected.length - 1]);
+            const lastSelected = selected[selected.length - 1];
+            if (!lastSelected) throw new Error('No option found to unselect');
+            handleUnselect(lastSelected);
           }
         }
       }
@@ -265,7 +269,7 @@ function MultipleSelector<TValue extends string | number = string | number, TDat
     };
 
     void exec();
-  }, [debouncedSearchTerm, groupBy, open, triggerSearchOnFocus]);
+  }, [debouncedSearchTerm, groupBy, open, triggerSearchOnFocus, onSearch]);
 
   const CreatableItem = () => {
     if (!creatable) return undefined;
@@ -278,17 +282,12 @@ function MultipleSelector<TValue extends string | number = string | number, TDat
           e.preventDefault();
           e.stopPropagation();
         }}
-        onSelect={(value: string) => {
-          if (selected.length >= maxSelected) {
-            onMaxSelected?.(selected.length);
-            return;
-          }
-          setInputValue('');
-          // REVIEW - Value siempre será un string
-          const newOptions = [...selected, { value: value as any, label: value, data: undefined as TData }];
-          setSelected(newOptions);
-          onChange?.(newOptions);
-        }}
+        onSelect={(value: string) =>
+          handleSelect({
+            value: value as TValue,
+            label: String(value),
+          })
+        }
       >{`Create "${inputValue}"`}</CommandItem>
     );
 
@@ -348,7 +347,7 @@ function MultipleSelector<TValue extends string | number = string | number, TDat
           handleKeyDown(e);
           commandProps?.onKeyDown?.(e);
         }}
-        className={cn('overflow-visible bg-transparent', commandProps?.className)}
+        className={cn('h-fit overflow-visible bg-transparent', commandProps?.className)}
         shouldFilter={commandProps?.shouldFilter !== undefined ? commandProps.shouldFilter : !onSearch}
         // When onSearch is provided, we don't want to filter the options. You can still override it.
         filter={commandFilter()}
@@ -356,8 +355,9 @@ function MultipleSelector<TValue extends string | number = string | number, TDat
         <PopoverAnchor asChild>
           <div
             className={cn(
-              'border-input ring-offset-background group focus-within:ring-secondary rounded-md border px-4 py-2.5 text-sm focus-within:ring-2 focus-within:ring-offset-2',
+              'border-input group rounded-md border px-4 py-2.5 text-sm',
               className,
+              disabled && 'cursor-not-allowed opacity-50',
             )}
           >
             <div className="flex w-full flex-wrap gap-1">
@@ -370,13 +370,13 @@ function MultipleSelector<TValue extends string | number = string | number, TDat
                       'data-fixed:bg-muted-foreground data-fixed:text-muted data-fixed:hover:bg-muted-foreground',
                       badgeClassName,
                     )}
-                    data-fixed={option.fixed}
+                    data-fixed={option.fixed === true ? true : undefined}
                     data-disabled={disabled}
                   >
                     {option.label}
                     <button
                       className={cn(
-                        'ring-offset-background focus:ring-ring ml-1 rounded-full outline-hidden focus:ring-2 focus:ring-offset-2',
+                        'ring-offset-background focus:ring-ring ml-1 rounded-full outline-none focus:ring-2 focus:ring-offset-2',
                         (disabled || option.fixed) && 'hidden',
                       )}
                       onKeyDown={(e) => {
@@ -408,8 +408,9 @@ function MultipleSelector<TValue extends string | number = string | number, TDat
                   }}
                   placeholder={hidePlaceholderWhenSelected && selected.length !== 0 ? '' : placeholder}
                   className={cn(
-                    'placeholder:text-muted-foreground ml-2 w-full flex-1 bg-transparent outline-hidden',
+                    'placeholder:text-muted-foreground ml-2 w-full flex-1 bg-transparent outline-none',
                     inputProps?.className,
+                    disabled && 'cursor-not-allowed',
                   )}
                   onFocus={(e) => {
                     triggerSearchOnFocus && onSearch?.(debouncedSearchTerm);
@@ -420,6 +421,7 @@ function MultipleSelector<TValue extends string | number = string | number, TDat
                     setIsFocused(false);
                     inputProps?.onBlur?.(e);
                   }}
+                  {...props}
                 />
               </PopoverTrigger>
 
@@ -436,10 +438,18 @@ function MultipleSelector<TValue extends string | number = string | number, TDat
             inputRef.current?.focus();
           }}
           container={popoverContainer}
+          onCloseAutoFocus={(e) => {
+            // Prevent Radix from returning focus to the trigger (input)
+            // so Tab can continue to the next focusable element.
+            e.preventDefault();
+          }}
+          onEscapeKeyDown={() => {
+            setIsFocused(false);
+          }}
         >
           <CommandList
             className={cn(
-              'bg-popover text-popover-foreground animate-in w-(--radix-popper-anchor-width) rounded-md border p-1 shadow-md outline-hidden',
+              'bg-popover text-popover-foreground animate-in w-(--radix-popper-anchor-width) rounded-md border p-1 shadow-md outline-none',
               listClassName,
             )}
           >
@@ -454,9 +464,22 @@ function MultipleSelector<TValue extends string | number = string | number, TDat
                   <CommandGroup key={key} heading={key} className="h-full overflow-auto">
                     <>
                       {dropdowns.map((option) => {
-                        const disabled = isOptionDisabled?.(option);
-
-                        return (
+                        const disabled = isOptionDisabled?.(option) ?? option.disabled;
+                        return CustomSelectItem ? (
+                          <CommandPrimitive.Item
+                            key={option.value}
+                            value={option.label}
+                            disabled={disabled}
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                            }}
+                            onSelect={() => !disabled && handleSelect(option)}
+                            asChild
+                          >
+                            <CustomSelectItem option={option} isSelected={false} />
+                          </CommandPrimitive.Item>
+                        ) : (
                           <CommandItem
                             key={option.value}
                             value={option.label}

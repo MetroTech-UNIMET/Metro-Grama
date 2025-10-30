@@ -1,5 +1,3 @@
-'use client';
-
 import * as React from 'react';
 import { Command as CommandPrimitive } from 'cmdk';
 import { Dialog as DialogPrimitive } from 'radix-ui';
@@ -14,7 +12,7 @@ function Command({ className, ...props }: React.ComponentProps<typeof CommandPri
   return (
     <CommandPrimitive
       className={cn(
-        'flex h-full w-full flex-col overflow-hidden rounded-md bg-white text-neutral-950 dark:bg-neutral-950 dark:text-neutral-50',
+        'ring-secondary flex h-full w-full flex-col overflow-hidden rounded-md bg-white text-neutral-950 focus-within:ring-2 focus-within:ring-offset-2 dark:bg-neutral-950 dark:text-neutral-50',
         className,
       )}
       {...props}
@@ -46,7 +44,7 @@ function CommandInput({
   return (
     <div
       className={cn(
-        'focus-within:ring-secondary flex items-center rounded-md border px-3 focus-within:ring-2 focus-within:ring-offset-2 has-disabled:cursor-not-allowed has-disabled:opacity-50',
+        'flex items-center rounded-md border px-3 has-disabled:cursor-not-allowed has-disabled:opacity-50',
         inputWrapperClassName,
       )}
       // eslint-disable-next-line react/no-unknown-property -- temp fix for cmdk
@@ -55,7 +53,7 @@ function CommandInput({
       <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
       <CommandPrimitive.Input
         className={cn(
-          'flex h-10 w-full rounded-md bg-transparent py-2.5 text-sm text-UI-black outline-hidden placeholder:text-neutral-500 disabled:cursor-not-allowed disabled:opacity-50 dark:placeholder:text-neutral-400',
+          'flex h-10 w-full rounded-md bg-transparent py-2.5 text-sm outline-none placeholder:text-neutral-500 disabled:cursor-not-allowed disabled:opacity-50 dark:placeholder:text-neutral-400',
           className,
         )}
         {...props}
@@ -108,7 +106,7 @@ function CommandItem({ className, ...props }: React.ComponentProps<typeof Comman
   return (
     <CommandPrimitive.Item
       className={cn(
-        'relative flex cursor-default items-center rounded-sm px-2 py-1.5 text-sm outline-hidden select-none aria-selected:bg-neutral-100 aria-selected:text-neutral-900 data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 dark:aria-selected:bg-neutral-800 dark:aria-selected:text-neutral-50',
+        'relative flex cursor-default items-center rounded-sm px-2 py-1.5 text-sm outline-none select-none aria-selected:bg-neutral-100 aria-selected:text-neutral-900 data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 dark:aria-selected:bg-neutral-800 dark:aria-selected:text-neutral-50',
         className,
       )}
       {...props}

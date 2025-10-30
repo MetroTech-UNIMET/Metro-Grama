@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { CircleQuestionMarkIcon } from 'lucide-react';
@@ -13,7 +14,6 @@ import { useFetchTrimestersOptions } from '@/hooks/queries/trimester/use-FetchTr
 
 import { onInvalidToast } from '@utils/forms';
 import { enrollStudent2 } from '@/api/interactions/enrollApi';
-
 
 import { TrimesterItem } from '@ui/derived/custom-command-items/trimester-item-option';
 import { FormInputNumberField } from '@ui/derived/form-fields/form-field-number';
@@ -32,6 +32,7 @@ interface Props {
 }
 
 export default function EnrollDialog({ selectedSubjectNode, afterSubmit }: Props) {
+  const [dialogRef, setDialogRef] = useState<HTMLDivElement | null>(null);
   const subject = selectedSubjectNode?._cfg?.model?.data.data;
 
   const form = useForm({
@@ -69,7 +70,7 @@ export default function EnrollDialog({ selectedSubjectNode, afterSubmit }: Props
   if (!subject) return null;
 
   return (
-    <DialogContent>
+    <DialogContent ref={setDialogRef}>
       <DialogHeader>
         <DialogTitle>
           Marcar materia: <u>{subject.name}</u>
@@ -92,6 +93,7 @@ export default function EnrollDialog({ selectedSubjectNode, afterSubmit }: Props
             isLoading={trimesterQuery.isLoading}
             CustomSelectItem={TrimesterItem}
             saveAsOption
+            popoverContainer={dialogRef ?? undefined}
           />
 
           <FormRadioRangeField

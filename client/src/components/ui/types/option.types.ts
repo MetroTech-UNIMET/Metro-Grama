@@ -3,8 +3,10 @@ export interface Option<TValue = string | number, TData = undefined> {
   label: string;
   /** fixed option that can't be removed. */
   fixed?: boolean;
+  disabled?: boolean;
 
   data?: TData;
+  
   /** Group the options by providing key. */
   [key: string]: string | number | boolean | TData | undefined | TValue;
 }

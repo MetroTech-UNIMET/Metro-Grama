@@ -3,6 +3,7 @@ package subjects
 import (
 	"encoding/json"
 	"metrograma/models"
+	"metrograma/modules/subjects/DTO"
 	"metrograma/modules/subjects/services"
 	"metrograma/testutils"
 	"net/http"
@@ -239,7 +240,7 @@ func TestBasicSubjectsGraph(t *testing.T) {
 	err := getSubjectsGraph(c)
 
 	if assert.NoError(t, err) {
-		graph := new(models.Graph[models.SubjectNode])
+		graph := new(models.Graph[DTO.SubjectNode])
 		err := json.Unmarshal(rec.Body.Bytes(), graph)
 		assert.NoError(t, err)
 		matchs := 0

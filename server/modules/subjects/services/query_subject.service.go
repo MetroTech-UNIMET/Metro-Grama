@@ -2,8 +2,11 @@ package services
 
 import (
 	"context"
+	"fmt"
 	"metrograma/db"
 	"metrograma/models"
+	"metrograma/modules/subjects/DTO"
+	"metrograma/modules/subjects/helpers"
 	"metrograma/tools"
 	"net/http"
 	"strings"
@@ -14,7 +17,7 @@ import (
 	surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
 )
 
-func useGetSubjectsQuery(careers string) (*[]surrealdb.QueryResult[[]models.SubjectsByCareers], error) {
+func useGetSubjectsQuery(careers string) (*[]surrealdb.QueryResult[[]DTO.SubjectsByCareers], error) {
 	// TODO - Encontrar mejor manera de filtrar un -> path condicionalmente
 	qb := surrealql.Select("belong").
 		Alias("subject", "in").
@@ -27,7 +30,7 @@ func useGetSubjectsQuery(careers string) (*[]surrealdb.QueryResult[[]models.Subj
 		sql, vars := qb.Build()
 		sql = strings.Replace(sql, "$prelationsConditions", "", 1)
 
-		return surrealdb.Query[[]models.SubjectsByCareers](context.Background(), db.SurrealDB, sql, vars)
+		return surrealdb.Query[[]DTO.SubjectsByCareers](context.Background(), db.SurrealDB, sql, vars)
 	} else {
 		careersArray := tools.StringToIdArray(careers)
 
@@ -37,11 +40,11 @@ func useGetSubjectsQuery(careers string) (*[]surrealdb.QueryResult[[]models.Subj
 
 		vars["careersId"] = careersArray
 
-		return surrealdb.Query[[]models.SubjectsByCareers](context.Background(), db.SurrealDB, sql, vars)
+		return surrealdb.Query[[]DTO.SubjectsByCareers](context.Background(), db.SurrealDB, sql, vars)
 	}
 }
 
-func GetSubjects(careers string) ([]models.SubjectNode, error) {
+func GetSubjects(careers string) ([]DTO.SubjectNode, error) {
 	careersArray := []surrealModels.RecordID{}
 	if careers != "none" {
 		careersArray = tools.StringToIdArray(careers)
@@ -57,86 +60,132 @@ func GetSubjects(careers string) ([]models.SubjectNode, error) {
 
 	sql, vars := qb.Build()
 
-	result, err := surrealdb.Query[[]models.SubjectNode](context.Background(), db.SurrealDB, sql, vars)
+	result, err := surrealdb.Query[[]DTO.SubjectNode](context.Background(), db.SurrealDB, sql, vars)
 
 	if err != nil {
-		return []models.SubjectNode{}, err
+		return []DTO.SubjectNode{}, err
 	}
 
 	subjects := (*result)[0].Result
 
 	if len(subjects) == 0 {
-		return []models.SubjectNode{}, echo.NewHTTPError(http.StatusNotFound, "No hay materias para las carreras proporcionadas")
+		return []DTO.SubjectNode{}, echo.NewHTTPError(http.StatusNotFound, "No hay materias para las carreras proporcionadas")
 	}
 
 	return subjects, nil
 }
 
-func GetSubjectsGraph(careers string) (models.Graph[models.SubjectNode], error) {
+func GetSubjectsGraph(careers string) (models.Graph[DTO.SubjectNode], error) {
 	result, err := useGetSubjectsQuery(careers)
 
 	if err != nil {
-		return models.Graph[models.SubjectNode]{}, err
+		return models.Graph[DTO.SubjectNode]{}, err
 	}
 
 	if len((*result)[0].Result) == 0 {
-		return models.Graph[models.SubjectNode]{}, echo.NewHTTPError(http.StatusNotFound, "No hay materias para las carreras proporcionadas")
+		return models.Graph[DTO.SubjectNode]{}, echo.NewHTTPError(http.StatusNotFound, "No hay materias para las carreras proporcionadas")
 	}
 
 	subjectsByCareers := (*result)[0].Result
 
-	nodes := make([]models.Node[models.SubjectNode], len(subjectsByCareers))
-	edges := make([]models.Edge, 0)
+	graph := helpers.ProcessSubjectGraph(
+		subjectsByCareers,
+		func(item DTO.SubjectsByCareers) models.Node[DTO.SubjectNode] {
+			subject := item.Subject
 
-	for i, subjectByCareer := range subjectsByCareers {
-		subject := subjectByCareer.Subject
+			return models.Node[DTO.SubjectNode]{
+				ID: subject.ID.String(),
+				Data: DTO.SubjectNode{
+					SubjectNodeBase: DTO.SubjectNodeBase{
+						Code:      subject.ID,
+						Name:      subject.Name,
+						Credits:   subject.Credits,
+						BPCredits: subject.BPCredits,
+					},
+					Careers: item.Careers,
+				},
+			}
+		},
+		func(item DTO.SubjectsByCareers) []models.Edge {
+			subject := item.Subject
+			edges := make([]models.Edge, 0, len(item.Prelations))
+			for _, pre := range item.Prelations {
+				edges = append(edges, models.Edge{From: subject.ID.String(), To: pre.String()})
+			}
+			return edges
+		},
+	)
 
-		nodes[i] = models.Node[models.SubjectNode]{
-			ID: subject.ID.String(),
-			Data: models.SubjectNode{
-				Code:      subject.ID,
-				Name:      subject.Name,
-				Careers:   subjectByCareer.Careers,
-				Credits:   subject.Credits,
-				BPCredits: subject.BPCredits,
-			},
-		}
+	return graph, nil
+}
 
-		for _, prelation := range subjectByCareer.Prelations {
-			edges = append(edges, models.Edge{
-				From: subject.ID.String(),
-				To:   prelation.String(),
-			})
-		}
+func GetSubjectsElectiveGraph() (models.Graph[DTO.SubjectNodeBase], error) {
+	qb := surrealql.Select("subject").
+		Field("*").
+		Alias("prelations", "id->precede->subject").
+		WhereEq("isElective", true)
+
+	sql, vars := qb.Build()
+
+	res, err := surrealdb.Query[[]DTO.SubjectElective](context.Background(), db.SurrealDB, sql, vars)
+
+	if err != nil {
+		return models.Graph[DTO.SubjectNodeBase]{}, err
 	}
 
-	return models.Graph[models.SubjectNode]{
-		Nodes: nodes,
-		Edges: edges,
-	}, nil
+	if len((*res)[0].Result) == 0 {
+		return models.Graph[DTO.SubjectNodeBase]{}, echo.NewHTTPError(http.StatusNotFound, "No hay materias electivas")
+	}
+
+	subjectsElective := (*res)[0].Result
+
+	fmt.Println(subjectsElective, sql)
+
+	graph := helpers.ProcessSubjectGraph(
+		subjectsElective,
+		func(item DTO.SubjectElective) models.Node[DTO.SubjectNodeBase] {
+			subject := item
+			return models.Node[DTO.SubjectNodeBase]{
+				ID: subject.ID.String(),
+				Data: DTO.SubjectNodeBase{
+					Code:      subject.ID,
+					Name:      subject.Name,
+					Credits:   subject.Credits,
+					BPCredits: subject.BPCredits,
+				},
+			}
+		},
+		func(item DTO.SubjectElective) []models.Edge {
+			subject := item
+			edges := make([]models.Edge, 0, len(item.Prelations))
+			for _, pre := range item.Prelations {
+				edges = append(edges, models.Edge{From: subject.ID.String(), To: pre.String()})
+			}
+			return edges
+		},
+	)
+
+	return graph, nil
+
 }
 
 // getEnrollableSubjects returns the list of subject RecordIDs that are enrollable for a given student.
 // It runs a transaction in SurrealDB utilizing a helper function fn::is_subject_enrollable.
 func GetEnrollableSubjects(studentId surrealModels.RecordID) ([]surrealModels.RecordID, error) {
-	const q = `BEGIN TRANSACTION;
-LET $enrolled = SELECT VALUE out FROM enroll 
-	WHERE in = $studentId AND passed=true;
-RETURN SELECT VALUE id
-	FROM subject
-	WHERE fn::is_subject_enrollable(id, $studentId, $enrolled) = true;
-COMMIT TRANSACTION;`
+	qb := surrealql.Begin().
+		Let("enrolled", surrealql.Select("enroll").
+			Value("out").
+			WhereEq("in", "$studentId").
+			Where("passed = true")).
+		Return("?", surrealql.
+			Select("subject").
+			Value("id").
+			Where("fn::is_subject_enrollable(id, $studentId, $enrolled) = true"))
 
-	// qb := surrealql.Begin().
-	// 	Let("enrolled", surrealql.Select("enroll").Field("VALUE out").WhereEq("in", "$studentId").Where("passed = true")).
-	// 	Return(surrealql.Select("subject").Value("VALUE id").Where("fn::is_subject_enrollable(id, $studentId, $enrolled) = true"))
-
-	params := map[string]any{
-		"studentId": studentId,
-	}
+	sql, params := qb.Build()
 
 	// Using Query with expected return of []RecordID via RETURN statement.
-	res, err := surrealdb.Query[[]surrealModels.RecordID](context.Background(), db.SurrealDB, q, params)
+	res, err := surrealdb.Query[[]surrealModels.RecordID](context.Background(), db.SurrealDB, sql, params)
 	if err != nil {
 		return nil, err
 	}

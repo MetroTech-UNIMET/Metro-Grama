@@ -3,6 +3,7 @@ package subjects
 import (
 	"fmt"
 	"metrograma/models"
+	"metrograma/modules/subjects/DTO"
 	"metrograma/modules/subjects/services"
 	"metrograma/tools"
 	"net/http"
@@ -17,6 +18,7 @@ func Handlers(e *echo.Group) {
 	subjectsGroup := e.Group("/subjects")
 	subjectsGroup.GET("/", getSubjects)
 	subjectsGroup.GET("/graph/", getSubjectsGraph)
+	subjectsGroup.GET("/electives/graph/", getElectiveSubjectsGraph)
 	subjectsGroup.POST("/", createSubject, authMiddlewares.AdminAuth)
 }
 
@@ -27,7 +29,7 @@ func Handlers(e *echo.Group) {
 // @Accept       json
 // @Produce      json
 // @Param        careers  query     string  false  "careers filter"
-// @Success      200  {array}   models.SubjectNode
+// @Success      200  {array}   DTO.SubjectNode
 // @Failure      400  {object}  map[string]string
 // @Failure      404  {object}  map[string]string
 // @Failure      500  {object}  map[string]string
@@ -49,7 +51,7 @@ func getSubjects(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Param        careers  query     string  false  "careers or 'none'"
-// @Success      200  {object}  models.Graph[models.SubjectNode]
+// @Success      200  {object}  models.Graph[DTO.SubjectNode]
 // @Failure      400  {object}  map[string]string
 // @Failure      404  {object}  map[string]string
 // @Failure      500  {object}  map[string]string
@@ -61,14 +63,30 @@ func getSubjectsGraph(c echo.Context) error {
 	}
 
 	if careers == "none" {
-		return c.JSON(http.StatusOK, models.Graph[models.SubjectNode]{
-			Nodes: []models.Node[models.SubjectNode]{},
+		return c.JSON(http.StatusOK, models.Graph[DTO.SubjectNode]{
+			Nodes: []models.Node[DTO.SubjectNode]{},
 			Edges: []models.Edge{},
 		})
 	}
 
 	subjects, err := services.GetSubjectsGraph(careers)
 	return tools.GetResponse(c, subjects, err)
+}
+
+// getElectiveSubjectsGraph godoc
+// @Summary      Get elective subjects graph
+// @Description  Returns a graph of elective subjects (nodes and edges)
+// @Tags         subjects
+// @Accept       json
+// @Produce      json
+// @Success      200  {object}  models.Graph[DTO.SubjectNodeBase]
+// @Failure      400  {object}  map[string]string
+// @Failure      404  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /subjects/electives/graph/ [get]
+func getElectiveSubjectsGraph(c echo.Context) error {
+	graph, err := services.GetSubjectsElectiveGraph()
+	return tools.GetResponse(c, graph, err)
 }
 
 // createSubject godoc
@@ -100,7 +118,7 @@ func createSubject(c echo.Context) error {
 	}
 
 	for _, c := range subjectForm.Careers {
-		careerID,err := surrealModels.ParseRecordID(c.CareerID)
+		careerID, err := surrealModels.ParseRecordID(c.CareerID)
 		if err != nil {
 			return echo.NewHTTPError(http.StatusNotFound, fmt.Sprintf("Career `%s` not found", c.CareerID))
 		}

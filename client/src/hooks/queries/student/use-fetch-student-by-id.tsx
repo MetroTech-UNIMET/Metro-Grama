@@ -1,10 +1,10 @@
 import { queryOptions, useQuery } from '@tanstack/react-query';
 import { getStudentByID } from '@/api/interactions/studentApi';
 
-import type { OtherStudentDetails } from '@/interfaces/Student';
+import type { OtherStudentDetails } from '@/api/interactions/student.types';
 import type { OptionalQueryOptions } from '../types';
 
-interface Props<T =  OtherStudentDetails> {
+interface Props<T = OtherStudentDetails> {
   studentId: string;
   queryOptions?: OptionalQueryOptions<T>;
 }

@@ -5,8 +5,13 @@ import { getSubjectsGraph } from '@/api/subjectsAPI';
 
 import type { Graph } from '@/interfaces/Graph';
 import type { Subject } from '@/interfaces/Subject';
+import { OptionalQueryOptions } from '../types';
 
-export function fetchSubjectsGraphByCareerOptions(careers: string[]) {
+interface Props<T = Graph<Subject>> {
+  queryOptions?: OptionalQueryOptions<T>;
+}
+
+export function fetchSubjectsGraphByCareerOptions(careers: string[], { queryOptions: queryOpt }: Props = {}) {
   const careersCsv = careers.length === 0 ? 'none' : careers.sort().join(',');
   return queryOptions<Graph<Subject>>({
     queryKey: [
@@ -17,14 +22,15 @@ export function fetchSubjectsGraphByCareerOptions(careers: string[]) {
       },
     ],
     queryFn: () => getSubjectsGraph(careersCsv),
+    ...queryOpt,
   });
 }
 
-export default function useFetchSubjectsGraphByCareer() {
+export function useFetchSubjectsGraphByCareer(props?: Props) {
   const search = useSearch({ from: '/_navLayout/materias/' });
   const careersArray = search.careers ?? [];
 
-  const subjectQuery = useQuery(fetchSubjectsGraphByCareerOptions(careersArray));
+  const subjectQuery = useQuery(fetchSubjectsGraphByCareerOptions(careersArray, props));
 
   return subjectQuery;
 }

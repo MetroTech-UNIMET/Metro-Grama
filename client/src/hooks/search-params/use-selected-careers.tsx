@@ -5,7 +5,7 @@ import { useFetchStudentCareers } from '../queries/student/use-fetch-student-car
 
 import { idToSurrealId } from '@utils/queries';
 
-import type { CareerOption } from '../queries/use-FetchCareersOptions';
+import type { CareerOption } from '../queries/career/use-fetch-careers';
 
 interface Props {
   careerOptions: CareerOption[];

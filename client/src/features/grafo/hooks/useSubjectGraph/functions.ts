@@ -1,11 +1,14 @@
+import { subjectHasCareer } from '@utils/types/subject';
 import { idToSurrealId } from '@utils/queries';
 
-import type { Subject } from '@/interfaces/Subject';
+import type { Subject, SubjectNoCareers } from '@/interfaces/Subject';
 import type { NodeStyleIcon } from '@antv/graphin/lib/typings/type';
 import type { NodeStatuses } from '@/features/grafo/behaviors/StatusActions';
 import type { CareerOption } from '@/hooks/queries/career/use-fetch-careers';
 import type { Career } from '@/interfaces/Career';
 import type { Node4j } from '@/interfaces/Graph';
+
+type SubjectType = Subject | SubjectNoCareers;
 
 /**
  * Returns the NodeStyleIcon for a given subject and selected careers.
@@ -13,25 +16,33 @@ import type { Node4j } from '@/interfaces/Graph';
  * @param selectedCareers - The selected careers as DropdownOptions.
  * @returns The NodeStyleIcon object.
  */
-export function getNormalIcon(subject: Subject, selectedCareers: CareerOption[], careers?: Career[]): NodeStyleIcon {
+export function getNormalIcon<TData extends SubjectType>(
+  subject: TData,
+  selectedCareers: CareerOption[],
+  careers?: Career[],
+): NodeStyleIcon {
   let icon = '';
 
-  if (subject.careers.length > 1) {
-    icon = '🤝';
-    for (let i = 0; i < subject.careers.length; i++) {
-      const emoji = careers?.find((c) => c.id.ID === subject.careers[i].ID)?.emoji ?? '🛠️';
-      if (i == 0) {
-        icon += '\n\r' + emoji + ' ';
-        continue;
+  if (subjectHasCareer(subject)) {
+    if (subject?.careers.length > 1) {
+      icon = '🤝';
+      for (let i = 0; i < subject.careers.length; i++) {
+        const emoji = careers?.find((c) => c.id.ID === subject.careers[i].ID)?.emoji ?? '🛠️';
+        if (i == 0) {
+          icon += '\n\r' + emoji + ' ';
+          continue;
+        }
+        icon += emoji + ' ';
       }
-      icon += emoji + ' ';
+    } else {
+      const career = selectedCareers.find(
+        (option) => option.value === idToSurrealId(subject.careers[0].ID, subject.careers[0].Table),
+      );
+
+      icon = careers?.find((c) => idToSurrealId(c.id.ID, c.id.Table) === career?.value)?.emoji ?? '🛠️';
     }
   } else {
-    const career = selectedCareers.find(
-      (option) => option.value === idToSurrealId(subject.careers[0].ID, subject.careers[0].Table),
-    );
-
-    icon = careers?.find((c) => idToSurrealId(c.id.ID, c.id.Table) === career?.value)?.emoji ?? '🛠️';
+    icon = '✨'
   }
 
   return {
@@ -55,11 +66,14 @@ export function getCustomIconProps(icon: NodeStyleIcon) {
   return [labelOffset, iconLen];
 }
 
-export function isNodeViewed(nodeId: string, nodeStatuses: NodeStatuses<Subject>): boolean {
+export function isNodeViewed<TData extends SubjectType>(nodeId: string, nodeStatuses: NodeStatuses<TData>): boolean {
   return nodeStatuses.viewed.has(nodeId);
 }
 
-export function isNodeAccessible(nodeId: string, nodeStatuses: NodeStatuses<Subject>): boolean {
+export function isNodeAccessible<TData extends SubjectType>(
+  nodeId: string,
+  nodeStatuses: NodeStatuses<TData>,
+): boolean {
   return nodeStatuses.accesible.has(nodeId);
 }
 
@@ -67,7 +81,7 @@ export function isNodeEnrolled(nodeId: string, enrolledSubjects: Set<string>): b
   return enrolledSubjects.has(nodeId);
 }
 
-export function isInitialNodeFreeFromCredits(node: Node4j<Subject>): boolean {
+export function isInitialNodeFreeFromCredits<TData extends SubjectType>(node: Node4j<TData>): boolean {
   return node.data.BPCredits === 0 && node.data.credits === 0;
 }
 

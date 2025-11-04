@@ -5,21 +5,22 @@ import { MenuActions, type SubjectNode } from './behaviors/MenuActions';
 import CreditsMenu from './behaviors/CreditsMenu';
 import UpdateNodeStatusOnGraphChange from './behaviors/Update-Node-Status-OnGraphChange';
 
+import { HeaderGraph } from './HeaderGraph';
 import EnrollDialog from './EnrollDialog/EnrollDialog';
-// import SideBarGraph from "./SideBarGraph";
+
+import useIsElective from './hooks/use-is-elective';
 
 import { ShowAxiosError } from '@components/ShowAxiosError';
-import { CareerMultiDropdown } from '@components/CareerMultiDropdown';
 
 import { Spinner } from '@ui/spinner';
-import GoogleLogin from '@ui/derived/GoogleLogin';
 import { ContextMenu } from '@ui/context-menu';
 import { Dialog } from '@ui/dialog';
 
 import useSubjectGraph from '@/features/grafo/hooks/useSubjectGraph/useSubjectGraph';
 
-import useFecthSubjectsGraphByCareer from '@/hooks/queries/subject/use-FecthSubjectsGraphByCareer';
+import { useFetchSubjectsGraphByCareer } from '@/hooks/queries/subject/use-FecthSubjectsGraphByCareer';
 import { useFetchCareersOptions } from '@/hooks/queries/career/use-fetch-careers';
+import useFetchSubjectsElectivesGraph from '@/hooks/queries/subject/use-fetch-subjects-electives-graph';
 
 import { useSelectedCareers } from '@/hooks/search-params/use-selected-careers';
 
@@ -31,6 +32,7 @@ export default function Graph() {
   const careerOptionsQuery = useFetchCareersOptions();
 
   const [selectedSubjectDialog, setSelectedSubjectDialog] = useState<SubjectNode | null>(null);
+  const { onlyElectives, setOnlyElectives } = useIsElective();
 
   const { selectedCareers, setSelectedCareers } = useSelectedCareers({
     activeUrl: '/_navLayout/materias/',
@@ -38,16 +40,27 @@ export default function Graph() {
     useStudentCareersAsDefault: true,
   });
 
-  const { data, error, isLoading } = useFecthSubjectsGraphByCareer();
+  const subjectsElectivesQuery = useFetchSubjectsElectivesGraph({
+    queryOptions: {
+      enabled: onlyElectives,
+    },
+  });
+  const subjectsByCareerQuery = useFetchSubjectsGraphByCareer({
+    queryOptions: {
+      enabled: !onlyElectives,
+    },
+  });
 
-  const { graph } = useSubjectGraph(data, selectedCareers);
+  const queryToUse = onlyElectives ? subjectsElectivesQuery : subjectsByCareerQuery;
+
+  const { graph } = useSubjectGraph(queryToUse.data, selectedCareers);
 
   const { graphinImport, error: graphinError } = useLazyGraphin();
 
-  if (error) return <ShowAxiosError error={error as AxiosError} />;
+  if (queryToUse.error) return <ShowAxiosError error={queryToUse.error as AxiosError} />;
   if (graphinError) return <ShowAxiosError error={graphinError as AxiosError} />;
 
-  if ((!data && graph.nodes.length === 0) || !graphinImport) {
+  if ((!queryToUse.data && graph.nodes.length === 0) || !graphinImport) {
     return (
       <div className="grid h-full place-items-center">
         <Spinner size="giant" />
@@ -60,18 +73,14 @@ export default function Graph() {
 
   return (
     <>
-      <div className="fixed z-10 flex w-full flex-row flex-wrap gap-4 pr-12">
-        {/* <SideBarGraph /> */}
-
-        <GoogleLogin />
-
-        <CareerMultiDropdown
-          value={selectedCareers}
-          onChange={setSelectedCareers}
-          loadingSubjects={isLoading}
-          isLoading={careerOptionsQuery.isLoading}
-        />
-      </div>
+      <HeaderGraph
+        selectedCareers={selectedCareers}
+        setSelectedCareers={setSelectedCareers}
+        onlyElectives={onlyElectives}
+        setOnlyElectives={setOnlyElectives}
+        loadingSubjects={subjectsByCareerQuery.isLoading}
+        loadingCareers={careerOptionsQuery.isLoading}
+      />
 
       {selectedCareers.length === 0 ? (
         <>
@@ -89,7 +98,7 @@ export default function Graph() {
                   backgroundColor: 'transparent',
                   position: 'relative',
                 }}
-                layout={{ type: 'dagre' }}
+                layout={{ type: onlyElectives ? 'circular' : 'dagre' }}
               >
                 <Hoverable bindType="node" />
                 <SearchPrelations />

@@ -1,12 +1,12 @@
-import { createContext, useContext, useState } from "react";
-import { getNodesFromEdges } from "@/lib/utils/graph";
+import { createContext, useContext, useState } from 'react';
+import { getNodesFromEdges } from '@/lib/utils/graph';
 
-import type { INode, IEdge } from "@antv/g6";
-import type { Subject } from "@/interfaces/Subject";
-import type { Node4j } from "@/interfaces/Graph";
+import type { INode, IEdge } from '@antv/g6';
+import type { Subject, SubjectNoCareers } from '@/interfaces/Subject';
+import type { Node4j } from '@/interfaces/Graph';
 
-export type nodeCustomState = "accesible" | "viewed";
-export type edgeCustomState = "future" | "prelation" | "prelation-viewed";
+export type nodeCustomState = 'accesible' | 'viewed';
+export type edgeCustomState = 'future' | 'prelation' | 'prelation-viewed';
 
 export type newNodeState =
   | {
@@ -18,13 +18,13 @@ export type newNodeState =
       value: boolean;
     }[];
 
-interface StatusActionsContextProps<NodeStatusObject = Subject> {
+interface StatusActionsContextProps<NodeStatusObject extends Subject | SubjectNoCareers = Subject | SubjectNoCareers> {
   nodeStatuses: NodeStatuses<NodeStatusObject>;
   nodeActions: {
     enableViewedNode: (
       node: INode,
       firstNode?: boolean,
-      viewedNodes?: Set<string>
+      viewedNodes?: Set<string>,
     ) => {
       nodes: Set<string>;
       enabled: boolean;
@@ -33,23 +33,20 @@ interface StatusActionsContextProps<NodeStatusObject = Subject> {
   };
   changeNodeState: (nodeState: NodeState | NodeState[]) => void;
 
-  subjectWithCredits: Subject[];
-  setSubjectWithCredits: React.Dispatch<React.SetStateAction<Subject[]>>;
+  subjectWithCredits: NodeStatusObject[];
+  setSubjectWithCredits: React.Dispatch<React.SetStateAction<NodeStatusObject[]>>;
 
   edgeActions: {};
   graphActions: {};
 }
 
-const StatusActionsContext = createContext<StatusActionsContextProps | null>(
-  null
-);
+// Use a generic-safe context type; consumers should access via the generic hook below
+const StatusActionsContext = createContext<StatusActionsContextProps<any> | null>(null);
 
-export function useStatusActions() {
-  const statusActionsContext = useContext(StatusActionsContext);
+export function useStatusActions<NodeStatusObject extends Subject | SubjectNoCareers = Subject | SubjectNoCareers>() {
+  const statusActionsContext = useContext(StatusActionsContext) as StatusActionsContextProps<NodeStatusObject> | null;
   if (!statusActionsContext) {
-    throw new Error(
-      "useStatusActions must be used within a StatusActionsProvider"
-    );
+    throw new Error('useStatusActions must be used within a StatusActionsProvider');
   }
 
   return statusActionsContext;
@@ -64,18 +61,19 @@ interface NodeState {
   newState: newNodeState;
 }
 
-export function StatusActions({ children }: { children: React.ReactNode }) {
-  const [nodeStatuses, setNodeStatuses] = useState<NodeStatuses<Subject>>({
+export function StatusActions<NodeStatusObject extends Subject | SubjectNoCareers = Subject | SubjectNoCareers>({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const [nodeStatuses, setNodeStatuses] = useState<NodeStatuses<NodeStatusObject>>({
     accesible: new Map(),
     viewed: new Map(),
   });
-  const [subjectWithCredits, setSubjectWithCredits] = useState<Subject[]>([]);
+  const [subjectWithCredits, setSubjectWithCredits] = useState<NodeStatusObject[]>([]);
 
   function changeNodeState(nodeState: NodeState | NodeState[]) {
-    const newNodeStatuses: Record<
-      nodeCustomState,
-      Map<string, Subject>
-    > = nodeStatuses;
+    const newNodeStatuses: Record<nodeCustomState, Map<string, NodeStatusObject>> = nodeStatuses;
 
     if (Array.isArray(nodeState)) {
       nodeState.forEach((state) => {
@@ -94,16 +92,16 @@ export function StatusActions({ children }: { children: React.ReactNode }) {
   function enableViewedNode(node: INode) {
     const outEdges = node.getOutEdges();
 
-    if (node.hasState("viewed")) {
+    if (node.hasState('viewed')) {
       return { nodes: disableViewedNode(node, outEdges), enabled: false };
     }
     const viewedNodes = new Set<string>().add(node.getID());
 
-    changeNodeState({ node, newState: { state: "viewed", value: true } });
+    changeNodeState({ node, newState: { state: 'viewed', value: true } });
 
     enableChildrenNodes(node, viewedNodes);
 
-    const nodesToCheck = getNodesFromEdges(outEdges, "target");
+    const nodesToCheck = getNodesFromEdges(outEdges, 'target');
     nodesToCheck.forEach((node) => checkAccesible(node));
 
     return {
@@ -115,82 +113,72 @@ export function StatusActions({ children }: { children: React.ReactNode }) {
   function enableChildrenNodes(currentNode: INode, viewedNodes: Set<string>) {
     const inEdges = currentNode.getInEdges();
 
-    const previousNodes = getNodesFromEdges(inEdges, "source");
+    const previousNodes = getNodesFromEdges(inEdges, 'source');
     previousNodes.forEach((node) => {
-      if (node.hasState("viewed")) return;
+      if (node.hasState('viewed')) return;
 
-      changeNodeState({ node, newState: { state: "viewed", value: true } });
+      changeNodeState({ node, newState: { state: 'viewed', value: true } });
       viewedNodes.add(node.getID());
 
       enableChildrenNodes(node, viewedNodes);
 
       const outEdges = node.getOutEdges();
-      const nodesToCheck = getNodesFromEdges(outEdges, "target");
+      const nodesToCheck = getNodesFromEdges(outEdges, 'target');
       nodesToCheck.forEach((node) => checkAccesible(node));
     });
   }
 
-  function disableViewedNode(
-    node: INode,
-    outEdges: IEdge[],
-    disabledNodes: Set<string> = new Set()
-  ) {
-    const sourceNodes = getNodesFromEdges(node.getInEdges(), "source");
+  function disableViewedNode(node: INode, outEdges: IEdge[], disabledNodes: Set<string> = new Set()) {
+    const sourceNodes = getNodesFromEdges(node.getInEdges(), 'source');
 
-    const shouldAccesible = sourceNodes.every((node) =>
-      node.hasState("viewed")
-    );
+    const shouldAccesible = sourceNodes.every((node) => node.hasState('viewed'));
 
-    const isViewed = node.hasState("viewed");
-    const isAccesible = node.hasState("accesible");
+    const isViewed = node.hasState('viewed');
+    const isAccesible = node.hasState('accesible');
 
     if (isAccesible && !isViewed) {
       changeNodeState({
         node,
         newState: [
-          { state: "accesible", value: false },
-          { state: "viewed", value: false },
+          { state: 'accesible', value: false },
+          { state: 'viewed', value: false },
         ],
       });
       return disabledNodes;
-    } else if (!node.hasState("viewed")) {
+    } else if (!node.hasState('viewed')) {
       return disabledNodes;
     }
 
     changeNodeState({
       node,
       newState: [
-        { state: "accesible", value: shouldAccesible },
-        { state: "viewed", value: false },
+        { state: 'accesible', value: shouldAccesible },
+        { state: 'viewed', value: false },
       ],
     });
     disabledNodes.add(node.getID());
 
-    const outNodes = getNodesFromEdges(outEdges, "target");
+    const outNodes = getNodesFromEdges(outEdges, 'target');
 
-    outNodes.forEach((node) =>
-      disableViewedNode(node, node.getOutEdges(), disabledNodes)
-    );
+    outNodes.forEach((node) => disableViewedNode(node, node.getOutEdges(), disabledNodes));
     return disabledNodes;
   }
 
   function checkAccesible(nodeToCheck: INode) {
     // REVIEW - En un futuro comparar cual forma es más rápida
-    const isViewed = nodeToCheck.hasState("viewed");
+    const isViewed = nodeToCheck.hasState('viewed');
     // nodeStatuses.viewed.has(node.getID());
     if (isViewed) return;
 
-    const sourceNodes = getNodesFromEdges(nodeToCheck.getInEdges(), "source");
+    const sourceNodes = getNodesFromEdges(nodeToCheck.getInEdges(), 'source');
 
-    const sourceNodesViewed = sourceNodes.every((node) =>
-      node.hasState("viewed")
-    );
+    const sourceNodesViewed = sourceNodes.every((node) => node.hasState('viewed'));
 
     if (!sourceNodesViewed) return;
 
     changeNodeState({
       node: nodeToCheck,
-      newState: { state: "accesible", value: true },
+      newState: { state: 'accesible', value: true },
     });
 
     // REVIEW - Antes se llamaba recursivamente, pero ahora creo que es innecesario
@@ -199,33 +187,29 @@ export function StatusActions({ children }: { children: React.ReactNode }) {
     // nodesToCheck.forEach((node) => checkAccesible(node));
   }
 
-  return (
-    <StatusActionsContext.Provider
-      value={{
-        nodeStatuses,
-        nodeActions: {
-          enableViewedNode,
-          disableViewedNode,
-        },
-        changeNodeState,
+  const value = {
+    nodeStatuses,
+    nodeActions: {
+      enableViewedNode,
+      disableViewedNode,
+    },
+    changeNodeState,
 
-        subjectWithCredits,
-        setSubjectWithCredits,
+    subjectWithCredits,
+    setSubjectWithCredits,
 
-        edgeActions: {},
-        graphActions: {},
-      }}
-    >
-      {children}
-    </StatusActionsContext.Provider>
-  );
+    edgeActions: {},
+    graphActions: {},
+  } as StatusActionsContextProps<NodeStatusObject>;
+
+  return <StatusActionsContext.Provider value={value}>{children}</StatusActionsContext.Provider>;
 }
 
-function calculateNewState(
+function calculateNewState<NodeStatusObject extends Subject | SubjectNoCareers = Subject | SubjectNoCareers>(
   { node, newState }: NodeState,
-  newNodeStatuses: Record<nodeCustomState, Map<string, Subject>>
+  newNodeStatuses: Record<nodeCustomState, Map<string, NodeStatusObject>>,
 ) {
-  const subject = (node.getModel().data as Node4j<Subject>).data;
+  const subject = (node.getModel().data as Node4j<NodeStatusObject>).data;
   const nodeId = node.getID();
 
   if (Array.isArray(newState)) {
@@ -241,10 +225,10 @@ function calculateNewState(
   return newNodeStatuses;
 }
 
-function setNewNodeState(
+function setNewNodeState<NodeStatusObject extends Subject | SubjectNoCareers = Subject | SubjectNoCareers>(
   node: INode,
   nodeId: string,
-  data: Subject,
+  data: NodeStatusObject,
   {
     state,
     value,
@@ -252,7 +236,7 @@ function setNewNodeState(
     state: nodeCustomState;
     value: boolean;
   },
-  nodeStatuses: Record<nodeCustomState, Map<string, Subject>>
+  nodeStatuses: Record<nodeCustomState, Map<string, NodeStatusObject>>,
 ) {
   node.setState(state, value);
 

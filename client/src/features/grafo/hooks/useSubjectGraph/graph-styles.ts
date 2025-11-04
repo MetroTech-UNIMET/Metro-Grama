@@ -3,12 +3,14 @@ import { useCallback } from 'react';
 import { getNormalIcon, getCustomIconProps } from './functions';
 import useLazyGraphIcons from '../../../../hooks/lazy-loading/use-LazyGraphIcons';
 
-import type { Subject } from '@/interfaces/Subject';
+import type { Subject, SubjectNoCareers } from '@/interfaces/Subject';
 import type { CareerOption } from '@/hooks/queries/career/use-fetch-careers';
 import type { Career } from '@/interfaces/Career';
 import type { Node4j } from '@/interfaces/Graph';
 
 import '@antv/graphin-icons/dist/index.css';
+
+type SubjectType = Subject | SubjectNoCareers;
 
 export const edgeStyle = {
   status: {
@@ -38,11 +40,11 @@ export const edgeStyle = {
   },
 };
 
-export function useNodeStyle(selectedCareers: CareerOption[], careers?: Career[]) {
+export function useNodeStyle<TData extends SubjectType>(selectedCareers: CareerOption[], careers?: Career[]) {
   const { icons, ...query } = useLazyGraphIcons();
 
   const getNodeStyle = useCallback(
-    function getNodeStyle(node: Node4j<Subject>) {
+    function getNodeStyle(node: Node4j<TData>) {
       if (!icons) return null;
 
       const icon = getNormalIcon(node.data, selectedCareers, careers);

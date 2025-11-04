@@ -1,13 +1,12 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo } from 'react';
 
-import { useStatusActions } from "@/features/grafo/behaviors/StatusActions";
+import { useStatusActions } from '@/features/grafo/behaviors/StatusActions';
 
-import type { Subject } from "@/interfaces/Subject";
-import type { IGraph, INode } from "@antv/g6";
+import type { IGraph, INode } from '@antv/g6';
+import type { Id } from '@/interfaces/surrealDb';
 
 export default function useCountCredits(graph: IGraph) {
-  const { nodeStatuses, subjectWithCredits, changeNodeState } =
-    useStatusActions();
+  const { nodeStatuses, subjectWithCredits, changeNodeState } = useStatusActions();
 
   const [credits, BPCredits] = useMemo(() => {
     let credits = 0;
@@ -16,7 +15,7 @@ export default function useCountCredits(graph: IGraph) {
     nodeStatuses.viewed.forEach((subject) => {
       credits += 3;
 
-      if (getSubjectType(subject) === "BP") {
+      if (getSubjectType(subject.code) === 'BP') {
         BPCredits += 4;
       }
     });
@@ -41,26 +40,22 @@ export default function useCountCredits(graph: IGraph) {
         const node = graph.findById(`subject:${subject.code}`) as INode;
         changeNodeState({
           node,
-          newState: { state: "accesible", value: true },
+          newState: { state: 'accesible', value: true },
         });
 
         return;
       }
 
       const hasLessCredits = subject.credits > 0 && credits < subject.credits;
-      const hasLessBPCredits =
-        subject.BPCredits > 0 && BPCredits < subject.BPCredits;
+      const hasLessBPCredits = subject.BPCredits > 0 && BPCredits < subject.BPCredits;
 
       const nodeId = `subject:${subject.code}`;
-      if (
-        nodeStatuses.accesible.has(nodeId) &&
-        (hasLessCredits || hasLessBPCredits)
-      ) {
+      if (nodeStatuses.accesible.has(nodeId) && (hasLessCredits || hasLessBPCredits)) {
         const node = graph.findById(nodeId) as INode;
 
         changeNodeState({
           node,
-          newState: { state: "accesible", value: false },
+          newState: { state: 'accesible', value: false },
         });
       }
     });
@@ -72,6 +67,6 @@ export default function useCountCredits(graph: IGraph) {
   };
 }
 
-function getSubjectType(subject: Subject) {
-  return subject.code.ID.slice(0, 2);
+function getSubjectType(subjectId: Id) {
+  return subjectId.ID.slice(0, 2);
 }

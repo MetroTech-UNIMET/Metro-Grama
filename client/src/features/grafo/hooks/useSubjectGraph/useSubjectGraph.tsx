@@ -16,11 +16,14 @@ import { useStatusActions } from '@/features/grafo/behaviors/StatusActions';
 
 import type { GraphinData } from '@antv/graphin';
 import type { AxiosError } from 'axios';
-import type { Subject } from '@/interfaces/Subject';
+import type { Subject, SubjectNoCareers } from '@/interfaces/Subject';
 import type { NodeStatuses } from '@/features/grafo/behaviors/StatusActions';
 import type { Graph, Node4j } from '@/interfaces/Graph';
 
-export default function useSubjectGraph(data: Graph<Subject> | undefined, selectedCareers: CareerOption[]) {
+export default function useSubjectGraph<TData extends Subject | SubjectNoCareers>(
+  data: Graph<TData> | undefined,
+  selectedCareers: CareerOption[],
+) {
   const careersQuery = useFetchCareers();
 
   const [graph, setGraph] = useState<GraphinData>({ nodes: [], edges: [] });
@@ -48,7 +51,7 @@ export default function useSubjectGraph(data: Graph<Subject> | undefined, select
     // Record the number of dependencies each subject has.
     const subjectDependencyCount: Record<string, number> = {};
 
-    const subjectWithCredits: Subject[] = [];
+    const subjectWithCredits: TData[] = [];
 
     const newGraph: GraphinData = {
       edges: data.edges!.map((edge) => {
@@ -106,10 +109,10 @@ export default function useSubjectGraph(data: Graph<Subject> | undefined, select
   return { graph };
 }
 
-function getSetEnrolledSubjects(
+function getSetEnrolledSubjects<TData extends Subject | SubjectNoCareers>(
   enrolledSubjects: string[] | undefined,
   errorEnrolledSubjects: AxiosError | null,
-  nodeStatuses: NodeStatuses<Subject>,
+  nodeStatuses: NodeStatuses<TData>,
 ) {
   // If there is an error fetching the enrolled subjects,
   // we will use the viewed subjects from the context.
@@ -131,12 +134,12 @@ function getSetEnrolledSubjects(
  * @param nodeStatuses - Responsible from maintaining the node status across different career fetchers.
  * @returns An array containing two boolean values: [isEnrolled, isAccessible].
  */
-function getNodeStatus(
-  node: Node4j<Subject>,
+function getNodeStatus<TData extends Subject | SubjectNoCareers>(
+  node: Node4j<TData>,
   enrolledSubjects: Set<string>,
   subjectRelations: Record<string, Set<string>>,
   dependencyCount: number,
-  nodeStatuses: NodeStatuses<Subject>,
+  nodeStatuses: NodeStatuses<TData>,
 ) {
   if (isNodeViewed(node.id, nodeStatuses)) {
     return [true, false];

@@ -11,10 +11,11 @@ import surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
 // }
 
 type SubjectEntity struct {
-	ID        surrealModels.RecordID `json:"id,omitempty" swaggertype:"object"`
-	Name      string                 `json:"name"`
-	Credits   uint8                  `json:"credits"`
-	BPCredits uint8                  `json:"BPCredits"`
+	ID         surrealModels.RecordID `json:"id,omitempty" swaggertype:"object"`
+	Name       string                 `json:"name"`
+	Credits    uint8                  `json:"credits"`
+	BPCredits  uint8                  `json:"BPCredits"`
+	IsElective bool                   `json:"isElective"`
 }
 
 type SubjectCareer struct {
@@ -24,26 +25,7 @@ type SubjectCareer struct {
 
 type SubjectForm struct {
 	Name       string                 `json:"name" validate:"required"`
-	Code       surrealModels.RecordID `json:"code" validate:"required"`
+	Code       surrealModels.RecordID `json:"code" validate:"required" swaggertype:"object"`
 	Careers    []SubjectCareer        `json:"careers" validate:"required"`
 	PrecedesID []string               `json:"precedesID" validate:"required"`
-}
-
-type SubjectNode struct {
-	Code      surrealModels.RecordID   `json:"code" swaggertype:"object"`
-	Name      string                   `json:"name"`
-	Careers   []surrealModels.RecordID `json:"careers" swaggertype:"array,object"`
-	Credits   uint8                    `json:"credits"`
-	BPCredits uint8                    `json:"BPCredits"`
-}
-
-type SubjectEdge struct {
-	ID   string `json:"id,omitempty"`
-	Name string `json:"name"`
-}
-
-type SubjectsByCareers struct {
-	Careers    []surrealModels.RecordID `json:"careers" swaggertype:"array,object"`
-	Prelations []surrealModels.RecordID `json:"prelations" swaggertype:"array,object"`
-	Subject    SubjectEntity
 }

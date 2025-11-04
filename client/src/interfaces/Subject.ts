@@ -6,6 +6,7 @@ export interface SubjectEntity {
   careers: Id[];
   credits: number;
   BPCredits: number;
+  isElective: boolean;
 }
 
 export interface Subject {
@@ -15,6 +16,8 @@ export interface Subject {
   credits: number;
   BPCredits: number;
 }
+
+export type SubjectNoCareers = Omit<Subject, 'careers'>;
 
 export interface SubjectStats {
   count: number;

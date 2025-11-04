@@ -3,7 +3,8 @@ import { useNavigate, useSearch } from '@tanstack/react-router';
 
 import { useFetchStudentCareers } from '@/hooks/queries/student/use-fetch-student-careers';
 import { idToSurrealId } from '@utils/queries';
-import type { CareerOption } from '@/hooks/queries/use-FetchCareersOptions';
+
+import type { CareerOption } from '@/hooks/queries/career/use-fetch-careers';
 
 interface Props {
   careerOptions: CareerOption[];

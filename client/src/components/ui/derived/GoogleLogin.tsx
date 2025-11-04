@@ -13,8 +13,8 @@ export default function GoogleLogin() {
   if (user) {
     const initials = user.firstName[0] + user.lastName[0];
     return (
-      <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center gap-4 h-11">
+        <div className="flex items-center gap-2 h-full">
           <Avatar>
             <AvatarImage src={user.pictureUrl} className="" />
             <AvatarFallback className="text-black">{initials}</AvatarFallback>
@@ -22,7 +22,7 @@ export default function GoogleLogin() {
           <span>{user.firstName}</span>
         </div>
 
-        <Button onClick={logOut} colors="destructive">
+        <Button onClick={logOut} colors="destructive" className="h-full">
           <LogOutIcon />
           Cerrar sesión
         </Button>

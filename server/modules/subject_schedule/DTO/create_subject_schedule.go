@@ -1,10 +1,10 @@
 package DTO
 
-import "github.com/surrealdb/surrealdb.go/pkg/models"
+import surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
 
 type CreateSubjectSchedule struct {
-	Sections       []sections      `json:"sections" validate:"required"`
-	SubjectOfferId models.RecordID `json:"subject_offer_id" validate:"required"`
+	Sections       []sections             `json:"sections" validate:"required"`
+	SubjectOfferId surrealModels.RecordID `json:"subject_offer_id" validate:"required" swaggertype:"object"`
 }
 
 type sections struct {

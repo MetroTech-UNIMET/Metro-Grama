@@ -183,8 +183,8 @@ func GetEnrollableSubjects(studentId surrealModels.RecordID) ([]surrealModels.Re
 			Where("fn::is_subject_enrollable(id, $studentId, $enrolled) = true"))
 
 	sql, params := qb.Build()
+	params["studentId"] = studentId
 
-	// Using Query with expected return of []RecordID via RETURN statement.
 	res, err := surrealdb.Query[[]surrealModels.RecordID](context.Background(), db.SurrealDB, sql, params)
 	if err != nil {
 		return nil, err

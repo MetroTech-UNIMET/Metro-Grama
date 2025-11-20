@@ -1,6 +1,10 @@
 import z from 'zod/v4';
-import { correctIntervalBetweenHours, default10Hour, default8Hour } from './constants';
 import { differenceInMinutes, getHours, getMinutes } from 'date-fns';
+
+import { correctIntervalBetweenHours, default10Hour, default8Hour } from './constants';
+
+import { createSurrealIdSchema } from '@/lib/schemas/surrealId';
+import { getOverlappingScheduleIndices } from '@utils/time-overlapping';
 
 const scheduleSchema = z
   .object({
@@ -19,8 +23,6 @@ const scheduleSchema = z
   })
   .check((ctx) => {
     const { starting_time, ending_time } = ctx.value;
-    // Ensure start is before end
-    console.log(starting_time, ending_time, starting_time >= ending_time);
     if (starting_time >= ending_time) {
       ctx.issues.push({
         code: 'too_big',
@@ -57,17 +59,32 @@ const scheduleSchema = z
     };
   });
 
-const sectionsSchema = z.object({
-  schedules: z
-    .array(scheduleSchema)
-    .min(1, {
-      message: 'Se requiere al menos un horario para la materia',
-    })
-    .max(3, {
-      message: 'Se permiten un máximo de 3 horarios para la materia',
-    }),
-  classroom_code: z.string().optional(),
-});
+const sectionsSchema = z
+  .object({
+    schedules: z
+      .array(scheduleSchema)
+      .min(1, {
+        message: 'Se requiere al menos un horario para la materia',
+      })
+      .max(3, {
+        message: 'Se permiten un máximo de 3 horarios para la materia',
+      }),
+    classroom_code: z.string().optional(),
+    subject_section_id: createSurrealIdSchema('subject_section').optional(),
+  })
+  .check((ctx) => {
+    const { schedules } = ctx.value as any;
+    const overlapping = getOverlappingScheduleIndices(schedules);
+    if (!overlapping.size) return;
+    for (const idx of overlapping) {
+      ctx.issues.push({
+        code: 'custom',
+        input: ctx.value.schedules[idx],
+        path: ['schedules', idx],
+        message: 'Horario solapado con otro horario del mismo día',
+      });
+    }
+  });
 
 export const subjectScheduleSchema = z.object({
   sections: z
@@ -79,10 +96,7 @@ export const subjectScheduleSchema = z.object({
       error: 'Se permiten un máximo de 10 secciones para la materia',
     })
     .transform((value) => value.map((section, index) => ({ ...section, section_number: index + 1 }))),
-  subject_offer_id: z.object({
-    ID: z.string(),
-    Table: z.literal('subject_offer'),
-  }),
+  subject_offer_id: createSurrealIdSchema('subject_offer'),
 });
 
 export type SubjectScheduleInput = z.input<typeof subjectScheduleSchema>;

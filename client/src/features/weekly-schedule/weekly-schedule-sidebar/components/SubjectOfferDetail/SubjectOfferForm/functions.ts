@@ -7,7 +7,8 @@ import type { SubjectScheduleInput, SubjectScheduleOutput } from './schema';
 import type { SubjectSectionWithSchedules } from '@/interfaces/SubjectSection';
 
 export function transformSection(sections: SubjectSectionWithSchedules[]): SubjectScheduleInput['sections'] {
-  return sections.map(({ schedules,classroom_code }) => ({
+  return sections.map(({ schedules, classroom_code, id }) => ({
+    subject_section_id: id,
     classroom_code: classroom_code ?? undefined,
     schedules: schedules.map(
       ({

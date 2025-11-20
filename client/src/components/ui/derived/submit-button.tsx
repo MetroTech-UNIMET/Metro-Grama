@@ -26,12 +26,17 @@ export function LoadingButton({ children, isLoading, className, ...props }: Prop
   );
 }
 
-export default function SubmitButton({ disabled, ...props }: Props) {
+export default function SubmitButton({ disabled, type, ...props }: Props) {
   const {
     formState: { isSubmitting, isSubmitSuccessful },
   } = useFormContext();
 
   return (
-    <LoadingButton disabled={disabled || isSubmitting || isSubmitSuccessful} isLoading={isSubmitting} {...props} />
+    <LoadingButton
+      disabled={disabled || isSubmitting || isSubmitSuccessful}
+      isLoading={isSubmitting}
+      type={type ?? 'submit'}
+      {...props}
+    />
   );
 }

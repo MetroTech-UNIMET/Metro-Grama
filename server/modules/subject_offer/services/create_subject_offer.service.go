@@ -62,42 +62,36 @@ func transformPDFToSurrealObjects(info DTO.ReadResult) ([]subjectOfferForSurreal
 	return offers, nil
 }
 
-const relateQuery = `
-BEGIN TRANSACTION;
-
-FOR $offer IN $subject_offers {
-    LET $subjectId = <record<subject>> $offer.subject;
-    LET $trimesterIds = <array<record<trimester>>> $offer.trimesters;
-
-    LET $existings = SELECT VALUE out FROM subject_offer 
-    WHERE in = $subjectId AND out IN $trimesterIds;
-    
-    LET $notExistings = array::difference($trimesterIds, $existings);
-
-    RELATE $subjectId->subject_offer->$notExistings;
-};
-
-COMMIT TRANSACTION;`
-
 func relateSubjectsToTrimesters(offers []subjectOfferForSurreal) error {
-	queryParams := map[string]any{
-		"subject_offers": offers,
-	}
-	_, err := surrealdb.Query[any](context.Background(), db.SurrealDB, relateQuery, queryParams)
+	qb := surrealql.Begin().
+		Do(surrealql.For("offer", "?", offers).
+			LetTyped("subjectId", "<record<subject>>", "$offer.subject").
+			LetTyped("trimesterIds", "<array<record<trimester>>>", "$offer.trimesters").
+			Let("existings", surrealql.
+				SelectOnly("subject_offer").
+				Value("out").
+				Where("in = $subjectId").
+				Where("out IN $trimesterIds")).
+			Let("notExistings", surrealql.Expr("array::difference($trimesterIds, $existings)")).
+			Do(surrealql.Relate("$subjectId", "subject_offer", "$notExistings")),
+		)
+
+	sql, params := qb.Build()
+
+	_, err := surrealdb.Query[any](context.Background(), db.SurrealDB, sql, params)
 	return err
 }
 
 func RelateSubjectToTrimester(subjectId surrealModels.RecordID, trimesterId surrealModels.RecordID) (models.SubjectOfferEntity, error) {
-	// TODO - Add ONLY
-	qb := surrealql.Relate(subjectId, "subject_offer", trimesterId)
+	qb := surrealql.RelateOnly(subjectId, "subject_offer", trimesterId)
 	sql, vars := qb.Build()
 
-	result, err := surrealdb.Query[[]models.SubjectOfferEntity](context.Background(), db.SurrealDB, sql, vars)
+	result, err := surrealdb.Query[models.SubjectOfferEntity](context.Background(), db.SurrealDB, sql, vars)
 	if err != nil {
 		return models.SubjectOfferEntity{}, err
 	}
 
 	subjectOffer := (*result)[0].Result
-	return subjectOffer[0], nil
+	return subjectOffer, nil
 
 }

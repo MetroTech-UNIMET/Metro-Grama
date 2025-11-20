@@ -1,15 +1,18 @@
 package subject_schedule
 
 import (
+	middlewares "metrograma/modules/auth/middlewares"
 	"metrograma/modules/subject_schedule/DTO"
 	"metrograma/modules/subject_schedule/services"
 	"net/http"
+	"strings"
 
 	"github.com/labstack/echo/v4"
+	surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
 )
 
 func Handlers(e *echo.Group) {
-	grp := e.Group("/subject_schedule")
+	grp := e.Group("/subject_schedule", middlewares.StudentAuth)
 	grp.POST("/", createSubjectSchedule)
 }
 
@@ -26,13 +29,29 @@ func Handlers(e *echo.Group) {
 // @Failure 500 {object} map[string]string
 // @Router /subject_schedule/ [post]
 func createSubjectSchedule(c echo.Context) error {
-	var input DTO.CreateSubjectSchedule
-	if err := c.Bind(&input); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest,
-			"Error al procesar la solicitud")
+	// Extract authenticated user id from middleware
+	raw := c.Get("user-id")
+	if raw == nil {
+		return echo.NewHTTPError(http.StatusUnauthorized)
+	}
+	userId, ok := raw.(surrealModels.RecordID)
+	if !ok {
+		return echo.NewHTTPError(http.StatusUnauthorized, "ID de usuario inválido")
 	}
 
-	schedules, err := services.CreateSubjectSchedule(input)
+	// Bind input DTO
+	var input DTO.CreateSubjectSchedule
+	if err := c.Bind(&input); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Error al procesar la solicitud")
+	}
+
+	// Local overlapping validation
+	if overlapErrs := input.ValidateNoOverlaps(); len(overlapErrs) > 0 {
+		return echo.NewHTTPError(http.StatusBadRequest, strings.Join(overlapErrs, "; "))
+	}
+
+	// Call service with userId
+	schedules, err := services.CreateSubjectSchedule(input, userId)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}

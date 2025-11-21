@@ -46,6 +46,27 @@ export function getDirtyFields<T extends FieldValues>(data: T, dirty: DirtyField
   return result;
 }
 
+export function isSomeFieldDirty<T extends FieldValues>(dirty: DirtyFields<T>): boolean {
+  const walk = (node: DirtyFields<T> | boolean): boolean => {
+    if (node === true) return true;
+    if (Array.isArray(node)) {
+      for (const item of node) {
+        if (walk(item)) return true;
+      }
+      return false;
+    }
+    if (node && typeof node === 'object') {
+      for (const value of Object.values(node as Record<string, DirtyFields<T>>)) {
+        if (walk(value)) return true;
+      }
+      return false;
+    }
+    return false;
+  };
+
+  return walk(dirty);
+}
+
 // export type ArrayToObject<T> = T extends (infer U)[]
 //   ? { [key: number]: ArrayToObject<U> }
 //   : T extends object
@@ -66,7 +87,7 @@ export type ArrayToObject<T, PreserveArrayKeys extends keyof any = never> = T ex
  * @param dirty Object with the dirty fields from formState.dirtyFields
  * @returns An object with only the dirty fields and their values
  * @example
- * const dirtyFields = getDirtyFields(data, {
+ * const dirtyFields = getDirtyNestedFields(data, {
  *   "subjects": [
  *     [
  *       {

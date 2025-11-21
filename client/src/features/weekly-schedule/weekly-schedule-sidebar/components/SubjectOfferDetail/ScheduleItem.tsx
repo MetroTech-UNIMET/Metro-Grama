@@ -1,10 +1,6 @@
-import { ThumbsUp } from 'lucide-react';
-
 import { weekDayOptions } from '@/lib/constants/date';
 import { cn } from '@utils/className';
 import { formatTimeHour } from '@utils/time';
-
-import { Button } from '@ui/button';
 
 import type { SubjectSchedule } from '@/interfaces/SubjectSchedule';
 
@@ -16,7 +12,6 @@ export function ScheduleItem({
   schedule: SubjectSchedule;
   isSectionSelected: boolean;
 }) {
-  const isSectionLiked = false;
   const startStr = formatTimeHour(schedule.starting_hour, schedule.starting_minute);
   const endStr = formatTimeHour(schedule.ending_hour, schedule.ending_minute);
 
@@ -26,10 +21,6 @@ export function ScheduleItem({
         <div className="text-sm font-medium">
           {startStr} - {endStr}
         </div>
-
-        <Button size="icon" variant={isSectionLiked ? 'ghost' : 'outline'} colors="success" className="text-success">
-          <ThumbsUp />
-        </Button>
       </div>
       <div className="flex items-center gap-1">
         {weekDayOptions.map((d, i) => {

@@ -16,7 +16,7 @@ import { useAuth } from '@/contexts/AuthenticationContext';
 import { cn } from '@utils/className';
 import { isStudentUser } from '@/interfaces/User';
 
-import { ButtonGroup } from '@ui/derived/button-group';
+import { ButtonGroup, ButtonGroupSeparator } from '@ui/button-group';
 import { Button } from '@ui/button';
 import {
   DropdownMenu,
@@ -73,6 +73,9 @@ export function SaveScheduleButton() {
           <Save className="!size-6" />
           Guardar horario
         </Button>
+
+        <ButtonGroupSeparator />
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild className="rounded-l-none">
             <Button

@@ -85,7 +85,7 @@ export default function SubjectOfferForm({ subjectOffer, onBack }: Props) {
     });
 
     form.reset();
-    // onBack();
+    onBack();
   }
 
   return (

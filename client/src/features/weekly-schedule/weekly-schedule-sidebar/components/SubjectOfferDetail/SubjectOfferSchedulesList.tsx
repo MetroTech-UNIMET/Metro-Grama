@@ -6,6 +6,8 @@ import { ScheduleItem } from './ScheduleItem';
 
 import { SidebarGroup } from '@ui/sidebar';
 import { Button } from '@ui/button';
+import { ButtonGroup } from '@ui/button-group';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@ui/tooltip';
 
 import type { SubjectOfferWithSections } from '@/interfaces/SubjectOffer';
 
@@ -55,6 +57,8 @@ interface SectionSchedulesProps {
   sectionIndex: number;
 }
 
+// TODO - Considerar hacer que el studentsPlanningToEnroll aumente dependiendo si fue seleccionado o no
+// Tomar en cuenta que
 function SectionSchedules({ section, sectionIndex, subjectOffer, isSelected }: SectionSchedulesProps) {
   const { onAddSubject, onRemoveSubject, getWouldCauseTripleOverlap, getIsSectionSelected } =
     usePlannerSidebarContext();
@@ -64,30 +68,51 @@ function SectionSchedules({ section, sectionIndex, subjectOffer, isSelected }: S
     () => getWouldCauseTripleOverlap(section.schedules),
     [getWouldCauseTripleOverlap, section.schedules],
   );
+
   const sectionNumber = sectionIndex + 1;
+
+  const studentsPlanningToEnroll = section.students_planning_to_enroll;
+
+  const moreThan1StudentPlanningToEnroll = studentsPlanningToEnroll > 1;
 
   return (
     <div className="flex flex-col gap-2">
       {section.schedules.map((sch, idx) => (
         <ScheduleItem key={idx} schedule={sch} isSectionSelected={isSectionSelected} />
       ))}
-      <Button
-        colors={isSelected ? 'destructive' : 'primary'}
-        disabled={!isSelected && wouldCauseTripleOverlap}
-        onClick={() => (isSelected ? onRemoveSubject(subjectOffer.id) : onAddSubject(subjectOffer, sectionIndex))}
-      >
-        {isSelected ? (
-          <>
-            <Trash />
-            Eliminar del horario
-          </>
-        ) : (
-          <>
-            <Plus />
-            Agregar Sección {sectionNumber} al horario
-          </>
-        )}
-      </Button>
+      <ButtonGroup className="w-full">
+        <Button
+          colors={isSelected ? 'destructive' : 'primary'}
+          disabled={!isSelected && wouldCauseTripleOverlap}
+          onClick={() => (isSelected ? onRemoveSubject(subjectOffer.id) : onAddSubject(subjectOffer, sectionIndex))}
+          className="w-full"
+        >
+          {isSelected ? (
+            <>
+              <Trash />
+              Eliminar del horario
+            </>
+          ) : (
+            <>
+              <Plus />
+              Agregar Sección {sectionNumber} al horario
+            </>
+          )}
+        </Button>
+        {/* TODO - Seguramente tenga que ver como hacer esto para mobile */}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button size="icon" colors="secondary" variant="outline" className="w-fit min-w-9 px-1">
+              {studentsPlanningToEnroll}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            {studentsPlanningToEnroll} estudiante{moreThan1StudentPlanningToEnroll ? 's' : ''} planea
+            {moreThan1StudentPlanningToEnroll ? 'n' : ''} inscribir esta sección
+            {studentsPlanningToEnroll === 0 && '.Sé el primero!'}
+          </TooltipContent>
+        </Tooltip>
+      </ButtonGroup>
 
       {!isSelected && wouldCauseTripleOverlap && (
         <span className="text-destructive text-sm">

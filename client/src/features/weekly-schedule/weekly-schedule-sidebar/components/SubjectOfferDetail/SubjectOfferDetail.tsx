@@ -20,7 +20,6 @@ interface Props {
   onBack: () => void;
 }
 
-// TODO - Considerar poner cuantas personas planean ver esta materia en tal sección
 export default function SubjectOfferDetail({ subjectOffer, onBack }: Props) {
   const { getIsSubjectSelected } = usePlannerSidebarContext();
   const { view, go, back } = useSubjectOfferDetailRouter(subjectOffer);

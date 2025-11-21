@@ -24,6 +24,7 @@ export interface SubjectOfferWithSections extends SubjectOffer {
 interface SubjectOfferSections extends SubjectSectionWithSchedules {
   friends?: StudentWithUser[];
   friends_of_a_friend?: FriendOfAfriend[];
+  students_planning_to_enroll: number;
 }
 
 interface FriendOfAfriend {

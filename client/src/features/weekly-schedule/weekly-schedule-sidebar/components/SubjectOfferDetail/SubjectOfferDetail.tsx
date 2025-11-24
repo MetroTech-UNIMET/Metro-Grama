@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { ArrowLeft } from 'lucide-react';
 
 import SubjectOfferForm from './SubjectOfferForm/SubjectOfferForm';
-import { SubjectOfferSchedulesList } from './SubjectOfferSchedulesList';
+import { SubjectOfferSchedulesList } from './SubjectOfferSchedulesList/SubjectOfferSchedulesList';
 import { FriendsPopover } from './FriendsPopover/FriendsPopover';
 
 import { useSubjectOfferDetailRouter } from '../../hooks/useSubjectOfferDetailRouter';
@@ -49,6 +49,7 @@ export default function SubjectOfferDetail({ subjectOffer, onBack }: Props) {
 function SubjectSidebarHeader({ subjectOffer, onBack }: Pick<Props, 'subjectOffer' | 'onBack'>) {
   const differentFriends = subjectOffer.differentFriends;
   
+  console.log('Last Student Editor:', subjectOffer);
   return (
     <SidebarHeader>
       <Button colors="secondary" variant="outline" className="rounded-full" onClick={onBack}>
@@ -79,7 +80,10 @@ function SubjectSidebarHeader({ subjectOffer, onBack }: Pick<Props, 'subjectOffe
         </section>
       )}
 
+       
+
       {differentFriends > 0 && <FriendsPopover subjectOffer={subjectOffer} totalFriends={differentFriends} />}
     </SidebarHeader>
   );
 }
+

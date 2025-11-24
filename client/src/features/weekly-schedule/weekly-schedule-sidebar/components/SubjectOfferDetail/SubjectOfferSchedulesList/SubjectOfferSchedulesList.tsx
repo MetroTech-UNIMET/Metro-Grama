@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { Pencil, Plus, Trash } from 'lucide-react';
 
-import { usePlannerSidebarContext } from '../../context/PlannerSidebarContext';
+import { usePlannerSidebarContext } from '../../../context/PlannerSidebarContext';
 import { ScheduleItem } from './ScheduleItem';
 
 import { SidebarGroup } from '@ui/sidebar';
@@ -10,6 +10,7 @@ import { ButtonGroup } from '@ui/button-group';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@ui/tooltip';
 
 import type { SubjectOfferWithSections } from '@/interfaces/SubjectOffer';
+import { EditorStudent } from '../SubjectOfferForm/components/EditorStudent';
 
 interface Props {
   subjectOffer: SubjectOfferWithSections;
@@ -80,7 +81,10 @@ function SectionSchedules({ section, sectionIndex, subjectOffer, isSelected }: S
       {section.schedules.map((sch, idx) => (
         <ScheduleItem key={idx} schedule={sch} isSectionSelected={isSectionSelected} />
       ))}
+      <div className='flex flex-row  gap-2'>
+        
       <ButtonGroup className="w-full">
+
         <Button
           colors={isSelected ? 'destructive' : 'primary'}
           disabled={!isSelected && wouldCauseTripleOverlap}
@@ -109,10 +113,13 @@ function SectionSchedules({ section, sectionIndex, subjectOffer, isSelected }: S
           <TooltipContent>
             {studentsPlanningToEnroll} estudiante{moreThan1StudentPlanningToEnroll ? 's' : ''} planea
             {moreThan1StudentPlanningToEnroll ? 'n' : ''} inscribir esta sección
-            {studentsPlanningToEnroll === 0 && '.Sé el primero!'}
+            {studentsPlanningToEnroll === 0 && '. Sé el primero!'}
           </TooltipContent>
         </Tooltip>
+                      {section.last_student_editor && <EditorStudent student={section.last_student_editor} />}
+
       </ButtonGroup>
+      </div>
 
       {!isSelected && wouldCauseTripleOverlap && (
         <span className="text-destructive text-sm">

@@ -1,15 +1,15 @@
 import { createContext, use } from 'react';
 
 import type { SubjectOfferWithSections } from '@/interfaces/SubjectOffer';
-import type { Id } from '@/interfaces/surrealDb';
 import type { SubjectSchedule } from '@/interfaces/SubjectSchedule';
 
 export interface PlannerSidebarContextValue {
   onAddSubject: (subjectOffer: SubjectOfferWithSections, sectionIndex: number) => void;
-  onRemoveSubject: (subjectOfferId: Id) => void;
+  onRemoveSubject: (subjectOffer: SubjectOfferWithSections, sectionIndex: number) => void;
   getIsSubjectSelected: (subjectOffer: SubjectOfferWithSections) => boolean;
   getIsSectionSelected: (subjectOffer: SubjectOfferWithSections, sectionIndex: number) => boolean;
   getWouldCauseTripleOverlap: (sections: SubjectSchedule[]) => boolean;
+  getAdjustedStudentsPlanningToEnroll: (subjectOffer: SubjectOfferWithSections, sectionIndex: number) => number;
 }
 
 const PlannerSidebarContext = createContext<PlannerSidebarContextValue | undefined>(undefined);

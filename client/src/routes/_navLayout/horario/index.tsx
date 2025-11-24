@@ -3,6 +3,7 @@ import { createFileRoute, useSearch } from '@tanstack/react-router';
 
 import { SaveScheduleButton } from './components/SaveScheduleButton';
 import { getStudentTimeSlots } from './functions';
+import { useSectionEnrollmentAdjustments } from './hooks/useSectionEnrollmentAdjustments';
 import { queryParams } from './queryParams';
 
 import {
@@ -99,6 +100,12 @@ function WeeklySchedulePage() {
   const isPrincipal = search.is_principal;
 
   const [subjectEvents, setSubjectEvents] = useState<Event<SubjectEvent>[]>([]);
+  const {
+    setInitialSelectedSections,
+    handleAddSelection,
+    handleRemoveSelection,
+    getAdjustedCount,
+  } = useSectionEnrollmentAdjustments();
 
   // Fetch existing saved course (principal or secondary) and map to events
   const courseQuery = useFetchStudentCourseByTrimester({
@@ -115,8 +122,9 @@ function WeeklySchedulePage() {
       );
 
       setSubjectEvents(events);
+      setInitialSelectedSections(sections.map((sec) => sec.id.ID));
     }
-  }, [courseQuery.isSuccess, courseQuery.data]);
+  }, [courseQuery.isSuccess, courseQuery.data, setInitialSelectedSections]);
 
   const getWouldCauseTripleOverlap = useCallback(
     (schedules: SubjectSchedule[]) => {
@@ -143,6 +151,7 @@ function WeeklySchedulePage() {
       <PlannerSidebar
         onAddSubject={useCallback((subject_offer, sectionIndex) => {
           const section = subject_offer.sections[sectionIndex];
+          if (!section) return;
           const schedules = section.schedules;
           setSubjectEvents((prev) => [
             ...prev,
@@ -155,10 +164,15 @@ function WeeklySchedulePage() {
               }),
             ),
           ]);
-        }, [])}
-        onRemoveSubject={useCallback((subject_offerId) => {
-          setSubjectEvents((prev) => prev.filter((event) => event.data.id.ID !== subject_offerId.ID));
-        }, [])}
+          handleAddSelection(section.id.ID);
+        }, [handleAddSelection])}
+        onRemoveSubject={useCallback((subject_offer, sectionIndex) => {
+          setSubjectEvents((prev) => prev.filter((event) => event.data.id.ID !== subject_offer.id.ID));
+
+          const section = subject_offer.sections[sectionIndex];
+          if (!section) return;
+          handleRemoveSelection(section.id.ID);
+        }, [handleRemoveSelection])}
         getIsSubjectSelected={useCallback(
           (subject_offer) => subjectEvents.some((event) => event.title === subject_offer.subject.name),
           [subjectEvents],
@@ -171,6 +185,15 @@ function WeeklySchedulePage() {
           [subjectEvents],
         )}
         getWouldCauseTripleOverlap={getWouldCauseTripleOverlap}
+        getAdjustedStudentsPlanningToEnroll={useCallback(
+          (subject_offer, sectionIndex) => {
+            const section = subject_offer.sections[sectionIndex];
+            if (!section) return 0;
+            const base = section.students_planning_to_enroll ?? 0;
+            return getAdjustedCount(section.id.ID, base);
+          },
+          [getAdjustedCount],
+        )}
       />
 
       <SidebarInset className="relative pb-16">

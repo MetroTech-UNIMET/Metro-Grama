@@ -10,7 +10,6 @@ import { ButtonGroup } from '@ui/button-group';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@ui/tooltip';
 
 import type { SubjectOfferWithSections } from '@/interfaces/SubjectOffer';
-import { EditorStudent } from '../SubjectOfferForm/components/EditorStudent';
 
 interface Props {
   subjectOffer: SubjectOfferWithSections;
@@ -61,8 +60,13 @@ interface SectionSchedulesProps {
 // TODO - Considerar hacer que el studentsPlanningToEnroll aumente dependiendo si fue seleccionado o no
 // Tomar en cuenta que
 function SectionSchedules({ section, sectionIndex, subjectOffer, isSelected }: SectionSchedulesProps) {
-  const { onAddSubject, onRemoveSubject, getWouldCauseTripleOverlap, getIsSectionSelected } =
-    usePlannerSidebarContext();
+  const {
+    onAddSubject,
+    onRemoveSubject,
+    getWouldCauseTripleOverlap,
+    getIsSectionSelected,
+    getAdjustedStudentsPlanningToEnroll,
+  } = usePlannerSidebarContext();
   const isSectionSelected = getIsSectionSelected(subjectOffer, sectionIndex);
 
   const wouldCauseTripleOverlap = useMemo(
@@ -72,7 +76,7 @@ function SectionSchedules({ section, sectionIndex, subjectOffer, isSelected }: S
 
   const sectionNumber = sectionIndex + 1;
 
-  const studentsPlanningToEnroll = section.students_planning_to_enroll;
+  const studentsPlanningToEnroll = getAdjustedStudentsPlanningToEnroll(subjectOffer, sectionIndex);
 
   const moreThan1StudentPlanningToEnroll = studentsPlanningToEnroll > 1;
 
@@ -81,44 +85,42 @@ function SectionSchedules({ section, sectionIndex, subjectOffer, isSelected }: S
       {section.schedules.map((sch, idx) => (
         <ScheduleItem key={idx} schedule={sch} isSectionSelected={isSectionSelected} />
       ))}
-      <div className='flex flex-row  gap-2'>
-        
-      <ButtonGroup className="w-full">
-
-        <Button
-          colors={isSelected ? 'destructive' : 'primary'}
-          disabled={!isSelected && wouldCauseTripleOverlap}
-          onClick={() => (isSelected ? onRemoveSubject(subjectOffer.id) : onAddSubject(subjectOffer, sectionIndex))}
-          className="w-full"
-        >
-          {isSelected ? (
-            <>
-              <Trash />
-              Eliminar del horario
-            </>
-          ) : (
-            <>
-              <Plus />
-              Agregar Sección {sectionNumber} al horario
-            </>
-          )}
-        </Button>
-        {/* TODO - Seguramente tenga que ver como hacer esto para mobile */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button size="icon" colors="secondary" variant="outline" className="w-fit min-w-9 px-1">
-              {studentsPlanningToEnroll}
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            {studentsPlanningToEnroll} estudiante{moreThan1StudentPlanningToEnroll ? 's' : ''} planea
-            {moreThan1StudentPlanningToEnroll ? 'n' : ''} inscribir esta sección
-            {studentsPlanningToEnroll === 0 && '. Sé el primero!'}
-          </TooltipContent>
-        </Tooltip>
-                      {section.last_student_editor && <EditorStudent student={section.last_student_editor} />}
-
-      </ButtonGroup>
+      <div className="flex flex-row gap-2">
+        <ButtonGroup className="w-full">
+          <Button
+            colors={isSelected ? 'destructive' : 'primary'}
+            disabled={!isSelected && wouldCauseTripleOverlap}
+            onClick={() =>
+              isSelected ? onRemoveSubject(subjectOffer, sectionIndex) : onAddSubject(subjectOffer, sectionIndex)
+            }
+            className="w-full"
+          >
+            {isSelected ? (
+              <>
+                <Trash />
+                Eliminar del horario
+              </>
+            ) : (
+              <>
+                <Plus />
+                Agregar Sección {sectionNumber} al horario
+              </>
+            )}
+          </Button>
+          {/* TODO - Seguramente tenga que ver como hacer esto para mobile */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button size="icon" colors="secondary" variant="outline" className="w-fit min-w-9 px-1">
+                {studentsPlanningToEnroll}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              {studentsPlanningToEnroll} estudiante{moreThan1StudentPlanningToEnroll ? 's' : ''} planea
+              {moreThan1StudentPlanningToEnroll ? 'n' : ''} inscribir esta sección
+              {studentsPlanningToEnroll === 0 && '. Sé el primero!'}
+            </TooltipContent>
+          </Tooltip>
+        </ButtonGroup>
       </div>
 
       {!isSelected && wouldCauseTripleOverlap && (

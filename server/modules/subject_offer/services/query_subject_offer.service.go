@@ -88,12 +88,24 @@ func GetSubjectOfferById(trimesterId string, studentId surrealModels.RecordID, q
 
 	subjectOffer_Qb, sections_Qb := utils.GetBaseSubjectOfferQuery(careersArray, isUserLogged)
 
-	sections_Qb.Alias("students_planning_to_enroll", "COUNT(?)",
-		surrealql.
-			Select("course").
-			Value("id").
-			Where("$parent.id IN array::concat(principal_sections,secondary_sections)"),
-	)
+	sections_Qb.
+		Alias("students_planning_to_enroll", "COUNT(?)",
+			surrealql.
+				Select("course").
+				Value("id").
+				Where("$parent.id IN array::concat(principal_sections,secondary_sections)"),
+		).
+		Alias("last_student_editor",
+			surrealql.SelectOnly("subject_section_history").
+				Value(
+					surrealql.SelectOnly("student").
+						Field("*").
+						Where("user = $parent.user_id").
+						Fetch("user"),
+				).
+				Where("end_date = None").
+				Where("subject_section = $parent.id"),
+		)
 
 	if trimesterId != "" {
 		subjectOffer_Qb = subjectOffer_Qb.Where("out.id = $trimester")
@@ -112,8 +124,8 @@ func GetSubjectOfferById(trimesterId string, studentId surrealModels.RecordID, q
 	qb = qb.Return("?", subjectOffer_Qb)
 
 	query, params := qb.Build()
+	fmt.Println("Generated Query:", query)
 
-	fmt.Println(query)
 	maps.Copy(params, extraParams)
 
 	result, err := surrealdb.Query[[]DTO.QueryAnnualOfferWithPlanning](context.Background(), db.SurrealDB, query, params)

@@ -38,7 +38,8 @@ type SectionsWithSchedules struct {
 
 type SectionsWithSchedulesAndPlanning struct {
 	SectionsWithSchedules
-	StudentsPlanningToEnroll uint `json:"students_planning_to_enroll"`
+	StudentsPlanningToEnroll uint                    `json:"students_planning_to_enroll"`
+	LastStudentEditor        *models.StudentWithUser `json:"last_student_editor,omitempty"`
 }
 
 type FriendOfAFriend struct {

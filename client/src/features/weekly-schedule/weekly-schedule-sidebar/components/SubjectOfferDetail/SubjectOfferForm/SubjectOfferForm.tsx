@@ -94,7 +94,12 @@ export default function SubjectOfferForm({ subjectOffer, onBack }: Props) {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit, onInvalidToast)} className="space-y-4">
             {sections.map((field, index) => (
-              <SectionField key={field.id} sectionIndex={index} removeSection={remove} />
+              <SectionField
+                key={field.id}
+                sectionIndex={index}
+                removeSection={remove}
+                last_student_editor={subjectOffer.sections[index]?.last_student_editor || null}
+              />
             ))}
             <div className="flex space-x-2">
               <Button

@@ -4,6 +4,7 @@ import { addMinutes } from 'date-fns';
 import { Trash, CalendarPlus, Plus } from 'lucide-react';
 
 import { defaultSchedule, correctIntervalBetweenHours } from '../constants';
+import { EditorStudent } from './EditorStudent';
 
 import { weekDayOptions } from '@/lib/constants/date';
 import { cn } from '@utils/className';
@@ -17,14 +18,15 @@ import { useSidebar } from '@ui/sidebar';
 import { Button } from '@ui/button';
 
 import type { SubjectScheduleInput } from '../schema';
+import type { StudentWithUser } from '@/interfaces/Student';
 
-export function SectionField({
-  sectionIndex,
-  removeSection,
-}: {
+interface Props {
   sectionIndex: number;
   removeSection: (index: number) => void;
-}) {
+  last_student_editor: StudentWithUser | null;
+}
+
+export function SectionField({ sectionIndex, removeSection, last_student_editor }: Props) {
   const { setValue, control, formState } = useFormContext<SubjectScheduleInput>();
   const baseSectionName = `sections.${sectionIndex}` as const;
 
@@ -43,7 +45,10 @@ export function SectionField({
     <div className="relative rounded-md border p-4">
       <Popover>
         <div className="mb-2 flex items-center justify-between gap-2">
-          <h3 className="font-bold">Sección {sectionIndex + 1}</h3>
+          <div className="flex flex-row items-center gap-2">
+            {last_student_editor && <EditorStudent student={last_student_editor} />}
+            <h3 className="font-bold">Sección {sectionIndex + 1}</h3>
+          </div>
 
           <div>
             <TooltipButton

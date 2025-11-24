@@ -18,7 +18,7 @@ export function FriendsPopover({ subjectOffer, totalFriends }: Props) {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="ghost" className="mx-auto mt-4 underline">
+        <Button variant="ghost" className="mx-auto underline">
           {totalFriends} amig{totalFriends !== 1 ? 'os' : 'o'} planea{totalFriends !== 1 ? 'n' : ''} inscribir esta
           materia
         </Button>

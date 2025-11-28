@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react-swc';
 
 import tailwindcss from '@tailwindcss/vite';
 import { tanstackRouter } from '@tanstack/router-plugin/vite';
+import { devtools } from '@tanstack/devtools-vite'
 
 import * as path from 'path';
 
@@ -13,6 +14,7 @@ export default defineConfig({
       target: 'react',
       autoCodeSplitting: true,
     }),
+    devtools(),
     react(),
     tailwindcss(),
   ],

@@ -22,10 +22,6 @@ func CreateCourse(studentId surrealModels.RecordID, input DTO.CreateCourse) (mod
 		data["secondary_sections"] = input.Sections
 	}
 
-	params := map[string]any{
-		"data": data,
-	}
-
 	delete_Qb := surrealql.Delete("course").
 		Where("in = $studentId").
 		Where("out = $trimesterId").

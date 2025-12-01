@@ -49,8 +49,7 @@ DEFINE EVENT subject_section_history_notification ON subject_section_history
 WHEN $event = "CREATE"
 THEN {
     FOR $user IN (SELECT VALUE in.user FROM course
-        WHERE (SELECT VALUE subject_section FROM ONLY $after.id) 
-            IN principal_sections.concat(secondary_sections)){
+        WHERE  $after.id IN principal_sections.concat(secondary_sections)){
         CREATE notification CONTENT {
             user: $user,
             type: "subject_section_update",

@@ -1,0 +1,5 @@
+REMOVE TABLE notification;
+
+REMOVE EVENT friend_request_created_notification;
+REMOVE EVENT friend_request_accepted_notification;
+REMOVE EVENT subject_section_history_notification;

@@ -41,6 +41,12 @@ func GetStudentDetails(studentId surrealModels.RecordID, loggedUserId *surrealMo
 
 	qb := surrealql.SelectOnly(studentId).
 		Alias("careers", "->study.out").
+		Alias("subject_section_history",
+			surrealql.Select("subject_section_history").
+				Field("*").
+				Where("user_id = $parent.user").
+				OrderByDesc("start_date").
+				Fetch("schedules")).
 		Field("*").
 		Fetch("user", "careers", "passed_subjects", "friends", "friends.user")
 

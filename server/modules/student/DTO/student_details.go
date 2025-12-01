@@ -19,8 +19,10 @@ type StudentDetails struct {
 	PendingFriends            []models.StudentWithUser `json:"pending_friends,omitempty"`
 	FriendApplications        []models.StudentWithUser `json:"friend_applications,omitempty"`
 
-	CurrentCourses studentCourse `json:"current_courses,omitempty"`
-	NextCourses    studentCourse `json:"next_courses,omitempty"`
+	CurrentCourses studentCourse `json:"current_courses"`
+	NextCourses    studentCourse `json:"next_courses"`
+
+	SubjectSectionHistory []models.SubjectSectionHistoryWithSchedules `json:"subject_section_history"`
 }
 
 type studentCourse struct {
@@ -48,11 +50,12 @@ func (s *StudentDetails) MarshalJSON() ([]byte, error) {
 	// Base payload without the three conditional slice fields
 	type base struct {
 		models.StudentWithUser
-		Careers                   []models.CareerEntity `json:"careers"`
-		FriendshipStatus          string                `json:"friendship_status"`
-		ReceivingFriendshipStatus string                `json:"receiving_friendship_status"`
-		CurrentCourses            studentCourse         `json:"current_courses"`
-		NextCourses               studentCourse         `json:"next_courses"`
+		Careers                   []models.CareerEntity                       `json:"careers"`
+		FriendshipStatus          string                                      `json:"friendship_status"`
+		ReceivingFriendshipStatus string                                      `json:"receiving_friendship_status"`
+		CurrentCourses            studentCourse                               `json:"current_courses"`
+		NextCourses               studentCourse                               `json:"next_courses"`
+		SubjectSectionHistory     []models.SubjectSectionHistoryWithSchedules `json:"subject_section_history"`
 	}
 
 	b := base{
@@ -62,6 +65,7 @@ func (s *StudentDetails) MarshalJSON() ([]byte, error) {
 		ReceivingFriendshipStatus: s.ReceivingFriendshipStatus,
 		CurrentCourses:            s.CurrentCourses,
 		NextCourses:               s.NextCourses,
+		SubjectSectionHistory:     s.SubjectSectionHistory,
 	}
 
 	// Marshal base, then convert to a map to conditionally add fields

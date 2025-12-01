@@ -15,8 +15,6 @@ export async function getStudentDetails() {
 }
 
 export async function getStudentByID(studentId: string) {
-  await new Promise((resolve) => setTimeout(resolve, 5000)); // Simula un retraso de 500ms
-
   const { data } = await axios.get<SuccessResponse<OtherStudentDetails>>(`/student/profile/${studentId}`);
   return data.data;
 }

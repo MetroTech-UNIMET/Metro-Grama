@@ -1,6 +1,12 @@
-import { Card, CardHeader, CardTitle, CardContent } from '@ui/card';
+import { Calendar, CheckCircle2, ChevronRight, History } from 'lucide-react';
 import { format } from 'date-fns';
-import { Calendar, CheckCircle2, History } from 'lucide-react';
+
+import { usePagination } from '@/hooks/use-pagination';
+
+import { cn } from '@utils/className';
+import { ScheduleItem } from '@/features/weekly-schedule/weekly-schedule-sidebar/components/SubjectOfferDetail/SubjectOfferSchedulesList/ScheduleItem';
+
+import { Card, CardHeader, CardTitle, CardContent } from '@ui/card';
 import {
   Pagination,
   PaginationContent,
@@ -8,12 +14,8 @@ import {
   PaginationNextButton,
   PaginationPreviousButton,
 } from '@/components/ui/pagination';
-import { PaginationDynamicItems } from '@/components/ui/derived/pagination-dynamic-items';
-import { usePagination } from '@/hooks/use-pagination';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ChevronDown } from 'lucide-react';
-import { cn } from '@utils/className';
-import { ScheduleItem } from '@/features/weekly-schedule/weekly-schedule-sidebar/components/SubjectOfferDetail/SubjectOfferSchedulesList/ScheduleItem';
+import { PaginationDynamicItems } from '@/components/ui/derived/pagination-dynamic-items';
 
 import type { SubjectSectionHistoryWithSchedules } from '@/interfaces/SubjectSectionHistory';
 
@@ -125,8 +127,8 @@ function SubjectSectionHistoryItem({ item }: { item: SubjectSectionHistoryWithSc
               )}
               aria-label="Mostrar horarios"
             >
-              <ChevronDown className="h-3 w-3" />
               Ver horarios
+              <ChevronRight className="h-3 w-3 in-data-[state=open]:rotate-90" />
             </button>
           </CollapsibleTrigger>
           <CollapsibleContent className="mt-2 flex flex-row flex-wrap gap-8 space-y-2">

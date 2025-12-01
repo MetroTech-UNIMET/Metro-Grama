@@ -4,13 +4,16 @@ import type { FriendEntity } from '@/interfaces/Friend';
 import type { StudentWithUser } from '@/interfaces/Student';
 import type { SubjectEntity } from '@/interfaces/Subject';
 import type { Id } from '@/interfaces/surrealDb';
-import { SubjectSectionWithSubject } from './course.types';
+import type { SubjectSectionWithSubject } from './course.types';
+import type { SubjectSectionHistoryWithSchedules } from '@/interfaces/SubjectSectionHistory';
 
 interface StudentDetails extends StudentWithUser {
   careers: Career[];
 
   next_courses: StudentCourse;
   current_courses: StudentCourse;
+
+  subject_section_history: SubjectSectionHistoryWithSchedules[];
 }
 
 export interface PassedSubjectEntry {

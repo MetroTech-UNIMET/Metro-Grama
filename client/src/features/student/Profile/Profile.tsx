@@ -3,6 +3,7 @@ import { FriendsCard, OnlyFriendsCard } from './cards/FriendsCard';
 import { SubjectsCard } from './cards/SubjectsCard';
 import { StudentCard } from './cards/StudentCard';
 import { SchedulesCard } from './cards/SchedulesCard';
+import { SubjectSectionHistoryCard } from './cards/SubjectSectionHistoryCard';
 import { isMyProfile } from './utils';
 
 import type { MyStudentDetails, OtherStudentDetails } from '@/api/interactions/student.types';
@@ -45,6 +46,8 @@ export default function Profile({ data }: Props) {
         )}
 
         <SchedulesCard current_courses={data.current_courses} next_courses={data.next_courses} />
+
+        <SubjectSectionHistoryCard subject_section_history={data.subject_section_history} />
       </div>
     </>
   );

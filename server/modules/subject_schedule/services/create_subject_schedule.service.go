@@ -2,15 +2,21 @@ package services
 
 import (
 	"context"
-	"fmt"
 	"metrograma/db"
 	"metrograma/models"
+	notificationServices "metrograma/modules/notifications/services"
+	notificationws "metrograma/modules/notifications/websocket"
 	"metrograma/modules/subject_schedule/DTO"
 
 	"github.com/surrealdb/surrealdb.go"
 	"github.com/surrealdb/surrealdb.go/contrib/surrealql"
 	surrealmodels "github.com/surrealdb/surrealdb.go/pkg/models"
 )
+
+// TODO - No manda en tiempo real las notificaciones porque necesito su referencia
+// La manera que se me ocurre es conseguir los ids de los subject_sections modificados y conseguir las notificaciones asociadas
+// que su history aun tenga end_date = NONE
+// Hacerlo directamente en la transaccion? vamos a ver que tal
 
 // CreateSubjectSchedule persists the provided schedules to the database.
 func CreateSubjectSchedule(input DTO.CreateSubjectSchedule, userId surrealmodels.RecordID) ([]models.SubjectScheduleEntity, error) {
@@ -85,14 +91,28 @@ func CreateSubjectSchedule(input DTO.CreateSubjectSchedule, userId surrealmodels
 	params["subject_offer_id"] = input.SubjectOfferId
 	params["updated_by"] = userId
 
-	fmt.Printf("CreateSubjectSchedule SQL: %s\n", sql)
-	fmt.Printf("CreateSubjectSchedule Params: %+v\n", params)
-
 	result, err := surrealdb.Query[[]models.SubjectScheduleEntity](context.Background(), db.SurrealDB, sql, params)
 	if err != nil {
 		return nil, err
 	}
 	schedules := (*result)[0].Result
+
+	subjectSectionIds := make([]surrealmodels.RecordID, 0, len(sectionsToUpdate))
+	for _, sec := range sectionsToUpdate {
+		if sec.SubjectSectionId != nil {
+			subjectSectionIds = append(subjectSectionIds, *sec.SubjectSectionId)
+		}
+	}
+
+	notifications, err := notificationServices.GetNotificationsSubjectSectionUpdate(subjectSectionIds)
+	if err != nil {
+		return nil, err
+	}
+
+	err = notificationws.EmitNewNotifications(notifications)
+	if err != nil {
+		return nil, err
+	}
 
 	return schedules, err
 }

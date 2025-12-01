@@ -6,6 +6,8 @@ import (
 
 	"metrograma/db"
 	"metrograma/models"
+	"metrograma/modules/notifications/services"
+	notificationsws "metrograma/modules/notifications/websocket"
 
 	"github.com/labstack/echo/v4"
 	"github.com/surrealdb/surrealdb.go"
@@ -29,7 +31,7 @@ func AcceptFriendshipRequest(me surrealModels.RecordID, other surrealModels.Reco
 	qb := surrealql.Begin().
 		Let("result", Update_QB).
 		Let("friendship", Create_QB).
-		Return("$friendship")
+		Return("$result")
 
 	sql, vars := qb.Build()
 
@@ -44,9 +46,22 @@ func AcceptFriendshipRequest(me surrealModels.RecordID, other surrealModels.Reco
 		return models.FriendEntity{}, echo.NewHTTPError(http.StatusInternalServerError, "No se pudo eliminar la relación de amistad")
 	}
 
-	friend := (*res)[0].Result
+	acceptedFriendRequest := (*res)[0].Result
 
-	return friend, nil
+	notification, err := services.GetNotificationFriendAccepted(acceptedFriendRequest.ID)
+	if err != nil {
+		return models.FriendEntity{}, err
+	}
+	if notification.ID.Table == "" {
+		return models.FriendEntity{}, echo.NewHTTPError(http.StatusInternalServerError, "No se pudo obtener la notificación de solicitud de amistad recién creada")
+	}
+
+	err = notificationsws.EmitNewNotification(notification)
+	if err != nil {
+		return models.FriendEntity{}, err
+	}
+
+	return acceptedFriendRequest, nil
 
 }
 

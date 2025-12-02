@@ -33,7 +33,12 @@ func GetCareerWithSubjectsById(careerId string) (any, error) {
 		Subjects []SubjectComplex `json:"subjects"`
 	}
 
-	qb := surrealql.SelectOnly("id").
+	careerRecordId, err := surrealModels.ParseRecordID(careerId)
+	if err != nil {
+		return models.CareerWithSubjects{}, fmt.Errorf("invalid career ID: %v", err)
+	}
+
+	qb := surrealql.SelectOnly("$id").
 		Alias("subjects",
 			surrealql.Select("belong").
 				Alias("subject", "in").
@@ -45,8 +50,7 @@ func GetCareerWithSubjectsById(careerId string) (any, error) {
 		).Field("*")
 
 	sql, params := qb.Build()
-
-	params["$id"] = surrealModels.NewRecordID("career", careerId)
+	params["id"] = *careerRecordId
 
 	rows, err := surrealdb.Query[CareerWithSubjectsResponse](context.Background(), db.SurrealDB, sql, params)
 
@@ -54,7 +58,7 @@ func GetCareerWithSubjectsById(careerId string) (any, error) {
 		return models.CareerWithSubjects{}, fmt.Errorf("error getting career: %v", err)
 	}
 
-	careerWithSubjectsResponse := (*rows)[1].Result
+	careerWithSubjectsResponse := (*rows)[0].Result
 
 	careerWithSubjects := models.CareerWithSubjects{
 		CareerEntity: models.CareerEntity{

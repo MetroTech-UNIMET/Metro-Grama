@@ -9,15 +9,13 @@ import { onCreate, onEdit } from './functions';
 import { Step1 } from './components/steps/Step1';
 import StepSubjects from './components/steps/StepSubjects';
 import { numberOfTrimesters } from './constants';
-import StepsNavigator from '../../../components/forms/StepsNavigator';
+import StepsNavigator from '@/components/forms/StepsNavigator';
 
 import useSubjectOptions from './hooks/useSubjectOptions';
 import useFormStep from '@/hooks/useFormStep';
-import { useDirections } from '@/hooks/use-directions';
 
 import { onInvalidToast } from '@utils/forms';
 import { extractShema } from '@utils/zod/zod-type-guards';
-import { cn } from '@utils/className';
 
 import { Tabs, TabsContent } from '@ui/tabs';
 import { Spinner } from '@ui/spinner';
@@ -157,6 +155,29 @@ export default function CareerForm({ mode, data }: Props) {
     [getValues, removeAdditionalSubject],
   );
 
+  const stepHasErrors = useCallback(
+    (step: typeof steps[number], index: number, errors: FieldErrors<CreateCareerFormInput>) => {
+      if (!step.schema) return false;
+
+      if (index === 0) {
+        const extracted = extractShema(step.schema);
+        const careerSchemaKeys = Object.keys(extracted.shape);
+        const hasError = careerSchemaKeys.some((key) => {
+          return errors[key as keyof FieldErrors<CreateCareerFormInput>] !== undefined;
+        });
+        return hasError;
+      }
+
+      const currentSubjectStep = index - 1;
+      if (errors.subjects) {
+        return errors.subjects[currentSubjectStep] !== undefined;
+      }
+
+      return false;
+    },
+    [],
+  );
+
   const { currentStep, next, previous, jumpTo, jumpToFirstErrorStep } = useFormStep({
     steps,
     form,
@@ -166,27 +187,12 @@ export default function CareerForm({ mode, data }: Props) {
     filterPaths,
   });
 
-  const { direction, goNext, goPrevious, goTo } = useDirections({
-    currentStep,
-    next,
-    previous,
-    jumpTo,
-  });
-
   const trimesterStepsForm = useMemo(
     () =>
       Array.from({ length: numberOfTrimesters }).map((_, trimesterIndex) => (
-        <TabsContent
-          key={trimesterIndex}
-          value={steps[trimesterIndex + 1].id.toString()}
-          className={cn(
-            'data-[state=active]:animate-in slide-in-from-left duration-300',
-            direction === 'right' && 'direction-reverse',
-          )}
-        >
+        <TabsContent key={trimesterIndex} value={steps[trimesterIndex + 1].id.toString()}>
           <StepSubjects
             trimesterIndex={trimesterIndex}
-            form={form}
             mode={mode}
             codeOptions={codeOptions}
             prelationsOptions={prelationsOptions}
@@ -194,7 +200,7 @@ export default function CareerForm({ mode, data }: Props) {
           />
         </TabsContent>
       )),
-    [direction, codeOptions, prelationsOptions, form, mode, query.isLoading],
+    [codeOptions, prelationsOptions, mode, query.isLoading],
   );
 
   return (
@@ -208,51 +214,27 @@ export default function CareerForm({ mode, data }: Props) {
           className="bg-background p-16"
         >
           <StepsNavigator
-            jumpTo={goTo}
+            jumpTo={jumpTo}
             steps={steps}
             currentStep={currentStep}
             headerClassName="mb-8"
             errors={form.formState.errors}
             touchedFields={form.formState.touchedFields}
-            stepHasErrors={(step, index, errors) => {
-              if (!step.schema) return false;
-
-              if (index === 0) {
-                const extracted = extractShema(step.schema);
-                const careerSchemaKeys = Object.keys(extracted.shape);
-                const hasError = careerSchemaKeys.some((key) => {
-                  return errors[key as keyof FieldErrors<CreateCareerFormInput>] !== undefined;
-                });
-                return hasError;
-              }
-
-              const currentSubjectStep = index - 1;
-              if (errors.subjects) {
-                return errors.subjects[currentSubjectStep] !== undefined;
-              }
-
-              return false;
-            }}
+            stepHasErrors={stepHasErrors}
           />
 
-          <TabsContent
-            value="Carrera"
-            className={cn(
-              'data-[state=active]:animate-in slide-in-from-left duration-300',
-              direction === 'right' && 'direction-reverse',
-            )}
-          >
+          <TabsContent value="Carrera">
             <Step1 mode={mode} />
           </TabsContent>
 
           {trimesterStepsForm}
 
           <footer className="mt-8">
-            <Button type="button" onClick={() => goPrevious()} size="icon">
+            <Button type="button" onClick={() => previous()} size="icon">
               <ArrowLeft />
             </Button>
 
-            <Button type="button" onClick={async () => await goNext('ignoreValidation')} size="icon">
+            <Button type="button" onClick={async () => await next('ignoreValidation')} size="icon">
               <ArrowRight />
             </Button>
           </footer>

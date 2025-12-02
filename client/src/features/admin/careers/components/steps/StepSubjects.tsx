@@ -1,14 +1,14 @@
+import { useFormContext } from 'react-hook-form';
+
 import SubjectInput from '../SubjectInput';
 import { numberOfSubjectsByTrimester } from '../../constants';
 
 import type { CodeOption } from '../../hooks/useSubjectOptions';
 import type { Option } from '@ui/types/option.types';
-import type { UseFormReturn } from 'react-hook-form';
 import type { CreateCareerFormInput } from '../../schema';
 
 interface Props {
   trimesterIndex: number;
-  form: UseFormReturn<CreateCareerFormInput>;
   mode: 'create' | 'edit';
 
   codeOptions: CodeOption[];
@@ -16,7 +16,9 @@ interface Props {
   isLoading: boolean;
 }
 
-export default function StepSubjects({ trimesterIndex, form, mode, codeOptions, prelationsOptions, isLoading }: Props) {
+export default function StepSubjects({ trimesterIndex, mode, codeOptions, prelationsOptions, isLoading }: Props) {
+  const form = useFormContext<CreateCareerFormInput>();
+
   return (
     <div className="flex flex-col gap-8">
       <section className="flex flex-col gap-4">

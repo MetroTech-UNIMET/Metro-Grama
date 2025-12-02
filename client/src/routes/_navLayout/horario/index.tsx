@@ -73,6 +73,13 @@ export const Route = createFileRoute('/_navLayout/horario/')({
     const [trimesterOptions, careerOptions, studentCourse] = await Promise.all(tasks);
     return { trimesterOptions, careerOptions, studentCourse };
   },
+  head: () => ({
+    meta: [
+      {
+        title: 'Horario | MetroGrama',
+      },
+    ],
+  }),
   pendingComponent: WeeklyScheduleSkeleton,
   errorComponent: (props) => <ErrorPage title="Error cargando horario" {...props} />,
   component: RouteComponent,

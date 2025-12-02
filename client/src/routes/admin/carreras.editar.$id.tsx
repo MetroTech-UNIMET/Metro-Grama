@@ -7,6 +7,13 @@ import { getCompleteCareer } from '@/api/careersApi';
 import { Spinner } from '@ui/spinner';
 
 export const Route = createFileRoute('/admin/carreras/editar/$id')({
+  head: () => ({
+    meta: [
+      {
+        title: 'Editar Carrera | MetroGrama',
+      },
+    ],
+  }),
   component: UpdateCareer,
 });
 

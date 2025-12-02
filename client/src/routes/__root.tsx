@@ -16,6 +16,46 @@ interface RootRouteContext {
 }
 
 export const Route = createRootRouteWithContext<RootRouteContext>()({
+  head: () => ({
+    meta: [
+      {
+        name: 'description',
+        content: 'MetroGrama - Planifica tu horario y visualiza tus materias de forma interactiva',
+      },
+      {
+        property: 'og:type',
+        content: 'website',
+      },
+      {
+        property: 'og:title',
+        content: 'MetroGrama',
+      },
+      {
+        property: 'og:description',
+        content: 'MetroGrama - Planifica tu horario y visualiza tus materias de forma interactiva',
+      },
+      {
+        property: 'og:image',
+        content: '/og-image.png',
+      },
+      {
+        property: 'twitter:card',
+        content: 'summary_large_image',
+      },
+      {
+        property: 'twitter:title',
+        content: 'MetroGrama',
+      },
+      {
+        property: 'twitter:description',
+        content: 'MetroGrama - Planifica tu horario y visualiza tus materias de forma interactiva',
+      },
+      {
+        property: 'twitter:image',
+        content: '/og-image.png',
+      },
+    ],
+  }),
   component: () => (
     <>
       <TooltipProvider>

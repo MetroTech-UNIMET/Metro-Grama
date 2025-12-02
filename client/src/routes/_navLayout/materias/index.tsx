@@ -17,6 +17,13 @@ export const Route = createFileRoute('/_navLayout/materias/')({
   }),
   loader: async ({ context, deps: { careers } }) =>
     context.queryClient.ensureQueryData(fetchSubjectsGraphByCareerOptions(careers)),
+  head: () => ({
+    meta: [
+      {
+        title: 'Materias | MetroGrama',
+      },
+    ],
+  }),
   component: GraphRoute,
 });
 

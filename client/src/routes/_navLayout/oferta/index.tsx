@@ -10,6 +10,13 @@ export const Route = createFileRoute('/_navLayout/oferta/')({
   loader: async ({ deps: { career, year }, context: { queryClient } }) => {
     queryClient.ensureQueryData(fetchAnnualOfferByYearOptions({ year, career }));
   },
+  head: () => ({
+    meta: [
+      {
+        title: 'Oferta Académica | MetroGrama',
+      },
+    ],
+  }),
   component: OfertaRoute,
 });
 

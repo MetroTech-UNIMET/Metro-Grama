@@ -8,7 +8,8 @@ import (
 	"regexp"
 	"strings"
 
-	"metrograma/modules/auth/middlewares"
+	rateLimitMiddlewares "metrograma/middlewares"
+	authMiddlewares "metrograma/modules/auth/middlewares"
 	"metrograma/modules/subject_offer/DTO"
 	"metrograma/modules/subject_offer/services"
 	readpdf "metrograma/modules/subject_offer/services/read_anual_offer_PDF"
@@ -23,10 +24,11 @@ func Handlers(e *echo.Group) {
 
 	// TODO - Si se encuetnra con una materia que no existe, igual la añade a la oferta.
 	// Pero no pararece /annual/:year dado que no está en belong
-	subject_offerGroup.POST("/upload", uploadPDF)
-	subject_offerGroup.POST("/:subjectId", createSubjectOffer)
+	// Write operations have rate limiting (50 req/min per IP)
+	subject_offerGroup.POST("/upload", uploadPDF, rateLimitMiddlewares.WriteRateLimit())
+	subject_offerGroup.POST("/:subjectId", createSubjectOffer, rateLimitMiddlewares.WriteRateLimit())
 
-	subject_offerGroup.DELETE("/:subjectId", deleteSubjectOffer)
+	subject_offerGroup.DELETE("/:subjectId", deleteSubjectOffer, rateLimitMiddlewares.WriteRateLimit())
 
 	subject_offerGroup.GET("/", getSubjectOffer)
 	subject_offerGroup.GET("/annual/:year", getAnnualOfferByYear)
@@ -119,7 +121,7 @@ func getSubjectOffer(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "El parámetro 'careers' debe contener al menos 1 carrera válida")
 	}
 	// Always attempt to get student, ignore error here (no trimester filtering endpoint)
-	_, _ = middlewares.GetStudentFromSession(c)
+	_, _ = authMiddlewares.GetStudentFromSession(c)
 	offers, err := services.GetAllSubjectOffers(careers)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
@@ -152,7 +154,7 @@ func getSubjectOfferById(c echo.Context) error {
 	}
 
 	// Always attempt to get student (may be nil if not logged in)
-	student, _ := middlewares.GetStudentFromSession(c)
+	student, _ := authMiddlewares.GetStudentFromSession(c)
 
 	subjectsFilter := c.QueryParam("subjectsFilter")
 	if subjectsFilter == "" {

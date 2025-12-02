@@ -2,6 +2,7 @@ package careers
 
 import (
 	"fmt"
+	"metrograma/middlewares"
 	"metrograma/models"
 	"metrograma/modules/careers/services"
 	"metrograma/tools"
@@ -16,8 +17,9 @@ import (
 func Handlers(e *echo.Group) {
 	careersGroup := e.Group("/careers")
 	careersGroup.GET("/", getCareers)
-	careersGroup.POST("/", createCareer, authMiddlewares.AdminAuth)
-	careersGroup.DELETE("/:careerId", deleteCareer, authMiddlewares.AdminAuth)
+	// Write operations have rate limiting (50 req/min per IP)
+	careersGroup.POST("/", createCareer, authMiddlewares.AdminAuth, middlewares.WriteRateLimit())
+	careersGroup.DELETE("/:careerId", deleteCareer, authMiddlewares.AdminAuth, middlewares.WriteRateLimit())
 
 	careersGroup.GET("/withSubjects/:careerId", getCareerWithSubjectsById)
 	// careersGroup.PATCH("/withSubjects/:careerId", updateCareerWithSubjects, authMiddlewares.AdminAuth)

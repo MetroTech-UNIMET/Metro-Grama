@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"metrograma/middlewares"
 	"metrograma/models"
 	"metrograma/modules/auth/DTO"
 	"metrograma/modules/auth/services"
@@ -12,11 +13,13 @@ import (
 )
 
 func Handlers(e *echo.Group) {
-	e.Any("/auth/google/login", services.OauthGoogleLogin)
-	e.Any("/auth/google/callback", services.OauthGoogleCallback)
-	e.Any("/auth/google/logout", services.OauthGoogleLogout)
-	e.POST("/auth/admin/login", adminLogin)
-	e.POST("/auth/:id_user/complete-student/", completeStudent)
+	// Auth routes with stricter rate limiting to prevent brute force attacks
+	authGroup := e.Group("/auth", middlewares.AuthRateLimit())
+	authGroup.Any("/google/login", services.OauthGoogleLogin)
+	authGroup.Any("/google/callback", services.OauthGoogleCallback)
+	authGroup.Any("/google/logout", services.OauthGoogleLogout)
+	authGroup.POST("/admin/login", adminLogin)
+	authGroup.POST("/:id_user/complete-student/", completeStudent)
 }
 
 // adminLogin godoc

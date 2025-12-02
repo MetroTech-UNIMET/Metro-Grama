@@ -3,6 +3,7 @@ package notifications
 import (
 	"net/http"
 
+	"metrograma/middlewares"
 	authMiddlewares "metrograma/modules/auth/middlewares"
 	DTO "metrograma/modules/notifications/DTO"
 	"metrograma/modules/notifications/services"
@@ -15,7 +16,8 @@ import (
 func Handlers(group *echo.Group) {
 	notificationsGroup := group.Group("/notifications", authMiddlewares.UserAuth)
 	notificationsGroup.GET("/", getNotificationsByUser)
-	notificationsGroup.PUT("/mark-as-read", markNotificationsAsRead)
+	// Write operations have rate limiting (50 req/min per IP)
+	notificationsGroup.PUT("/mark-as-read", markNotificationsAsRead, middlewares.WriteRateLimit())
 	notificationsGroup.GET("/ws", notificationsws.SubscribeNotifications)
 }
 

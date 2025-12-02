@@ -3,6 +3,7 @@ package student_preferences
 import (
 	"net/http"
 
+	"metrograma/middlewares"
 	authMiddlewares "metrograma/modules/auth/middlewares"
 	DTO "metrograma/modules/preferences/student_preferences/DTO"
 	"metrograma/modules/preferences/student_preferences/services"
@@ -15,7 +16,8 @@ import (
 func Handlers(e *echo.Group) {
 	grp := e.Group("/student_preferences", authMiddlewares.StudentAuth)
 	grp.GET("/", getStudentPreferences)
-	grp.PUT("/", updateStudentPreferences)
+	// Write operations have rate limiting (50 req/min per IP)
+	grp.PUT("/", updateStudentPreferences, middlewares.WriteRateLimit())
 }
 
 // getStudentPreferences godoc

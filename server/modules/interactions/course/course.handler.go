@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"metrograma/middlewares"
 	authMiddlewares "metrograma/modules/auth/middlewares"
 	"metrograma/modules/interactions/course/DTO"
 	"metrograma/modules/interactions/course/services"
@@ -15,7 +16,8 @@ import (
 
 func Handlers(e *echo.Group) {
 	grp := e.Group("/course", authMiddlewares.StudentAuth)
-	grp.POST("/", createCourse)
+	// Write operations have rate limiting (50 req/min per IP)
+	grp.POST("/", createCourse, middlewares.WriteRateLimit())
 	grp.GET("/:trimesterId", getCourseByTrimester)
 }
 

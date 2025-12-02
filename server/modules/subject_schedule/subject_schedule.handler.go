@@ -1,7 +1,8 @@
 package subject_schedule
 
 import (
-	middlewares "metrograma/modules/auth/middlewares"
+	"metrograma/middlewares"
+	authMiddlewares "metrograma/modules/auth/middlewares"
 	"metrograma/modules/subject_schedule/DTO"
 	"metrograma/modules/subject_schedule/services"
 	"net/http"
@@ -12,8 +13,9 @@ import (
 )
 
 func Handlers(e *echo.Group) {
-	grp := e.Group("/subject_schedule", middlewares.StudentAuth)
-	grp.POST("/", createSubjectSchedule)
+	grp := e.Group("/subject_schedule", authMiddlewares.StudentAuth)
+	// Write operations have rate limiting (50 req/min per IP)
+	grp.POST("/", createSubjectSchedule, middlewares.WriteRateLimit())
 }
 
 // createSubjectSchedule godoc

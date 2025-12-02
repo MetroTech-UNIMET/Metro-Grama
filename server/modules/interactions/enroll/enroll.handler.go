@@ -1,6 +1,7 @@
 package enroll
 
 import (
+	"metrograma/middlewares"
 	authMiddlewares "metrograma/modules/auth/middlewares"
 	DTO "metrograma/modules/interactions/enroll/DTO"
 	"metrograma/modules/interactions/enroll/services"
@@ -16,8 +17,9 @@ func Handlers(e *echo.Group) {
 	enrollGroup := e.Group("/enroll", authMiddlewares.StudentAuth)
 
 	// POST /enroll/:subject - subject is a code like BPTFI01
-	enrollGroup.POST("/:subject", createPassed)
-	enrollGroup.DELETE("/", deletePassed)
+	// Write operations have rate limiting (50 req/min per IP)
+	enrollGroup.POST("/:subject", createPassed, middlewares.WriteRateLimit())
+	enrollGroup.DELETE("/", deletePassed, middlewares.WriteRateLimit())
 	enrollGroup.GET("/", getEnrolledSubjects)
 }
 

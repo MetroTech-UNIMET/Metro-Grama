@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"metrograma/middlewares"
 	authMiddlewares "metrograma/modules/auth/middlewares"
 	"metrograma/modules/interactions/friend/services"
 
@@ -11,9 +12,10 @@ import (
 	surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
 )
 
-// TODO - Add spetial throttling middleware to avoid spamming friend requests
+// Friend endpoints with rate limiting to prevent spam (20 req/min per IP)
+// Rate limiting is applied after authentication to protect legitimate users' rate limits
 func Handlers(e *echo.Group) {
-	grp := e.Group("/friend", authMiddlewares.StudentAuth)
+	grp := e.Group("/friend", authMiddlewares.StudentAuth, middlewares.FriendRateLimit())
 	grp.POST("/add/:studentToAdd", addFriend)
 	grp.POST("/accept/:studentToAccept", acceptFriend)
 	grp.DELETE("/eliminate/:studentToEliminate", eliminateFriend)

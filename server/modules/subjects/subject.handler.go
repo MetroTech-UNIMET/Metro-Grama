@@ -2,6 +2,7 @@ package subjects
 
 import (
 	"fmt"
+	"metrograma/middlewares"
 	"metrograma/models"
 	"metrograma/modules/subjects/DTO"
 	"metrograma/modules/subjects/services"
@@ -19,7 +20,8 @@ func Handlers(e *echo.Group) {
 	subjectsGroup.GET("/", getSubjects)
 	subjectsGroup.GET("/graph/", getSubjectsGraph)
 	subjectsGroup.GET("/electives/graph/", getElectiveSubjectsGraph)
-	subjectsGroup.POST("/", createSubject, authMiddlewares.AdminAuth)
+	// Write operations have rate limiting (50 req/min per IP)
+	subjectsGroup.POST("/", createSubject, authMiddlewares.AdminAuth, middlewares.WriteRateLimit())
 }
 
 // getSubjects godoc

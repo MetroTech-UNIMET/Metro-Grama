@@ -1,10 +1,12 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { useParams } from '@tanstack/react-router';
-import { useQuery } from '@tanstack/react-query';
+
+import { fetchSubjectsOptions } from '@/hooks/queries/subject/use-FetchSubjects';
+import { useFetchCompleteCareer, fetchCompleteCareerOptions } from '@/hooks/queries/career/use-fetch-complete-career';
 
 import CareerForm from '@/features/admin/careers/CareerForm';
-import { getCompleteCareer } from '@/api/careersApi';
+
 import { Spinner } from '@ui/spinner';
+import ErrorPage from '@components/ErrorPage';
 
 export const Route = createFileRoute('/admin/carreras/editar/$id')({
   head: () => ({
@@ -14,17 +16,19 @@ export const Route = createFileRoute('/admin/carreras/editar/$id')({
       },
     ],
   }),
+  loader: ({ context: { queryClient: qc }, params: { id } }) => {
+    qc.ensureQueryData(fetchSubjectsOptions());
+    qc.ensureQueryData(fetchCompleteCareerOptions({ id }));
+  },
+  errorComponent: (props) => <ErrorPage title="Error cargando el editor de carreras" {...props} />,
+
   component: UpdateCareer,
 });
 
 function UpdateCareer() {
-  const { id } = useParams({ from: '/admin/carreras/editar/$id' });
+  const { id } = Route.useParams();
 
-  const { data, isLoading } = useQuery({
-    queryKey: ['career', id],
-    queryFn: () => getCompleteCareer(id),
-  });
-
+  const { data, isLoading } = useFetchCompleteCareer({ id });
   // TODO - Mejor maneo de loading y error
   if (isLoading) return <Spinner />;
 

@@ -1,4 +1,4 @@
-import { createRootRouteWithContext } from '@tanstack/react-router';
+import { createRootRouteWithContext, HeadContent } from '@tanstack/react-router';
 import { Outlet } from '@tanstack/react-router';
 import {  ReactQueryDevtoolsPanel } from '@tanstack/react-query-devtools';
 import {  TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools';
@@ -18,6 +18,7 @@ interface RootRouteContext {
 export const Route = createRootRouteWithContext<RootRouteContext>()({
   head: () => ({
     meta: [
+      { title: 'MetroGrama' },
       {
         name: 'description',
         content: 'MetroGrama - Planifica tu horario y visualiza tus materias de forma interactiva',
@@ -58,6 +59,7 @@ export const Route = createRootRouteWithContext<RootRouteContext>()({
   }),
   component: () => (
     <>
+      <HeadContent />
       <TooltipProvider>
         <Outlet />
 

@@ -26,12 +26,12 @@ export default function StepsNavigator<T extends FieldValues>({
   errors,
 }: Props<T>) {
   return (
-    <TabsList className={cn('flex gap-4', headerClassName)}>
+    <TabsList className={cn('flex gap-4', headerClassName)} variant='ghost'>
       {steps.map((step, index) => {
         const hasError = stepHasErrors?.(step, index, errors) ?? false;
 
         return (
-          <TabsTrigger key={step.id} value={String(step.id)} asChild>
+          <TabsTrigger key={step.id} value={String(step.id)} asChild  variant='ghost'>
             <button
               onClick={async () => await jumpTo(index, index > currentStep ? 'callOnError' : undefined)}
               type="button"

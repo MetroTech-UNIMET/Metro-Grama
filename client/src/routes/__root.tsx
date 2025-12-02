@@ -16,47 +16,61 @@ interface RootRouteContext {
 }
 
 export const Route = createRootRouteWithContext<RootRouteContext>()({
-  head: () => ({
-    meta: [
-      { title: 'MetroGrama' },
-      {
-        name: 'description',
-        content: 'MetroGrama - Planifica tu horario y visualiza tus materias de forma interactiva',
-      },
-      {
-        property: 'og:type',
-        content: 'website',
-      },
-      {
-        property: 'og:title',
-        content: 'MetroGrama',
-      },
-      {
-        property: 'og:description',
-        content: 'MetroGrama - Planifica tu horario y visualiza tus materias de forma interactiva',
-      },
-      {
-        property: 'og:image',
-        content: '/og-image.png',
-      },
-      {
-        property: 'twitter:card',
-        content: 'summary_large_image',
-      },
-      {
-        property: 'twitter:title',
-        content: 'MetroGrama',
-      },
-      {
-        property: 'twitter:description',
-        content: 'MetroGrama - Planifica tu horario y visualiza tus materias de forma interactiva',
-      },
-      {
-        property: 'twitter:image',
-        content: '/og-image.png',
-      },
-    ],
-  }),
+  head: () => {
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+    const url = typeof window !== 'undefined' ? window.location.href : '';
+    const image = origin ? `${origin}/og-image.png` : '/og-image.png';
+
+    return {
+      meta: [
+        { title: 'MetroGrama' },
+        {
+          name: 'description',
+          content: 'MetroGrama - Planifica tu horario y visualiza tus materias de forma interactiva',
+        },
+        {
+          property: 'og:type',
+          content: 'website',
+        },
+        {
+          property: 'og:title',
+          content: 'MetroGrama',
+        },
+        {
+          property: 'og:description',
+          content: 'MetroGrama - Planifica tu horario y visualiza tus materias de forma interactiva',
+        },
+        {
+          property: 'og:image',
+          content: image,
+        },
+        {
+          property: 'og:url',
+          content: url,
+        },
+        {
+          name: 'twitter:card',
+          content: 'summary_large_image',
+        },
+        {
+          name: 'twitter:title',
+          content: 'MetroGrama',
+        },
+        {
+          name: 'twitter:description',
+          content: 'MetroGrama - Planifica tu horario y visualiza tus materias de forma interactiva',
+        },
+        {
+          name: 'twitter:image',
+          content: image,
+        },
+        {
+          name: 'twitter:url',
+          content: url,
+        },
+      ],
+    };
+  },
   component: () => (
     <>
       <HeadContent />

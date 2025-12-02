@@ -9,6 +9,13 @@ import { fetchStudentDetailsOptions } from '@/hooks/queries/student/use-fetch-st
 
 export const Route = createFileRoute('/_navLayout/profile/')({
   loader: ({ context: { queryClient } }) => queryClient.ensureQueryData(fetchStudentDetailsOptions()),
+  head: () => ({
+    meta: [
+      {
+        title: 'Perfil | MetroGrama',
+      },
+    ],
+  }),
   pendingComponent: () => <ProfileSkeleton />,
   errorComponent: (props) => <ErrorPage title="Error cargando perfil" {...props} />,
   component: function ProfileRoute() {

@@ -19,6 +19,13 @@ export const Route = createFileRoute('/register/student')({
 
     return null;
   },
+  head: () => ({
+    meta: [
+      {
+        title: 'Registro Estudiante | MetroGrama',
+      },
+    ],
+  }),
   component: RegisterStudent,
 });
 

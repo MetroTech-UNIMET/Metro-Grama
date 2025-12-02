@@ -7,6 +7,13 @@ import SettingsForm from '@/features/student/Settings/SettingsForm';
 
 export const Route = createFileRoute('/_navLayout/profile/settings/')({
   loader: ({ context: { queryClient } }) => queryClient.ensureQueryData(fetchMyPreferencesOptions()),
+  head: () => ({
+    meta: [
+      {
+        title: 'Configuración | MetroGrama',
+      },
+    ],
+  }),
   component: function ProfileSettingsRoute() {
     const { data: preferences } = useSuspenseQuery(fetchMyPreferencesOptions());
     return (

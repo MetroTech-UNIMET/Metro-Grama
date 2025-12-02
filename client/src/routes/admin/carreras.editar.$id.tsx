@@ -9,6 +9,13 @@ import { Spinner } from '@ui/spinner';
 import ErrorPage from '@components/ErrorPage';
 
 export const Route = createFileRoute('/admin/carreras/editar/$id')({
+  head: () => ({
+    meta: [
+      {
+        title: 'Editar Carrera | MetroGrama',
+      },
+    ],
+  }),
   loader: ({ context: { queryClient: qc }, params: { id } }) => {
     qc.ensureQueryData(fetchSubjectsOptions());
     qc.ensureQueryData(fetchCompleteCareerOptions({ id }));

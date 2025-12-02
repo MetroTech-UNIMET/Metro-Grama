@@ -1,4 +1,4 @@
-import { createRootRouteWithContext } from '@tanstack/react-router';
+import { createRootRouteWithContext, HeadContent } from '@tanstack/react-router';
 import { Outlet } from '@tanstack/react-router';
 import {  ReactQueryDevtoolsPanel } from '@tanstack/react-query-devtools';
 import {  TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools';
@@ -16,8 +16,50 @@ interface RootRouteContext {
 }
 
 export const Route = createRootRouteWithContext<RootRouteContext>()({
+  head: () => ({
+    meta: [
+      { title: 'MetroGrama' },
+      {
+        name: 'description',
+        content: 'MetroGrama - Planifica tu horario y visualiza tus materias de forma interactiva',
+      },
+      {
+        property: 'og:type',
+        content: 'website',
+      },
+      {
+        property: 'og:title',
+        content: 'MetroGrama',
+      },
+      {
+        property: 'og:description',
+        content: 'MetroGrama - Planifica tu horario y visualiza tus materias de forma interactiva',
+      },
+      {
+        property: 'og:image',
+        content: '/og-image.png',
+      },
+      {
+        property: 'twitter:card',
+        content: 'summary_large_image',
+      },
+      {
+        property: 'twitter:title',
+        content: 'MetroGrama',
+      },
+      {
+        property: 'twitter:description',
+        content: 'MetroGrama - Planifica tu horario y visualiza tus materias de forma interactiva',
+      },
+      {
+        property: 'twitter:image',
+        content: '/og-image.png',
+      },
+    ],
+  }),
   component: () => (
     <>
+      <HeadContent />
       <TooltipProvider>
         <Outlet />
 

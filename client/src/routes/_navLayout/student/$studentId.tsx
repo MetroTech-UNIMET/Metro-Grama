@@ -14,6 +14,13 @@ export const Route = createFileRoute('/_navLayout/student/$studentId')({
     queryClient.ensureQueryData(fetchStudentByIdOptions({ studentId })),
   
   // Skeleton loading matching Profile layout
+  head: () => ({
+    meta: [
+      {
+        title: 'Estudiante | MetroGrama',
+      },
+    ],
+  }),
   pendingComponent: () => <ProfileSkeleton />,
   errorComponent: (props) => <ErrorPage title="Error cargando perfil" {...props} />,
   beforeLoad: async ({ params, context }) => {

@@ -6,96 +6,61 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"golang.org/x/time/rate"
 )
 
-// RateLimitConfig defines rate limiting configuration
-type RateLimitConfig struct {
-	// Rate is the maximum number of requests per window
-	Rate int
-	// Burst is the maximum number of concurrent requests allowed
-	Burst int
-	// ExpiresIn is the time window for rate limiting
-	ExpiresIn time.Duration
+// Rate limiting configuration constants
+const (
+	// GlobalRateLimitRate is the maximum number of requests per minute for all routes
+	GlobalRateLimitRate = 100
+	// AuthRateLimitRate is the maximum number of requests per minute for auth routes (stricter to prevent brute force)
+	AuthRateLimitRate = 10
+	// FriendRateLimitRate is the maximum number of requests per minute for friend routes (prevent spam)
+	FriendRateLimitRate = 20
+	// WriteRateLimitRate is the maximum number of requests per minute for write operations
+	WriteRateLimitRate = 50
+	// RateLimitWindow is the time window for rate limiting
+	RateLimitWindow = 1 * time.Minute
+)
+
+// createRateLimiter creates a rate limiter middleware with the specified rate
+func createRateLimiter(rateLimit int) echo.MiddlewareFunc {
+	config := middleware.RateLimiterConfig{
+		Skipper: middleware.DefaultSkipper,
+		Store: middleware.NewRateLimiterMemoryStoreWithConfig(
+			middleware.RateLimiterMemoryStoreConfig{
+				Rate:      rate.Limit(rateLimit),
+				Burst:     rateLimit,
+				ExpiresIn: RateLimitWindow,
+			},
+		),
+		IdentifierExtractor: func(ctx echo.Context) (string, error) {
+			return ctx.RealIP(), nil
+		},
+		ErrorHandler: rateLimitErrorHandler,
+		DenyHandler:  rateLimitDenyHandler,
+	}
+	return middleware.RateLimiterWithConfig(config)
 }
 
-// Global rate limit: 100 requests per minute per IP
+// GlobalRateLimit applies a global rate limit: 100 requests per minute per IP
 func GlobalRateLimit() echo.MiddlewareFunc {
-	config := middleware.RateLimiterConfig{
-		Skipper: middleware.DefaultSkipper,
-		Store: middleware.NewRateLimiterMemoryStoreWithConfig(
-			middleware.RateLimiterMemoryStoreConfig{
-				Rate:      100,
-				Burst:     100,
-				ExpiresIn: 1 * time.Minute,
-			},
-		),
-		IdentifierExtractor: func(ctx echo.Context) (string, error) {
-			return ctx.RealIP(), nil
-		},
-		ErrorHandler: rateLimitErrorHandler,
-		DenyHandler:  rateLimitDenyHandler,
-	}
-	return middleware.RateLimiterWithConfig(config)
+	return createRateLimiter(GlobalRateLimitRate)
 }
 
-// AuthRateLimit: 10 requests per minute per IP - stricter for auth routes to prevent brute force
+// AuthRateLimit applies stricter rate limit: 10 requests per minute per IP to prevent brute force
 func AuthRateLimit() echo.MiddlewareFunc {
-	config := middleware.RateLimiterConfig{
-		Skipper: middleware.DefaultSkipper,
-		Store: middleware.NewRateLimiterMemoryStoreWithConfig(
-			middleware.RateLimiterMemoryStoreConfig{
-				Rate:      10,
-				Burst:     10,
-				ExpiresIn: 1 * time.Minute,
-			},
-		),
-		IdentifierExtractor: func(ctx echo.Context) (string, error) {
-			return ctx.RealIP(), nil
-		},
-		ErrorHandler: rateLimitErrorHandler,
-		DenyHandler:  rateLimitDenyHandler,
-	}
-	return middleware.RateLimiterWithConfig(config)
+	return createRateLimiter(AuthRateLimitRate)
 }
 
-// FriendRateLimit: 20 requests per minute per IP - prevent friend request spam
+// FriendRateLimit applies rate limit: 20 requests per minute per IP to prevent friend request spam
 func FriendRateLimit() echo.MiddlewareFunc {
-	config := middleware.RateLimiterConfig{
-		Skipper: middleware.DefaultSkipper,
-		Store: middleware.NewRateLimiterMemoryStoreWithConfig(
-			middleware.RateLimiterMemoryStoreConfig{
-				Rate:      20,
-				Burst:     20,
-				ExpiresIn: 1 * time.Minute,
-			},
-		),
-		IdentifierExtractor: func(ctx echo.Context) (string, error) {
-			return ctx.RealIP(), nil
-		},
-		ErrorHandler: rateLimitErrorHandler,
-		DenyHandler:  rateLimitDenyHandler,
-	}
-	return middleware.RateLimiterWithConfig(config)
+	return createRateLimiter(FriendRateLimitRate)
 }
 
-// WriteRateLimit: 50 requests per minute per IP - moderate limits for write operations
+// WriteRateLimit applies moderate rate limit: 50 requests per minute per IP for write operations
 func WriteRateLimit() echo.MiddlewareFunc {
-	config := middleware.RateLimiterConfig{
-		Skipper: middleware.DefaultSkipper,
-		Store: middleware.NewRateLimiterMemoryStoreWithConfig(
-			middleware.RateLimiterMemoryStoreConfig{
-				Rate:      50,
-				Burst:     50,
-				ExpiresIn: 1 * time.Minute,
-			},
-		),
-		IdentifierExtractor: func(ctx echo.Context) (string, error) {
-			return ctx.RealIP(), nil
-		},
-		ErrorHandler: rateLimitErrorHandler,
-		DenyHandler:  rateLimitDenyHandler,
-	}
-	return middleware.RateLimiterWithConfig(config)
+	return createRateLimiter(WriteRateLimitRate)
 }
 
 func rateLimitErrorHandler(ctx echo.Context, err error) error {

@@ -67,14 +67,13 @@ func AcceptFriendshipRequest(me surrealModels.RecordID, other surrealModels.Reco
 
 func getAcceptFriendQueries() (*surrealql.UpdateQuery, *surrealql.RelateQuery) {
 	Update_QB := surrealql.UpdateOnly("friend").
-		Set("status", "accepted").
+		Set("status = 'accepted'").
 		Where("in = $other AND out = $me AND status = 'pending'").
 		Return("*")
 
-	// TODO - Sync created
 	Create_QB := surrealql.RelateOnly("$me", "friend", "$other").
-		Set("status", "accepted")
-	// Set("created", "$result.created")
+		Set("status = 'accepted'").
+		Set("created = $result.created")
 
 	return Update_QB, Create_QB
 }

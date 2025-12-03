@@ -3,6 +3,7 @@ package tools
 import (
 	"context"
 	"errors"
+	"fmt"
 	"metrograma/db"
 	"strings"
 
@@ -47,9 +48,12 @@ func GetSurrealErrorMsgs(data interface{}) error {
 }
 
 func ExistRecord(id models.RecordID) error {
-	_, err := surrealdb.Select[any](context.Background(), db.SurrealDB, id)
+	result, err := surrealdb.Select[any](context.Background(), db.SurrealDB, id)
 	if err != nil {
 		return err
+	}
+	if result == nil {
+		return fmt.Errorf("record with id '%s' does not exist", id)
 	}
 	return nil
 }

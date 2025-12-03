@@ -13,11 +13,6 @@ import (
 	surrealmodels "github.com/surrealdb/surrealdb.go/pkg/models"
 )
 
-// TODO - No manda en tiempo real las notificaciones porque necesito su referencia
-// La manera que se me ocurre es conseguir los ids de los subject_sections modificados y conseguir las notificaciones asociadas
-// que su history aun tenga end_date = NONE
-// Hacerlo directamente en la transaccion? vamos a ver que tal
-
 // CreateSubjectSchedule persists the provided schedules to the database.
 func CreateSubjectSchedule(input DTO.CreateSubjectSchedule, userId surrealmodels.RecordID) ([]models.SubjectScheduleEntity, error) {
 	sectionsToCreate, sectionsToUpdate := separateSections(input.Sections)

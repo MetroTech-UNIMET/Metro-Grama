@@ -1,83 +1,72 @@
 package services
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"metrograma/db"
 	"metrograma/models"
 	"metrograma/tools"
 	"sync"
-	"text/template"
 
 	"github.com/surrealdb/surrealdb.go"
+	"github.com/surrealdb/surrealdb.go/contrib/surrealql"
 	surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
 )
 
-var createCareerQuery = `
-BEGIN TRANSACTION;
-
-LET $careerID = <record<career>> $career.ID;
-CREATE $careerID CONTENT $career;
-
-FOR $i IN 0..=array::len($subjects) {
-    LET $subjectsByTrimester = $subjects[$i];
-    FOR $j IN 0..=array::len($subjectsByTrimester) {
-        LET $subject = $subjectsByTrimester[$j];
-        IF $subject == NONE {
-            continue;
-        };
-
-        LET $subjectID = type::thing('subject', $subject.code);
-
-        IF $subject.subjectType = "new" {
-            CREATE $subjectID CONTENT $subject;
-        };
-        RELATE $subjectID->belong->$careerID SET trimester = $i + 1;
-
-        FOR $prelation in $subject.prelations {
-            LET $prelationID = type::thing('subject', $prelation);
-
-            IF (SELECT * FROM ONLY $prelationID->precede->$subjectID) {
-                RELATE $prelationID->precede->$subjectID;
-            };
-        };
-    };
-};
-
-COMMIT TRANSACTION;
-`
-
 func CreateCareer(careerForm models.CareerCreateForm) any {
-	t, err := template.New("query").Parse(createCareerQuery)
-	if err != nil {
-		return err
-	}
-
-	var query bytes.Buffer
-	err = t.Execute(&query, careerForm)
-	if err != nil {
-		return err
-	}
-
 	electivesTrimesters := []int{}
 
 	processErr := processCareerForm(careerForm, electivesTrimesters)
 	if processErr != nil {
 		return processErr
 	}
-	queryParams := map[string]any{
-		"career": map[string]any{
-			"ID":                  surrealModels.NewRecordID("career", careerForm.Id),
+
+	careerId := surrealModels.NewRecordID("career", careerForm.Id)
+
+	qb := surrealql.Begin().
+		LetTyped("careerID", "record<career>", surrealql.Expr("$content_1.ID")).
+		Do(surrealql.Create("$careerID").Content(map[string]any{
+			"ID":                  careerId,
 			"name":                careerForm.Name,
 			"emoji":               careerForm.Emoji,
 			"electivesTrimesters": electivesTrimesters,
-		},
-		"subjects": careerForm.Subjects,
-	}
+		})).
+		Do(surrealql.For("i", "0..=array::len($subjects)").
+			Let("subjectsByTrimester", surrealql.Expr("$subjects[$i]")).
+			Let("subjectsByTrimester", surrealql.Expr("IF $subjectsByTrimester = NONE THEN [] ELSE $subjectsByTrimester END")).
+			Do(surrealql.For("j", "0..=array::len($subjectsByTrimester)").
+				Let("subject", surrealql.Expr("$subjectsByTrimester[$j]")).
+				If("$subject == NONE").
+				Then(func(tb *surrealql.ThenBuilder) {
+					tb.Raw("continue")
+				}).
+				End().
+				Let("subjectID", surrealql.Expr("type::thing('subject', $subject.code)")).
+				If("$subject.subjectType = 'new'").
+				Then(func(tb *surrealql.ThenBuilder) {
+					// TODO - Hacerlo con Content
+					tb.Do(surrealql.Create("$subjectID").
+						Set("name = $subject.name").
+						Set("credits = $subject.credits").
+						Set("BPCredits = $subject.BPCredits"),
+					)
+				}).
+				End().
+				Do(surrealql.Relate("$subjectID", "belong", "$careerID").Set("trimester = $i + 1")).
+				Do(surrealql.For("prelation", "$subject.prelations").
+					Let("prelationID", surrealql.Expr("type::thing('subject', $prelation)")).
+					Do(surrealql.Relate("$prelationID", "precede", "$subjectID")),
+				),
+			),
+		)
 
-	fmt.Println(queryParams)
-	data, err := surrealdb.Query[any](context.Background(), db.SurrealDB, query.String(), queryParams)
+	sql, params := qb.Build()
+
+	params["subjects"] = careerForm.Subjects
+
+	fmt.Println(sql)
+
+	data, err := surrealdb.Query[any](context.Background(), db.SurrealDB, sql, params)
 	if err != nil {
 		return err
 	}

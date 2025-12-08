@@ -115,14 +115,27 @@ export default function AutoComplete<TValue extends string | number = string | n
         setInputValue(customOnSelectLabeling?.(value) ?? value.label);
         setSelected(value);
       } else {
-        setInputValue(String(value));
+        let label = String(value);
+        let selectedOption: Option<TValue, TData> | undefined;
+
+        for (const group of Object.values(options)) {
+          const found = group.find((o) => o.value === value);
+          if (found) {
+            label = found.label;
+            selectedOption = found;
+            break;
+          }
+        }
+
+        setInputValue(label);
+        setSelected(selectedOption);
       }
     }
-  }, [value, customOnSelectLabeling]);
+  }, [value, customOnSelectLabeling, options]);
 
   const handleSelectOption = useCallback(
     (selectedOption: Option<TValue, TData>) => {
-      // setInputValue(customOnSelectLabeling(selectedOption));
+      setInputValue(customOnSelectLabeling ? customOnSelectLabeling(selectedOption) : selectedOption.label);
 
       setSelected(selectedOption);
       onSelect?.(selectedOption);

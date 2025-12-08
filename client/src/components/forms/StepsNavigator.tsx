@@ -10,7 +10,7 @@ type TouchedFields<T extends FieldValues> = Partial<Readonly<FieldNamesMarkedBoo
 interface Props<T extends FieldValues> {
   steps: Step[];
   currentStep: number;
-  jumpTo: (step: number, validateCurrentStep?: ValidateAction) => Promise<boolean>;
+  jumpTo: (step: number, validateCurrentStep?: ValidateAction) => Promise<boolean> | boolean;
   stepHasErrors?: (step: Step, currentStep: number, errors: FieldErrors<T>) => boolean;
   headerClassName?: string;
   errors: FieldErrors<T>;
@@ -26,12 +26,12 @@ export default function StepsNavigator<T extends FieldValues>({
   errors,
 }: Props<T>) {
   return (
-    <TabsList className={cn('flex gap-4', headerClassName)} variant='ghost'>
+    <TabsList className={cn('flex gap-4', headerClassName)} variant="ghost">
       {steps.map((step, index) => {
         const hasError = stepHasErrors?.(step, index, errors) ?? false;
 
         return (
-          <TabsTrigger key={step.id} value={String(step.id)} asChild  variant='ghost'>
+          <TabsTrigger key={step.id} value={String(step.id)} asChild variant="ghost">
             <button
               onClick={async () => await jumpTo(index, index > currentStep ? 'callOnError' : undefined)}
               type="button"

@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"metrograma/db"
-	"metrograma/models"
+	dto "metrograma/modules/careers/DTO"
 	"metrograma/tools"
 	"sync"
 
@@ -13,7 +13,7 @@ import (
 	surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
 )
 
-func CreateCareer(careerForm models.CareerCreateForm) any {
+func CreateCareer(careerForm dto.CareerCreateForm) any {
 	electivesTrimesters := []int{}
 
 	processErr := processCareerForm(careerForm, electivesTrimesters)
@@ -45,17 +45,17 @@ func CreateCareer(careerForm models.CareerCreateForm) any {
 				If("$subject.subjectType = 'new'").
 				Then(func(tb *surrealql.ThenBuilder) {
 					// TODO - Hacerlo con Content
-					tb.Do(surrealql.Create("$subjectID").
+					tb.Do(surrealql.CreateOnly("$subjectID").
 						Set("name = $subject.name").
 						Set("credits = $subject.credits").
 						Set("BPCredits = $subject.BPCredits"),
 					)
 				}).
 				End().
-				Do(surrealql.Relate("$subjectID", "belong", "$careerID").Set("trimester = $i + 1")).
+				Do(surrealql.RelateOnly("$subjectID", "belong", "$careerID").Set("trimester = $i + 1")).
 				Do(surrealql.For("prelation", "$subject.prelations").
 					Let("prelationID", surrealql.Expr("type::thing('subject', $prelation)")).
-					Do(surrealql.Relate("$prelationID", "precede", "$subjectID")),
+					Do(surrealql.RelateOnly("$prelationID", "precede", "$subjectID")),
 				),
 			),
 		)
@@ -64,8 +64,6 @@ func CreateCareer(careerForm models.CareerCreateForm) any {
 
 	params["subjects"] = careerForm.Subjects
 
-	fmt.Println(sql)
-
 	data, err := surrealdb.Query[any](context.Background(), db.SurrealDB, sql, params)
 	if err != nil {
 		return err
@@ -73,7 +71,7 @@ func CreateCareer(careerForm models.CareerCreateForm) any {
 	return tools.GetSurrealErrorMsgs(data)
 }
 
-func processCareerForm(careerForm models.CareerCreateForm, electivesTrimesters []int) error {
+func processCareerForm(careerForm dto.CareerCreateForm, electivesTrimesters []int) error {
 	subjectPresence := make(map[string]bool)
 	var wg sync.WaitGroup
 	errChan := make(chan error, 1)
@@ -89,7 +87,7 @@ func processCareerForm(careerForm models.CareerCreateForm, electivesTrimesters [
 			}
 
 			wg.Add(1)
-			go func(i, j int, careerSubject *models.CreateCareerSubject) {
+			go func(i, j int, careerSubject *dto.CreateCareerSubject) {
 				defer wg.Done()
 
 				id := surrealModels.NewRecordID("subject", careerSubject.Code)

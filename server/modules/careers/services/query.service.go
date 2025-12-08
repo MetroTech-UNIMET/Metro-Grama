@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"metrograma/db"
 	"metrograma/models"
+	dto "metrograma/modules/careers/DTO"
 
 	"github.com/surrealdb/surrealdb.go"
 	"github.com/surrealdb/surrealdb.go/contrib/surrealql"
@@ -22,20 +23,10 @@ func GetCareers() ([]models.CareerEntity, error) {
 }
 
 func GetCareerWithSubjectsById(careerId string) (any, error) {
-	type SubjectComplex struct {
-		Subject    models.SubjectEntity     `json:"subject"`
-		Trimester  int                      `json:"trimester"`
-		Prelations []surrealModels.RecordID `json:"prelations" swaggertype:"array,object"`
-	}
-
-	type CareerWithSubjectsResponse struct {
-		models.CareerEntity
-		Subjects []SubjectComplex `json:"subjects"`
-	}
 
 	careerRecordId, err := surrealModels.ParseRecordID(careerId)
 	if err != nil {
-		return models.CareerWithSubjects{}, fmt.Errorf("invalid career ID: %v", err)
+		return dto.CareerWithSubjects{}, fmt.Errorf("invalid career ID: %v", err)
 	}
 
 	qb := surrealql.SelectOnly("$id").
@@ -52,28 +43,28 @@ func GetCareerWithSubjectsById(careerId string) (any, error) {
 	sql, params := qb.Build()
 	params["id"] = *careerRecordId
 
-	rows, err := surrealdb.Query[CareerWithSubjectsResponse](context.Background(), db.SurrealDB, sql, params)
+	rows, err := surrealdb.Query[dto.CareerWithSubjectsResponse](context.Background(), db.SurrealDB, sql, params)
 
 	if err != nil {
-		return models.CareerWithSubjects{}, fmt.Errorf("error getting career: %v", err)
+		return dto.CareerWithSubjects{}, fmt.Errorf("error getting career: %v", err)
 	}
 
 	careerWithSubjectsResponse := (*rows)[0].Result
 
-	careerWithSubjects := models.CareerWithSubjects{
+	careerWithSubjects := dto.CareerWithSubjects{
 		CareerEntity: models.CareerEntity{
 			ID:                  careerWithSubjectsResponse.ID,
 			Name:                careerWithSubjectsResponse.Name,
 			Emoji:               careerWithSubjectsResponse.Emoji,
 			ElectivesTrimesters: careerWithSubjectsResponse.ElectivesTrimesters,
 		},
-		Subjects: [][]*models.CareerSubjectWithoutType{},
+		Subjects: [][]*dto.CareerSubjectWithoutType{},
 	}
 
-	careersCurrentTrimester := make([]*models.CareerSubjectWithoutType, 0)
+	careersCurrentTrimester := make([]*dto.CareerSubjectWithoutType, 0)
 
 	for index, subjectComplex := range careerWithSubjectsResponse.Subjects {
-		subject := models.CareerSubjectWithoutType{
+		subject := dto.CareerSubjectWithoutType{
 			Name:       subjectComplex.Subject.Name,
 			Code:       subjectComplex.Subject.ID,
 			Credits:    subjectComplex.Subject.Credits,
@@ -89,7 +80,7 @@ func GetCareerWithSubjectsById(careerId string) (any, error) {
 			}
 
 			careerWithSubjects.Subjects = append(careerWithSubjects.Subjects, careersCurrentTrimester)
-			careersCurrentTrimester = []*models.CareerSubjectWithoutType{&subject}
+			careersCurrentTrimester = []*dto.CareerSubjectWithoutType{&subject}
 		} else {
 			careersCurrentTrimester = append(careersCurrentTrimester, &subject)
 		}

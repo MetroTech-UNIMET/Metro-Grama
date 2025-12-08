@@ -8,12 +8,12 @@ export const optionStringSchema_NoTransform = z.object({
 });
 export const optionStringSchema = optionStringSchema_NoTransform.transform((data) => data.value);
 
-export function createOptionSchema(
+export function createOptionSchema<T extends z.ZodType<any>>(
   error:
     | string
     | $ZodErrorMap<NonNullable<$ZodIssueInvalidType<unknown> | $ZodIssueUnrecognizedKeys>>
     | undefined = undefined,
-  valueSchema: z.ZodType<any> = z.string(),
+  valueSchema: T = z.string() as unknown as T,
 ) {
   return z.object(
     {

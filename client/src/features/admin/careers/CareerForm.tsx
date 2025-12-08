@@ -12,17 +12,17 @@ import { numberOfTrimesters } from './constants';
 import StepsNavigator from '@/components/forms/StepsNavigator';
 
 import useSubjectOptions from './hooks/useSubjectOptions';
-import useFormStep from '@/hooks/useFormStep';
+import { useFormStep } from '@/hooks/useFormStep/useFormStep';
 
 import { onInvalidToast } from '@utils/forms';
 import { extractShema } from '@utils/zod/zod-type-guards';
 
 import { Tabs, TabsContent } from '@ui/tabs';
-import { Spinner } from '@ui/spinner';
 import { Form } from '@ui/form';
 import { Button } from '@ui/button';
+import SubmitButton from '@ui/derived/submit-button';
 
-import type { CreateCareerFormInput, CreateSubjectType } from './schema';
+import type { CreateCareerInput, CreateCareerOutput, CreateSubjectInput } from './schema';
 import type { CareerWithSubjects } from '@/interfaces/Career';
 
 interface Props {
@@ -50,7 +50,7 @@ export default function CareerForm({ mode, data }: Props) {
 
     const subjectsById: Record<string, string> = {};
 
-    const defaultData: CreateCareerFormInput = {
+    const defaultData: CreateCareerInput = {
       emoji: data.emoji,
       name: data.name,
       id: data.id.ID,
@@ -61,12 +61,13 @@ export default function CareerForm({ mode, data }: Props) {
               subjectType: 'elective',
               prelations: [],
             };
+          const subjectCode = subject.code.ID;
 
-          subjectsById[subject.code.ID] = subject.name;
+          subjectsById[subjectCode] = subject.name;
 
-          const createSubject: CreateSubjectType = {
+          const createSubject: CreateSubjectInput = {
             subjectType: 'existing',
-            code: subject.code.ID,
+            code: subjectCode,
             name: subject.name,
             credits: subject.credits,
             BPCredits: subject.BPCredits,
@@ -84,7 +85,7 @@ export default function CareerForm({ mode, data }: Props) {
     form.reset(defaultData);
   }, [data]);
 
-  async function onSubmit(formData: CreateCareerFormInput) {
+  async function onSubmit(formData: CreateCareerOutput) {
     let toastInfo: { title: string; description: string } = { title: '', description: '' };
     try {
       if (mode === 'create') {
@@ -138,9 +139,10 @@ export default function CareerForm({ mode, data }: Props) {
   );
 
   const onError = useCallback(
-    (errors: FieldErrors<CreateCareerFormInput>, currentStep: number) => {
+    (errors: FieldErrors<CreateCareerInput>, currentStep: number) => {
       if (currentStep === 0) return;
 
+      console.log(errors);
       const subjects = getValues(`subjects.${currentStep - 1}`);
       subjects.forEach((subject) => {
         const code = subject.code;
@@ -156,14 +158,14 @@ export default function CareerForm({ mode, data }: Props) {
   );
 
   const stepHasErrors = useCallback(
-    (step: typeof steps[number], index: number, errors: FieldErrors<CreateCareerFormInput>) => {
+    (step: (typeof steps)[number], index: number, errors: FieldErrors<CreateCareerInput>) => {
       if (!step.schema) return false;
 
       if (index === 0) {
         const extracted = extractShema(step.schema);
         const careerSchemaKeys = Object.keys(extracted.shape);
         const hasError = careerSchemaKeys.some((key) => {
-          return errors[key as keyof FieldErrors<CreateCareerFormInput>] !== undefined;
+          return errors[key as keyof FieldErrors<CreateCareerInput>] !== undefined;
         });
         return hasError;
       }
@@ -207,9 +209,9 @@ export default function CareerForm({ mode, data }: Props) {
     <Form {...form}>
       <Tabs asChild value={String(steps[currentStep].id)}>
         <form
-          onSubmit={handleSubmit(onSubmit, async (errors) => {
+          onSubmit={handleSubmit(onSubmit, (errors) => {
             onInvalidToast(errors);
-            await jumpToFirstErrorStep();
+            jumpToFirstErrorStep();
           })}
           className="bg-background p-16"
         >
@@ -229,20 +231,18 @@ export default function CareerForm({ mode, data }: Props) {
 
           {trimesterStepsForm}
 
-          <footer className="mt-8">
-            <Button type="button" onClick={() => previous()} size="icon">
+          <footer className="mt-8 flex flex-row items-center gap-4">
+            <Button type="button" onClick={() => previous()} size="icon" colors="secondary">
               <ArrowLeft />
             </Button>
 
-            <Button type="button" onClick={async () => await next('ignoreValidation')} size="icon">
+            <SubmitButton colors="primary" disabled={currentStep === steps.length }>
+              {mode === 'edit' ? 'Editar' : 'Crear'} Carrera
+            </SubmitButton>
+            <Button type="button" onClick={() => next('ignoreValidation')} size="icon" colors="secondary">
               <ArrowRight />
             </Button>
           </footer>
-
-          <Button type="submit" className="mt-8 gap-x-2" disabled={form.formState.isSubmitting}>
-            <Spinner className="text-white" show={form.formState.isSubmitting} />
-            {mode === 'edit' ? 'Editar' : 'Crear'} Carrera
-          </Button>
 
           {/* <DevTool control={form.control} /> */}
         </form>
@@ -251,7 +251,7 @@ export default function CareerForm({ mode, data }: Props) {
   );
 }
 
-function transformErrors(errors: FieldErrors<CreateCareerFormInput>, currentStep: number) {
+function transformErrors(errors: FieldErrors<CreateCareerInput>, currentStep: number) {
   if (currentStep === 0) return errors;
 
   const stepIndex = currentStep - 1;
@@ -259,7 +259,7 @@ function transformErrors(errors: FieldErrors<CreateCareerFormInput>, currentStep
   return { subjects: { [stepIndex]: subjectErrors } };
 }
 
-function filterPaths(paths: Path<CreateCareerFormInput>[], steps: number) {
+function filterPaths(paths: Path<CreateCareerInput>[], steps: number) {
   if (steps === 0) return paths;
 
   const subjectPath = `subjects.${steps - 1}`;

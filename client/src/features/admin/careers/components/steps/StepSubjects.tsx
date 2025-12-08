@@ -5,7 +5,7 @@ import { numberOfSubjectsByTrimester } from '../../constants';
 
 import type { CodeOption } from '../../hooks/useSubjectOptions';
 import type { Option } from '@ui/types/option.types';
-import type { CreateCareerFormInput } from '../../schema';
+import type { CreateCareerInput } from '../../schema';
 
 interface Props {
   trimesterIndex: number;
@@ -17,7 +17,7 @@ interface Props {
 }
 
 export default function StepSubjects({ trimesterIndex, mode, codeOptions, prelationsOptions, isLoading }: Props) {
-  const form = useFormContext<CreateCareerFormInput>();
+  const form = useFormContext<CreateCareerInput>();
 
   return (
     <div className="flex flex-col gap-8">

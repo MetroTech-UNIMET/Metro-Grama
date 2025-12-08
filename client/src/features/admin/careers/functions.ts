@@ -2,13 +2,13 @@ import { toast } from 'sonner';
 
 import { createCareer, updateCareer } from '@/api/careersApi';
 import { getDirtyNestedFields } from '@utils/forms';
-import { idToSurrealId } from '@utils/queries';
+import { createSurrealId, idToSurrealId } from '@utils/queries';
 
-import type { CreateCareerFormInput } from './schema';
+import type { CreateCareerInput, CreateCareerOutput } from './schema';
 import type { ArrayToObject, DirtyFields } from '@utils/forms';
 import type { CareerWithSubjects } from '@/interfaces/Career';
 
-function validateOnSubmit(data: CreateCareerFormInput) {
+function validateOnSubmit(data: CreateCareerInput) {
   const allCodes: string[] = [];
   for (let trimester of data.subjects) {
     for (let subject of trimester) {
@@ -56,7 +56,7 @@ function validateOnSubmit(data: CreateCareerFormInput) {
   return true;
 }
 
-export async function onCreate(data: CreateCareerFormInput) {
+export async function onCreate(data: CreateCareerOutput) {
   if (!validateOnSubmit(data)) throw new Error('Datos inválidos');
 
   const newData = transformCreateData(data);
@@ -70,8 +70,8 @@ export async function onCreate(data: CreateCareerFormInput) {
 
 export async function onEdit(
   orinalData: CareerWithSubjects,
-  data: CreateCareerFormInput,
-  dirtyFields: DirtyFields<CreateCareerFormInput>,
+  data: CreateCareerOutput,
+  dirtyFields: DirtyFields<CreateCareerInput>,
 ) {
   if (Object.keys(dirtyFields).length === 0)
     throw new Error('Para poder modificar, tiene que realizar un cambio en el formulario');
@@ -84,14 +84,17 @@ export async function onEdit(
         dirtyFields.subjects[trimester][index] = {
           code: true,
           ...subjectDirty,
+          prelations:
+            data.subjects[trimester]?.[index]?.prelations?.map(() => ({
+              label: true,
+              value: true,
+            })) || [],
         };
       }
     });
   });
 
-  const filtered = getDirtyNestedFields(data, dirtyFields) as Partial<
-    ArrayToObject<CreateCareerFormInput, 'prelations'>
-  >;
+  const filtered = getDirtyNestedFields(data, dirtyFields);
 
   const transformed = transformEditData(filtered);
 
@@ -103,7 +106,7 @@ export async function onEdit(
   };
 }
 
-function transformCreateData(data: CreateCareerFormInput) {
+function transformCreateData(data: CreateCareerOutput) {
   return {
     ...data,
     subjects: data.subjects.map((trimester) =>
@@ -120,7 +123,7 @@ function transformCreateData(data: CreateCareerFormInput) {
   };
 }
 
-function transformEditData(data: Partial<ArrayToObject<CreateCareerFormInput, 'prelations'>>) {
+function transformEditData(data: Partial<ArrayToObject<CreateCareerOutput>>) {
   if (!data.subjects) return data;
 
   const transformedData: {
@@ -136,10 +139,12 @@ function transformEditData(data: Partial<ArrayToObject<CreateCareerFormInput, 'p
       if (subject.subjectType === 'elective') {
         transformedData.subjects[trimesterIndex][subjectIndex] = null;
       } else {
+        const prelations = Object.values(subject.prelations || {}).map((prelation) => createSurrealId('subject', prelation.value));
+
         transformedData.subjects[trimesterIndex][subjectIndex] = {
           ...subject,
           code: subject.code ? idToSurrealId(subject.code, 'subject') : undefined,
-          prelations: subject.prelations?.map((prelation) => prelation.value),
+          prelations: prelations,
         };
       }
     });

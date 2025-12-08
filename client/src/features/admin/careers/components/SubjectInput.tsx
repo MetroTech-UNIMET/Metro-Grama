@@ -6,23 +6,24 @@ import { cn } from '@utils/className';
 import { FormInputField } from '@ui/derived/form-fields/form-field-input';
 import { FormAutocompleteField } from '@ui/derived/form-fields/form-field-autocomplete';
 import { FormMultipleSelectorField } from '@ui/derived/form-fields/form-field-multiselect';
+import { FormInputNumberField } from '@ui/derived/form-fields/form-field-number';
 import { FormControl, FormField, FormItem, FormLabel } from '@ui/form';
 import { Switch } from '@ui/switch';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, TooltipArrow } from '@ui/tooltip';
 import { Skeleton } from '@ui/skeleton';
 
 import type { Option } from '@ui/types/option.types';
-import type { CreateCareerFormInput, CreateSubjectType } from '../schema';
+import type { CreateCareerInput, CreateSubjectInput } from '../schema';
 import type { FieldError, FieldErrors, UseFormResetField, UseFormSetValue, UseFormTrigger } from 'react-hook-form';
 import type { CodeOption } from '../hooks/useSubjectOptions';
 import type { Subject } from '@/interfaces/Subject';
 
-type SubjectErrors = FieldErrors<CreateSubjectType> | undefined;
+type SubjectErrors = FieldErrors<CreateSubjectInput> | undefined;
 
 interface Props {
-  setValue: UseFormSetValue<CreateCareerFormInput>;
-  resetField: UseFormResetField<CreateCareerFormInput>;
-  trigger: UseFormTrigger<CreateCareerFormInput>;
+  setValue: UseFormSetValue<CreateCareerInput>;
+  resetField: UseFormResetField<CreateCareerInput>;
+  trigger: UseFormTrigger<CreateCareerInput>;
 
   subjectIndex: number;
   trimesterIndex: number;
@@ -151,11 +152,10 @@ function SubjectInput({
             </fieldset>
 
             <fieldset className="flex flex-row gap-4">
-              <FormInputField
+              <FormInputNumberField
                 name={`${subjectName}.credits`}
                 id={`${subjectName}.credits`}
                 label="Créditos Necesarios"
-                type="number"
                 min={0}
                 max={150}
                 containerClassName="max-w-40 w-full h-full"
@@ -163,11 +163,10 @@ function SubjectInput({
                 disabled={isSubjectElective}
               />
 
-              <FormInputField
+              <FormInputNumberField
                 name={`${subjectName}.BPCredits`}
                 id={`${subjectName}.BPCredits`}
                 label="Créditos BP Necesarios"
-                type="number"
                 min={0}
                 max={150}
                 containerClassName="max-w-44 w-full h-full"
@@ -182,10 +181,6 @@ function SubjectInput({
                 options={prelationOptions}
                 placeholder="Escoje las prelaciones "
                 isLoading={loadingSubjects}
-                // className={cn('flex h-full w-full items-center', {
-                //   'bg-destructive/10': fieldState.invalid && fieldState.isTouched,
-                //   'bg-success/10': !fieldState.invalid && fieldState.isTouched,
-                // })}
                 emptyIndicator={
                   <p className="text-center text-lg leading-10 text-gray-600 dark:text-gray-400">
                     No se encontraron materias.

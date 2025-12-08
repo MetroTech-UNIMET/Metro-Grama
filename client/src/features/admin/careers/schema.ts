@@ -2,13 +2,7 @@ import { z } from 'zod/v4';
 import { numberOfSubjectsByTrimester, numberOfTrimesters } from './constants';
 
 import type { Step } from '@/hooks/useFormStep';
-
-const subjectCodeOptionSchema = z.object({
-  label: z.string(),
-  value: z.string().length(7, {
-    error: 'El código debe tener exactamente 7 caracteres',
-  }),
-});
+import { createOptionSchema } from '@/lib/schemas/option';
 
 const subjectSchema = z
   .object({
@@ -33,7 +27,14 @@ const subjectSchema = z
       })
       .optional(),
     prelations: z
-      .array(subjectCodeOptionSchema)
+      .array(
+        createOptionSchema(
+          undefined,
+          z.string().length(7, {
+            error: 'El código debe tener exactamente 7 caracteres',
+          }),
+        ),
+      )
       .max(3, {
         error: 'Esta materia no puede depender de más de 3 materias',
       })
@@ -91,12 +92,13 @@ export const createCareerSchema = z.object({
   ...stepSubjects.shape,
 });
 
-export type CreateCareerFormInput = z.input<typeof createCareerSchema>;
-export type CreateCareerTypeOutput = z.infer<typeof createCareerSchema>;
+export type CreateCareerInput = z.input<typeof createCareerSchema>;
+export type CreateCareerOutput = z.infer<typeof createCareerSchema>;
 
-export type CreateSubjectType = z.input<typeof subjectSchema>;
+export type CreateSubjectInput = z.input<typeof subjectSchema>;
+export type CreateSubjectOutput = z.output<typeof subjectSchema>;
 
-export const defaultCreateCareerValues: CreateCareerFormInput = {
+export const defaultCreateCareerValues: CreateCareerInput = {
   name: '',
   emoji: '',
   id: '',
@@ -120,7 +122,7 @@ export const steps: Step[] = [
   ...generateSteps(numberOfTrimesters),
 ];
 
-function validateNonElective(data: CreateSubjectType, ctx: z.RefinementCtx) {
+function validateNonElective(data: CreateSubjectOutput, ctx: z.RefinementCtx) {
   if (!data.code) {
     ctx.issues.push({
       path: ['code'],

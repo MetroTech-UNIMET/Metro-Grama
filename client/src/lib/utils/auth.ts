@@ -2,7 +2,7 @@ import { redirect } from '@tanstack/react-router';
 
 import type { UserType } from '@/hooks/queries/student/use-fetch-my-user';
 import type { AuthContextProps } from '@/contexts/AuthenticationContext';
-import { StudentUser } from '@/interfaces/User';
+import type { StudentUser } from '@/interfaces/User';
 
 export async function checkIsAuthenticated(auth: AuthContextProps) {
   let shouldRedirect = false;
@@ -21,8 +21,7 @@ export async function checkIsAuthenticated(auth: AuthContextProps) {
       to: '/',
     });
 
-  if (!data)
-    throw Error('checkIsAuthenticated: data is null but should not be');
+  if (!data) throw Error('checkIsAuthenticated: data is null but should not be');
 
   return data;
 }

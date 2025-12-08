@@ -3,7 +3,7 @@ package careers
 import (
 	"fmt"
 	"metrograma/middlewares"
-	"metrograma/models"
+	dto "metrograma/modules/careers/DTO"
 	"metrograma/modules/careers/services"
 	"metrograma/tools"
 	"net/http"
@@ -22,7 +22,7 @@ func Handlers(e *echo.Group) {
 	careersGroup.DELETE("/:careerId", deleteCareer, authMiddlewares.AdminAuth, middlewares.WriteRateLimit())
 
 	careersGroup.GET("/withSubjects/:careerId", getCareerWithSubjectsById)
-	// careersGroup.PATCH("/withSubjects/:careerId", updateCareerWithSubjects, authMiddlewares.AdminAuth)
+	careersGroup.PATCH("/withSubjects/:careerId", updateCareerWithSubjects, authMiddlewares.AdminAuth, middlewares.WriteRateLimit())
 }
 
 // getCareers godoc
@@ -40,7 +40,6 @@ func getCareers(c echo.Context) error {
 	return tools.GetResponse(c, careers, err)
 }
 
-// TODO - Testear
 // createCareer godoc
 // @Summary      Create career
 // @Description  Create a new career
@@ -54,7 +53,7 @@ func getCareers(c echo.Context) error {
 // @Failure      500  {object}  map[string]string
 // @Router       /careers/ [post]
 func createCareer(c echo.Context) error {
-	var careerForm models.CareerCreateForm
+	var careerForm dto.CareerCreateForm
 	if err := c.Bind(&careerForm); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
@@ -110,28 +109,29 @@ func deleteCareer(c echo.Context) error {
 	return nil
 }
 
-// type updateCareerWithSubjectsParam struct {
-// 	OldCareer     models.CareerWithSubjects `json:"oldCareer" validate:"required"`
-// 	NewCareerForm models.CareerUpdateForm   `json:"newCareer" validate:"required"`
-// }
+type updateCareerWithSubjectsParam struct {
+	OldCareer     dto.CareerWithSubjects `json:"oldCareer" validate:"required"`
+	NewCareerForm dto.CareerUpdateForm   `json:"newCareer" validate:"required"`
+}
 
-// func updateCareerWithSubjects(c echo.Context) error {
-// 	var target updateCareerWithSubjectsParam
-// 	if err := c.Bind(&target); err != nil {
-// 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-// 	}
+func updateCareerWithSubjects(c echo.Context) error {
+	var target updateCareerWithSubjectsParam
+	if err := c.Bind(&target); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
 
-// 	if err := c.Validate(target); err != nil {
-// 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-// 	}
+	if err := c.Validate(target); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
 
-// 	if err := storage.UpdateCareerWithSubjects(target.OldCareer, target.NewCareerForm); err != nil {
-// 		return echo.NewHTTPError(http.StatusInternalServerError, err)
-// 	}
+	if err := services.UpdateCareer(target.OldCareer, target.NewCareerForm); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	}
 
-// 	// TODO - Add status code
-// 	return nil
-// }
+	return c.JSON(http.StatusOK, map[string]string{
+		"message": "La carrera fue actualizada exitosamente",
+	})
+}
 
 // getCareerWithSubjectsById godoc
 // @Summary      Get career with subjects

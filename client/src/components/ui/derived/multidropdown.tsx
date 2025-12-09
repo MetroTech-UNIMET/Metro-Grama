@@ -160,7 +160,6 @@ function MultipleSelector<TValue extends string | number = string | number, TDat
   popoverContainer,
   CustomSelectItem,
   isOptionDisabled,
-  ...props
 }: MultipleSelectorProps<TValue, TData>) {
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [open, setOpen] = React.useState(false);
@@ -421,7 +420,6 @@ function MultipleSelector<TValue extends string | number = string | number, TDat
                     setIsFocused(false);
                     inputProps?.onBlur?.(e);
                   }}
-                  {...props}
                 />
               </PopoverTrigger>
 

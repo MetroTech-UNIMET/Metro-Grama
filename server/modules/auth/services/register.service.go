@@ -2,7 +2,7 @@ package services
 
 import (
 	"fmt"
-	"metrograma/models"
+	"metrograma/modules/auth/DTO"
 	crudServices "metrograma/modules/auth/services/crud"
 	"strings"
 
@@ -10,7 +10,7 @@ import (
 )
 
 // RegisterUser handles the registration process and returns the appropriate redirect path
-func RegisterUser(userForm models.SimpleUserSigninForm) (*AuthResult, error) {
+func RegisterUser(userForm DTO.SimpleUserSigninForm) (*AuthResult, error) {
 	// Check if user already exists
 	existingUser, err := crudServices.ExistUserByEmail(userForm.Email)
 	if err != nil && err == echo.ErrNotFound {
@@ -49,7 +49,7 @@ func RegisterUser(userForm models.SimpleUserSigninForm) (*AuthResult, error) {
 		return nil, err
 	}
 
-	minimalUser := models.MinimalUser{
+	minimalUser := DTO.MinimalUser{
 		ID:   createdUser.ID,
 		Role: createdUser.Role,
 	}

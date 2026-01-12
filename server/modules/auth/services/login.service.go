@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"metrograma/db"
 	"metrograma/models"
+	"metrograma/modules/auth/DTO"
 
 	"github.com/surrealdb/surrealdb.go"
 	"github.com/surrealdb/surrealdb.go/contrib/surrealql"
@@ -17,7 +18,7 @@ type UserLoginResult struct {
 	Verified bool                   `json:"verified"`
 }
 
-func LoginUser(login models.UserLoginForm) (*AuthResult, error) {
+func LoginUser(login DTO.UserLoginForm) (*AuthResult, error) {
 	qb := surrealql.SelectOnly("user").
 		FieldName("id").
 		FieldName("role").

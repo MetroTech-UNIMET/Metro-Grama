@@ -8,7 +8,7 @@ import (
 	"io"
 	"metrograma/auth"
 	"metrograma/env"
-	"metrograma/models"
+	"metrograma/modules/auth/DTO"
 	"net/http"
 	"net/url"
 	"strings"
@@ -106,7 +106,7 @@ func OauthGoogleCallback(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Errorf("the email domain %s is not allowed", googleEmailData.HD))
 	}
 
-	registerResult, err := RegisterUser(models.SimpleUserSigninForm{
+	registerResult, err := RegisterUser(DTO.SimpleUserSigninForm{
 		FirstName:  googleEmailData.GivenName,
 		LastName:   googleEmailData.FamilyName,
 		Email:      googleEmailData.Email,

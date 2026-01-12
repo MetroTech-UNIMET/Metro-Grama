@@ -2,7 +2,6 @@ package auth
 
 import (
 	"metrograma/middlewares"
-	"metrograma/models"
 	"metrograma/modules/auth/DTO"
 	"metrograma/modules/auth/services"
 	"net/http"
@@ -28,13 +27,13 @@ func Handlers(e *echo.Group) {
 // @Tags         auth
 // @Accept       json
 // @Produce      json
-// @Param        credentials  body  models.UserLoginForm  true  "Login form"
+// @Param        credentials  body  DTO.UserLoginForm  true  "Login form"
 // @Success      200
 // @Failure      400  {object}  map[string]string
 // @Failure      401  {object}  map[string]string
 // @Router       /auth/admin/login [post]
 func adminLogin(c echo.Context) error {
-	var loginForm models.UserLoginForm
+	var loginForm DTO.UserLoginForm
 	if err := c.Bind(&loginForm); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}

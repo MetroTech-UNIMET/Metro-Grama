@@ -4,6 +4,7 @@ import (
 	"context"
 	"metrograma/db"
 	"metrograma/models"
+	"metrograma/modules/auth/DTO"
 
 	"github.com/surrealdb/surrealdb.go"
 	surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
@@ -67,7 +68,7 @@ import (
 // 	verified=$verified,
 // 	password=crypto::bcrypt::generate($password);`
 
-func CreateSimpleUser(user models.SimpleUserSigninForm) (models.UserEntity, error) {
+func CreateSimpleUser(user DTO.SimpleUserSigninForm) (models.UserEntity, error) {
 	queryParams := map[string]any{
 		"firstName":  user.FirstName,
 		"lastName":   user.LastName,

@@ -3,17 +3,17 @@ package services
 import (
 	"fmt"
 	"metrograma/env"
-	"metrograma/models"
+	"metrograma/modules/auth/DTO"
 )
 
 type AuthResult struct {
-	User         models.MinimalUser
+	User         DTO.MinimalUser
 	RedirectPath string
 	Message      string
 }
 
 // GetRedirectPath determines where to redirect the user based on their role and verification status
-func GetAuthResult(user models.MinimalUser, isVerified bool) *AuthResult {
+func GetAuthResult(user DTO.MinimalUser, isVerified bool) *AuthResult {
 	// If user is not verified, redirect to registration
 	if !isVerified {
 		roleStr := user.Role.ID

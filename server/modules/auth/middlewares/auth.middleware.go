@@ -1,7 +1,7 @@
 package middlewares
 
 import (
-	"metrograma/models"
+	"metrograma/modules/auth/DTO"
 	"net/http"
 
 	crudServices "metrograma/modules/auth/services/crud"
@@ -41,7 +41,7 @@ func AdminAuth(next echo.HandlerFunc) echo.HandlerFunc {
 	}
 }
 
-func getUserFromSession(c echo.Context) (*models.MinimalUser, error) {
+func getUserFromSession(c echo.Context) (*DTO.MinimalUser, error) {
 	sessAuth, err := session.Get("auth", c)
 	if err != nil {
 		return nil, echo.NewHTTPError(http.StatusUnauthorized)

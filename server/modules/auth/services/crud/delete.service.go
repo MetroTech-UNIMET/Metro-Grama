@@ -3,14 +3,14 @@ package services
 import (
 	"context"
 	"metrograma/db"
-	"metrograma/models"
+	"metrograma/modules/auth/DTO"
 	"metrograma/tools"
 
 	"github.com/surrealdb/surrealdb.go"
 )
 
 func DeleteUserByEmail(email string) error {
-	result, err := surrealdb.Query[[]models.MinimalUser](context.Background(), db.SurrealDB, "DELETE user WHERE email = $email;", map[string]any{
+	result, err := surrealdb.Query[[]DTO.MinimalUser](context.Background(), db.SurrealDB, "DELETE user WHERE email = $email;", map[string]any{
 		"email": email,
 	})
 	if err != nil {

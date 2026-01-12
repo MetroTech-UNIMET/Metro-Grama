@@ -4,6 +4,7 @@ import (
 	"context"
 	"metrograma/db"
 	"metrograma/models"
+	"metrograma/modules/auth/DTO"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -12,7 +13,7 @@ import (
 	surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
 )
 
-func ExistUserByEmail(email string) (*models.MinimalUser, error) {
+func ExistUserByEmail(email string) (*DTO.MinimalUser, error) {
 	qb := surrealql.SelectOnly("user").
 		FieldName("id").
 		FieldName("role").
@@ -20,7 +21,7 @@ func ExistUserByEmail(email string) (*models.MinimalUser, error) {
 
 	sql, args := qb.Build()
 
-	result, err := surrealdb.Query[models.MinimalUser](context.Background(), db.SurrealDB, sql, args)
+	result, err := surrealdb.Query[DTO.MinimalUser](context.Background(), db.SurrealDB, sql, args)
 
 	if err != nil {
 		return nil, err
@@ -34,11 +35,11 @@ func ExistUserByEmail(email string) (*models.MinimalUser, error) {
 	return &user, nil
 }
 
-func ExistUser(id surrealModels.RecordID) (models.MinimalUser, error) {
-	user, err := surrealdb.Select[models.MinimalUser](context.Background(), db.SurrealDB, id)
+func ExistUser(id surrealModels.RecordID) (DTO.MinimalUser, error) {
+	user, err := surrealdb.Select[DTO.MinimalUser](context.Background(), db.SurrealDB, id)
 
 	if err != nil {
-		return models.MinimalUser{}, err
+		return DTO.MinimalUser{}, err
 	}
 
 	return *user, nil

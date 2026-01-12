@@ -12,7 +12,7 @@ var UserTokenSigninKey = ""
 
 func LoadDotEnv() {
 	if err := godotenv.Load(); err != nil {
-		log.Panicln(err)
+		log.Println("No .env file found. Using system environment variables or defaults.")
 	}
 	UserTokenSigninKey = GetDotEnv("USER_SIGIN_KEY")
 

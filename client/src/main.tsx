@@ -1,24 +1,33 @@
-import ReactDOM from "react-dom/client";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import App from "./App";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import "./index.css";
+import ReactDOM from 'react-dom/client';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { RouterProvider } from '@tanstack/react-router';
 
-const rootElement = document.getElementById("root");
-if (!rootElement) throw new Error("No hay root");
+import { createAppRouter } from './lib/config/tanstack';
+import './index.css';
+import AuthenticationContext, { useAuth } from './contexts/AuthenticationContext';
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      refetchOnWindowFocus: false,
-    },
-  },
-});
+const { router, queryClient } = createAppRouter();
+declare module '@tanstack/react-router' {
+  interface Register {
+    router: typeof router;
+  }
+}
 
-ReactDOM.createRoot(rootElement).render(
-  <QueryClientProvider client={queryClient}>
-    <App />
+const rootElement = document.getElementById('root')!;
 
-    <ReactQueryDevtools initialIsOpen={false} />
-  </QueryClientProvider>
-);
+if (!rootElement.innerHTML) {
+  const root = ReactDOM.createRoot(rootElement);
+
+  root.render(
+    <QueryClientProvider client={queryClient}>
+      <AuthenticationContext>
+        <InnerApp />
+      </AuthenticationContext>
+    </QueryClientProvider>,
+  );
+}
+
+function InnerApp() {
+  const auth = useAuth();
+  return <RouterProvider router={router} context={{ auth }} />;
+}

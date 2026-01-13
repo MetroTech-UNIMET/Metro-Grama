@@ -1,36 +1,69 @@
-import MultipleSelector, { Option } from "@ui/derived/multidropdown";
-import { Spinner } from "@ui/spinner";
-import useFetchCareersOptions, {
-  CareerOption,
-} from "@/hooks/use-FetchCareersOptions";
+import { useMemo } from 'react';
 
-interface Props {
-  loadingSubjects: boolean;
-  value: CareerOption[];
-  onChange: (value: CareerOption[]) => void;
+import { cn } from '@utils/className';
+import { idToSurrealId } from '@utils/queries';
+
+import { useFetchStudentCareers } from '@/hooks/queries/student/use-fetch-student-careers';
+import { type CareerOption, useFetchCareersOptions } from '@/hooks/queries/career/use-fetch-careers';
+
+import MultipleSelector, { type MultipleSelectorProps } from '@ui/derived/multidropdown';
+import { Spinner } from '@ui/spinner';
+
+import type { Career } from '@/interfaces/Career';
+import type { Option } from '@ui/types/option.types';
+
+interface Props extends Omit<MultipleSelectorProps<`career:${string}`, Career>, 'options' | 'onChange' | 'value'> {
+  loadingSubjects?: boolean;
   maxSelected?: number;
+  value?: CareerOption[];
+  onChange?: (value: CareerOption[]) => void;
 }
 
-// FIXME - Width del input no se ajusta al tamaño cuando hay una sola badge
 export function CareerMultiDropdown({
-  loadingSubjects,
+  loadingSubjects = false,
   value,
   onChange,
-  maxSelected = 2,
+  maxSelected = 3,
+  className,
+  placeholder,
+  ...props
 }: Props) {
-  const { options, isLoading, error } = useFetchCareersOptions();
+  const { data: options, isLoading, error } = useFetchCareersOptions();
+  const studentCareerQuery = useFetchStudentCareers();
+
+  const groupedOptions = useMemo(() => {
+    if (!studentCareerQuery.data) return options;
+
+    const studentCareersSet = new Set(studentCareerQuery.data.map(({ Table, ID }) => idToSurrealId(ID, Table)));
+
+    const enrolledOptions = options
+      .filter((option) => studentCareersSet.has(option.value))
+      .map((option) => ({
+        ...option,
+        enrolled: 'Mis carreras',
+      }));
+    const otherOptions = options
+      .filter((option) => !studentCareersSet.has(option.value))
+      .map((option) => ({
+        ...option,
+        enrolled: 'Otras carreras',
+      }));
+
+    return [...enrolledOptions, ...otherOptions];
+  }, [options, studentCareerQuery.data]);
 
   return (
-    <div className="relative max-w-sm w-full">
+    <div className="relative w-full max-w-sm">
       <MultipleSelector
         value={value}
-        onChange={onChange as (value: Option[]) => void}
-        options={options}
+        onChange={onChange as (value: Option<`career:${string}`, Career>[]) => void}
+        options={groupedOptions}
+        groupBy="enrolled"
         maxSelected={maxSelected}
         placeholder={
-          value.length === maxSelected
-            ? "Máximo alcanzado"
-            : "Selecciona las carreras que deseas visualizar"
+          value?.length === maxSelected
+            ? 'Máximo alcanzado'
+            : (placeholder ?? 'Selecciona las carreras que deseas visualizar')
         }
         showSpinner={loadingSubjects}
         emptyIndicator={
@@ -41,16 +74,17 @@ export function CareerMultiDropdown({
           ) : (
             <p>
               {options.length === 0 || error
-                ? " No se encontraron carreras. Por favor, intenta más tarde o recarga la página."
-                : "No hay más carreras para seleccionar."}
+                ? ' No se encontraron carreras. Por favor, intenta más tarde o recarga la página.'
+                : 'No hay más carreras para seleccionar.'}
             </p>
           )
         }
         inputProps={{
-          className: "w-auto",
+          className: 'w-auto',
         }}
         badgeClassName="bg-blue-200 hover:bg-blue-300 text-black"
-        className="bg-gray-200"
+        className={cn('bg-gray-200', className)}
+        {...props}
       />
     </div>
   );

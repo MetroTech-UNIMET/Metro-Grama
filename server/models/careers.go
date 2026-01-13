@@ -1,18 +1,10 @@
 package models
 
-type CareerSubject struct {
-	ID        string `json:"id" validate:"required"`
-	Trimester uint8  `json:"trimester" validate:"required,gte=1,lte=20"`
-}
+import surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
 
-type CareerForm struct {
-	ID_Name  string          `json:"idName" validate:"required"`
-	Name     string          `json:"name" validate:"required"`
-	Subjects []CareerSubject `json:"subjects" validate:"required,dive"`
-}
-
-type CareerNode struct {
-	ID    string `json:"id"`
-	Name  string `json:"name"`
-	Emoji string `json:"emoji"`
+type CareerEntity struct {
+	ID                  surrealModels.RecordID `json:"id" validate:"required" swaggertype:"object"`
+	Name                string                 `json:"name" validate:"required"`
+	Emoji               string                 `json:"emoji" validate:"required"`
+	ElectivesTrimesters []int                  `json:"electivesTrimesters"`
 }

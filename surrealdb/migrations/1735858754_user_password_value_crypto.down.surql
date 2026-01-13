@@ -1,0 +1,1 @@
+DEFINE FIELD OVERWRITE password ON TABLE user TYPE string

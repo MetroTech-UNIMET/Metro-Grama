@@ -1,4 +1,4 @@
-import { INode, IEdge, IGraph } from "@antv/g6";
+import type { INode, IEdge, IGraph } from "@antv/g6";
 
 export type nodeType = "source" | "target";
 

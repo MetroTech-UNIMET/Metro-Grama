@@ -1,0 +1,2917 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "MetroGrama API documentation.\u003cbr\u003e\u003cbr\u003e\u003cb\u003eGoogle Login:\u003c/b\u003e \u003ca href=\"/api/auth/google/login?redirect=/swagger/index.html\" target=\"_blank\"\u003eLogin with Google\u003c/a\u003e\u003cbr\u003eAfter logging in and being redirected back, return to this page and use protected endpoints.",
+        "title": "MetroGrama API",
+        "contact": {},
+        "version": "1.0"
+    },
+    "basePath": "/api",
+    "paths": {
+        "/auth/admin/login": {
+            "post": {
+                "description": "Authenticate admin user with credentials",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Admin login",
+                "parameters": [
+                    {
+                        "description": "Login form",
+                        "name": "credentials",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UserLoginForm"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/{id_user}/complete-student/": {
+            "post": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Accepts student details and careers with trimesters to complete registration/profile",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Complete student data",
+                "parameters": [
+                    {
+                        "description": "Complete student payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/DTO.CompleteStudentDTO"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "id_user",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Accepted"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/careers/": {
+            "get": {
+                "description": "Get all careers",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "careers"
+                ],
+                "summary": "List careers",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.CareerEntity"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new career",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "careers"
+                ],
+                "summary": "Create career",
+                "parameters": [
+                    {
+                        "description": "Career form",
+                        "name": "career",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.CareerCreateForm"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/careers/withSubjects/{careerId}/": {
+            "get": {
+                "description": "Returns a career and its subjects by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "careers"
+                ],
+                "summary": "Get career with subjects",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Career ID",
+                        "name": "careerId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.CareerWithSubjects"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/careers/{careerId}/": {
+            "delete": {
+                "description": "Deletes a career by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "careers"
+                ],
+                "summary": "Delete a career",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Career ID",
+                        "name": "careerId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/course/": {
+            "post": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Creates a course record for the authenticated student",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "course"
+                ],
+                "summary": "Create a course (student-course relationship)",
+                "parameters": [
+                    {
+                        "description": "Course payload",
+                        "name": "course",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/DTO.CreateCourse"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/course/{trimesterId}": {
+            "get": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Returns the student's course sections for the given trimester. If is_principal=true (default) returns principal_sections with their schedules.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "course"
+                ],
+                "summary": "Get course sections for a trimester",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Trimester ID",
+                        "name": "trimesterId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "If true (default) returns principal sections; otherwise (future) could return other section types",
+                        "name": "is_principal",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/enroll/": {
+            "get": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Returns subjects the authenticated user is enrolled in",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "enroll"
+                ],
+                "summary": "Get enrolled subjects for user",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "Only return passed subjects (grade \u003e= 10)",
+                        "name": "onlyPassed",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Enrolls the authenticated user into the provided subjects",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "enroll"
+                ],
+                "summary": "Enroll subjects for user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Subject code (e.g., BPTFI01)",
+                        "name": "subject",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Enrollment payload",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/DTO.CreateEnrolled"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Removes the authenticated user's enrollment for provided subjects",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "enroll"
+                ],
+                "summary": "Unenroll subjects for user",
+                "parameters": [
+                    {
+                        "description": "{\\",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/friend/accept/{studentToAccept}": {
+            "post": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Accepts a pending friend request from another student",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "friend"
+                ],
+                "summary": "Accept a friend request",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Student ID whose friend request to accept (recordID: student:xxxx)",
+                        "name": "studentToAccept",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/friend/add/{studentToAdd}": {
+            "post": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Relates the authenticated student with another student as friends",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "friend"
+                ],
+                "summary": "Add a friend",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Student ID to add as friend (recordID: student:xxxx)",
+                        "name": "studentToAdd",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/friend/eliminate/{studentToEliminate}": {
+            "delete": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Unrelates the authenticated student from another student",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "friend"
+                ],
+                "summary": "Remove a friend",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Student ID to remove as friend (recordID: student:xxxx)",
+                        "name": "studentToEliminate",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/health": {
+            "get": {
+                "description": "Returns the health status of the API",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "health"
+                ],
+                "summary": "Health check",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/notifications/": {
+            "get": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Returns the list of notifications for the provided logged user ID.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "notifications"
+                ],
+                "summary": "Get user notifications",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/DTO.NotificationDTO"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/notifications/mark-as-read": {
+            "put": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Marks the provided notifications as read for the authenticated user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "notifications"
+                ],
+                "summary": "Mark notifications as read",
+                "parameters": [
+                    {
+                        "description": "Notifications IDs",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/DTO.MarkNotificationsAsReadDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/notifications/ws": {
+            "get": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Opens a websocket that pushes notification events to the authenticated user.",
+                "tags": [
+                    "notifications"
+                ],
+                "summary": "Subscribe to notifications stream",
+                "responses": {
+                    "101": {
+                        "description": "Switching Protocols",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/stats/subjects/{subjectId}": {
+            "get": {
+                "description": "Returns aggregated stats per trimester for the given subject (count, avg difficulty, avg grade, avg workload).",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "stats"
+                ],
+                "summary": "Get subject stats",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Subject ID (subject code)",
+                        "name": "subjectId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "all",
+                            "friends",
+                            "friendsFriends"
+                        ],
+                        "type": "string",
+                        "default": "all",
+                        "description": "Which students to include in the stats",
+                        "name": "studentFilter",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Comma-separated list of career RecordIDs to filter by the subject's belonging careers",
+                        "name": "careers",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Lower bound trimester RecordID (e.g., 2425-1)",
+                        "name": "startingTrimester",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Upper bound trimester RecordID (e.g., 2425-3)",
+                        "name": "endingTrimester",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/DTO.SubjectStat"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/student/career": {
+            "get": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Returns the careers related to the authenticated student via the study relation",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "student"
+                ],
+                "summary": "Get student careers",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/student/details": {
+            "get": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Returns the authenticated student's info, including careers, user data and passed subjects",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "student"
+                ],
+                "summary": "Get complete student details",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/student/profile/{studentId}": {
+            "get": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Returns the student's info, including careers, user data and passed subjects by student ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "student"
+                ],
+                "summary": "Get student details by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Student ID",
+                        "name": "studentId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/student_preferences/": {
+            "get": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Returns the authenticated student's preferences",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "preferences"
+                ],
+                "summary": "Get current student's preferences",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Updates the authenticated student's preferences",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "preferences"
+                ],
+                "summary": "Update current student's preferences",
+                "responses": {
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "501": {
+                        "description": "Not Implemented",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/subject_offer/": {
+            "get": {
+                "description": "Returns subject_offer edges with related subject and trimester. Optional filter by careers (CSV of record IDs). Use careers=none to get an error.\nNota: Cuando subjectsFilter='enrollable' se requiere sesión de estudiante (student-id en la sesión). No enviar studentId por query.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "subject_offer"
+                ],
+                "summary": "List all subject_offer edges",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "careers filter (comma-separated RecordIDs)",
+                        "name": "careers",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "enrollable",
+                            "none"
+                        ],
+                        "type": "string",
+                        "default": "none",
+                        "description": "Filtro de materias: 'enrollable' o 'none' (default 'none')",
+                        "name": "subjectsFilter",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/DTO.QueryAnnualOffer"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/subject_offer/annual/{year}": {
+            "get": {
+                "description": "Devuelve materias con su período (trimester plan) y los trimestres en los que se ofrece dentro del año académico dado.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "subject_offer"
+                ],
+                "summary": "Lista oferta anual por año académico",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Filtro de carreras (RecordID)",
+                        "name": "career",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Año académico (e.g. 2425)",
+                        "name": "year",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/DTO.QueryAnnualOfferYear"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/subject_offer/upload": {
+            "post": {
+                "description": "Sube un archivo PDF de oferta académica. Máx 100 KB. Content-Type: application/pdf.",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "subject_offer"
+                ],
+                "summary": "Subir oferta académica (PDF)",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "Archivo PDF",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/subject_offer/{subjectId}": {
+            "post": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Creates a relation between a subject (path param) and a trimester (body)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "subject_offer"
+                ],
+                "summary": "Create subject_offer relation",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Subject ID",
+                        "name": "subjectId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Create subject offer payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/DTO.CreateSubjectOfferRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Accepted"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Deletes a relation between a subject (path param) and a trimester (body)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "subject_offer"
+                ],
+                "summary": "Delete subject_offer relation",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Subject ID",
+                        "name": "subjectId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Create subject offer payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/DTO.CreateSubjectOfferRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Accepted"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/subject_offer/{trimesterId}": {
+            "get": {
+                "description": "Returns subject_offer edges for the specified trimester\nNota: Cuando subjectsFilter='enrollable' se requiere sesión de estudiante (student-id en la sesión).",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "subject_offer"
+                ],
+                "summary": "List subject_offer edges filtered by trimester ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Trimester ID",
+                        "name": "trimesterId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "careers filter (comma-separated RecordIDs)",
+                        "name": "careers",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "enrollable",
+                            "none"
+                        ],
+                        "type": "string",
+                        "default": "none",
+                        "description": "Filtro de materias: 'enrollable' o 'none' (default 'none')",
+                        "name": "subjectsFilter",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/DTO.QueryAnnualOffer"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/subject_schedule/": {
+            "post": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Persist an array of subject schedules",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "subject_schedule"
+                ],
+                "summary": "Create subject schedules",
+                "parameters": [
+                    {
+                        "description": "Schedules",
+                        "name": "schedules",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/DTO.CreateSubjectSchedule"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/subjects/": {
+            "get": {
+                "description": "Get subjects, optionally filtered by careers query param",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "subjects"
+                ],
+                "summary": "List subjects",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "careers filter",
+                        "name": "careers",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/DTO.SubjectNode"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a subject with careers and precedes",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "subjects"
+                ],
+                "summary": "Create a new subject",
+                "parameters": [
+                    {
+                        "description": "Subject form",
+                        "name": "subject",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.SubjectForm"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/subjects/electives/graph/": {
+            "get": {
+                "description": "Returns a graph of elective subjects (nodes and edges)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "subjects"
+                ],
+                "summary": "Get elective subjects graph",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Graph-DTO_SubjectNodeBase"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/subjects/graph/": {
+            "get": {
+                "description": "Returns a graph of subjects (nodes and edges) for given careers",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "subjects"
+                ],
+                "summary": "Get subjects graph",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "careers or 'none'",
+                        "name": "careers",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.Graph-DTO_SubjectNode"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/trimesters/": {
+            "get": {
+                "description": "Returns all trimesters from the database",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "trimesters"
+                ],
+                "summary": "List all trimesters",
+                "parameters": [
+                    {
+                        "type": "boolean",
+                        "description": "Exclude future trimesters (default: false)",
+                        "name": "noFuture",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.TrimesterEntity"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "DTO.CareerWithTrimester": {
+            "type": "object",
+            "required": [
+                "career",
+                "trimester"
+            ],
+            "properties": {
+                "career": {
+                    "type": "string"
+                },
+                "trimester": {
+                    "type": "string"
+                }
+            }
+        },
+        "DTO.CompleteStudentDTO": {
+            "type": "object",
+            "required": [
+                "careersWithTrimesters",
+                "id_card",
+                "phone"
+            ],
+            "properties": {
+                "careersWithTrimesters": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/DTO.CareerWithTrimester"
+                    }
+                },
+                "id_card": {
+                    "type": "integer",
+                    "minimum": 1
+                },
+                "phone": {
+                    "type": "string"
+                }
+            }
+        },
+        "DTO.CreateCourse": {
+            "type": "object",
+            "required": [
+                "is_principal",
+                "sections",
+                "trimesterId"
+            ],
+            "properties": {
+                "is_principal": {
+                    "type": "boolean"
+                },
+                "sections": {
+                    "type": "array",
+                    "items": {
+                        "type": "object"
+                    }
+                },
+                "trimesterId": {
+                    "type": "object"
+                }
+            }
+        },
+        "DTO.CreateEnrolled": {
+            "type": "object",
+            "required": [
+                "difficulty",
+                "grade",
+                "trimesterId",
+                "workload"
+            ],
+            "properties": {
+                "difficulty": {
+                    "type": "integer"
+                },
+                "grade": {
+                    "type": "integer"
+                },
+                "trimesterId": {
+                    "type": "object"
+                },
+                "workload": {
+                    "type": "integer"
+                }
+            }
+        },
+        "DTO.CreateSubjectOfferRequest": {
+            "type": "object",
+            "required": [
+                "trimesterId"
+            ],
+            "properties": {
+                "trimesterId": {
+                    "type": "object"
+                }
+            }
+        },
+        "DTO.CreateSubjectSchedule": {
+            "type": "object",
+            "required": [
+                "sections",
+                "subject_offer_id"
+            ],
+            "properties": {
+                "sections": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/DTO.SectionsDTO"
+                    }
+                },
+                "subject_offer_id": {
+                    "type": "object"
+                }
+            }
+        },
+        "DTO.FriendOfAFriend": {
+            "type": "object",
+            "properties": {
+                "commonFriend": {
+                    "$ref": "#/definitions/models.StudentWithUser"
+                },
+                "friendOfAfriend": {
+                    "$ref": "#/definitions/models.StudentWithUser"
+                }
+            }
+        },
+        "DTO.MarkNotificationsAsReadDTO": {
+            "type": "object",
+            "required": [
+                "notifications"
+            ],
+            "properties": {
+                "notifications": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "type": "object"
+                    }
+                }
+            }
+        },
+        "DTO.NotificationDTO": {
+            "type": "object",
+            "properties": {
+                "all": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Notification"
+                    }
+                },
+                "unread": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Notification"
+                    }
+                }
+            }
+        },
+        "DTO.QueryAnnualOffer": {
+            "type": "object",
+            "properties": {
+                "careers": {
+                    "type": "array",
+                    "items": {
+                        "type": "object"
+                    }
+                },
+                "differentFriends": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "object"
+                },
+                "is_enrollable": {
+                    "type": "boolean"
+                },
+                "is_enrolled": {
+                    "type": "boolean"
+                },
+                "prelations": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.SubjectEntity"
+                    }
+                },
+                "sections": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/DTO.SectionsWithSchedules"
+                    }
+                },
+                "subject": {
+                    "$ref": "#/definitions/models.SubjectEntity"
+                },
+                "trimester": {
+                    "$ref": "#/definitions/models.TrimesterEntity"
+                }
+            }
+        },
+        "DTO.QueryAnnualOfferYear": {
+            "type": "object",
+            "properties": {
+                "period": {
+                    "type": "integer"
+                },
+                "subject": {
+                    "$ref": "#/definitions/models.SubjectEntity"
+                },
+                "trimesters": {
+                    "type": "array",
+                    "items": {
+                        "type": "object"
+                    }
+                }
+            }
+        },
+        "DTO.SectionsDTO": {
+            "type": "object",
+            "required": [
+                "schedules",
+                "section_number"
+            ],
+            "properties": {
+                "classroom_code": {
+                    "type": "string"
+                },
+                "schedules": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/DTO.schedule"
+                    }
+                },
+                "section_number": {
+                    "type": "integer"
+                },
+                "subject_section_id": {
+                    "type": "object"
+                }
+            }
+        },
+        "DTO.SectionsWithSchedules": {
+            "type": "object",
+            "required": [
+                "id"
+            ],
+            "properties": {
+                "classroom_code": {
+                    "type": "string"
+                },
+                "friends": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.StudentWithUser"
+                    }
+                },
+                "friends_of_a_friend": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/DTO.FriendOfAFriend"
+                    }
+                },
+                "id": {
+                    "type": "object"
+                },
+                "schedules": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.SubjectScheduleEntity"
+                    }
+                },
+                "section_number": {
+                    "type": "integer"
+                },
+                "subject_offer": {
+                    "type": "object"
+                }
+            }
+        },
+        "DTO.SubjectNode": {
+            "type": "object",
+            "properties": {
+                "BPCredits": {
+                    "type": "integer"
+                },
+                "careers": {
+                    "type": "array",
+                    "items": {
+                        "type": "object"
+                    }
+                },
+                "code": {
+                    "type": "object"
+                },
+                "credits": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "DTO.SubjectNodeBase": {
+            "type": "object",
+            "properties": {
+                "BPCredits": {
+                    "type": "integer"
+                },
+                "code": {
+                    "type": "object"
+                },
+                "credits": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "DTO.SubjectStat": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "difficulty": {
+                    "type": "number"
+                },
+                "grade": {
+                    "type": "number"
+                },
+                "trimester": {
+                    "type": "object"
+                },
+                "workload": {
+                    "type": "number"
+                }
+            }
+        },
+        "DTO.hourMinute": {
+            "type": "object",
+            "required": [
+                "hours",
+                "minutes"
+            ],
+            "properties": {
+                "hours": {
+                    "type": "integer",
+                    "maximum": 23,
+                    "minimum": 0
+                },
+                "minutes": {
+                    "type": "integer",
+                    "maximum": 59,
+                    "minimum": 0
+                }
+            }
+        },
+        "DTO.schedule": {
+            "type": "object",
+            "required": [
+                "day_of_week",
+                "ending_time",
+                "starting_time"
+            ],
+            "properties": {
+                "day_of_week": {
+                    "type": "integer",
+                    "maximum": 6,
+                    "minimum": 0
+                },
+                "ending_time": {
+                    "$ref": "#/definitions/DTO.hourMinute"
+                },
+                "starting_time": {
+                    "$ref": "#/definitions/DTO.hourMinute"
+                }
+            }
+        },
+        "models.CareerCreateForm": {
+            "type": "object",
+            "required": [
+                "emoji",
+                "id",
+                "name",
+                "subjects"
+            ],
+            "properties": {
+                "emoji": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "subjects": {
+                    "type": "array",
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/definitions/models.CreateCareerSubject"
+                        }
+                    }
+                }
+            }
+        },
+        "models.CareerEntity": {
+            "type": "object",
+            "required": [
+                "emoji",
+                "id",
+                "name"
+            ],
+            "properties": {
+                "electivesTrimesters": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "emoji": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "object"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.CareerSubjectWithoutType": {
+            "type": "object",
+            "required": [
+                "code",
+                "name",
+                "prelations"
+            ],
+            "properties": {
+                "BPCredits": {
+                    "type": "integer",
+                    "maximum": 150,
+                    "minimum": 0
+                },
+                "code": {
+                    "type": "object"
+                },
+                "credits": {
+                    "type": "integer",
+                    "maximum": 150,
+                    "minimum": 0
+                },
+                "name": {
+                    "type": "string"
+                },
+                "prelations": {
+                    "type": "array",
+                    "items": {
+                        "type": "object"
+                    }
+                }
+            }
+        },
+        "models.CareerWithSubjects": {
+            "type": "object",
+            "required": [
+                "emoji",
+                "id",
+                "name",
+                "subjects"
+            ],
+            "properties": {
+                "electivesTrimesters": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "emoji": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "object"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "subjects": {
+                    "type": "array",
+                    "items": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/definitions/models.CareerSubjectWithoutType"
+                        }
+                    }
+                }
+            }
+        },
+        "models.CreateCareerSubject": {
+            "type": "object",
+            "required": [
+                "code",
+                "name",
+                "prelations",
+                "subjectType"
+            ],
+            "properties": {
+                "BPCredits": {
+                    "type": "integer",
+                    "maximum": 150,
+                    "minimum": 0
+                },
+                "code": {
+                    "type": "string"
+                },
+                "credits": {
+                    "type": "integer",
+                    "maximum": 150,
+                    "minimum": 0
+                },
+                "name": {
+                    "type": "string"
+                },
+                "prelations": {
+                    "type": "array",
+                    "items": {
+                        "type": "object"
+                    }
+                },
+                "subjectType": {
+                    "type": "string",
+                    "enum": [
+                        "elective",
+                        "existing",
+                        "new"
+                    ]
+                }
+            }
+        },
+        "models.Edge": {
+            "type": "object",
+            "properties": {
+                "from": {
+                    "type": "string"
+                },
+                "to": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Graph-DTO_SubjectNode": {
+            "type": "object",
+            "properties": {
+                "edges": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Edge"
+                    }
+                },
+                "nodes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Node-DTO_SubjectNode"
+                    }
+                }
+            }
+        },
+        "models.Graph-DTO_SubjectNodeBase": {
+            "type": "object",
+            "properties": {
+                "edges": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Edge"
+                    }
+                },
+                "nodes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Node-DTO_SubjectNodeBase"
+                    }
+                }
+            }
+        },
+        "models.Node-DTO_SubjectNode": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/DTO.SubjectNode"
+                },
+                "id": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Node-DTO_SubjectNodeBase": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/DTO.SubjectNodeBase"
+                },
+                "id": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.Notification": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "extraData": {
+                    "type": "object",
+                    "additionalProperties": {}
+                },
+                "id": {
+                    "type": "object"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "read": {
+                    "type": "boolean"
+                },
+                "read_at": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "user": {
+                    "type": "object"
+                }
+            }
+        },
+        "models.StudentWithUser": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "object"
+                },
+                "id_card": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/models.UserEntity"
+                }
+            }
+        },
+        "models.SubjectCareer": {
+            "type": "object",
+            "required": [
+                "careerID",
+                "trimester"
+            ],
+            "properties": {
+                "careerID": {
+                    "type": "string"
+                },
+                "trimester": {
+                    "type": "integer",
+                    "maximum": 20
+                }
+            }
+        },
+        "models.SubjectEntity": {
+            "type": "object",
+            "properties": {
+                "BPCredits": {
+                    "type": "integer"
+                },
+                "credits": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "object"
+                },
+                "isElective": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.SubjectForm": {
+            "type": "object",
+            "required": [
+                "careers",
+                "code",
+                "name",
+                "precedesID"
+            ],
+            "properties": {
+                "careers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.SubjectCareer"
+                    }
+                },
+                "code": {
+                    "type": "object"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "precedesID": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "models.SubjectScheduleEntity": {
+            "type": "object",
+            "required": [
+                "day_of_week",
+                "ending_hour",
+                "ending_minute",
+                "id",
+                "starting_hour",
+                "starting_minute",
+                "subject_section"
+            ],
+            "properties": {
+                "day_of_week": {
+                    "type": "integer",
+                    "maximum": 6,
+                    "minimum": 0
+                },
+                "ending_hour": {
+                    "type": "integer",
+                    "maximum": 23,
+                    "minimum": 0
+                },
+                "ending_minute": {
+                    "type": "integer",
+                    "maximum": 59,
+                    "minimum": 0
+                },
+                "id": {
+                    "type": "object"
+                },
+                "starting_hour": {
+                    "type": "integer",
+                    "maximum": 23,
+                    "minimum": 0
+                },
+                "starting_minute": {
+                    "type": "integer",
+                    "maximum": 59,
+                    "minimum": 0
+                },
+                "subject_section": {
+                    "type": "object"
+                }
+            }
+        },
+        "models.TrimesterEntity": {
+            "type": "object",
+            "required": [
+                "ending_date",
+                "id",
+                "intensive",
+                "is_current",
+                "is_next",
+                "starting_date"
+            ],
+            "properties": {
+                "ending_date": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "object"
+                },
+                "intensive": {
+                    "type": "boolean"
+                },
+                "is_current": {
+                    "type": "boolean"
+                },
+                "is_next": {
+                    "type": "boolean"
+                },
+                "starting_date": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.UserEntity": {
+            "type": "object",
+            "properties": {
+                "created": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "firstName": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "object"
+                },
+                "lastName": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "pictureUrl": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "object"
+                },
+                "verified": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "models.UserLoginForm": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string",
+                    "maxLength": 40,
+                    "minLength": 8
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "CookieAuth": {
+            "type": "apiKey",
+            "name": "auth",
+            "in": "cookie"
+        }
+    }
+}

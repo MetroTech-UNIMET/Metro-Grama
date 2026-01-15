@@ -17,25 +17,25 @@ services:
     networks:
       - backend-network
 
-  db_seed:
-    container_name: db_seed
-    image: surrealdb/surrealdb:latest
-    volumes:
-      - ./surrealdb/seed.surql:/seed.surql
-    command: [ "import", "--conn", "http://${SURREAL_HOST}", "--user", "${SURREAL_USER}", "--pass", "${SURREAL_PASS}", "--ns" , "${SURREAL_NS}", "--db", "${SURREAL_DB}", "/seed.surql"] 
-    restart: on-failure
-    links:
-      - "db"
-    networks:
-      - backend-network
-    depends_on:
-      - db
+  # db_seed:
+  #   container_name: db_seed
+  #   image: surrealdb/surrealdb:latest
+  #   volumes:
+  #     - ./surrealdb/seed.surql:/seed.surql
+  #   command: [ "import", "--conn", "http://${SURREAL_HOST}", "--user", "${SURREAL_USER}", "--pass", "${SURREAL_PASS}", "--ns" , "${SURREAL_NS}", "--db", "${SURREAL_DB}", "/seed.surql"] 
+  #   restart: on-failure
+  #   links:
+  #     - "db"
+  #   networks:
+  #     - backend-network
+  #   depends_on:
+  #     - db
 
   db:
     container_name: db
     user: root
     image: surrealdb/surrealdb:latest
-    command: start -A --log all --user ${SURREAL_USER} --pass ${SURREAL_PASS} file:/database/database.db
+    command: start -A --user ${SURREAL_USER} --pass ${SURREAL_PASS} file:/database/database.db
     volumes:
       - db-vol:/database
     # ports:

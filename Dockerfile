@@ -1,4 +1,4 @@
-FROM golang:1.22.0-alpine
+FROM golang:1.25.0-alpine
 
 RUN apk add --update nodejs npm
 
@@ -6,6 +6,7 @@ WORKDIR /app
 
 COPY ./server/go.mod .
 COPY ./server/go.sum .
+COPY .env .
 
 RUN go mod download
 

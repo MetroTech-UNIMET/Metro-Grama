@@ -9,18 +9,18 @@ import { Spinner } from '@ui/spinner';
 import ErrorPage from '@components/ErrorPage';
 
 export const Route = createFileRoute('/admin/carreras/editar/$id')({
-  head: ({loaderData}) => ({
+  loader: async ({ context: { queryClient: qc }, params: { id } }) => {
+    qc.ensureQueryData(fetchSubjectsOptions());
+    const career = await qc.ensureQueryData(fetchCompleteCareerOptions({ id }));
+    return { career };
+  },
+  head: ({ loaderData }) => ({
     meta: [
       {
-        title: `Editar ${loaderData.career.name} | MetroGrama`,
+        title: `Editar ${loaderData?.career.name} | MetroGrama`,
       },
     ],
   }),
-  loader: async ({ context: { queryClient: qc }, params: { id } }) => {
-    qc.ensureQueryData(fetchSubjectsOptions());
-    const career = await  qc.ensureQueryData(fetchCompleteCareerOptions({ id }));
-    return { career };
-  },
   errorComponent: (props) => <ErrorPage title="Error cargando el editor de carreras" {...props} />,
 
   component: UpdateCareer,

@@ -6,9 +6,9 @@ interface Props<NextArgs = undefined, PreviousArgs = undefined, JumpToArgs exten
   initialDirection?: Direction;
 
   currentStep: number;
-  next: (args?: NextArgs) => Promise<boolean>;
-  previous: (args?: PreviousArgs) => Promise<boolean>;
-  jumpTo: (step: number, ...args: JumpToArgs) => Promise<boolean>;
+  next: (args?: NextArgs) => Promise<boolean> | boolean;
+  previous: (args?: PreviousArgs) => Promise<boolean> | boolean;
+  jumpTo: (step: number, ...args: JumpToArgs) => Promise<boolean> | boolean;
 }
 
 export function useDirections<NextArgs = undefined, PreviousArgs = undefined, JumpToArgs extends any[] = []>({

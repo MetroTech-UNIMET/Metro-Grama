@@ -7,7 +7,6 @@ import (
 	"metrograma/env"
 	"metrograma/handlers"
 	"metrograma/middlewares"
-	"strings"
 
 	"github.com/gorilla/sessions"
 	"github.com/labstack/echo-contrib/session"
@@ -47,22 +46,6 @@ func main() {
 	e.Use(prettylogger.Logger)
 	e.Use(echoMiddleware.Gzip())
 	e.Use(echoMiddleware.Decompress())
-	e.Use(echoMiddleware.StaticWithConfig(echoMiddleware.StaticConfig{
-		Skipper: func(c echo.Context) bool {
-			return strings.HasPrefix(c.Path(), "/api")
-		},
-		// Root directory from where the static content is served.
-		Root: "www-build",
-		// Index file for serving a directory.
-		// Optional. Default value "index.html".
-		Index: "index.html",
-		// Enable HTML5 mode by forwarding all not-found requests to root so that
-		// SPA (single-page application) can handle the routing.
-		HTML5:      true,
-		Browse:     false,
-		IgnoreBase: false,
-		Filesystem: nil,
-	}))
 
 	handlers.CreateHandlers(e)
 

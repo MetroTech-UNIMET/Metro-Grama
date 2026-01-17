@@ -6,7 +6,6 @@ WORKDIR /app
 
 COPY ./server/go.mod .
 COPY ./server/go.sum .
-COPY .env .
 
 RUN go mod download
 

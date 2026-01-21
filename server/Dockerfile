@@ -2,12 +2,12 @@ FROM golang:1.25.0-alpine
 
 WORKDIR /app
 
-COPY ./server/go.mod .
-COPY ./server/go.sum .
+COPY ./go.mod .
+COPY ./go.sum .
 
 RUN go mod download
 
-COPY ./server .
+COPY . .
 
 ENV GOCACHE=/root/.cache/go-build
 

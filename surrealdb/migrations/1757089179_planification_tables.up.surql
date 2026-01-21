@@ -31,7 +31,7 @@ DEFINE FIELD classroom_code ON subject_section TYPE option<string> PERMISSIONS F
 DEFINE FIELD section_number ON subject_section TYPE int ASSERT $value >= 1 AND $value <= 10 PERMISSIONS FULL;
 DEFINE FIELD subject_offer ON subject_section TYPE record<subject_offer> PERMISSIONS FULL;
 
-DEFINE FUNCTION fn::is_subject_enrollable($subjectId: record<subject>, studentId: record<student>, enrolled: set<record<subject>> ) -> bool | 'already_seen' {
+DEFINE FUNCTION fn::is_subject_enrollable($subjectId: record<subject>, $studentId: record<student>, $enrolled: set<record<subject>> ) -> bool | 'already_seen' {
   LET $is_enrollable = (SELECT VALUE id INSIDE $enrolled 
     FROM (SELECT VALUE <-precede.in FROM ONLY $subjectId))
     .all(|$wasEnrolled: any| $wasEnrolled);
@@ -40,6 +40,6 @@ DEFINE FUNCTION fn::is_subject_enrollable($subjectId: record<subject>, studentId
     { $is_enrollable }
   ELSE
     { 'already_seen' };
-} 
+};
 
 COMMIT TRANSACTION;

@@ -1,5 +1,3 @@
-BEGIN TRANSACTION;
-
 -- Drop study index and table
 REMOVE INDEX unique_relationships ON TABLE study;
 REMOVE TABLE study;
@@ -11,5 +9,3 @@ REMOVE TABLE student;
 
 -- Remove added field from user table
 REMOVE FIELD phone ON TABLE user;
-
-COMMIT TRANSACTION;

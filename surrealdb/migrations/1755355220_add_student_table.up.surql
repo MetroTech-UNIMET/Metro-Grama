@@ -1,4 +1,3 @@
-BEGIN TRANSACTION;
 
 DEFINE FIELD phone ON user TYPE option<string> ASSERT {
     IF $value = NULL { RETURN true; };
@@ -19,5 +18,3 @@ DEFINE TABLE study SCHEMAFULL;
     DEFINE FIELD startingTrimester ON study TYPE record<trimester>;
 
     DEFINE INDEX unique_relationships ON study FIELDS in, out UNIQUE;
-
-COMMIT TRANSACTION;

@@ -1,11 +1,15 @@
 import { useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
-import { SlidersHorizontal } from 'lucide-react';
+import { ArrowDownAZ, ArrowUpAZ, SlidersHorizontal } from 'lucide-react';
 
 import { useFilterByDays } from '../../hooks/search-params/use-filter-by-days';
 import { TimeRange, useFilterByTimeRange } from '../../hooks/search-params/use-filter-by-time-range';
+import { useFilterByAverages } from '../../hooks/search-params/use-filter-by-averages';
+import { useSortSubjectOffers } from '../../hooks/search-params/use-sort-subject-offers';
+
 import { useSearchTerm } from '../../hooks/search-params/use-search-term';
 import { FilterByDays } from '../FilterByDays/FilterByDays';
 import { FilterByTimeRange } from '../FilterByTimeRange/FilterByTimeRange';
+import { FilterByAverages } from '../FilterByAverages/FilterByAverages';
 
 import { fetchTrimestersSelectOptions } from '@/hooks/queries/trimester/use-FetchTrimesters';
 import { useSuspenseCareersOptions } from '@/hooks/queries/career/use-fetch-careers';
@@ -22,6 +26,10 @@ import { SidebarHeader } from '@ui/sidebar';
 import { Button } from '@ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@ui/popover';
 import { Checkbox } from '@ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@ui/select';
+import { Separator } from '@ui/separator';
+
+import type { SortField } from '@/routes/_navLayout/horario/queryParams';
 
 interface Props {
   showEnrollable: boolean;
@@ -34,6 +42,14 @@ export function PlannerSidebarHeader({ showEnrollable, setShowEnrollable }: Prop
   const { term, setTerm } = useSearchTerm();
   const { selectedDays, toggleDay, clearDays } = useFilterByDays();
   const { timeRange, setTimeRange, reset: resetTimeRange } = useFilterByTimeRange();
+  const {
+    filters: averageFilters,
+    setDifficultyRange,
+    setGradeRange,
+    setWorkloadRange,
+    reset: resetAverages,
+  } = useFilterByAverages();
+  const { sorting, setOrderBy, toggleOrderDir } = useSortSubjectOffers();
 
   const { user } = useAuth();
 
@@ -78,6 +94,14 @@ export function PlannerSidebarHeader({ showEnrollable, setShowEnrollable }: Prop
         timeRange={timeRange}
         onChangeTimeRange={setTimeRange}
         onResetTimeRange={resetTimeRange}
+        averageFilters={averageFilters}
+        setDifficultyRange={setDifficultyRange}
+        setGradeRange={setGradeRange}
+        setWorkloadRange={setWorkloadRange}
+        resetAverages={resetAverages}
+        sorting={sorting}
+        setOrderBy={setOrderBy}
+        toggleOrderDir={toggleOrderDir}
       />
 
       {user && (
@@ -94,6 +118,7 @@ export function PlannerSidebarHeader({ showEnrollable, setShowEnrollable }: Prop
   );
 }
 
+// REVIEW - Acaso no existe mejor manera de manejar esto?
 interface FiltersPopoverProps {
   selectedDays: number[];
   onToggleDay: (day: number) => void;
@@ -101,7 +126,16 @@ interface FiltersPopoverProps {
   timeRange: TimeRange | undefined;
   onChangeTimeRange: (next: Partial<{ start: string; end: string }>) => void;
   onResetTimeRange: () => void;
+  averageFilters: ReturnType<typeof useFilterByAverages>['filters'];
+  setDifficultyRange: (range: [number, number]) => void;
+  setGradeRange: (range: [number, number]) => void;
+  setWorkloadRange: (range: [number, number]) => void;
+  resetAverages: () => void;
+  sorting: ReturnType<typeof useSortSubjectOffers>['sorting'];
+  setOrderBy: (field: SortField) => void;
+  toggleOrderDir: () => void;
 }
+
 function FiltersPopover({
   selectedDays,
   onToggleDay,
@@ -109,6 +143,14 @@ function FiltersPopover({
   timeRange,
   onChangeTimeRange,
   onResetTimeRange,
+  averageFilters,
+  setDifficultyRange,
+  setGradeRange,
+  setWorkloadRange,
+  resetAverages,
+  sorting,
+  setOrderBy,
+  toggleOrderDir,
 }: FiltersPopoverProps) {
   return (
     <Popover>
@@ -118,14 +160,56 @@ function FiltersPopover({
           Filtros
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80 space-y-4" align="start">
+      <PopoverContent className="max-h-[80vh] w-80 space-y-4 overflow-y-auto" align="start">
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h4 className="text-sm font-semibold">Ordenar Por</h4>
+            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={toggleOrderDir}>
+              {sorting.orderDir === 'asc' ? <ArrowDownAZ size={16} /> : <ArrowUpAZ size={16} />}
+            </Button>
+          </div>
+          <Select value={sorting.orderBy} onValueChange={(val) => setOrderBy(val as SortField)}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="alphabetical">Alfabético</SelectItem>
+              <SelectItem value="avg_difficulty">Dificultad</SelectItem>
+              <SelectItem value="avg_grade">Nota</SelectItem>
+              <SelectItem value="avg_workload">Carga</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <Separator />
+
         <div className="space-y-2">
           <h4 className="text-sm font-semibold">Días</h4>
           <FilterByDays selectedDays={selectedDays} onToggle={onToggleDay} onClear={onClearDays} />
         </div>
+
+        <Separator />
+
         <div className="space-y-2">
           <h4 className="text-sm font-semibold">Rango de Horas</h4>
           <FilterByTimeRange value={timeRange} onChange={onChangeTimeRange} onReset={onResetTimeRange} />
+        </div>
+
+        <Separator />
+
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h4 className="text-sm font-semibold">Promedios</h4>
+            <Button variant="link" className="text-muted-foreground h-auto p-0 text-xs" onClick={resetAverages}>
+              Resetear
+            </Button>
+          </div>
+          <FilterByAverages
+            filters={averageFilters}
+            setDifficultyRange={setDifficultyRange}
+            setGradeRange={setGradeRange}
+            setWorkloadRange={setWorkloadRange}
+          />
         </div>
       </PopoverContent>
     </Popover>

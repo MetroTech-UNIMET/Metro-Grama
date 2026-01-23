@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"fmt"
 	"maps"
 	"metrograma/db"
 	enrollServices "metrograma/modules/interactions/enroll/services"
@@ -137,8 +136,6 @@ func GetSubjectOfferById(trimesterId string, studentId surrealModels.RecordID, q
 	query, params := qb.Build()
 
 	maps.Copy(params, extraParams)
-	fmt.Println("Generated Query:", query)
-	fmt.Println("With Params:", params)
 
 	result, err := surrealdb.Query[[]DTO.QueryAnnualOfferWithPlanning](context.Background(), db.SurrealDB, query, params)
 	if err != nil {

@@ -30,6 +30,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@ui/separator';
 
 import type { SortField } from '@/routes/_navLayout/horario/queryParams';
+import type { Option } from '@ui/types/option.types';
 
 interface Props {
   showEnrollable: boolean;
@@ -136,6 +137,13 @@ interface FiltersPopoverProps {
   toggleOrderDir: () => void;
 }
 
+const orderSelectOptions: Option<SortField>[] = [
+  { label: 'Alfabético', value: 'alphabetical' },
+  { label: 'Dificultad', value: 'avg_difficulty' },
+  { label: 'Nota', value: 'avg_grade' },
+  { label: 'Carga', value: 'avg_workload' },
+];
+
 function FiltersPopover({
   selectedDays,
   onToggleDay,
@@ -168,15 +176,16 @@ function FiltersPopover({
               {sorting.orderDir === 'asc' ? <ArrowDownAZ size={16} /> : <ArrowUpAZ size={16} />}
             </Button>
           </div>
-          <Select value={sorting.orderBy} onValueChange={(val) => setOrderBy(val as SortField)}>
+          <Select value={sorting.orderBy} onValueChange={(val) => setOrderBy(val)} items={orderSelectOptions}>
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="alphabetical">Alfabético</SelectItem>
-              <SelectItem value="avg_difficulty">Dificultad</SelectItem>
-              <SelectItem value="avg_grade">Nota</SelectItem>
-              <SelectItem value="avg_workload">Carga</SelectItem>
+              {orderSelectOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>

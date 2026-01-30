@@ -69,6 +69,8 @@ services:
     command: start -A --user ${SURREAL_USER} --pass ${SURREAL_PASS} file:/database/database.db
     volumes:
       - db-vol:/database
+    ports:
+      - "8000:8000"
     healthcheck:
       test:
         - CMD

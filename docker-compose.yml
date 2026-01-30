@@ -1,26 +1,10 @@
 version: "3.8"
 services:
-  frontend:
-    container_name: frontend
-    build:
-      context: ./client
-      args:
-        - VITE_API_URL=${VITE_API_URL}
-        - VITE_WS_URL=${VITE_WS_URL}
-    ports:
-      - "80:80"
-    depends_on:
-      - backend
-    networks:
-      - backend-network
-    environment:
-      - VITE_API_URL=${VITE_API_URL}
-      - VITE_WS_URL=${VITE_WS_URL}
   backend:
     container_name: backend
     build: ./server
-    # ports:
-    #   - 6969:6969  <-- Optional: comment this out if you only want access via Nginx (port 80)
+    ports:
+      - 6969:6969
     develop:
       watch:
         - action: rebuild

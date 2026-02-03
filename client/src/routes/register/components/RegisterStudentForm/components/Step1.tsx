@@ -8,7 +8,7 @@ export function Step1() {
       <FormInputField name="lastName" label="Apellido" disabled maxLength={50} />
       <FormInputField name="email" label="Email" type="email" disabled />
       <FormInputField name="id_card" label="Carnet estudiantil" maxLength={11} />
-      <FormPhoneInputField name="phone" label="Teléfono" />
+      <FormPhoneInputField name="phone" label="Teléfono" className='bg-white' />
     </>
   );
 }

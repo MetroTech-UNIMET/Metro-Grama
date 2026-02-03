@@ -17,9 +17,6 @@ import (
 type subjectOfferForSurreal struct {
 	Subject    surrealModels.RecordID   `json:"subject" swaggertype:"object"`
 	Trimesters []surrealModels.RecordID `json:"trimesters" swaggertype:"array"`
-
-	// Subject    string   `json:"subject" swaggertype:"object"`
-	// Trimesters []string `json:"trimesters" swaggertype:"array"`
 }
 
 var translateTrimesters = map[string]string{
@@ -46,8 +43,6 @@ func transformPDFToSurrealObjects(info DTO.ReadResult) ([]subjectOfferForSurreal
 		offers[i] = subjectOfferForSurreal{
 			Subject:    surrealModels.NewRecordID("subject", offer.Code),
 			Trimesters: make([]surrealModels.RecordID, len(offer.Trimesters)),
-			// Subject:    "subject:" + offer.Code,
-			// Trimesters: make([]string, len(offer.Trimesters)),
 		}
 		for j, trimester := range offer.Trimesters {
 			translatedTrimester, ok := translateTrimesters[trimester]
@@ -56,7 +51,6 @@ func transformPDFToSurrealObjects(info DTO.ReadResult) ([]subjectOfferForSurreal
 			}
 			completeName := fmt.Sprintf("%s-%s", info.Period, translatedTrimester)
 			offers[i].Trimesters[j] = surrealModels.NewRecordID("trimester", completeName)
-			// offers[i].Trimesters[j] = "trimester:" + completeName
 		}
 	}
 	return offers, nil
@@ -72,7 +66,7 @@ func relateSubjectsToTrimesters(offers []subjectOfferForSurreal) error {
 				Value("out").
 				Where("in = $subjectId").
 				Where("out IN $trimesterIds")).
-			Let("notExistings", surrealql.Expr("array::difference($trimesterIds, $existings)")).
+			Let("notExistings", surrealql.Expr("array::difference($trimesterIds, $existings ?? [])")).
 			Do(surrealql.Relate("$subjectId", "subject_offer", "$notExistings")),
 		)
 

@@ -6,6 +6,7 @@ import SubjectOfferCard from '../SubjectOfferCard';
 import SubjectOfferDetail from '../SubjectOfferDetail/SubjectOfferDetail';
 
 import { PlannerSidebarProvider, type PlannerSidebarContextValue } from '../../context/PlannerSidebarContext';
+import { sortSubjectOffers } from '../../helpers/orderFunctions';
 
 import { useFetchAnnualOfferByTrimester } from '@/hooks/queries/subject_offer/use-fetch-annual-offer-by-trimester';
 import { useDebounceValue } from '@/hooks/shadcn.io/debounce/use-debounce-value';
@@ -104,6 +105,17 @@ function HomeSidebar({
 
   const selectedDays = params.filterByDays;
   const timeRange = params.filterByTimeRange;
+  const {
+    minDifficulty = 0,
+    maxDifficulty = 10,
+    minGrade = 0,
+    maxGrade = 20,
+    minWorkload = 0,
+    maxWorkload = 10,
+  } = params;
+
+  const orderBy = params.orderBy;
+  const orderDir = params.orderDir;
 
   const filteredData = useMemo(() => {
     if (!subjectsOfferQuery.data) return [] as SubjectOfferWithSections[];
@@ -144,8 +156,38 @@ function HomeSidebar({
       );
     }
 
+    data = data.filter((offer) => {
+      const avgDiff = offer.avg_difficulty ?? 0;
+      const avgGrade = offer.avg_grade ?? 0;
+      const avgWorkload = offer.avg_workload ?? 0;
+
+      return (
+        avgDiff >= minDifficulty &&
+        avgDiff <= maxDifficulty &&
+        avgGrade >= minGrade &&
+        avgGrade <= maxGrade &&
+        avgWorkload >= minWorkload &&
+        avgWorkload <= maxWorkload
+      );
+    });
+
+    data = sortSubjectOffers(data, orderBy, orderDir);
+
     return data;
-  }, [subjectsOfferQuery.data, debouncedSearch, selectedDays, timeRange]);
+  }, [
+    subjectsOfferQuery.data,
+    debouncedSearch,
+    selectedDays,
+    timeRange,
+    minDifficulty,
+    maxDifficulty,
+    minGrade,
+    maxGrade,
+    minWorkload,
+    maxWorkload,
+    orderBy,
+    orderDir,
+  ]);
 
   return (
     <>

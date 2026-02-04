@@ -18,15 +18,13 @@ import { registerStudent } from './functions';
 
 import { useAuth } from '@/contexts/AuthenticationContext';
 import { onInvalidToast } from '@utils/forms';
-import { cn } from '@utils/className';
 import { extractShema } from '@utils/zod/zod-type-guards';
-import { useDirections } from '@/hooks/use-directions';
 
-import useFormStep, { type Step } from '@/hooks/useFormStep';
+import { useFormStep, type Step } from '@/hooks/useFormStep';
 
 import StepsNavigator from '@components/forms/StepsNavigator';
-import { Form } from '@ui/form';
 import SubmitButton from '@ui/derived/submit-button';
+import { Form } from '@ui/form';
 import { Button } from '@ui/button';
 import { Tabs, TabsContent } from '@ui/tabs';
 
@@ -69,9 +67,9 @@ export default function RegisterStudentForm() {
   }
 
   const formSubmit = useCallback(
-    form.handleSubmit(onSubmit, async (errors) => {
+    form.handleSubmit(onSubmit, (errors) => {
       onInvalidToast(errors);
-      await jumpToFirstErrorStep();
+      jumpToFirstErrorStep();
     }),
     [form.handleSubmit, onSubmit],
   );
@@ -80,12 +78,6 @@ export default function RegisterStudentForm() {
     steps: formSteps,
     form: form,
   });
-  const { direction, goNext, goPrevious, goTo } = useDirections({
-    currentStep,
-    next,
-    previous,
-    jumpTo,
-  });
 
   return (
     <div>
@@ -93,7 +85,7 @@ export default function RegisterStudentForm() {
         <Tabs asChild value={String(formSteps[currentStep].id)}>
           <form id="studentForm" onSubmit={formSubmit} className="p-16">
             <StepsNavigator
-              jumpTo={goTo}
+              jumpTo={jumpTo}
               steps={formSteps}
               currentStep={currentStep}
               headerClassName="mb-8"
@@ -111,38 +103,23 @@ export default function RegisterStudentForm() {
               }}
             />
 
-            <TabsContent
-              value="Datos personales"
-              className={cn(
-                'grid grid-cols-2 gap-4',
-                'data-[state=active]:animate-in slide-in-from-left duration-300',
-                direction === 'right' && 'direction-reverse',
-              )}
-            >
+            <TabsContent value="Datos personales" className="grid grid-cols-2 gap-4">
               <Step1 />
             </TabsContent>
 
-            {/* FIXME - Hay un bug que al avanzar a la derecha hay como un flicking */}
-            <TabsContent
-              value="Datos académicos"
-              className={cn(
-                'grid grid-cols-2 gap-4',
-                'data-[state=active]:animate-in slide-in-from-left duration-300',
-                direction === 'right' && 'direction-reverse',
-              )}
-            >
+            <TabsContent value="Datos académicos" className="grid grid-cols-2 gap-4">
               <Step2 />
             </TabsContent>
           </form>
         </Tabs>
 
         <div className="flex flex-row gap-2">
-          <Button type="button" onClick={() => goPrevious()} size="icon">
+          <Button type="button" onClick={() => previous()} size="icon">
             <ArrowLeft />
           </Button>
 
           {currentStep !== formSteps.length - 1 ? (
-            <Button type="button" onClick={async () => await goNext('callOnError')} size="icon">
+            <Button type="button" onClick={() => next('callOnError')} size="icon">
               <ArrowRight />
             </Button>
           ) : (

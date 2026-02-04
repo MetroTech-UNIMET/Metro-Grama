@@ -12,6 +12,7 @@ import { CardTitle, CardDescription } from '@ui/card';
 import { SidebarContent, SidebarHeader } from '@ui/sidebar';
 import { Button } from '@ui/button';
 import { Badge } from '@ui/badge';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@ui/tooltip';
 
 import type { SubjectOfferWithSections } from '@/interfaces/SubjectOffer';
 
@@ -46,9 +47,31 @@ export default function SubjectOfferDetail({ subjectOffer, onBack }: Props) {
   );
 }
 
+const SubjectStat = ({ label, value }: { label: string; value: number }) => (
+  <TooltipProvider>
+    <Tooltip delayDuration={300}>
+      <TooltipTrigger asChild>
+        <div className="hover:bg-accent/50 flex cursor-help flex-col items-center justify-center rounded-md border p-2 text-center transition-colors">
+          {value === 0 ? (
+            <span className="text-muted-foreground text-lg font-bold">-</span>
+          ) : (
+            <span className="text-lg font-bold">{value.toFixed(1)}</span>
+          )}
+          <span className="text-muted-foreground text-[10px] font-bold tracking-wider uppercase">{label}</span>
+        </div>
+      </TooltipTrigger>
+      <TooltipContent className="max-w-[200px] text-center">
+        <p>
+          Estos son los promedios de la materia en el trimestre anterior. En caso de no tener datos se muestra un "-"
+        </p>
+      </TooltipContent>
+    </Tooltip>
+  </TooltipProvider>
+);
+
 function SubjectSidebarHeader({ subjectOffer, onBack }: Pick<Props, 'subjectOffer' | 'onBack'>) {
   const differentFriends = subjectOffer.differentFriends;
-  
+
   console.log('Last Student Editor:', subjectOffer);
   return (
     <SidebarHeader>
@@ -80,10 +103,13 @@ function SubjectSidebarHeader({ subjectOffer, onBack }: Pick<Props, 'subjectOffe
         </section>
       )}
 
-       
+      <div className="mb-4 grid grid-cols-3 gap-2">
+        <SubjectStat label="Dificultad" value={subjectOffer.avg_difficulty} />
+        <SubjectStat label="Nota" value={subjectOffer.avg_grade} />
+        <SubjectStat label="Carga" value={subjectOffer.avg_workload} />
+      </div>
 
       {differentFriends > 0 && <FriendsPopover subjectOffer={subjectOffer} totalFriends={differentFriends} />}
     </SidebarHeader>
   );
 }
-

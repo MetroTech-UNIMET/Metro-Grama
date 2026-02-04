@@ -1,5 +1,7 @@
+/// <reference types="vitest" />
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react-swc';
+
 
 import tailwindcss from '@tailwindcss/vite';
 import { tanstackRouter } from '@tanstack/router-plugin/vite';
@@ -36,7 +38,7 @@ export default defineConfig({
     ],
   },
   build: {
-    outDir: '../www-build',
+    outDir: 'dist',
   },
   preview: {
     host: '0.0.0.0',
@@ -46,4 +48,10 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 1403,
   },
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: './src/test/setup.ts',
+  },
 });
+

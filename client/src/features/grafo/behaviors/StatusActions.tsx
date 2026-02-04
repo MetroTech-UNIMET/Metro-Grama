@@ -209,6 +209,8 @@ function calculateNewState<NodeStatusObject extends Subject | SubjectNoCareers =
   { node, newState }: NodeState,
   newNodeStatuses: Record<nodeCustomState, Map<string, NodeStatusObject>>,
 ) {
+  if (!node) return;
+
   const subject = (node.getModel().data as Node4j<NodeStatusObject>).data;
   const nodeId = node.getID();
 

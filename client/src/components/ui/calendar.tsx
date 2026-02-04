@@ -116,7 +116,7 @@ function Calendar({
         Dropdown: ({ value, onChange, options, dir, defaultValue, className, ...dropdownProps }: DropdownProps) => {
           if (!options) throw Error('Las opciones del dropdown de calendario deben estar definidas');
           const selected = options.find((child) => child.value === value);
-          const handleChange = (value: string) => {
+          const handleChange = (value: string | undefined) => {
             const changeEvent = {
               target: { value },
             } as React.ChangeEvent<HTMLSelectElement>;

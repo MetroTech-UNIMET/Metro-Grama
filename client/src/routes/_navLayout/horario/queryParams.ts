@@ -25,5 +25,23 @@ export const queryParams = z.object({
     })
     .optional()
     .catch(undefined),
-  orderBy: z.union([z.literal('name'), z.literal('prelations')]).catch('name'),
+  orderBy: z
+    .enum(['name', 'prelations', 'avg_difficulty', 'avg_grade', 'avg_workload', 'alphabetical'])
+    .catch('alphabetical'),
+  orderDir: z.enum(['asc', 'desc']).catch('asc'),
+
+  // Averages filters
+  minDifficulty: z.number().min(0).max(10).catch(0),
+  maxDifficulty: z.number().min(0).max(10).catch(10),
+
+  minGrade: z.number().min(0).max(20).catch(0),
+  maxGrade: z.number().min(0).max(20).catch(20),
+
+  minWorkload: z.number().min(0).max(10).catch(0),
+  maxWorkload: z.number().min(0).max(10).catch(10),
 });
+
+type QueryParams = z.infer<typeof queryParams>;
+
+export type SortField = QueryParams['orderBy'];
+export type SortDirection = QueryParams['orderDir'];

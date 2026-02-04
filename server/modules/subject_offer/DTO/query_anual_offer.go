@@ -25,6 +25,10 @@ type QueryAnnualOffer struct {
 // uses SectionsWithSchedulesAndPlanning to include planning students.
 type QueryAnnualOfferWithPlanning struct {
 	BaseQueryAnnualOffer
+	AvgDifficulty float64 `json:"avg_difficulty"`
+	AvgGrade      float64 `json:"avg_grade"`
+	AvgWorkload   float64 `json:"avg_workload"`
+
 	Sections []SectionsWithSchedulesAndPlanning `json:"sections"`
 }
 

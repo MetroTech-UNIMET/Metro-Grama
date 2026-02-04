@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"fmt"
 	"maps"
 	"metrograma/db"
 	enrollServices "metrograma/modules/interactions/enroll/services"
@@ -88,6 +87,17 @@ func GetSubjectOfferById(trimesterId string, studentId surrealModels.RecordID, q
 
 	subjectOffer_Qb, sections_Qb := utils.GetBaseSubjectOfferQuery(careersArray, isUserLogged)
 
+	subjectOffer_Qb = subjectOffer_Qb.
+		Alias("avg_difficulty", "math::mean(? ?: [0])", surrealql.Select("enroll").
+			Value("difficulty").
+			Where("out=$parent.in AND trimester=$parent.out")).
+		Alias("avg_grade", "math::mean(? ?: [0])", surrealql.Select("enroll").
+			Value("grade").
+			Where("out=$parent.in AND trimester=$parent.out")).
+		Alias("avg_workload", "math::mean(? ?: [0])", surrealql.Select("enroll").
+			Value("workload").
+			Where("out=$parent.in AND trimester=$parent.out"))
+
 	sections_Qb.
 		Alias("students_planning_to_enroll", "COUNT(?)",
 			surrealql.
@@ -124,7 +134,6 @@ func GetSubjectOfferById(trimesterId string, studentId surrealModels.RecordID, q
 	qb = qb.Return("?", subjectOffer_Qb)
 
 	query, params := qb.Build()
-	fmt.Println("Generated Query:", query)
 
 	maps.Copy(params, extraParams)
 

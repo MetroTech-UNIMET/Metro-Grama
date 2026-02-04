@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"metrograma/db"
-	"metrograma/models"
 	"metrograma/modules/auth/DTO"
 
 	"github.com/surrealdb/surrealdb.go"
@@ -39,7 +38,7 @@ func LoginUser(login DTO.UserLoginForm) (*AuthResult, error) {
 	}
 
 	userResult := (*result)[0].Result
-	user := models.MinimalUser{
+	user := DTO.MinimalUser{
 		ID:   userResult.ID,
 		Role: userResult.Role,
 	}

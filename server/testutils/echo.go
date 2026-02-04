@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"metrograma/db"
+	"metrograma/middlewares"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -19,10 +20,12 @@ func SetupEcho() *echo.Echo {
 	os.Setenv("SURREAL_PASS", "root")
 	os.Setenv("SURREAL_NS", "test")
 	os.Setenv("SURREAL_DB", "test")
+	os.Setenv("FRONTEND_ADDRS", "http://localhost:3000")
 
 	db.InitSurrealDB()
 
 	e := echo.New()
+	e.Validator = middlewares.NewValidator()
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	return e
@@ -39,4 +42,4 @@ func CreateEchoContextWithJson(t *testing.T, e *echo.Echo, data interface{}) (ec
 	rec := httptest.NewRecorder()
 	c := e.NewContext(req, rec)
 	return c, rec
-} 
+}

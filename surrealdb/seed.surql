@@ -1087,6 +1087,6 @@ LET $precedes = [
 ];
 
 FOR $relation IN $precedes {
-    RELATE ($relation.in)->belong->($relation.out);
+    RELATE ($relation.in)->precede->($relation.out);
 };
 COMMIT TRANSACTION;

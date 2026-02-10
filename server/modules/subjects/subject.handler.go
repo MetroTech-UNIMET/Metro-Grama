@@ -22,6 +22,7 @@ func Handlers(e *echo.Group) {
 	subjectsGroup.GET("/electives/graph/", getElectiveSubjectsGraph)
 	// Write operations have rate limiting (50 req/min per IP)
 	subjectsGroup.POST("/", createSubject, authMiddlewares.AdminAuth, middlewares.WriteRateLimit())
+	subjectsGroup.POST("/electives/", createSubjectElective, authMiddlewares.AdminAuth, middlewares.WriteRateLimit())
 }
 
 // getSubjects godoc
@@ -140,6 +141,51 @@ func createSubject(c echo.Context) error {
 	}
 
 	if err := services.CreateSubject(subjectForm); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	}
+
+	return c.NoContent(http.StatusCreated)
+}
+
+// createSubjectElective godoc
+// @Summary      Create a new elective subject
+// @Description  Create an elective subject with precedes
+// @Tags         subjects
+// @Accept       json
+// @Produce      json
+// @Param        subject  body      models.SubjectElectiveForm  true  "Subject elective form"
+// @Success      201  {object}  map[string]string
+// @Failure      400  {object}  map[string]string
+// @Failure      404  {object}  map[string]string
+// @Failure      409  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /subjects/electives/ [post]
+func createSubjectElective(c echo.Context) error {
+	var subjectForm DTO.SubjectElectiveForm
+	if err := c.Bind(&subjectForm); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	if err := c.Validate(subjectForm); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	codeId := surrealModels.NewRecordID("subject", subjectForm.Code)
+	if err := tools.ExistRecord(codeId); err == nil {
+		return echo.NewHTTPError(http.StatusConflict, "Already exist")
+	}
+
+	for _, p := range subjectForm.PrecedesID {
+		precedesID, err := surrealModels.ParseRecordID(p)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusNotFound, fmt.Sprintf("Precedes subject `%s` not found", p))
+		}
+		if err := tools.ExistRecord(*precedesID); err != nil {
+			return echo.NewHTTPError(http.StatusNotFound, fmt.Sprintf("Precedes subject `%s` not found", p))
+		}
+	}
+
+	if err := services.CreateSubjectElective(subjectForm); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 

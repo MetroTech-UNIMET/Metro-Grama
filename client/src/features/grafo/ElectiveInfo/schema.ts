@@ -20,9 +20,11 @@ export const electiveFormSchema = z.object({
     .catch([]),
 });
 
-export type ElectiveFormValues = z.infer<typeof electiveFormSchema>;
+export type ElectiveFormInput = z.input<typeof electiveFormSchema>;
+export type ElectiveFormOutput = z.output<typeof electiveFormSchema>;
 
-export const electiveDefaultValues: ElectiveFormValues = {
+
+export const electiveDefaultValues: ElectiveFormInput = {
   name: '',
   code: '',
   prelations: [],

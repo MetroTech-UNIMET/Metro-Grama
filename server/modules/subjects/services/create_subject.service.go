@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"metrograma/db"
 	"metrograma/models"
+	"metrograma/modules/subjects/DTO"
 	"metrograma/tools"
 
 	"github.com/surrealdb/surrealdb.go"
@@ -32,11 +33,11 @@ func CreateSubject(subject models.SubjectForm) error {
 	`
 
 	queryParams := map[string]any{
-		"code":      subject.Code,
-		"name":      subject.Name,
+		"code": subject.Code,
+		"name": subject.Name,
 		// "credits":   subject.Credits,
 		// "BPCredits": subject.BPCredits,
-		"careers":   subject.Careers,
+		"careers":    subject.Careers,
 		"precedesID": subject.PrecedesID,
 	}
 
@@ -47,4 +48,35 @@ func CreateSubject(subject models.SubjectForm) error {
 
 	data := (*result)[0].Result
 	return tools.GetSurrealErrorMsgs(data)
-} 
+}
+
+func CreateSubjectElective(subject DTO.SubjectElectiveForm) error {
+	query := `
+	BEGIN TRANSACTION;
+
+	CREATE subject:$code CONTENT {
+		name: $name,
+		isElective: true
+	};
+
+	FOR $precede IN $precedesID {
+		RELATE subject:$code->precede->$precede;
+	};
+
+	COMMIT TRANSACTION;
+	`
+
+	queryParams := map[string]any{
+		"code":       subject.Code,
+		"name":       subject.Name,
+		"precedesID": subject.PrecedesID,
+	}
+
+	result, err := surrealdb.Query[models.SubjectEntity](context.Background(), db.SurrealDB, query, queryParams)
+	if err != nil {
+		return fmt.Errorf("error creating subject: %v", err)
+	}
+
+	data := (*result)[0].Result
+	return tools.GetSurrealErrorMsgs(data)
+}

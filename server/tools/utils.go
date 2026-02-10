@@ -1,6 +1,8 @@
 package tools
 
-import "strings"
+import (
+	"strings"
+)
 
 func StringToArray(value string) []string {
 	values := strings.Split(value, ",")

@@ -1,28 +1,22 @@
-import React from "react";
-import { VariantProps } from "class-variance-authority";
-import { buttonVariants } from "./button";
-import { cn } from "@utils/className";
-import { Link, LinkProps } from "react-router-dom";
-import { baseApiUrl } from "@/axiosConfig";
+import React from 'react';
+import { type LinkComponentProps, Link, useLocation } from '@tanstack/react-router';
 
-export interface LinkComponentProps
-  extends LinkProps,
-    VariantProps<typeof buttonVariants> {}
+import { cn } from '@utils/className';
 
-export const ButtonLink = React.forwardRef<
-  HTMLAnchorElement,
-  LinkComponentProps
->(({ className, variant, size, children, ...props }, ref) => {
+import { baseApiUrl } from '@/axiosConfig';
+import { buttonVariants } from './button';
+
+import type { VariantProps } from 'class-variance-authority';
+
+export interface ButtonLinkProps extends LinkComponentProps, VariantProps<typeof buttonVariants> {}
+
+export const ButtonLink = ({ className, variant, size, children, ...props }: ButtonLinkProps) => {
   return (
-    <Link
-      ref={ref}
-      {...props}
-      className={cn(buttonVariants({ variant, size, className }))}
-    >
+    <Link {...props} className={cn(buttonVariants({ variant, size, className }))}>
       {children}
     </Link>
   );
-});
+};
 
 const GoogleSvg = (
   <svg
@@ -52,15 +46,18 @@ const GoogleSvg = (
   </svg>
 );
 
-export const GoogleLink = ({ className = "" }: { className?: string }) => {
+export const GoogleLink = ({ className = '' }: { className?: string }) => {
+  const location = useLocation();
+
+  const href = React.useMemo(() => {
+    const search = location.search ?? '';
+    const currentPath = `${location.pathname}${search}`;
+
+    return `${baseApiUrl}/auth/google/login?redirect=${encodeURIComponent(currentPath)}`;
+  }, [location.pathname, location.search]);
+
   return (
-    <a
-      href={`${baseApiUrl}/auth/google/login`}
-      className={cn(
-        buttonVariants({ variant: "outline", className: "gap-4" }),
-        className
-      )}
-    >
+    <a href={href} className={cn(buttonVariants({ variant: 'outline', className: 'gap-4' }), className)}>
       {GoogleSvg}
       Inicia sesión con Google
     </a>

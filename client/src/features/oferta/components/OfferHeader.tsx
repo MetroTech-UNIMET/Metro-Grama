@@ -1,0 +1,93 @@
+import { useRef, type ChangeEvent } from 'react';
+import { Upload } from 'lucide-react';
+import { toast } from 'sonner';
+
+import { pdfFileSchema } from './schema';
+
+import { useSelectedCareer } from '../hooks/search-params/use-selected-career';
+import { useMutationUploadAnnualOfferPDF } from '../hooks/mutations/use-mutation-uploadAnnualOfferPDF';
+
+import { useFetchCareersOptions } from '@/hooks/queries/career/use-fetch-careers';
+
+import AutoComplete from '@ui/derived/autocomplete';
+import { Button } from '@ui/button';
+import { Spinner } from '@ui/spinner';
+
+interface Props {
+  year: string | undefined;
+  setYear: (year: string) => void;
+}
+
+export function OfferHeader({ year, setYear }: Props) {
+  const careerOptionsQuery = useFetchCareersOptions();
+
+  const { selectedCareer, setSelectedCareer } = useSelectedCareer({
+    careerOptions: careerOptionsQuery.data,
+    useStudentCareersAsDefault: true,
+  });
+
+  // File input ref
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const uploadMutation = useMutationUploadAnnualOfferPDF();
+
+  const handleOpenFileDialog = () => fileInputRef.current?.click();
+
+  const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const parsed = pdfFileSchema.safeParse(file);
+    if (!parsed.success) {
+      const message = parsed.error.issues[0]?.message ?? 'Archivo inválido';
+      toast.error('Error al subir el PDF', { description: message });
+      e.target.value = '';
+      return;
+    }
+
+    uploadMutation.mutate(
+      { file: parsed.data },
+      {
+        onSettled: () => {
+          e.target.value = '';
+        },
+      },
+    );
+  };
+
+  return (
+    <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      <div className="flex flex-wrap items-center gap-4">
+        <AutoComplete
+          options={careerOptionsQuery.data || []}
+          isLoading={careerOptionsQuery.isLoading}
+          value={selectedCareer}
+          onSelect={(option) => setSelectedCareer(option as any)}
+          placeholder="Selecciona carrera"
+        />
+
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="application/pdf,.pdf"
+          className="hidden"
+          onChange={handleFileChange}
+        />
+        <Button colors={'secondary'} onClick={handleOpenFileDialog} disabled={uploadMutation.isPending}>
+          {uploadMutation.isPending ? <Spinner /> : <Upload />}
+          {uploadMutation.isPending ? 'Subiendo…' : 'Subir PDF de la Oferta Anual'}
+        </Button>
+      </div>
+
+      <div className="flex items-center gap-2 text-sm">
+        <span>Año:</span>
+        <input
+          type="text"
+          value={year}
+          onChange={(e) => setYear(e.target.value)}
+          placeholder="2324"
+          className="bg-background h-8 w-20 rounded border border-gray-300 px-2 text-sm"
+        />
+      </div>
+    </header>
+  );
+}

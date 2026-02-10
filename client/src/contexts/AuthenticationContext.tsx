@@ -1,72 +1,111 @@
-import { logOutGoogle } from "@/api/authApi";
-import { getStudentProfile } from "@/api/studentsApi";
-import { Student } from "@/interfaces/Student";
-import { toast } from "@ui/use-toast";
-import { notRetryOnUnauthorized } from "@utils/queries";
-import { AxiosError } from "axios";
-import { createContext, useContext, useEffect, useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { createContext, useContext } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 
-interface AuthContextProps {
-  student: Student | null;
-  loadingAuth: boolean;
-  errorAuth: unknown;
+import { logOutGoogle } from '@/api/authApi';
 
+import { fetchStudentMyUserOptions, useFetchMyUser, type UserType } from '@/hooks/queries/student/use-fetch-my-user';
+import type { AxiosError } from 'axios';
+
+export type AuthContextProps = (SucessAuth | LoadingAuth | UnauthenticatedAuth) & {
+  ensureData: () => Promise<UserType | null>;
   logOut: () => void;
-}
+};
+
+type SucessAuth = {
+  user: UserType;
+  status: 'authenticated';
+  errorAuth: null;
+};
+
+type LoadingAuth = {
+  user: null;
+  status: 'loading';
+  errorAuth: null | AxiosError<unknown, any>;
+};
+
+type UnauthenticatedAuth = {
+  user: null;
+  status: 'unauthenticated';
+  errorAuth: AxiosError<unknown, any> | null;
+};
 
 const AuthContext = createContext<AuthContextProps | null>(null);
 
 export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
+    throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
 }
 
-export default function AuthenticationContext({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function AuthenticationContext({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
-
-  const { data, isLoading, error } = useQuery<Student | null, AxiosError>({
-    queryKey: ["students", "profile"],
-    queryFn: getStudentProfile,
-    retry: notRetryOnUnauthorized,
-  });
+  const myUserQuery = useFetchMyUser();
 
   const logOutMutation = useMutation({
     mutationFn: logOutGoogle,
     //@ts-ignore TODO Considerar mostrar una descripción del error
     onError: (error) => {
-      toast({
-        title: "Error al cerrar sesión",
-        variant: "destructive",
-      });
+      toast.error('Error al cerrar sesión');
     },
     onSuccess: async () => {
-      setStudent(null);
-      return await queryClient.invalidateQueries({
-        queryKey: ["students", "profile"],
-      });
+      return await queryClient.setQueryData(['users', 'profile'], null);
     },
   });
 
-  const [student, setStudent] = useState<Student | null>(null);
+  const logOut: () => void = () => logOutMutation.mutate();
 
-  useEffect(() => {
-    setStudent(data ?? null);
-  }, [data]);
-
-  const value = {
-    student,
-    loadingAuth: isLoading,
-    errorAuth: error,
-    logOut: logOutMutation.mutate,
+  const ensureData = async (): Promise<UserType | null> => {
+    try {
+      return await queryClient.ensureQueryData(fetchStudentMyUserOptions());
+    } catch {
+      return null;
+    }
   };
 
+  let value: AuthContextProps;
+
+  if (myUserQuery.isPending) {
+    value = {
+      user: null,
+      status: 'loading',
+      errorAuth: myUserQuery.error,
+      logOut,
+      ensureData,
+    };
+  } else if (myUserQuery.data) {
+    value = {
+      user: myUserQuery.data,
+      status: 'authenticated',
+      errorAuth: null,
+      logOut,
+      ensureData,
+    };
+  } else {
+    value = {
+      user: null,
+      status: 'unauthenticated',
+      errorAuth: myUserQuery.error,
+      logOut,
+      ensureData,
+    };
+  }
+
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
+export function OnlyAdmin({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
+
+  if (!user)
+    // TODO - Mejor manejo de sin autorización
+    return <>No hay usuario </>;
+
+  if (user.role.ID !== 'admin')
+    // TODO - Mejor manejo de sin autorización
+    return <>El rol no es el correcto </>;
+
+  return children;
 }

@@ -1,7 +1,7 @@
-dev: start-db seed-db
+dev: start-db migrate 
 
-seed-db:
-	docker compose -f docker-compose.dev.yml up db_seed
+migrate:
+	surrealgo_migrate migrate up	
 
 start-db:
 	docker compose -f docker-compose.dev.yml up -d

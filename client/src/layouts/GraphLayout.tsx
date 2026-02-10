@@ -1,18 +1,9 @@
-import AuthenticationContext from "@/contexts/AuthenticationContext";
-import { Toaster } from "@ui/toaster";
-import { Outlet } from "react-router-dom";
-export default function GraphLayout() {
+import '@antv/graphin-icons/dist/index.css';
+
+export default function GraphLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
-      <main
-        className="bg-gradient-to-b from-primary-900 to-[#1D1B32]
-      text-UI-white w-screen h-screen p-8"
-      >
-        <AuthenticationContext>
-          <Outlet />
-        </AuthenticationContext>
-      </main>
-      <Toaster />
+      <main className="from-primary-500 text-UI-white h-svh bg-linear-to-b to-[#1D1B32] p-8">{children}</main>
     </>
   );
 }

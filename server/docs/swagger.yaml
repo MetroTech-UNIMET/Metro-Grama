@@ -1,0 +1,1944 @@
+basePath: /api
+definitions:
+  DTO.CareerWithTrimester:
+    properties:
+      career:
+        type: string
+      trimester:
+        type: string
+    required:
+    - career
+    - trimester
+    type: object
+  DTO.CompleteStudentDTO:
+    properties:
+      careersWithTrimesters:
+        items:
+          $ref: '#/definitions/DTO.CareerWithTrimester'
+        type: array
+      id_card:
+        minimum: 1
+        type: integer
+      phone:
+        type: string
+    required:
+    - careersWithTrimesters
+    - id_card
+    - phone
+    type: object
+  DTO.CreateCourse:
+    properties:
+      is_principal:
+        type: boolean
+      sections:
+        items:
+          type: object
+        type: array
+      trimesterId:
+        type: object
+    required:
+    - is_principal
+    - sections
+    - trimesterId
+    type: object
+  DTO.CreateEnrolled:
+    properties:
+      difficulty:
+        type: integer
+      grade:
+        type: integer
+      trimesterId:
+        type: object
+      workload:
+        type: integer
+    required:
+    - difficulty
+    - grade
+    - trimesterId
+    - workload
+    type: object
+  DTO.CreateSubjectOfferRequest:
+    properties:
+      trimesterId:
+        type: object
+    required:
+    - trimesterId
+    type: object
+  DTO.CreateSubjectSchedule:
+    properties:
+      sections:
+        items:
+          $ref: '#/definitions/DTO.SectionsDTO'
+        type: array
+      subject_offer_id:
+        type: object
+    required:
+    - sections
+    - subject_offer_id
+    type: object
+  DTO.FriendOfAFriend:
+    properties:
+      commonFriend:
+        $ref: '#/definitions/models.StudentWithUser'
+      friendOfAfriend:
+        $ref: '#/definitions/models.StudentWithUser'
+    type: object
+  DTO.MarkNotificationsAsReadDTO:
+    properties:
+      notifications:
+        items:
+          type: object
+        minItems: 1
+        type: array
+    required:
+    - notifications
+    type: object
+  DTO.NotificationDTO:
+    properties:
+      all:
+        items:
+          $ref: '#/definitions/models.Notification'
+        type: array
+      unread:
+        items:
+          $ref: '#/definitions/models.Notification'
+        type: array
+    type: object
+  DTO.QueryAnnualOffer:
+    properties:
+      careers:
+        items:
+          type: object
+        type: array
+      differentFriends:
+        type: integer
+      id:
+        type: object
+      is_enrollable:
+        type: boolean
+      is_enrolled:
+        type: boolean
+      prelations:
+        items:
+          $ref: '#/definitions/models.SubjectEntity'
+        type: array
+      sections:
+        items:
+          $ref: '#/definitions/DTO.SectionsWithSchedules'
+        type: array
+      subject:
+        $ref: '#/definitions/models.SubjectEntity'
+      trimester:
+        $ref: '#/definitions/models.TrimesterEntity'
+    type: object
+  DTO.QueryAnnualOfferYear:
+    properties:
+      period:
+        type: integer
+      subject:
+        $ref: '#/definitions/models.SubjectEntity'
+      trimesters:
+        items:
+          type: object
+        type: array
+    type: object
+  DTO.SectionsDTO:
+    properties:
+      classroom_code:
+        type: string
+      schedules:
+        items:
+          $ref: '#/definitions/DTO.schedule'
+        type: array
+      section_number:
+        type: integer
+      subject_section_id:
+        type: object
+    required:
+    - schedules
+    - section_number
+    type: object
+  DTO.SectionsWithSchedules:
+    properties:
+      classroom_code:
+        type: string
+      friends:
+        items:
+          $ref: '#/definitions/models.StudentWithUser'
+        type: array
+      friends_of_a_friend:
+        items:
+          $ref: '#/definitions/DTO.FriendOfAFriend'
+        type: array
+      id:
+        type: object
+      schedules:
+        items:
+          $ref: '#/definitions/models.SubjectScheduleEntity'
+        type: array
+      section_number:
+        type: integer
+      subject_offer:
+        type: object
+    required:
+    - id
+    type: object
+  DTO.SubjectNode:
+    properties:
+      BPCredits:
+        type: integer
+      careers:
+        items:
+          type: object
+        type: array
+      code:
+        type: object
+      credits:
+        type: integer
+      name:
+        type: string
+    type: object
+  DTO.SubjectNodeBase:
+    properties:
+      BPCredits:
+        type: integer
+      code:
+        type: object
+      credits:
+        type: integer
+      name:
+        type: string
+    type: object
+  DTO.SubjectStat:
+    properties:
+      count:
+        type: integer
+      difficulty:
+        type: number
+      grade:
+        type: number
+      trimester:
+        type: object
+      workload:
+        type: number
+    type: object
+  DTO.hourMinute:
+    properties:
+      hours:
+        maximum: 23
+        minimum: 0
+        type: integer
+      minutes:
+        maximum: 59
+        minimum: 0
+        type: integer
+    required:
+    - hours
+    - minutes
+    type: object
+  DTO.schedule:
+    properties:
+      day_of_week:
+        maximum: 6
+        minimum: 0
+        type: integer
+      ending_time:
+        $ref: '#/definitions/DTO.hourMinute'
+      starting_time:
+        $ref: '#/definitions/DTO.hourMinute'
+    required:
+    - day_of_week
+    - ending_time
+    - starting_time
+    type: object
+  models.CareerCreateForm:
+    properties:
+      emoji:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      subjects:
+        items:
+          items:
+            $ref: '#/definitions/models.CreateCareerSubject'
+          type: array
+        type: array
+    required:
+    - emoji
+    - id
+    - name
+    - subjects
+    type: object
+  models.CareerEntity:
+    properties:
+      electivesTrimesters:
+        items:
+          type: integer
+        type: array
+      emoji:
+        type: string
+      id:
+        type: object
+      name:
+        type: string
+    required:
+    - emoji
+    - id
+    - name
+    type: object
+  models.CareerSubjectWithoutType:
+    properties:
+      BPCredits:
+        maximum: 150
+        minimum: 0
+        type: integer
+      code:
+        type: object
+      credits:
+        maximum: 150
+        minimum: 0
+        type: integer
+      name:
+        type: string
+      prelations:
+        items:
+          type: object
+        type: array
+    required:
+    - code
+    - name
+    - prelations
+    type: object
+  models.CareerWithSubjects:
+    properties:
+      electivesTrimesters:
+        items:
+          type: integer
+        type: array
+      emoji:
+        type: string
+      id:
+        type: object
+      name:
+        type: string
+      subjects:
+        items:
+          items:
+            $ref: '#/definitions/models.CareerSubjectWithoutType'
+          type: array
+        type: array
+    required:
+    - emoji
+    - id
+    - name
+    - subjects
+    type: object
+  models.CreateCareerSubject:
+    properties:
+      BPCredits:
+        maximum: 150
+        minimum: 0
+        type: integer
+      code:
+        type: string
+      credits:
+        maximum: 150
+        minimum: 0
+        type: integer
+      name:
+        type: string
+      prelations:
+        items:
+          type: object
+        type: array
+      subjectType:
+        enum:
+        - elective
+        - existing
+        - new
+        type: string
+    required:
+    - code
+    - name
+    - prelations
+    - subjectType
+    type: object
+  models.Edge:
+    properties:
+      from:
+        type: string
+      to:
+        type: string
+    type: object
+  models.Graph-DTO_SubjectNode:
+    properties:
+      edges:
+        items:
+          $ref: '#/definitions/models.Edge'
+        type: array
+      nodes:
+        items:
+          $ref: '#/definitions/models.Node-DTO_SubjectNode'
+        type: array
+    type: object
+  models.Graph-DTO_SubjectNodeBase:
+    properties:
+      edges:
+        items:
+          $ref: '#/definitions/models.Edge'
+        type: array
+      nodes:
+        items:
+          $ref: '#/definitions/models.Node-DTO_SubjectNodeBase'
+        type: array
+    type: object
+  models.Node-DTO_SubjectNode:
+    properties:
+      data:
+        $ref: '#/definitions/DTO.SubjectNode'
+      id:
+        type: string
+    type: object
+  models.Node-DTO_SubjectNodeBase:
+    properties:
+      data:
+        $ref: '#/definitions/DTO.SubjectNodeBase'
+      id:
+        type: string
+    type: object
+  models.Notification:
+    properties:
+      created_at:
+        type: string
+      extraData:
+        additionalProperties: {}
+        type: object
+      id:
+        type: object
+      message:
+        type: string
+      read:
+        type: boolean
+      read_at:
+        type: string
+      type:
+        type: string
+      user:
+        type: object
+    type: object
+  models.StudentWithUser:
+    properties:
+      id:
+        type: object
+      id_card:
+        type: string
+      user:
+        $ref: '#/definitions/models.UserEntity'
+    type: object
+  models.SubjectCareer:
+    properties:
+      careerID:
+        type: string
+      trimester:
+        maximum: 20
+        type: integer
+    required:
+    - careerID
+    - trimester
+    type: object
+  models.SubjectEntity:
+    properties:
+      BPCredits:
+        type: integer
+      credits:
+        type: integer
+      id:
+        type: object
+      isElective:
+        type: boolean
+      name:
+        type: string
+    type: object
+  models.SubjectForm:
+    properties:
+      careers:
+        items:
+          $ref: '#/definitions/models.SubjectCareer'
+        type: array
+      code:
+        type: object
+      name:
+        type: string
+      precedesID:
+        items:
+          type: string
+        type: array
+    required:
+    - careers
+    - code
+    - name
+    - precedesID
+    type: object
+  models.SubjectScheduleEntity:
+    properties:
+      day_of_week:
+        maximum: 6
+        minimum: 0
+        type: integer
+      ending_hour:
+        maximum: 23
+        minimum: 0
+        type: integer
+      ending_minute:
+        maximum: 59
+        minimum: 0
+        type: integer
+      id:
+        type: object
+      starting_hour:
+        maximum: 23
+        minimum: 0
+        type: integer
+      starting_minute:
+        maximum: 59
+        minimum: 0
+        type: integer
+      subject_section:
+        type: object
+    required:
+    - day_of_week
+    - ending_hour
+    - ending_minute
+    - id
+    - starting_hour
+    - starting_minute
+    - subject_section
+    type: object
+  models.TrimesterEntity:
+    properties:
+      ending_date:
+        type: string
+      id:
+        type: object
+      intensive:
+        type: boolean
+      is_current:
+        type: boolean
+      is_next:
+        type: boolean
+      starting_date:
+        type: string
+    required:
+    - ending_date
+    - id
+    - intensive
+    - is_current
+    - is_next
+    - starting_date
+    type: object
+  models.UserEntity:
+    properties:
+      created:
+        type: string
+      email:
+        type: string
+      firstName:
+        type: string
+      id:
+        type: object
+      lastName:
+        type: string
+      phone:
+        type: string
+      pictureUrl:
+        type: string
+      role:
+        type: object
+      verified:
+        type: boolean
+    type: object
+  models.UserLoginForm:
+    properties:
+      email:
+        type: string
+      password:
+        maxLength: 40
+        minLength: 8
+        type: string
+    required:
+    - email
+    - password
+    type: object
+info:
+  contact: {}
+  description: MetroGrama API documentation.<br><br><b>Google Login:</b> <a href="/api/auth/google/login?redirect=/swagger/index.html"
+    target="_blank">Login with Google</a><br>After logging in and being redirected
+    back, return to this page and use protected endpoints.
+  title: MetroGrama API
+  version: "1.0"
+paths:
+  /auth/{id_user}/complete-student/:
+    post:
+      consumes:
+      - application/json
+      description: Accepts student details and careers with trimesters to complete
+        registration/profile
+      parameters:
+      - description: Complete student payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/DTO.CompleteStudentDTO'
+      - description: User ID
+        in: path
+        name: id_user
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Accepted
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - CookieAuth: []
+      summary: Complete student data
+      tags:
+      - auth
+  /auth/admin/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate admin user with credentials
+      parameters:
+      - description: Login form
+        in: body
+        name: credentials
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserLoginForm'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Admin login
+      tags:
+      - auth
+  /careers/:
+    get:
+      consumes:
+      - application/json
+      description: Get all careers
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.CareerEntity'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: List careers
+      tags:
+      - careers
+    post:
+      consumes:
+      - application/json
+      description: Create a new career
+      parameters:
+      - description: Career form
+        in: body
+        name: career
+        required: true
+        schema:
+          $ref: '#/definitions/models.CareerCreateForm'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create career
+      tags:
+      - careers
+  /careers/{careerId}/:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a career by id
+      parameters:
+      - description: Career ID
+        in: path
+        name: careerId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete a career
+      tags:
+      - careers
+  /careers/withSubjects/{careerId}/:
+    get:
+      consumes:
+      - application/json
+      description: Returns a career and its subjects by id
+      parameters:
+      - description: Career ID
+        in: path
+        name: careerId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.CareerWithSubjects'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get career with subjects
+      tags:
+      - careers
+  /course/:
+    post:
+      consumes:
+      - application/json
+      description: Creates a course record for the authenticated student
+      parameters:
+      - description: Course payload
+        in: body
+        name: course
+        required: true
+        schema:
+          $ref: '#/definitions/DTO.CreateCourse'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - CookieAuth: []
+      summary: Create a course (student-course relationship)
+      tags:
+      - course
+  /course/{trimesterId}:
+    get:
+      consumes:
+      - application/json
+      description: Returns the student's course sections for the given trimester.
+        If is_principal=true (default) returns principal_sections with their schedules.
+      parameters:
+      - description: Trimester ID
+        in: path
+        name: trimesterId
+        required: true
+        type: string
+      - description: If true (default) returns principal sections; otherwise (future)
+          could return other section types
+        in: query
+        name: is_principal
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - CookieAuth: []
+      summary: Get course sections for a trimester
+      tags:
+      - course
+  /enroll/:
+    delete:
+      consumes:
+      - application/json
+      description: Removes the authenticated user's enrollment for provided subjects
+      parameters:
+      - description: '{\'
+        in: body
+        name: body
+        required: true
+        schema:
+          type: object
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - CookieAuth: []
+      summary: Unenroll subjects for user
+      tags:
+      - enroll
+    get:
+      consumes:
+      - application/json
+      description: Returns subjects the authenticated user is enrolled in
+      parameters:
+      - description: Only return passed subjects (grade >= 10)
+        in: query
+        name: onlyPassed
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - CookieAuth: []
+      summary: Get enrolled subjects for user
+      tags:
+      - enroll
+    post:
+      consumes:
+      - application/json
+      description: Enrolls the authenticated user into the provided subjects
+      parameters:
+      - description: Subject code (e.g., BPTFI01)
+        in: path
+        name: subject
+        required: true
+        type: string
+      - description: Enrollment payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/DTO.CreateEnrolled'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - CookieAuth: []
+      summary: Enroll subjects for user
+      tags:
+      - enroll
+  /friend/accept/{studentToAccept}:
+    post:
+      consumes:
+      - application/json
+      description: Accepts a pending friend request from another student
+      parameters:
+      - description: 'Student ID whose friend request to accept (recordID: student:xxxx)'
+        in: path
+        name: studentToAccept
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - CookieAuth: []
+      summary: Accept a friend request
+      tags:
+      - friend
+  /friend/add/{studentToAdd}:
+    post:
+      consumes:
+      - application/json
+      description: Relates the authenticated student with another student as friends
+      parameters:
+      - description: 'Student ID to add as friend (recordID: student:xxxx)'
+        in: path
+        name: studentToAdd
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - CookieAuth: []
+      summary: Add a friend
+      tags:
+      - friend
+  /friend/eliminate/{studentToEliminate}:
+    delete:
+      consumes:
+      - application/json
+      description: Unrelates the authenticated student from another student
+      parameters:
+      - description: 'Student ID to remove as friend (recordID: student:xxxx)'
+        in: path
+        name: studentToEliminate
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - CookieAuth: []
+      summary: Remove a friend
+      tags:
+      - friend
+  /health:
+    get:
+      consumes:
+      - application/json
+      description: Returns the health status of the API
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Health check
+      tags:
+      - health
+  /notifications/:
+    get:
+      consumes:
+      - application/json
+      description: Returns the list of notifications for the provided logged user
+        ID.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/DTO.NotificationDTO'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - CookieAuth: []
+      summary: Get user notifications
+      tags:
+      - notifications
+  /notifications/mark-as-read:
+    put:
+      consumes:
+      - application/json
+      description: Marks the provided notifications as read for the authenticated
+        user
+      parameters:
+      - description: Notifications IDs
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/DTO.MarkNotificationsAsReadDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - CookieAuth: []
+      summary: Mark notifications as read
+      tags:
+      - notifications
+  /notifications/ws:
+    get:
+      description: Opens a websocket that pushes notification events to the authenticated
+        user.
+      responses:
+        "101":
+          description: Switching Protocols
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - CookieAuth: []
+      summary: Subscribe to notifications stream
+      tags:
+      - notifications
+  /stats/subjects/{subjectId}:
+    get:
+      consumes:
+      - application/json
+      description: Returns aggregated stats per trimester for the given subject (count,
+        avg difficulty, avg grade, avg workload).
+      parameters:
+      - description: Subject ID (subject code)
+        in: path
+        name: subjectId
+        required: true
+        type: string
+      - default: all
+        description: Which students to include in the stats
+        enum:
+        - all
+        - friends
+        - friendsFriends
+        in: query
+        name: studentFilter
+        type: string
+      - description: Comma-separated list of career RecordIDs to filter by the subject's
+          belonging careers
+        in: query
+        name: careers
+        type: string
+      - description: Lower bound trimester RecordID (e.g., 2425-1)
+        in: query
+        name: startingTrimester
+        type: string
+      - description: Upper bound trimester RecordID (e.g., 2425-3)
+        in: query
+        name: endingTrimester
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/DTO.SubjectStat'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get subject stats
+      tags:
+      - stats
+  /student/career:
+    get:
+      consumes:
+      - application/json
+      description: Returns the careers related to the authenticated student via the
+        study relation
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - CookieAuth: []
+      summary: Get student careers
+      tags:
+      - student
+  /student/details:
+    get:
+      consumes:
+      - application/json
+      description: Returns the authenticated student's info, including careers, user
+        data and passed subjects
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - CookieAuth: []
+      summary: Get complete student details
+      tags:
+      - student
+  /student/profile/{studentId}:
+    get:
+      consumes:
+      - application/json
+      description: Returns the student's info, including careers, user data and passed
+        subjects by student ID
+      parameters:
+      - description: Student ID
+        in: path
+        name: studentId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - CookieAuth: []
+      summary: Get student details by ID
+      tags:
+      - student
+  /student_preferences/:
+    get:
+      consumes:
+      - application/json
+      description: Returns the authenticated student's preferences
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - CookieAuth: []
+      summary: Get current student's preferences
+      tags:
+      - preferences
+    put:
+      consumes:
+      - application/json
+      description: Updates the authenticated student's preferences
+      produces:
+      - application/json
+      responses:
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "501":
+          description: Not Implemented
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - CookieAuth: []
+      summary: Update current student's preferences
+      tags:
+      - preferences
+  /subject_offer/:
+    get:
+      consumes:
+      - application/json
+      description: |-
+        Returns subject_offer edges with related subject and trimester. Optional filter by careers (CSV of record IDs). Use careers=none to get an error.
+        Nota: Cuando subjectsFilter='enrollable' se requiere sesión de estudiante (student-id en la sesión). No enviar studentId por query.
+      parameters:
+      - description: careers filter (comma-separated RecordIDs)
+        in: query
+        name: careers
+        required: true
+        type: string
+      - default: none
+        description: 'Filtro de materias: ''enrollable'' o ''none'' (default ''none'')'
+        enum:
+        - enrollable
+        - none
+        in: query
+        name: subjectsFilter
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/DTO.QueryAnnualOffer'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: List all subject_offer edges
+      tags:
+      - subject_offer
+  /subject_offer/{subjectId}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a relation between a subject (path param) and a trimester
+        (body)
+      parameters:
+      - description: Subject ID
+        in: path
+        name: subjectId
+        required: true
+        type: string
+      - description: Create subject offer payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/DTO.CreateSubjectOfferRequest'
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Accepted
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - CookieAuth: []
+      summary: Delete subject_offer relation
+      tags:
+      - subject_offer
+    post:
+      consumes:
+      - application/json
+      description: Creates a relation between a subject (path param) and a trimester
+        (body)
+      parameters:
+      - description: Subject ID
+        in: path
+        name: subjectId
+        required: true
+        type: string
+      - description: Create subject offer payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/DTO.CreateSubjectOfferRequest'
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Accepted
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - CookieAuth: []
+      summary: Create subject_offer relation
+      tags:
+      - subject_offer
+  /subject_offer/{trimesterId}:
+    get:
+      consumes:
+      - application/json
+      description: |-
+        Returns subject_offer edges for the specified trimester
+        Nota: Cuando subjectsFilter='enrollable' se requiere sesión de estudiante (student-id en la sesión).
+      parameters:
+      - description: Trimester ID
+        in: path
+        name: trimesterId
+        required: true
+        type: string
+      - description: careers filter (comma-separated RecordIDs)
+        in: query
+        name: careers
+        required: true
+        type: string
+      - default: none
+        description: 'Filtro de materias: ''enrollable'' o ''none'' (default ''none'')'
+        enum:
+        - enrollable
+        - none
+        in: query
+        name: subjectsFilter
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/DTO.QueryAnnualOffer'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: List subject_offer edges filtered by trimester ID
+      tags:
+      - subject_offer
+  /subject_offer/annual/{year}:
+    get:
+      consumes:
+      - application/json
+      description: Devuelve materias con su período (trimester plan) y los trimestres
+        en los que se ofrece dentro del año académico dado.
+      parameters:
+      - description: Filtro de carreras (RecordID)
+        in: query
+        name: career
+        required: true
+        type: string
+      - description: Año académico (e.g. 2425)
+        in: path
+        name: year
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/DTO.QueryAnnualOfferYear'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Lista oferta anual por año académico
+      tags:
+      - subject_offer
+  /subject_offer/upload:
+    post:
+      consumes:
+      - multipart/form-data
+      description: 'Sube un archivo PDF de oferta académica. Máx 100 KB. Content-Type:
+        application/pdf.'
+      parameters:
+      - description: Archivo PDF
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Subir oferta académica (PDF)
+      tags:
+      - subject_offer
+  /subject_schedule/:
+    post:
+      consumes:
+      - application/json
+      description: Persist an array of subject schedules
+      parameters:
+      - description: Schedules
+        in: body
+        name: schedules
+        required: true
+        schema:
+          $ref: '#/definitions/DTO.CreateSubjectSchedule'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - CookieAuth: []
+      summary: Create subject schedules
+      tags:
+      - subject_schedule
+  /subjects/:
+    get:
+      consumes:
+      - application/json
+      description: Get subjects, optionally filtered by careers query param
+      parameters:
+      - description: careers filter
+        in: query
+        name: careers
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/DTO.SubjectNode'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: List subjects
+      tags:
+      - subjects
+    post:
+      consumes:
+      - application/json
+      description: Create a subject with careers and precedes
+      parameters:
+      - description: Subject form
+        in: body
+        name: subject
+        required: true
+        schema:
+          $ref: '#/definitions/models.SubjectForm'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create a new subject
+      tags:
+      - subjects
+  /subjects/electives/graph/:
+    get:
+      consumes:
+      - application/json
+      description: Returns a graph of elective subjects (nodes and edges)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Graph-DTO_SubjectNodeBase'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get elective subjects graph
+      tags:
+      - subjects
+  /subjects/graph/:
+    get:
+      consumes:
+      - application/json
+      description: Returns a graph of subjects (nodes and edges) for given careers
+      parameters:
+      - description: careers or 'none'
+        in: query
+        name: careers
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Graph-DTO_SubjectNode'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get subjects graph
+      tags:
+      - subjects
+  /trimesters/:
+    get:
+      consumes:
+      - application/json
+      description: Returns all trimesters from the database
+      parameters:
+      - description: 'Exclude future trimesters (default: false)'
+        in: query
+        name: noFuture
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.TrimesterEntity'
+            type: array
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: List all trimesters
+      tags:
+      - trimesters
+securityDefinitions:
+  CookieAuth:
+    in: cookie
+    name: auth
+    type: apiKey
+swagger: "2.0"

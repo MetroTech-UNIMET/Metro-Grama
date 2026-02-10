@@ -141,7 +141,7 @@ const orderSelectOptions: Option<SortField>[] = [
   { label: 'Alfabético', value: 'alphabetical' },
   { label: 'Dificultad', value: 'avg_difficulty' },
   { label: 'Nota', value: 'avg_grade' },
-  { label: 'Carga de trabajo', value: 'avg_workload' },
+  { label: 'Carga', value: 'avg_workload' },
 ];
 
 function FiltersPopover({

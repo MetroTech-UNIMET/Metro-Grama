@@ -1,36 +1,57 @@
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react-swc";
-import * as path from "path";
+/// <reference types="vitest" />
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react-swc';
+
+
+import tailwindcss from '@tailwindcss/vite';
+import { tanstackRouter } from '@tanstack/router-plugin/vite';
+import { devtools } from '@tanstack/devtools-vite'
+
+import * as path from 'path';
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    tanstackRouter({
+      target: 'react',
+      autoCodeSplitting: true,
+    }),
+    devtools(),
+    react(),
+    tailwindcss(),
+  ],
   resolve: {
     alias: [
-      { find: "@", replacement: path.resolve(__dirname, "src") },
+      { find: '@', replacement: path.resolve(__dirname, 'src') },
       {
-        find: "@components",
-        replacement: path.resolve(__dirname, "src/components"),
+        find: '@components',
+        replacement: path.resolve(__dirname, 'src/components'),
       },
       {
-        find: "@ui",
-        replacement: path.resolve(__dirname, "src/components/ui"),
+        find: '@ui',
+        replacement: path.resolve(__dirname, 'src/components/ui'),
       },
       {
-        find: "@utils",
-        replacement: path.resolve(__dirname, "src/lib/utils"),
-      }
+        find: '@utils',
+        replacement: path.resolve(__dirname, 'src/lib/utils'),
+      },
     ],
   },
   build: {
-    outDir: "../www-build"
+    outDir: 'dist',
   },
   preview: {
-    host: "0.0.0.0",
+    host: '0.0.0.0',
     port: 1403,
   },
   server: {
-    host: "0.0.0.0",
+    host: '0.0.0.0',
     port: 1403,
   },
+  test: {
+    globals: true,
+    environment: 'jsdom',
+    setupFiles: './src/test/setup.ts',
+  },
 });
+

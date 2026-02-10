@@ -1,11 +1,29 @@
 package tools
 
 import (
+	"context"
 	"errors"
+	"fmt"
 	"metrograma/db"
 	"strings"
+
+	"github.com/surrealdb/surrealdb.go"
+	"github.com/surrealdb/surrealdb.go/pkg/models"
 )
 
+// ExtractSurrealErrorMessage returns the substring that follows the standard
+// SurrealDB error marker "An error occurred:". If the marker is not found,
+// the original string is returned trimmed.
+func ExtractSurrealErrorMessage(s string) string {
+	const marker = "An error occurred:"
+	idx := strings.Index(s, marker)
+	if idx < 0 {
+		return strings.TrimSpace(s)
+	}
+	return strings.TrimSpace(s[idx+len(marker):])
+}
+
+// TODO - Borrar función
 func GetSurrealErrorMsgs(data interface{}) error {
 	if msgs, ok := data.([]interface{}); ok {
 		msgErr := make([]string, 0, 3)
@@ -13,8 +31,11 @@ func GetSurrealErrorMsgs(data interface{}) error {
 			if msgMap, ok := m.(map[string]interface{}); ok {
 				if status, ok := msgMap["status"]; ok {
 					if statusStr := status; statusStr == "ERR" {
-						result := msgMap["result"].(string)
-						msgErr = append(msgErr, result)
+						result, _ := msgMap["result"].(string)
+						if result != "" {
+							result = ExtractSurrealErrorMessage(result)
+							msgErr = append(msgErr, result)
+						}
 					}
 				}
 			}
@@ -26,10 +47,32 @@ func GetSurrealErrorMsgs(data interface{}) error {
 	return nil
 }
 
-func ExistRecord(id string) error {
-	_, err := db.SurrealDB.Select(id)
+func ExistRecord(id models.RecordID) error {
+	result, err := surrealdb.Select[any](context.Background(), db.SurrealDB, id)
 	if err != nil {
 		return err
 	}
+	if result == nil {
+		return fmt.Errorf("record with id '%s' does not exist", id)
+	}
 	return nil
+}
+
+func StringToIdArray(value string) []models.RecordID {
+	values := strings.Split(value, ",")
+
+	return ToIdArray(values)
+}
+
+func ToIdArray(value []string) []models.RecordID {
+	recordIDs := make([]models.RecordID, len(value))
+
+	for i, v := range value {
+		parsed, err := models.ParseRecordID(v)
+		if err != nil {
+			continue
+		}
+		recordIDs[i] = *parsed
+	}
+	return recordIDs
 }

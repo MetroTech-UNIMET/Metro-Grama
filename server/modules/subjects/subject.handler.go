@@ -21,8 +21,8 @@ func Handlers(e *echo.Group) {
 	subjectsGroup.GET("/graph/", getSubjectsGraph)
 	subjectsGroup.GET("/electives/graph/", getElectiveSubjectsGraph)
 	// Write operations have rate limiting (50 req/min per IP)
-	subjectsGroup.POST("/", createSubject, authMiddlewares.AdminAuth, middlewares.WriteRateLimit())
-	subjectsGroup.POST("/electives/", createSubjectElective, authMiddlewares.AdminAuth, middlewares.WriteRateLimit())
+	subjectsGroup.POST("/", createSubject, authMiddlewares.UserAuth, middlewares.WriteRateLimit())
+	subjectsGroup.POST("/electives/", createSubjectElective, authMiddlewares.UserAuth, middlewares.WriteRateLimit())
 }
 
 // getSubjects godoc

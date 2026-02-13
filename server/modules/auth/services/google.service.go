@@ -129,7 +129,7 @@ func OauthGoogleCallback(c echo.Context) error {
 		HttpOnly: true,
 	}
 	if env.IsProduction {
-		sessAuth.Options.SameSite = http.SameSiteStrictMode
+		sessAuth.Options.SameSite = http.SameSiteLaxMode
 		sessAuth.Options.Secure = true
 	}
 

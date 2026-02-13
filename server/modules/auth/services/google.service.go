@@ -40,6 +40,7 @@ func OauthGoogleLogin(c echo.Context) error {
 	}
 	if env.IsProduction {
 		sess.Options.Secure = true
+		sess.Options.SameSite = http.SameSiteLaxMode
 	}
 	oauthState := generateStateOauthCookie()
 

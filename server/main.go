@@ -37,8 +37,8 @@ func main() {
 	e := echo.New()
 	e.Validator = middlewares.NewValidator()
 
-	e.Use(session.Middleware(sessions.NewCookieStore([]byte(env.UserTokenSigninKey))))
 	e.Use(middlewares.Cors())
+	e.Use(session.Middleware(sessions.NewCookieStore([]byte(env.UserTokenSigninKey))))
 	e.Use(middlewares.GlobalRateLimit())
 	e.Use(echoMiddleware.BodyLimit("2M"))
 	// e.Use(echoMiddleware.Logger())

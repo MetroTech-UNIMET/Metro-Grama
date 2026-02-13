@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"metrograma/env"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -10,10 +11,8 @@ import (
 func Cors() echo.MiddlewareFunc {
 	return echoMiddleware.CORSWithConfig(
 		echoMiddleware.CORSConfig{
-			AllowOriginFunc: func(origin string) (bool, error) {
-				// ESTO ES SOLO PARA PRUEBAS
-				return true, nil
-			}, AllowHeaders: []string{
+			AllowOrigins: []string{env.GetDotEnv("FRONTEND_ADDRS")},
+			AllowHeaders: []string{
 				echo.HeaderOrigin,
 				echo.HeaderContentType,
 				echo.HeaderAccept,

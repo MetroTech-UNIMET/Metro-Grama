@@ -16,12 +16,12 @@ func Cors() echo.MiddlewareFunc {
 				echo.HeaderOrigin,
 				echo.HeaderContentType,
 				echo.HeaderAccept,
-				"Authorization",
-				"X-Requested-With",
+				echo.HeaderAuthorization,
+				echo.HeaderXRequestedWith,
 			},
 			AllowCredentials: true,
 			Skipper:          echoMiddleware.DefaultSkipper,
-			AllowMethods:     []string{http.MethodGet, http.MethodHead, http.MethodPut, http.MethodPatch, http.MethodPost, http.MethodDelete},
+			AllowMethods:     []string{http.MethodGet, http.MethodHead, http.MethodPut, http.MethodPatch, http.MethodPost, http.MethodDelete, http.MethodOptions},
 		},
 	)
 }

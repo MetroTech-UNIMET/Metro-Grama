@@ -59,10 +59,10 @@ func transformPDFToSurrealObjects(info DTO.ReadResult) ([]subjectOfferForSurreal
 func relateSubjectsToTrimesters(offers []subjectOfferForSurreal) error {
 	qb := surrealql.Begin().
 		Do(surrealql.For("offer", "?", offers).
-			LetTyped("subjectId", "<record<subject>>", "$offer.subject").
-			LetTyped("trimesterIds", "<array<record<trimester>>>", "$offer.trimesters").
+			LetTyped("subjectId", "record<subject>", surrealql.Expr("$offer.subject")).
+			LetTyped("trimesterIds", "array<record<trimester>>", surrealql.Expr("$offer.trimesters")).
 			Let("existings", surrealql.
-				SelectOnly("subject_offer").
+				Select("subject_offer").
 				Value("out").
 				Where("in = $subjectId").
 				Where("out IN $trimesterIds")).

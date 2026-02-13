@@ -6,6 +6,7 @@ import CreditsMenu from './behaviors/CreditsMenu';
 import UpdateNodeStatusOnGraphChange from './behaviors/Update-Node-Status-OnGraphChange';
 
 import { HeaderGraph } from './HeaderGraph';
+import { ElectiveInfo } from './ElectiveInfo/ElectiveInfo';
 import EnrollDialog from './EnrollDialog/EnrollDialog';
 
 import useIsElective from './hooks/use-is-elective';
@@ -81,6 +82,8 @@ export default function Graph() {
         loadingSubjects={subjectsByCareerQuery.isLoading}
         loadingCareers={careerOptionsQuery.isLoading}
       />
+
+      {onlyElectives && <ElectiveInfo buttonClassName="fixed right-8 top-20 z-10" />}
 
       {selectedCareers.length === 0 ? (
         <>

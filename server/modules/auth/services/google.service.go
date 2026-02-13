@@ -40,7 +40,7 @@ func OauthGoogleLogin(c echo.Context) error {
 	}
 	if env.IsProduction {
 		sess.Options.Secure = true
-		sess.Options.SameSite = http.SameSiteLaxMode
+		sess.Options.SameSite = http.SameSiteNoneMode
 	}
 	oauthState := generateStateOauthCookie()
 
@@ -129,7 +129,7 @@ func OauthGoogleCallback(c echo.Context) error {
 		HttpOnly: true,
 	}
 	if env.IsProduction {
-		sessAuth.Options.SameSite = http.SameSiteLaxMode
+		sessAuth.Options.SameSite = http.SameSiteNoneMode
 		sessAuth.Options.Secure = true
 	}
 

@@ -11,8 +11,14 @@ import (
 func Cors() echo.MiddlewareFunc {
 	return echoMiddleware.CORSWithConfig(
 		echoMiddleware.CORSConfig{
-			AllowOrigins:     []string{env.GetDotEnv("FRONTEND_ADDRS")},
-			AllowHeaders:     []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept, http.MethodGet, http.MethodPost},
+			AllowOrigins: []string{env.GetDotEnv("FRONTEND_ADDRS")},
+			AllowHeaders: []string{
+				echo.HeaderOrigin,
+				echo.HeaderContentType,
+				echo.HeaderAccept,
+				"Authorization",
+				"X-Requested-With",
+			},
 			AllowCredentials: true,
 			Skipper:          echoMiddleware.DefaultSkipper,
 			AllowMethods:     []string{http.MethodGet, http.MethodHead, http.MethodPut, http.MethodPatch, http.MethodPost, http.MethodDelete},

@@ -76,6 +76,16 @@ func OauthGoogleLogout(c echo.Context) error {
 }
 
 func OauthGoogleCallback(c echo.Context) error {
+	// --- DEBUG LOGS ---
+	cookies := c.Cookies()
+	fmt.Println("--- DEBUG: Cookies recibidas ---")
+	for _, cookie := range cookies {
+		fmt.Printf("Nombre: %s, Valor: %s\n", cookie.Name, cookie.Value)
+	}
+	fmt.Println("Header Origin:", c.Request().Header.Get("Origin"))
+	fmt.Println("-------------------------------")
+	// ------------------
+
 	sess, err := session.Get("session", c)
 	if err != nil {
 		return err

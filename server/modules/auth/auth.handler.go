@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"metrograma/env"
 	"metrograma/middlewares"
 	"metrograma/modules/auth/DTO"
 	"metrograma/modules/auth/services"
@@ -53,6 +54,11 @@ func adminLogin(c echo.Context) error {
 		MaxAge:   86400 * 7,
 		HttpOnly: true,
 	}
+	if env.IsProduction {
+		sessAuth.Options.SameSite = http.SameSiteNoneMode
+		sessAuth.Options.Secure = true
+	}
+
 	if err != nil {
 		return err
 	}

@@ -3,6 +3,7 @@ package middlewares
 import (
 	"metrograma/env"
 	"net/http"
+	"strings"
 
 	"github.com/labstack/echo/v4"
 	echoMiddleware "github.com/labstack/echo/v4/middleware"
@@ -11,7 +12,7 @@ import (
 func Cors() echo.MiddlewareFunc {
 	return echoMiddleware.CORSWithConfig(
 		echoMiddleware.CORSConfig{
-			AllowOrigins: []string{env.GetDotEnv("FRONTEND_ADDRS")},
+			AllowOrigins: strings.Split(env.GetDotEnv("FRONTEND_ADDRS"), ","),
 			AllowHeaders: []string{
 				echo.HeaderOrigin,
 				echo.HeaderContentType,

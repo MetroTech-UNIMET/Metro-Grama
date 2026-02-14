@@ -50,11 +50,11 @@ export const GoogleLink = ({ className = '' }: { className?: string }) => {
   const location = useLocation();
 
   const href = React.useMemo(() => {
-    const search = location.search ?? '';
+    const search = location.searchStr ?? '';
     const currentPath = `${location.pathname}${search}`;
 
     return `${baseApiUrl}/auth/google/login?redirect=${encodeURIComponent(currentPath)}`;
-  }, [location.pathname, location.search]);
+  }, [location.pathname, location]); // location.searchStr might not be in the dependency array if not typed correctly
 
   return (
     <a href={href} className={cn(buttonVariants({ variant: 'outline', className: 'gap-4' }), className)}>

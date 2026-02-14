@@ -13,7 +13,7 @@ import { useStatusActions } from '../behaviors/StatusActions';
 import { useFetchTrimestersOptions } from '@/hooks/queries/trimester/use-FetchTrimesters';
 
 import { onInvalidToast } from '@utils/forms';
-import { enrollStudent2 } from '@/api/interactions/enrollApi';
+import { enrollStudent } from '@/api/interactions/enrollApi';
 
 import { TrimesterItem } from '@ui/derived/custom-command-items/trimester-item-option';
 import { FormInputNumberField } from '@ui/derived/form-fields/form-field-number';
@@ -49,7 +49,7 @@ export default function EnrollDialog({ selectedSubjectNode, afterSubmit }: Props
       if (!subject) throw new Error('Es necesario seleccionar una materia');
 
       console.log(subject.code.ID, data);
-      const result = await enrollStudent2(subject.code.ID, data);
+      const result = await enrollStudent(subject.code.ID, data);
 
       nodeActions.enableViewedNode(selectedSubjectNode);
 
@@ -63,7 +63,7 @@ export default function EnrollDialog({ selectedSubjectNode, afterSubmit }: Props
       toast.error('Error al marcar materia vista', {
         description: error.response?.data?.message || 'Intente de nuevo más tarde',
       });
-      return;
+      throw error
     }
   }
 

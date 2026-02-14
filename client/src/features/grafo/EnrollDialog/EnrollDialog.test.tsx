@@ -45,7 +45,7 @@ vi.mock('sonner', () => ({
   },
 }));
 
-import { enrollStudent2 } from '@/api/interactions/enrollApi';
+import { enrollStudent } from '@/api/interactions/enrollApi';
 
 describe('EnrollDialog', () => {
   const mockSubjectNode = {
@@ -82,7 +82,7 @@ describe('EnrollDialog', () => {
   });
 
   it('submits the form successfully', async () => {
-    (enrollStudent2 as any).mockResolvedValue({ message: 'Success' });
+    (enrollStudent as any).mockResolvedValue({ message: 'Success' });
     const user = userEvent.setup();
 
     render(
@@ -129,7 +129,7 @@ describe('EnrollDialog', () => {
     await user.click(screen.getByText('Guardar'));
 
     await waitFor(() => {
-      expect(enrollStudent2).toHaveBeenCalledWith('MAT101', expect.objectContaining({
+      expect(enrollStudent).toHaveBeenCalledWith('MAT101', expect.objectContaining({
         grade: 18,
         trimesterId: { ID: 'trim1', Table: 'trimester' },
         difficulty: 3, 

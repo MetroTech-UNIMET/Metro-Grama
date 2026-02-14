@@ -3,13 +3,7 @@ import axios from '@/axiosConfig';
 import type { EnrollDialogOutput } from '@/features/grafo/EnrollDialog/schema';
 import type { SuccessResponse } from '../types';
 
-export async function enrollStudent(subjects: string[]) {
-  return await axios.post('/enroll/', {
-    subjects,
-  });
-}
-
-export async function enrollStudent2(subjectCode: string, data: EnrollDialogOutput) {
+export async function enrollStudent(subjectCode: string, data: EnrollDialogOutput) {
   return (await axios.post<SuccessResponse<any>>(`/enroll/${subjectCode}`, data)).data;
 }
 

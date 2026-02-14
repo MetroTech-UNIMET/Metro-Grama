@@ -1,16 +1,20 @@
 package auth
 
 import (
-	"metrograma/env"
 	"metrograma/middlewares"
 	"metrograma/modules/auth/DTO"
 	"metrograma/modules/auth/services"
 	"net/http"
 
-	"github.com/gorilla/sessions"
-	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 )
+
+type AuthTokenResponse struct {
+	Token        string          `json:"token"`
+	User         DTO.MinimalUser `json:"user"`
+	RedirectPath string          `json:"redirectPath"`
+	Message      string          `json:"message"`
+}
 
 func Handlers(e *echo.Group) {
 	// Auth routes with stricter rate limiting to prevent brute force attacks
@@ -48,27 +52,26 @@ func adminLogin(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusUnauthorized, err.Error())
 	}
 
-	sessAuth, err := session.Get("auth", c)
-	sessAuth.Options = &sessions.Options{
-		Path:     "/",
-		MaxAge:   86400 * 7,
-		HttpOnly: true,
+	userIDString, ok := (authResult.User.ID.ID).(string)
+	if !ok {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to convert user ID to string")
 	}
-	if env.IsProduction {
-		sessAuth.Options.SameSite = http.SameSiteNoneMode
-		sessAuth.Options.Secure = true
+	roleIDString, ok := (authResult.User.Role.ID).(string)
+	if !ok {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to convert role ID to string")
 	}
 
+	token, err := services.GenerateAccessToken(userIDString, roleIDString)
 	if err != nil {
-		return err
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
-	sessAuth.Values["user-id"] = authResult.User.ID
-	if err := sessAuth.Save(c.Request(), c.Response()); err != nil {
-		return err
-	}
-
-	return c.NoContent(http.StatusOK)
+	return c.JSON(http.StatusOK, AuthTokenResponse{
+		Token:        token,
+		User:         authResult.User,
+		RedirectPath: authResult.RedirectPath,
+		Message:      authResult.Message,
+	})
 }
 
 // completeStudent godoc

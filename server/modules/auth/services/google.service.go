@@ -55,15 +55,7 @@ func OauthGoogleLogin(c echo.Context) error {
 }
 
 func OauthGoogleLogout(c echo.Context) error {
-	sessAuth, err := session.Get("auth", c)
-	if err != nil {
-		return err
-	}
-	delete(sessAuth.Values, "user-id")
-	if err := sessAuth.Save(c.Request(), c.Response()); err != nil {
-		return err
-	}
-	gothic.Logout(c.Response(), c.Request())
+	_ = gothic.Logout(c.Response(), c.Request())
 	return c.NoContent(http.StatusAccepted)
 }
 
@@ -101,28 +93,18 @@ func OauthGoogleCallback(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusConflict, err)
 	}
 
-	sessAuth, err := session.Get("auth", c)
-	if err != nil {
-		return err
+	userIDString, ok := (registerResult.User.ID.ID).(string)
+	if !ok {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to convert user ID to string")
 	}
-	sessAuth.Options = &sessions.Options{
-		Path:     "/",
-		MaxAge:   86400 * 7,
-		HttpOnly: true,
+	roleIDString, ok := (registerResult.User.Role.ID).(string)
+	if !ok {
+		return echo.NewHTTPError(http.StatusInternalServerError, "Failed to convert role ID to string")
 	}
-	if env.IsProduction {
-		sessAuth.Options.SameSite = http.SameSiteNoneMode
-		sessAuth.Options.Secure = true
-	} else {
-		sessAuth.Options.SameSite = http.SameSiteLaxMode
-		sessAuth.Options.Secure = false
-	}
-	fmt.Printf("Is production environment: %v\n", env.IsProduction)
-	fmt.Printf("Sess auth: %v", sessAuth)
 
-	sessAuth.Values["user-id"] = registerResult.User.ID.ID
-	if err := sessAuth.Save(c.Request(), c.Response()); err != nil {
-		return err
+	token, err := GenerateAccessToken(userIDString, roleIDString)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
 	// Retrieve redirect URL from our session
@@ -139,6 +121,9 @@ func OauthGoogleCallback(c echo.Context) error {
 			sess.Save(c.Request(), c.Response())
 		}
 	}
+
+	finalRedirect = normalizeRedirect(finalRedirect)
+	finalRedirect = appendTokenToRedirect(finalRedirect, token)
 
 	return c.Redirect(http.StatusPermanentRedirect, finalRedirect)
 }
@@ -159,4 +144,23 @@ func isAllowedRedirect(target string, req *http.Request) bool {
 		return true
 	}
 	return false
+}
+
+func normalizeRedirect(target string) string {
+	if strings.HasPrefix(target, "/") {
+		base := strings.TrimRight(env.GetDotEnv("FRONTEND_ADDRS"), "/")
+		return base + target
+	}
+	return target
+}
+
+func appendTokenToRedirect(target string, token string) string {
+	u, err := url.Parse(target)
+	if err != nil {
+		return target
+	}
+	q := u.Query()
+	q.Set("token", token)
+	u.RawQuery = q.Encode()
+	return u.String()
 }

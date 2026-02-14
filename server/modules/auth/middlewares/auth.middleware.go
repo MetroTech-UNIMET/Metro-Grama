@@ -2,18 +2,19 @@ package middlewares
 
 import (
 	"metrograma/modules/auth/DTO"
+	"metrograma/modules/auth/services"
 	"net/http"
+	"strings"
 
 	crudServices "metrograma/modules/auth/services/crud"
 
-	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 	surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
 )
 
 func UserAuth(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		user, err := getUserFromSession(c)
+		user, err := getUserFromToken(c)
 		if err != nil {
 			return err
 		}
@@ -26,7 +27,7 @@ func UserAuth(next echo.HandlerFunc) echo.HandlerFunc {
 
 func AdminAuth(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		user, err := getUserFromSession(c)
+		user, err := getUserFromToken(c)
 		if err != nil {
 			return err
 		}
@@ -41,24 +42,37 @@ func AdminAuth(next echo.HandlerFunc) echo.HandlerFunc {
 	}
 }
 
-func getUserFromSession(c echo.Context) (*DTO.MinimalUser, error) {
-	sessAuth, err := session.Get("auth", c)
+func getUserFromToken(c echo.Context) (*DTO.MinimalUser, error) {
+	token, err := extractBearerOrQueryToken(c)
+	if err != nil {
+		return nil, err
+	}
+
+	claims, err := services.ParseAccessToken(token)
 	if err != nil {
 		return nil, echo.NewHTTPError(http.StatusUnauthorized)
 	}
-	userID, ok := sessAuth.Values["user-id"]
-	if !ok {
-		return nil, echo.NewHTTPError(http.StatusUnauthorized)
-	}
-	userIDStr, ok := userID.(string)
-	if !ok {
-		return nil, echo.NewHTTPError(http.StatusUnauthorized)
-	}
 
-	user, err := crudServices.ExistUser(surrealModels.NewRecordID("user", userIDStr))
+	user, err := crudServices.ExistUser(surrealModels.NewRecordID("user", claims.UserID))
 	if err != nil {
 		return nil, echo.NewHTTPError(http.StatusUnauthorized)
 	}
 
 	return &user, nil
+}
+
+func extractBearerOrQueryToken(c echo.Context) (string, error) {
+	authHeader := c.Request().Header.Get(echo.HeaderAuthorization)
+	if authHeader != "" {
+		parts := strings.Fields(authHeader)
+		if len(parts) == 2 && strings.EqualFold(parts[0], "Bearer") {
+			return parts[1], nil
+		}
+	}
+
+	if token := c.QueryParam("token"); token != "" {
+		return token, nil
+	}
+
+	return "", echo.NewHTTPError(http.StatusUnauthorized)
 }

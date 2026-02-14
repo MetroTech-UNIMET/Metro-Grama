@@ -4,9 +4,10 @@ import (
 	"context"
 	"metrograma/db"
 	"metrograma/models"
+	"metrograma/modules/auth/services"
 	"net/http"
+	"strings"
 
-	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
 	"github.com/surrealdb/surrealdb.go"
 	"github.com/surrealdb/surrealdb.go/contrib/surrealql"
@@ -29,19 +30,9 @@ func StudentAuth(next echo.HandlerFunc) echo.HandlerFunc {
 }
 
 func GetStudentFromSession(c echo.Context) (*models.StudentWithUser, error) {
-	sessAuth, err := session.Get("auth", c)
+	userIDStr, err := getUserIDFromToken(c)
 	if err != nil {
-		return nil, echo.NewHTTPError(http.StatusUnauthorized, "No se pudo obtener la sesión del estudiante")
-	}
-
-	userID, ok := sessAuth.Values["user-id"]
-	if !ok {
-		return nil, echo.NewHTTPError(http.StatusUnauthorized, "ID de usuario no encontrado en la sesión")
-	}
-
-	userIDStr, ok := userID.(string)
-	if !ok {
-		return nil, echo.NewHTTPError(http.StatusUnauthorized, "ID de usuario no válido")
+		return nil, err
 	}
 
 	qb := surrealql.SelectOnly("student").
@@ -61,4 +52,28 @@ func GetStudentFromSession(c echo.Context) (*models.StudentWithUser, error) {
 		return nil, echo.NewHTTPError(http.StatusUnauthorized, "El estudiante no está verificado")
 	}
 	return &student, nil
+}
+
+func getUserIDFromToken(c echo.Context) (string, error) {
+	authHeader := c.Request().Header.Get(echo.HeaderAuthorization)
+	if authHeader != "" {
+		parts := strings.Fields(authHeader)
+		if len(parts) == 2 && strings.EqualFold(parts[0], "Bearer") {
+			claims, err := services.ParseAccessToken(parts[1])
+			if err != nil {
+				return "", echo.NewHTTPError(http.StatusUnauthorized)
+			}
+			return claims.UserID, nil
+		}
+	}
+
+	if token := c.QueryParam("token"); token != "" {
+		claims, err := services.ParseAccessToken(token)
+		if err != nil {
+			return "", echo.NewHTTPError(http.StatusUnauthorized)
+		}
+		return claims.UserID, nil
+	}
+
+	return "", echo.NewHTTPError(http.StatusUnauthorized, "Token de usuario no encontrado")
 }

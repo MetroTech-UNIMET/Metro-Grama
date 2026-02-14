@@ -12,9 +12,7 @@ DEFINE TABLE student SCHEMAFULL;
     DEFINE INDEX unique_id_card ON student FIELDS id_card UNIQUE;
     DEFINE INDEX unique_user ON student FIELDS user UNIQUE;
 
-DEFINE TABLE study SCHEMAFULL;
-    DEFINE FIELD in ON study TYPE record<student>;
-    DEFINE FIELD out ON study TYPE record<career>;
+DEFINE TABLE study TYPE RELATION IN student OUT career SCHEMAFULL;
     DEFINE FIELD startingTrimester ON study TYPE record<trimester>;
 
     DEFINE INDEX unique_relationships ON study FIELDS in, out UNIQUE;

@@ -11,6 +11,9 @@ export const Route = createFileRoute('/register/student')({
     eatErrorsAsync(async () => {
       await context.queryClient.ensureQueryData(
         fetchTrimestersSelectOptions({
+          params: {
+            noFuture: true,
+          },
           queryClient: context.queryClient,
           queryOptions: { retry: false },
         }),

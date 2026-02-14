@@ -12,9 +12,12 @@ export function Step2() {
   const selectedCareers = useWatch<RegisterStudentSchema>({
     name: 'careers',
   }) as RegisterStudentSchema['careers'];
-  const trimestersQuery = useFetchTrimestersOptions();
+  const trimestersQuery = useFetchTrimestersOptions({
+    params: {
+      noFuture: true,
+    }
+  });
 
-  console.log('error', trimestersQuery.error);
   return (
     <>
       <FormCareerMultiSelectorField name="careers" label="Carreras" />

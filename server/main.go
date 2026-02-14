@@ -7,6 +7,7 @@ import (
 	"metrograma/env"
 	"metrograma/handlers"
 	"metrograma/middlewares"
+	"net/http"
 
 	"github.com/gorilla/sessions"
 	"github.com/labstack/echo-contrib/session"
@@ -38,7 +39,19 @@ func main() {
 	e.Validator = middlewares.NewValidator()
 
 	e.Use(middlewares.Cors())
-	e.Use(session.Middleware(sessions.NewCookieStore([]byte(env.UserTokenSigninKey))))
+
+	store := sessions.NewCookieStore([]byte(env.UserTokenSigninKey))
+	store.Options.HttpOnly = true
+	store.Options.Path = "/"
+	if env.IsProduction {
+		store.Options.SameSite = http.SameSiteNoneMode
+		store.Options.Secure = true
+	} else {
+		store.Options.SameSite = http.SameSiteLaxMode
+		store.Options.Secure = false
+	}
+
+	e.Use(session.Middleware(store))
 	e.Use(middlewares.GlobalRateLimit())
 	e.Use(echoMiddleware.BodyLimit("2M"))
 	// e.Use(echoMiddleware.Logger())

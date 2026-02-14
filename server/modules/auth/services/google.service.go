@@ -113,7 +113,12 @@ func OauthGoogleCallback(c echo.Context) error {
 	if env.IsProduction {
 		sessAuth.Options.SameSite = http.SameSiteNoneMode
 		sessAuth.Options.Secure = true
+	} else {
+		sessAuth.Options.SameSite = http.SameSiteLaxMode
+		sessAuth.Options.Secure = false
 	}
+	fmt.Printf("Is production environment: %v\n", env.IsProduction)
+	fmt.Printf("Sess auth: %v", sessAuth)
 
 	sessAuth.Values["user-id"] = registerResult.User.ID.ID
 	if err := sessAuth.Save(c.Request(), c.Response()); err != nil {

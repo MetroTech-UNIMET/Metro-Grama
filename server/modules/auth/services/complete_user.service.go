@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"fmt"
 	"metrograma/db"
 	"metrograma/models"
 	"metrograma/modules/auth/DTO"
@@ -12,6 +13,8 @@ import (
 )
 
 func CompleteStudent(idUser string, data DTO.CompleteStudentDTO) (models.StudentWithUser, error) {
+	idCardString := fmt.Sprintf("%d", data.IDCard)
+
 	qb := surrealql.Begin().
 		Let("current", surrealql.SelectOnly("$userId").Field("verified")).
 		If("$current.verified == true").
@@ -20,26 +23,26 @@ func CompleteStudent(idUser string, data DTO.CompleteStudentDTO) (models.Student
 		}).
 		End().
 		Do(surrealql.UpdateOnly("$userId").
-			Set("phone", "$update.phone").
+			Set("phone", data.Phone).
 			Set("verified", true)).
 		Let("student", surrealql.CreateOnly("student").
-			Set("user", "$userId").
-			Set("id_card", "<string> $update.id_card")).
-		Let("studentId", "$student.id").
-		Do(surrealql.For("careerTri", "?", "$update.careersWithTrimesters").
-			LetTyped("careerId", "<record<career>>", "$careerTri.career").
-			LetTyped("trimesterId", "<record<trimester>>", "$type::thing('trimester',  $careerTri.trimester)").
+			Set("user", surrealql.Expr("$userId")).
+			Set("id_card", idCardString)).
+		Let("studentId", surrealql.Expr("$student.id")).
+		Do(surrealql.For("careerTri", "?", data.CareersWithTrimesters).
+			LetTyped("careerId", "record<career>", surrealql.Expr("type::thing('career',  $careerTri.career)")).
+			LetTyped("trimesterId", "record<trimester>", surrealql.Expr("type::thing('trimester',  $careerTri.trimester)")).
 			Do(surrealql.Relate("$studentId", "study", "$careerId").
-				Set("startingTrimester", "$trimesterId")),
+				Set("startingTrimester", surrealql.Expr("$trimesterId"))),
 		).
 		Do(surrealql.CreateOnly("student_preferences").
-			Set("student", "$studentId")).
+			Set("student", surrealql.Expr("$studentId"))).
 		Return("$student FETCH user")
 
 	sql, params := qb.Build()
 
 	params["userId"] = surrealModels.NewRecordID("user", idUser)
-	params["update"] = data
+	// params["update"] = data
 
 	result, err := surrealdb.Query[models.StudentWithUser](context.Background(), db.SurrealDB, sql, params)
 

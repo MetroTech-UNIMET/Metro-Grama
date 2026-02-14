@@ -11,7 +11,13 @@ require (
 	github.com/surrealdb/surrealdb.go v1.0.1-0.20251016015804-ed1a5ebb5e52
 	github.com/swaggo/echo-swagger v1.4.1
 	github.com/swaggo/swag v1.16.6
-	golang.org/x/oauth2 v0.32.0
+)
+
+require (
+	github.com/go-chi/chi/v5 v5.2.2 // indirect
+	github.com/gorilla/mux v1.6.2 // indirect
+	github.com/markbates/goth v1.82.0
+	golang.org/x/oauth2 v0.32.0 // indirect
 )
 
 require (
@@ -33,7 +39,6 @@ require (
 	github.com/gorilla/context v1.1.2 // indirect
 	github.com/gorilla/securecookie v1.1.2 // indirect
 	github.com/rdbell/echo-pretty-logger v1.0.0 // direct
-	github.com/rogpeppe/go-internal v1.12.0 // indirect
 	github.com/swaggo/files/v2 v2.0.2 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect

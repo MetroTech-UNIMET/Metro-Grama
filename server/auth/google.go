@@ -2,23 +2,38 @@ package auth
 
 import (
 	"fmt"
+	"net/http"
+
 	"metrograma/env"
 
-	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/google"
+	"github.com/gorilla/sessions"
+	"github.com/markbates/goth"
+	"github.com/markbates/goth/gothic"
+	"github.com/markbates/goth/providers/google"
 )
 
-var GoogleOauthConfig *oauth2.Config
-
 func InitGoogleOauth() {
-	GoogleOauthConfig = &oauth2.Config{
-		RedirectURL:  fmt.Sprintf("%s/api/auth/google/callback", env.GetDotEnv("SERVER_ADDRS")),
-		ClientID:     env.GetDotEnv("GOOGLE_CLIENT_ID"),
-		ClientSecret: env.GetDotEnv("GOOGLE_CLIENT_SECRET"),
-		Scopes: []string{
-			"https://www.googleapis.com/auth/userinfo.email",
-			"https://www.googleapis.com/auth/userinfo.profile",
-		},
-		Endpoint: google.Endpoint,
+	store := sessions.NewCookieStore([]byte(env.UserTokenSigninKey))
+	store.Options.HttpOnly = true
+	store.Options.Secure = env.IsProduction
+	store.Options.Path = "/"
+	if env.IsProduction {
+		store.Options.SameSite = http.SameSiteNoneMode
+	} else {
+		store.Options.SameSite = http.SameSiteLaxMode
 	}
+	gothic.Store = store
+
+	googleProvider := google.New(
+		env.GetDotEnv("GOOGLE_CLIENT_ID"),
+		env.GetDotEnv("GOOGLE_CLIENT_SECRET"),
+		fmt.Sprintf("%s/api/auth/google/callback", env.GetDotEnv("SERVER_ADDRS")),
+		"email", "profile",
+	)
+
+	// Set the hosted domain using the provided method
+	// You can change "unimet.edu.ve" to your specific domain or load it from env
+	googleProvider.SetHostedDomain("correo.unimet.edu.ve")
+
+	goth.UseProviders(googleProvider)
 }

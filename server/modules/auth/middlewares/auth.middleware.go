@@ -1,7 +1,6 @@
 package middlewares
 
 import (
-	"fmt"
 	"metrograma/modules/auth/DTO"
 	"net/http"
 
@@ -43,47 +42,22 @@ func AdminAuth(next echo.HandlerFunc) echo.HandlerFunc {
 }
 
 func getUserFromSession(c echo.Context) (*DTO.MinimalUser, error) {
-	// DIAGNÓSTICO 1: ¿Llega la cookie?
-	cookie, errCookie := c.Cookie("auth")
-	if errCookie != nil {
-		fmt.Println("❌ ERROR CRÍTICO: El navegador NO envió la cookie 'auth'.")
-		fmt.Println("   Causa probable: SameSite=Strict/Lax en petición Cross-Origin.")
-		return nil, echo.NewHTTPError(http.StatusUnauthorized, "Cookie missing")
-	} else {
-		fmt.Printf("✅ Cookie recibida: %s...\n", cookie.Value[:10])
-	}
-
-	// DIAGNÓSTICO 2: ¿Se puede desencriptar la sesión?
 	sessAuth, err := session.Get("auth", c)
 	if err != nil {
-		fmt.Printf("❌ ERROR: session.Get falló. Causa: %v\n", err)
-		return nil, echo.NewHTTPError(http.StatusUnauthorized, "Session invalid")
+		return nil, echo.NewHTTPError(http.StatusUnauthorized)
 	}
-
-	// DIAGNÓSTICO 3: ¿Existe el valor 'user-id' en la sesión?
 	userID, ok := sessAuth.Values["user-id"]
 	if !ok {
-		fmt.Println("❌ ERROR: La sesión es válida pero NO tiene 'user-id'.")
-		fmt.Printf("   Valores actuales en sesión: %v\n", sessAuth.Values)
-		return nil, echo.NewHTTPError(http.StatusUnauthorized, "User ID missing in session")
+		return nil, echo.NewHTTPError(http.StatusUnauthorized)
 	}
-
-	// DIAGNÓSTICO 4: ¿El tipo de dato es correcto?
-	// Aquí sospecho que puede estar el problema con SurrealDB
 	userIDStr, ok := userID.(string)
 	if !ok {
-		fmt.Printf("❌ ERROR DE TIPO: 'user-id' existe pero no es string.\n")
-		fmt.Printf("   Tipo recibido: %T, Valor: %v\n", userID, userID)
-		return nil, echo.NewHTTPError(http.StatusUnauthorized, "User ID type mismatch")
+		return nil, echo.NewHTTPError(http.StatusUnauthorized)
 	}
 
-	fmt.Printf("✅ Usuario encontrado en sesión: %s. Buscando en BD...\n", userIDStr)
-
-	// DIAGNÓSTICO 5: ¿Existe en SurrealDB?
 	user, err := crudServices.ExistUser(surrealModels.NewRecordID("user", userIDStr))
 	if err != nil {
-		fmt.Printf("❌ ERROR BD: No se pudo obtener usuario %s. Error: %v\n", userIDStr, err)
-		return nil, echo.NewHTTPError(http.StatusUnauthorized, "User not found in DB")
+		return nil, echo.NewHTTPError(http.StatusUnauthorized)
 	}
 
 	return &user, nil

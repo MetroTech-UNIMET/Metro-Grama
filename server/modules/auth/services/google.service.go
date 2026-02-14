@@ -1,12 +1,7 @@
 package services
 
 import (
-	"crypto/rand"
-	"encoding/base64"
-	"encoding/json"
 	"fmt"
-	"io"
-	"metrograma/auth"
 	"metrograma/env"
 	"metrograma/modules/auth/DTO"
 	"net/http"
@@ -16,7 +11,7 @@ import (
 	"github.com/gorilla/sessions"
 	"github.com/labstack/echo-contrib/session"
 	"github.com/labstack/echo/v4"
-	"golang.org/x/oauth2"
+	"github.com/markbates/goth/gothic"
 )
 
 type GoogleEmailData struct {
@@ -29,37 +24,34 @@ type GoogleEmailData struct {
 }
 
 func OauthGoogleLogin(c echo.Context) error {
-	sess, err := session.Get("session", c)
-	if err != nil {
-		return err
-	}
-	sess.Options = &sessions.Options{
-		Path:     "/",
-		MaxAge:   60 * 5,
-		HttpOnly: true,
-	}
-	if env.IsProduction {
-		sess.Options.Secure = true
-		sess.Options.SameSite = http.SameSiteNoneMode
-	}
-	oauthState := generateStateOauthCookie()
-
-	sess.Values["state"] = oauthState
-
 	// Store optional redirect path requested by caller (e.g. Swagger UI)
-	if r := c.QueryParam("redirect"); r != "" {
-		// Basic sanitization: allow relative root paths or same-host absolute URLs
-		if isAllowedRedirect(r, c.Request()) {
-			sess.Values["redirect"] = r
+	sess, err := session.Get("session", c)
+	if err == nil {
+		sess.Options = &sessions.Options{
+			Path:     "/",
+			MaxAge:   60 * 5,
+			HttpOnly: true,
 		}
-	}
-	if err := sess.Save(c.Request(), c.Response()); err != nil {
-		return err
+		if env.IsProduction {
+			sess.Options.Secure = true
+			sess.Options.SameSite = http.SameSiteNoneMode
+		}
+		if r := c.QueryParam("redirect"); r != "" {
+			// Basic sanitization: allow relative root paths or same-host absolute URLs
+			if isAllowedRedirect(r, c.Request()) {
+				sess.Values["redirect"] = r
+			}
+		}
+		sess.Save(c.Request(), c.Response())
 	}
 
-	u := auth.GoogleOauthConfig.AuthCodeURL(oauthState, oauth2.SetAuthURLParam("hd", "correo.unimet.edu.ve"))
+	// Tell Goth we are using "google"
+	q := c.Request().URL.Query()
+	q.Add("provider", "google")
+	c.Request().URL.RawQuery = q.Encode()
 
-	return c.Redirect(http.StatusTemporaryRedirect, u)
+	gothic.BeginAuthHandler(c.Response(), c.Request())
+	return nil
 }
 
 func OauthGoogleLogout(c echo.Context) error {
@@ -71,58 +63,38 @@ func OauthGoogleLogout(c echo.Context) error {
 	if err := sessAuth.Save(c.Request(), c.Response()); err != nil {
 		return err
 	}
-
+	gothic.Logout(c.Response(), c.Request())
 	return c.NoContent(http.StatusAccepted)
 }
 
 func OauthGoogleCallback(c echo.Context) error {
-	// --- DEBUG LOGS ---
-	cookies := c.Cookies()
-	fmt.Println("--- DEBUG: Cookies recibidas ---")
-	for _, cookie := range cookies {
-		fmt.Printf("Nombre: %s, Valor: %s\n", cookie.Name, cookie.Value)
-	}
-	fmt.Println("Header Origin:", c.Request().Header.Get("Origin"))
-	fmt.Println("-------------------------------")
-	// ------------------
+	// Tell Goth we are using "google"
+	q := c.Request().URL.Query()
+	q.Add("provider", "google")
+	c.Request().URL.RawQuery = q.Encode()
 
-	sess, err := session.Get("session", c)
+	user, err := gothic.CompleteUserAuth(c.Response(), c.Request())
 	if err != nil {
-		return err
+		return echo.NewHTTPError(http.StatusUnauthorized, err.Error())
 	}
 
-	state := sess.Values["state"]
-
-	if c.QueryParam("state") != state {
-		return echo.NewHTTPError(http.StatusUnauthorized, fmt.Errorf("invalid session state: %s", state))
-	}
-
-	tok, err := auth.GoogleOauthConfig.Exchange(c.Request().Context(), c.QueryParam("code"))
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err)
-	}
-
-	client := auth.GoogleOauthConfig.Client(c.Request().Context(), tok)
-	email, err := client.Get("https://www.googleapis.com/oauth2/v3/userinfo")
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err)
-	}
-	defer email.Body.Close()
-	data, _ := io.ReadAll(email.Body)
-
-	googleEmailData := new(GoogleEmailData)
-	json.Unmarshal(data, googleEmailData)
-
-	if googleEmailData.HD != "correo.unimet.edu.ve" && googleEmailData.HD != "unimet.edu.ve" {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Errorf("the email domain %s is not allowed", googleEmailData.HD))
+	// Verify Hosted Domain (HD) if available in raw data
+	// Goth Google provider puts raw user info in user.RawData
+	if hd, ok := user.RawData["hd"].(string); ok {
+		if hd != "correo.unimet.edu.ve" && hd != "unimet.edu.ve" {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Errorf("the email domain %s is not allowed", hd))
+		}
+	} else if user.Email != "" && !strings.HasSuffix(user.Email, "@correo.unimet.edu.ve") && !strings.HasSuffix(user.Email, "@unimet.edu.ve") {
+		// Fallback check if HD param is missing but email is present
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Errorf("the email domain is not allowed"))
 	}
 
 	registerResult, err := RegisterUser(DTO.SimpleUserSigninForm{
-		FirstName:  googleEmailData.GivenName,
-		LastName:   googleEmailData.FamilyName,
-		Email:      googleEmailData.Email,
-		Password:   tok.AccessToken,
-		PictureUrl: googleEmailData.Picture,
+		FirstName:  user.FirstName,
+		LastName:   user.LastName,
+		Email:      user.Email,
+		Password:   user.AccessToken,
+		PictureUrl: user.AvatarURL,
 	})
 
 	if err != nil {
@@ -148,16 +120,22 @@ func OauthGoogleCallback(c echo.Context) error {
 		return err
 	}
 
+	// Retrieve redirect URL from our session
+	sess, _ := session.Get("session", c)
 	finalRedirect := registerResult.RedirectPath
+	// Only allow the redirect override if:
+	// 1. The user logic (GetAuthResult) allows it (IsVerified = true).
+	//    If IsVerified is false, we MUST go to registration page.
+	if registerResult.IsVerified {
+		if r, ok := sess.Values["redirect"].(string); ok && r != "" {
+			finalRedirect = r
+			// Clear it
+			delete(sess.Values, "redirect")
+			sess.Save(c.Request(), c.Response())
+		}
+	}
 
 	return c.Redirect(http.StatusPermanentRedirect, finalRedirect)
-}
-
-func generateStateOauthCookie() string {
-	b := make([]byte, 16)
-	rand.Read(b)
-	state := base64.URLEncoding.EncodeToString(b)
-	return state
 }
 
 // isAllowedRedirect performs minimal validation to avoid open redirect vulnerabilities.
@@ -176,24 +154,4 @@ func isAllowedRedirect(target string, req *http.Request) bool {
 		return true
 	}
 	return false
-}
-
-func GetGoogleUserInfo(client *http.Client) (*GoogleEmailData, error) {
-	email, err := client.Get("https://www.googleapis.com/oauth2/v3/userinfo")
-	if err != nil {
-		return nil, err
-	}
-	defer email.Body.Close()
-	data, _ := io.ReadAll(email.Body)
-
-	googleEmailData := new(GoogleEmailData)
-	if err := json.Unmarshal(data, googleEmailData); err != nil {
-		return nil, err
-	}
-
-	if googleEmailData.HD != "correo.unimet.edu.ve" && googleEmailData.HD != "unimet.edu.ve" {
-		return nil, fmt.Errorf("the email domain %s is not allowed", googleEmailData.HD)
-	}
-
-	return googleEmailData, nil
 }

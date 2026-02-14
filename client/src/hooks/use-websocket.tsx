@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { useEffectEvent } from 'react';
 
+import { getAuthToken } from '@/utils/authToken';
+
 type WebsocketEventHandlers = Record<string, (payload: any, socket: WebSocket) => void>;
 
 interface UseWebsocketOptions {
@@ -29,6 +31,11 @@ function buildWebsocketUrl(namespace: string) {
     // Ensure single slash when joining pathname and namespace
     const basePath = url.pathname === '/' ? '' : url.pathname.replace(/\/$/, '');
     url.pathname = `${basePath}${normalizedNamespace}`;
+
+    const token = getAuthToken();
+    if (token) {
+      url.searchParams.set('token', token);
+    }
 
     return url.toString();
   } catch (err) {

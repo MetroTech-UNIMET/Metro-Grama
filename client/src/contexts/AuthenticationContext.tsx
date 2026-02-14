@@ -1,8 +1,9 @@
-import { createContext, useContext } from 'react';
+import { createContext, useContext, useEffect } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 import { logOutGoogle } from '@/api/authApi';
+import { clearAuthToken, consumeTokenFromUrl, setAuthToken } from '@/utils/authToken';
 
 import { fetchStudentMyUserOptions, useFetchMyUser, type UserType } from '@/hooks/queries/student/use-fetch-my-user';
 import type { AxiosError } from 'axios';
@@ -44,6 +45,14 @@ export default function AuthenticationContext({ children }: { children: React.Re
   const queryClient = useQueryClient();
   const myUserQuery = useFetchMyUser();
 
+  useEffect(() => {
+    const token = consumeTokenFromUrl();
+    if (token) {
+      setAuthToken(token);
+      queryClient.invalidateQueries({ queryKey: ['users', 'profile'] });
+    }
+  }, [queryClient]);
+
   const logOutMutation = useMutation({
     mutationFn: logOutGoogle,
     //@ts-ignore TODO Considerar mostrar una descripción del error
@@ -55,7 +64,10 @@ export default function AuthenticationContext({ children }: { children: React.Re
     },
   });
 
-  const logOut: () => void = () => logOutMutation.mutate();
+  const logOut: () => void = () => {
+    clearAuthToken();
+    logOutMutation.mutate();
+  };
 
   const ensureData = async (): Promise<UserType | null> => {
     try {

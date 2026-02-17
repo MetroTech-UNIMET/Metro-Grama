@@ -62,7 +62,7 @@ function MenuNode({ node, selectSubjectDialog }: MenuNodeProps) {
         </ContextMenuItem>
       )}
 
-      {node?.hasState('accesible') && user && (
+      {node?.hasState('accesible') && !node?.hasState('viewed') && user && (
         <DialogTrigger asChild onClick={() => selectSubjectDialog(node)}>
           <ContextMenuItem>Marcar materia</ContextMenuItem>
         </DialogTrigger>

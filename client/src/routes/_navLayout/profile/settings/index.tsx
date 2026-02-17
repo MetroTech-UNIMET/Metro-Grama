@@ -1,6 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useSuspenseQuery } from '@tanstack/react-query';
 
+import { getMetaTags } from '@utils/meta';
+
 import { fetchMyPreferencesOptions } from '@/hooks/queries/preferences/use-fetch-my-preferences';
 
 import SettingsForm from '@/features/student/Settings/SettingsForm';
@@ -8,11 +10,10 @@ import SettingsForm from '@/features/student/Settings/SettingsForm';
 export const Route = createFileRoute('/_navLayout/profile/settings/')({
   loader: ({ context: { queryClient } }) => queryClient.ensureQueryData(fetchMyPreferencesOptions()),
   head: () => ({
-    meta: [
-      {
-        title: 'Configuración | MetroGrama',
-      },
-    ],
+    meta: getMetaTags({
+      title: 'Configuración | MetroGrama',
+      description: 'Ajusta la configuración de tu perfil en MetroGrama',
+    }),
   }),
   component: function ProfileSettingsRoute() {
     const { data: preferences } = useSuspenseQuery(fetchMyPreferencesOptions());

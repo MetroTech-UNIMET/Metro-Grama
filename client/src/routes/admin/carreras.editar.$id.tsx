@@ -5,8 +5,10 @@ import { useFetchCompleteCareer, fetchCompleteCareerOptions } from '@/hooks/quer
 
 import CareerForm from '@/features/admin/careers/CareerForm';
 
-import { Spinner } from '@ui/spinner';
+import { getMetaTags } from '@utils/meta';
 import ErrorPage from '@components/ErrorPage';
+
+import { Spinner } from '@ui/spinner';
 
 export const Route = createFileRoute('/admin/carreras/editar/$id')({
   loader: async ({ context: { queryClient: qc }, params: { id } }) => {
@@ -14,13 +16,17 @@ export const Route = createFileRoute('/admin/carreras/editar/$id')({
     const career = await qc.ensureQueryData(fetchCompleteCareerOptions({ id }));
     return { career };
   },
-  head: ({ loaderData }) => ({
-    meta: [
-      {
-        title: `Editar ${loaderData?.career.name} | MetroGrama`,
-      },
-    ],
-  }),
+  head: ({ loaderData }) => {
+    const title = `Editar ${loaderData?.career.name} | MetroGrama`;
+    const description = `Edita la carrera ${loaderData?.career.name} en MetroGrama`;
+
+    return {
+      meta: getMetaTags({
+        title,
+        description,
+      }),
+    };
+  },
   errorComponent: (props) => <ErrorPage title="Error cargando el editor de carreras" {...props} />,
 
   component: UpdateCareer,

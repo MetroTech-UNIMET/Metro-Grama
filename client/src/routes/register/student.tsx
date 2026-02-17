@@ -5,6 +5,7 @@ import { eatErrorsAsync } from '@utils/errors';
 import RegisterStudentForm from './components/RegisterStudentForm/RegisterStudentForm';
 
 import { fetchTrimestersSelectOptions } from '@/hooks/queries/trimester/use-FetchTrimesters';
+import { getMetaTags } from '@utils/meta';
 
 export const Route = createFileRoute('/register/student')({
   loader: async ({ context }) => {
@@ -22,12 +23,12 @@ export const Route = createFileRoute('/register/student')({
 
     return null;
   },
+
   head: () => ({
-    meta: [
-      {
-        title: 'Registro Estudiante | MetroGrama',
-      },
-    ],
+    meta: getMetaTags({
+      title: 'Registro Estudiante | MetroGrama',
+      description: 'Regístrate como un nuevo estudiante en MetroGrama',
+    }),
   }),
   component: RegisterStudent,
 });

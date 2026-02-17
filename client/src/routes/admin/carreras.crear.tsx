@@ -1,15 +1,19 @@
 import { createFileRoute } from '@tanstack/react-router';
-import CareerForm from '@/features/admin/careers/CareerForm';
-import { fetchSubjectsOptions } from '@/hooks/queries/subject/use-FetchSubjects';
+
+import { getMetaTags } from '@utils/meta';
+
 import ErrorPage from '@components/ErrorPage';
+
+import CareerForm from '@/features/admin/careers/CareerForm';
+
+import { fetchSubjectsOptions } from '@/hooks/queries/subject/use-FetchSubjects';
 
 export const Route = createFileRoute('/admin/carreras/crear')({
   head: () => ({
-    meta: [
-      {
-        title: 'Crear Carrera | MetroGrama',
-      },
-    ],
+    meta: getMetaTags({
+      title: 'Crear Carrera | MetroGrama',
+      description: 'Crea una nueva carrera en MetroGrama',
+    }),
   }),
   loader: ({ context: { queryClient } }) => queryClient.ensureQueryData(fetchSubjectsOptions()),
   component: CreateCareer,

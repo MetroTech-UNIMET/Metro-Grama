@@ -21,6 +21,7 @@ import WeeklyScheduleSkeleton from '@/features/weekly-schedule/weekly-planner/We
 import { schedulesToSubjectEvents, sectionToSubjectEvents } from '@/features/weekly-schedule/weekly-planner/functions';
 
 import { eatErrorsAsync } from '@utils/errors';
+import { getMetaTags } from '@utils/meta';
 import { cn } from '@utils/className';
 
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@ui/sidebar';
@@ -74,11 +75,10 @@ export const Route = createFileRoute('/_navLayout/horario/')({
     return { trimesterOptions, careerOptions, studentCourse };
   },
   head: () => ({
-    meta: [
-      {
-        title: 'Horario | MetroGrama',
-      },
-    ],
+    meta: getMetaTags({
+      title: 'Horario | MetroGrama',
+      description: 'Planifica y visualiza tu horario interactivo en MetroGrama',
+    }),
   }),
   pendingComponent: WeeklyScheduleSkeleton,
   errorComponent: (props) => <ErrorPage title="Error cargando horario" {...props} />,
@@ -107,12 +107,8 @@ function WeeklySchedulePage() {
   const isPrincipal = search.is_principal;
 
   const [subjectEvents, setSubjectEvents] = useState<Event<SubjectEvent>[]>([]);
-  const {
-    setInitialSelectedSections,
-    handleAddSelection,
-    handleRemoveSelection,
-    getAdjustedCount,
-  } = useSectionEnrollmentAdjustments();
+  const { setInitialSelectedSections, handleAddSelection, handleRemoveSelection, getAdjustedCount } =
+    useSectionEnrollmentAdjustments();
 
   // Fetch existing saved course (principal or secondary) and map to events
   const courseQuery = useFetchStudentCourseByTrimester({
@@ -156,30 +152,36 @@ function WeeklySchedulePage() {
     <SidebarProvider customWidth="20rem">
       {/* Memoized sidebar handlers */}
       <PlannerSidebar
-        onAddSubject={useCallback((subject_offer, sectionIndex) => {
-          const section = subject_offer.sections[sectionIndex];
-          if (!section) return;
-          const schedules = section.schedules;
-          setSubjectEvents((prev) => [
-            ...prev,
-            ...schedules.map((schedule) =>
-              schedulesToSubjectEvents(schedule, {
-                subjectName: subject_offer.subject.name,
-                trimesterId: subject_offer.trimester.id,
-                subjectOfferId: subject_offer.id,
-                subjectSectionId: section.id,
-              }),
-            ),
-          ]);
-          handleAddSelection(section.id.ID);
-        }, [handleAddSelection])}
-        onRemoveSubject={useCallback((subject_offer, sectionIndex) => {
-          setSubjectEvents((prev) => prev.filter((event) => event.data.id.ID !== subject_offer.id.ID));
+        onAddSubject={useCallback(
+          (subject_offer, sectionIndex) => {
+            const section = subject_offer.sections[sectionIndex];
+            if (!section) return;
+            const schedules = section.schedules;
+            setSubjectEvents((prev) => [
+              ...prev,
+              ...schedules.map((schedule) =>
+                schedulesToSubjectEvents(schedule, {
+                  subjectName: subject_offer.subject.name,
+                  trimesterId: subject_offer.trimester.id,
+                  subjectOfferId: subject_offer.id,
+                  subjectSectionId: section.id,
+                }),
+              ),
+            ]);
+            handleAddSelection(section.id.ID);
+          },
+          [handleAddSelection],
+        )}
+        onRemoveSubject={useCallback(
+          (subject_offer, sectionIndex) => {
+            setSubjectEvents((prev) => prev.filter((event) => event.data.id.ID !== subject_offer.id.ID));
 
-          const section = subject_offer.sections[sectionIndex];
-          if (!section) return;
-          handleRemoveSelection(section.id.ID);
-        }, [handleRemoveSelection])}
+            const section = subject_offer.sections[sectionIndex];
+            if (!section) return;
+            handleRemoveSelection(section.id.ID);
+          },
+          [handleRemoveSelection],
+        )}
         getIsSubjectSelected={useCallback(
           (subject_offer) => subjectEvents.some((event) => event.title === subject_offer.subject.name),
           [subjectEvents],

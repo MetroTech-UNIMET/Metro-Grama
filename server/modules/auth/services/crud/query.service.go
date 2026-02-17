@@ -42,6 +42,10 @@ func ExistUser(id surrealModels.RecordID) (DTO.MinimalUser, error) {
 		return DTO.MinimalUser{}, err
 	}
 
+	if user == nil || user.ID.ID == nil {
+		return DTO.MinimalUser{}, echo.NewHTTPError(http.StatusNotFound, "user not found")
+	}
+
 	return *user, nil
 }
 
@@ -50,6 +54,10 @@ func GetUser(id surrealModels.RecordID) (models.UserEntity, error) {
 
 	if err != nil {
 		return models.UserEntity{}, err
+	}
+
+	if user == nil || user.ID.ID == nil {
+		return models.UserEntity{}, echo.NewHTTPError(http.StatusNotFound, "user not found")
 	}
 
 	return *user, nil

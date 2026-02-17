@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { useEffectEvent } from 'react';
 
-import { getAuthToken } from '@/utils/authToken';
+import { getAuthToken } from '@utils/authToken';
 
 type WebsocketEventHandlers = Record<string, (payload: any, socket: WebSocket) => void>;
 

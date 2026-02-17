@@ -14,9 +14,9 @@ export function ElectiveInfo({ buttonClassName }: Props) {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline" colors="tertiary" className={cn('shadow-md', buttonClassName)}>
-          <Info className="mr-2 h-4 w-4" />
-          Información Electivas
+        <Button variant="outline" colors="tertiary" className={cn('shadow-md max-[21rem]:hidden', buttonClassName)}>
+          <Info className="h-4 w-4" />
+          <span className='max-[28rem]:hidden'>Información Electivas</span>
         </Button>
       </DialogTrigger>
       <DialogContent>

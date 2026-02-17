@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 import { logOutGoogle } from '@/api/authApi';
-import { clearAuthToken, consumeTokenFromUrl, setAuthToken } from '@/utils/authToken';
+import { clearAuthToken, consumeTokenFromUrl, setAuthToken } from '@utils/authToken';
 
 import { fetchStudentMyUserOptions, useFetchMyUser, type UserType } from '@/hooks/queries/student/use-fetch-my-user';
 import type { AxiosError } from 'axios';

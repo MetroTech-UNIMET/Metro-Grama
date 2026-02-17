@@ -22,10 +22,12 @@ THEN (
         extraData: {
             friend_id: $after.id,
             sender: $after.out,
-            recipient: $after.in
+            recipient: $after.in,
+            actor: $after.out.user.firstName + ' ' + $after.out.user.lastName,
+            image: $after.out.user.pictureUrl
         },
-        title: "Nueva petición de asmitad",
-        message: "Tienes una nueva petición de amistad",
+        title: "Nueva petición de amistad",
+        message: "$actor te ha enviado una petición de amistad",
     }
 );
 
@@ -38,10 +40,12 @@ THEN (
         extraData: {
             friend_id: $after.id,
             sender: $after.out,
-            recipient: $after.in
+            recipient: $after.in,
+            actor: $after.in.user.firstName + ' ' + $after.in.user.lastName,
+            image: $after.in.user.pictureUrl
         },
         title: "Petición de amistad aceptada",
-        message: "Tu amigo ha aceptado la petición de amistad",
+        message: "$actor ha aceptado tu petición de amistad",
     }
 );
 

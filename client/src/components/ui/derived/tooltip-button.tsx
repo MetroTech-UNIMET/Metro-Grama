@@ -22,7 +22,7 @@ export default function TooltipButton({
       </TooltipTrigger>
 
       <TooltipContent className={cn('bg-primary-800 font-bold text-white', contentClassName)}>
-        {tooltipText} <TooltipArrow />
+        {tooltipText} <TooltipArrow className="fill-primary-800" />
       </TooltipContent>
     </Tooltip>
   );

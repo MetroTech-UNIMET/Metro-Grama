@@ -1,10 +1,12 @@
-import { Settings } from 'lucide-react';
+import { Settings, Share2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 import { AddFriendButton } from '../buttons/AddFriendButton';
 import { isMyProfile } from '../utils';
 
 import { getInitials } from '@utils/strings';
 
+import TooltipButton from '@ui/derived/tooltip-button';
 import { AvatarImage, AvatarFallback, Avatar } from '@ui/avatar';
 import { Card, CardHeader, CardTitle, CardContent } from '@ui/card';
 import { Badge } from '@ui/badge';
@@ -38,9 +40,30 @@ export function StudentCard({ data }: Props) {
 
         {isSelf ? (
           <div className="ml-auto">
-            <ButtonLink to="/profile/settings" variant="ghost" size="big-icon" aria-label="Settings">
-              <Settings className="h-4 w-4" />
-            </ButtonLink>
+            {/* <Tooltip>
+              <TooltipTrigger asChild> */}
+            <TooltipButton tooltipText="Configuración de perfil" variant="ghost" size="big-icon" asChild>
+              <ButtonLink to="/profile/settings" aria-label="Settings">
+                <Settings className="h-4 w-4" />
+              </ButtonLink>
+            </TooltipButton>
+            {/* </TooltipTrigger>
+
+              <TooltipContent>
+                <p>Configuración de perfil</p>
+              </TooltipContent>
+            </Tooltip> */}
+
+            <TooltipButton
+              tooltipText="Copiar link del perfil"
+              variant="ghost"
+              colors="neutral"
+              size="big-icon"
+              aria-label="Share profile"
+              onClick={() => handleCopyProfileLink(data.id.ID)}
+            >
+              <Share2 />
+            </TooltipButton>
           </div>
         ) : (
           <AddFriendButton
@@ -62,7 +85,6 @@ export function StudentCard({ data }: Props) {
             <span className="font-medium">Verificado:</span> {data.user.verified ? 'Sí' : 'No'}
           </div>
         </aside>
-
         <aside className="space-y-2">
           <div className="h-fit text-sm font-medium">Carreras:</div>{' '}
           {data.careers.length > 0 ? (
@@ -82,4 +104,19 @@ export function StudentCard({ data }: Props) {
       </CardContent>
     </Card>
   );
+}
+async function handleCopyProfileLink(userId: string) {
+  try {
+    const baseURL = typeof window !== 'undefined' ? window.location.origin : '';
+    const link = `${baseURL}/student/${userId}`;
+    await navigator.clipboard.writeText(link);
+    toast.success('Se ha copiado el link de su perfil al portapapeles');
+  } catch (error) {
+    toast.error('No se pudo copiar el link', {
+      action: {
+        label: 'Intentar de nuevo',
+        onClick: () => handleCopyProfileLink(userId),
+      },
+    });
+  }
 }

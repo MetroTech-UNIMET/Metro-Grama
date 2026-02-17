@@ -2,18 +2,14 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { CircleQuestionMarkIcon } from 'lucide-react';
-import { toast } from 'sonner';
 
 import { defaultEnrollDialogValues, type EnrollDialogOutput, enrollDialogSchema } from './schema';
 import { maxScaleNumber, minScaleNumber } from './constants';
-
-import type { SubjectNode } from '../behaviors/MenuActions';
-import { useStatusActions } from '../behaviors/StatusActions';
+import { useMutationEnrollSubject } from './hooks/mutations/use-enroll-mutation';
 
 import { useFetchTrimestersOptions } from '@/hooks/queries/trimester/use-FetchTrimesters';
 
 import { onInvalidToast } from '@utils/forms';
-import { enrollStudent } from '@/api/interactions/enrollApi';
 
 import { TrimesterItem } from '@ui/derived/custom-command-items/trimester-item-option';
 import { FormInputNumberField } from '@ui/derived/form-fields/form-field-number';
@@ -25,6 +21,8 @@ import { DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFoot
 import { Form } from '@ui/form';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@ui/tooltip';
 import { Button } from '@ui/button';
+
+import type { SubjectNode } from '../behaviors/MenuActions';
 
 interface Props {
   selectedSubjectNode: SubjectNode | null;
@@ -42,32 +40,19 @@ export default function EnrollDialog({ selectedSubjectNode, afterSubmit }: Props
 
   const trimesterQuery = useFetchTrimestersOptions({ params: { noFuture: true } });
 
-  const { nodeActions } = useStatusActions();
-
-  async function onSubmit(data: EnrollDialogOutput) {
-    try {
-      if (!subject) throw new Error('Es necesario seleccionar una materia');
-
-      console.log(subject.code.ID, data);
-      const result = await enrollStudent(subject.code.ID, data);
-
-      nodeActions.enableViewedNode(selectedSubjectNode);
-
-      toast.success('Materia marcada exitosamente', {
-        description: result.message || 'La materia se marcó como cursada',
-      });
-
-      form.reset();
+  const mutationEnrollSubject = useMutationEnrollSubject({
+    subject: selectedSubjectNode,
+    afterSubmit: () => {
       afterSubmit();
-    } catch (error: any) {
-      toast.error('Error al marcar materia vista', {
-        description: error.response?.data?.message || 'Intente de nuevo más tarde',
-      });
-      throw error
-    }
-  }
+      form.reset();
+    },
+  });
 
   if (!subject) return null;
+
+  function onSubmit(data: EnrollDialogOutput) {
+    mutationEnrollSubject.mutate({ data });
+  }
 
   return (
     <DialogContent ref={setDialogRef}>

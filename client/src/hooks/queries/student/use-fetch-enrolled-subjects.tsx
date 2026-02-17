@@ -13,7 +13,7 @@ interface Props<T = string[]> {
 }
 
 export function fetchEnrolledSubjectsOptions({ queryOptions: queryOpt, params }: Props = {}) {
-  return queryOptions<string[], AxiosError>({
+  return queryOptions({
     queryKey: ['student', 'enrolled-subjects', params],
     queryFn: () => getEnrolledSubjects(params),
     retry: notRetryOnUnauthorized,

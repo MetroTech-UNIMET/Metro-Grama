@@ -20,10 +20,10 @@ export function Step2() {
 
   return (
     <>
-      <FormCareerMultiSelectorField name="careers" label="Carreras" />
+      <FormCareerMultiSelectorField name="careers" label="Carreras" className='w-full' containerClassName='w-full'/>
 
       {trimestersQuery.error && (
-        <div className="col-span-2 mt-4 rounded-md bg-white">
+        <div className="mt-4 rounded-md bg-white">
           <div
             role="alert"
             aria-live="assertive"
@@ -40,7 +40,7 @@ export function Step2() {
         </div>
       )}
 
-      <ul className="col-span-2 mt-8 space-y-4">
+      <ul className=" mt-8 space-y-4">
         {selectedCareers.map((career, index) => (
           <li key={index} className="">
             <p className="mb-2 text-xl font-bold">{career.label}</p>

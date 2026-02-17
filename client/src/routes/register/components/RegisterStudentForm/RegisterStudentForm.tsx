@@ -107,7 +107,7 @@ export default function RegisterStudentForm() {
               <Step1 />
             </TabsContent>
 
-            <TabsContent value="Datos académicos" className="grid grid-cols-2 gap-4">
+            <TabsContent value="Datos académicos" className="grid gap-4">
               <Step2 />
             </TabsContent>
           </form>

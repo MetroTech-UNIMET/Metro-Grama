@@ -7,14 +7,7 @@ import { CheckIcon, ChevronsUpDown } from 'lucide-react';
 import { cn } from '@/lib/utils/className';
 
 import { Button } from '@/components/ui/button';
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/command';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -120,9 +113,7 @@ const CountrySelect = ({
           disabled={disabled}
         >
           <FlagComponent country={selectedCountry} countryName={selectedCountry} />
-          <ChevronsUpDown
-            className={cn('-mr-2 size-4 opacity-50', disabled ? 'hidden' : 'opacity-100')}
-          />
+          <ChevronsUpDown className={cn('-mr-2 size-4 opacity-50', disabled ? 'hidden' : 'opacity-100')} />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[300px] p-0" container={container}>
@@ -157,20 +148,13 @@ interface CountrySelectOptionProps extends RPNInput.FlagProps {
   onChange: (country: RPNInput.Country) => void;
 }
 
-const CountrySelectOption = ({
-  country,
-  countryName,
-  selectedCountry,
-  onChange,
-}: CountrySelectOptionProps) => {
+const CountrySelectOption = ({ country, countryName, selectedCountry, onChange }: CountrySelectOptionProps) => {
   return (
     <CommandItem className="gap-2" onSelect={() => onChange(country)}>
       <FlagComponent country={country} countryName={countryName} />
       <span className="flex-1 text-sm">{countryName}</span>
       <span className="text-foreground/50 text-sm">{`+${getCountryCallingCode(country)}`}</span>
-      <CheckIcon
-        className={`ml-auto size-4 ${country === selectedCountry ? 'opacity-100' : 'opacity-0'}`}
-      />
+      <CheckIcon className={`ml-auto size-4 ${country === selectedCountry ? 'opacity-100' : 'opacity-0'}`} />
     </CommandItem>
   );
 };
@@ -179,7 +163,7 @@ const FlagComponent = ({ country, countryName }: RPNInput.FlagProps) => {
   const Flag = flags[country];
 
   return (
-    <span className="bg-foreground/20 flex h-4 w-6 overflow-hidden rounded-sm">
+    <span className="flex h-4 w-4 justify-center overflow-hidden rounded-sm">
       {Flag && <Flag title={countryName} />}
     </span>
   );

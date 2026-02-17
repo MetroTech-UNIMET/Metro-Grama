@@ -43,17 +43,15 @@ export function HeaderGraph({
         </Tabs>
       </div>
 
-      <CareerMultiDropdown
-        value={selectedCareers}
-        onChange={setSelectedCareers}
-        loadingSubjects={loadingSubjects}
-        isLoading={loadingCareers}
-        disabled={onlyElectives}
-        // className="h-full"
-        // commandProps={{
-        //   className: 'h-full',
-        // }}
-      />
+      <div className="w-full max-w-sm">
+        <CareerMultiDropdown
+          value={selectedCareers}
+          onChange={setSelectedCareers}
+          loadingSubjects={loadingSubjects}
+          isLoading={loadingCareers}
+          disabled={onlyElectives}
+        />
+      </div>
     </div>
   );
 }

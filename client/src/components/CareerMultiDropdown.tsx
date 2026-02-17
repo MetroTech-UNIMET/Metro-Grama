@@ -53,39 +53,37 @@ export function CareerMultiDropdown({
   }, [options, studentCareerQuery.data]);
 
   return (
-    <div className="relative w-full max-w-sm">
-      <MultipleSelector
-        value={value}
-        onChange={onChange as (value: Option<`career:${string}`, Career>[]) => void}
-        options={groupedOptions}
-        groupBy="enrolled"
-        maxSelected={maxSelected}
-        placeholder={
-          value?.length === maxSelected
-            ? 'Máximo alcanzado'
-            : (placeholder ?? 'Selecciona las carreras que deseas visualizar')
-        }
-        showSpinner={loadingSubjects}
-        emptyIndicator={
-          isLoading && !error ? (
-            <span className="grid place-items-center">
-              <Spinner />
-            </span>
-          ) : (
-            <p>
-              {options.length === 0 || error
-                ? ' No se encontraron carreras. Por favor, intenta más tarde o recarga la página.'
-                : 'No hay más carreras para seleccionar.'}
-            </p>
-          )
-        }
-        inputProps={{
-          className: 'w-auto',
-        }}
-        badgeClassName="bg-blue-200 hover:bg-blue-300 text-black"
-        className={cn('bg-gray-200', className)}
-        {...props}
-      />
-    </div>
+    <MultipleSelector
+      value={value}
+      onChange={onChange as (value: Option<`career:${string}`, Career>[]) => void}
+      options={groupedOptions}
+      groupBy="enrolled"
+      maxSelected={maxSelected}
+      placeholder={
+        value?.length === maxSelected
+          ? 'Máximo alcanzado'
+          : (placeholder ?? 'Selecciona las carreras que deseas visualizar')
+      }
+      showSpinner={loadingSubjects}
+      emptyIndicator={
+        isLoading && !error ? (
+          <span className="grid place-items-center">
+            <Spinner />
+          </span>
+        ) : (
+          <p>
+            {options.length === 0 || error
+              ? ' No se encontraron carreras. Por favor, intenta más tarde o recarga la página.'
+              : 'No hay más carreras para seleccionar.'}
+          </p>
+        )
+      }
+      inputProps={{
+        className: 'w-auto',
+      }}
+      badgeClassName="bg-blue-200 hover:bg-blue-300 text-black"
+      className={cn('bg-gray-200', className)}
+      {...props}
+    />
   );
 }

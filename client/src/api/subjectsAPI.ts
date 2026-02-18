@@ -1,7 +1,7 @@
 import axios from '@/axiosConfig';
 
 import type { Graph } from '@/interfaces/Graph';
-import type { Subject, SubjectNoCareers } from '@/interfaces/Subject';
+import type { Subject, SubjectEntity, SubjectNoCareers } from '@/interfaces/Subject';
 import type { ElectiveFormOutput } from '@/features/grafo/ElectiveInfo/schema';
 
 export async function getSubjectsGraph(careerParam: string) {
@@ -16,8 +16,8 @@ export async function getSubjectsGraph(careerParam: string) {
   return response.data;
 }
 
-export async function getSubjects(careerParam: string): Promise<Subject[]> {
-  const response = await axios.get('/subjects/', {
+export async function getSubjects(careerParam: string) {
+  const response = await axios.get<Subject[]>('/subjects/', {
     params: {
       careers: careerParam,
     },
@@ -33,6 +33,6 @@ export async function getSubjectsElectivesGraph() {
 }
 
 export async function createSubjectElective(data: ElectiveFormOutput) {
-  const response = await axios.post('/subjects/electives/', data);
+  const response = await axios.post<Omit<SubjectEntity, 'careers'>>('/subjects/electives/', data);
   return response.data;
 }

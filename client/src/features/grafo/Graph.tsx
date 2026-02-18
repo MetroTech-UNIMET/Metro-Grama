@@ -85,7 +85,7 @@ export default function Graph() {
 
       {onlyElectives && <ElectiveInfo buttonClassName="fixed right-8 top-20 z-10" />}
 
-      {selectedCareers.length === 0 ? (
+      {selectedCareers.length === 0 && !onlyElectives ? (
         <>
           <div className="grid h-full place-items-center">
             <h1 className="text-center text-4xl">Selecciona una carrera para ver el flujograma</h1>

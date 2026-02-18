@@ -1,19 +1,23 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { toast } from 'sonner';
 
 import { electiveDefaultValues, ElectiveFormOutput, electiveFormSchema, type ElectiveFormInput } from './schema';
 
-import { createSubjectElective } from '@/api/subjectsAPI';
+import { useCreateElectiveMutation } from './hooks/mutations/use-create-elective-mutation';
 import { useSubjectOptions } from '@/hooks/queries/subject/use-subject-options';
 
-import SubmitButton from '@ui/derived/submit-button';
 import { FormInputField } from '@/components/ui/derived/form-fields/form-field-input';
 import { FormMultipleSelectorField } from '@ui/derived/form-fields/form-field-multiselect';
+import SubmitButton from '@ui/derived/submit-button';
+
 import { Form } from '@/components/ui/form';
 import { Skeleton } from '@ui/skeleton';
 
-export function ElectiveForm() {
+interface Props {
+  onClose?: () => void;
+}
+
+export function ElectiveForm({ onClose }: Props) {
   const form = useForm({
     resolver: zodResolver(electiveFormSchema),
     defaultValues: electiveDefaultValues,
@@ -21,14 +25,15 @@ export function ElectiveForm() {
 
   const subjectQuery = useSubjectOptions();
 
-  async function onSubmit(data: ElectiveFormOutput) {
-    try {
-      await createSubjectElective(data);
-      toast.success('Materia electiva creada correctamente');
+  const mutation = useCreateElectiveMutation({
+    afterSubmit: () => {
+      onClose?.();
       form.reset();
-    } catch (error: any) {
-      toast.error(error.message);
-    }
+    },
+  });
+
+  async function onSubmit(data: ElectiveFormOutput) {
+    await mutation.mutateAsync({ data });
   }
 
   return (

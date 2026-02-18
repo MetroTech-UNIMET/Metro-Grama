@@ -1,4 +1,5 @@
 import { Info } from 'lucide-react';
+import { useState } from 'react';
 
 import { cn } from '@utils/className';
 
@@ -11,8 +12,10 @@ interface Props {
 }
 
 export function ElectiveInfo({ buttonClassName }: Props) {
+  const [open, setOpen] = useState(false);
+
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" colors="tertiary" className={cn('shadow-md max-[21rem]:hidden', buttonClassName)}>
           <Info className="h-4 w-4" />
@@ -32,7 +35,7 @@ export function ElectiveInfo({ buttonClassName }: Props) {
           <p>Recuerda revisar los requisitos de créditos electivos para tu carrera.</p>
         </div>
 
-        <ElectiveForm />
+        <ElectiveForm onClose={() => setOpen(false)} />
       </DialogContent>
     </Dialog>
   );

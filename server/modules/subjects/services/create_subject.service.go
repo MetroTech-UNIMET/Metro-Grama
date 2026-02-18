@@ -6,77 +6,34 @@ import (
 	"metrograma/db"
 	"metrograma/models"
 	"metrograma/modules/subjects/DTO"
-	"metrograma/tools"
 
 	"github.com/surrealdb/surrealdb.go"
+	"github.com/surrealdb/surrealdb.go/contrib/surrealql"
 )
 
-func CreateSubject(subject models.SubjectForm) error {
-	query := `
-	BEGIN TRANSACTION;
+func CreateSubjectElective(subject DTO.SubjectElectiveForm) (models.SubjectEntity, error) {
 
-	CREATE subject:$code CONTENT {
-		name: $name
-		-- credits: $credits,
-		-- BPCredits: $BPCredits
-	};
+	qb := surrealql.Begin().
+		Let("subjectId", surrealql.Expr("type::thing('subject', ?)", subject.Code)).
+		Do(
+			surrealql.Create("$subjectId").Content(map[string]any{
+				"name":       subject.Name,
+				"isElective": true,
+			}),
+		).
+		Do(surrealql.For("precede", "? ", subject.Prelations).
+			Do(
+				surrealql.Relate(surrealql.Expr("$subjectId"), "precede", surrealql.Expr("(type::thing('subject', $precede))")),
+			),
+		).Return("?", surrealql.SelectOnly("$subjectId").Field("*"))
 
-	FOR $career IN $careers {
-		RELATE subject:$code->belong->$career.careerID SET trimester = $career.trimester;
-	};
+	sql, params := qb.Build()
 
-	FOR $precede IN $precedesID {
-		RELATE subject:$code->precede->$precede;
-	};
-
-	COMMIT TRANSACTION;
-	`
-
-	queryParams := map[string]any{
-		"code": subject.Code,
-		"name": subject.Name,
-		// "credits":   subject.Credits,
-		// "BPCredits": subject.BPCredits,
-		"careers":    subject.Careers,
-		"precedesID": subject.PrecedesID,
-	}
-
-	result, err := surrealdb.Query[models.SubjectEntity](context.Background(), db.SurrealDB, query, queryParams)
+	result, err := surrealdb.Query[models.SubjectEntity](context.Background(), db.SurrealDB, sql, params)
 	if err != nil {
-		return fmt.Errorf("error creating subject: %v", err)
+		return models.SubjectEntity{}, fmt.Errorf("error creating subject: %v", err)
 	}
 
 	data := (*result)[0].Result
-	return tools.GetSurrealErrorMsgs(data)
-}
-
-func CreateSubjectElective(subject DTO.SubjectElectiveForm) error {
-	query := `
-	BEGIN TRANSACTION;
-
-	CREATE subject:$code CONTENT {
-		name: $name,
-		isElective: true
-	};
-
-	FOR $precede IN $precedesID {
-		RELATE subject:$code->precede->$precede;
-	};
-
-	COMMIT TRANSACTION;
-	`
-
-	queryParams := map[string]any{
-		"code":       subject.Code,
-		"name":       subject.Name,
-		"precedesID": subject.PrecedesID,
-	}
-
-	result, err := surrealdb.Query[models.SubjectEntity](context.Background(), db.SurrealDB, query, queryParams)
-	if err != nil {
-		return fmt.Errorf("error creating subject: %v", err)
-	}
-
-	data := (*result)[0].Result
-	return tools.GetSurrealErrorMsgs(data)
+	return data, nil
 }

@@ -26,10 +26,11 @@ export function useMutationEnrollSubject({ subject, afterSubmit }: Props) {
 
       return enrollStudent(subjectCode, data);
     },
-    onSuccess: async (result) => {
+    onSuccess: async (result, { data }) => {
       if (!subject) return;
       await queryClient.invalidateQueries({ queryKey: ['subjects', subjectCode, 'stats'], refetchType: 'all' });
-      nodeActions.enableViewedNode(subject);
+
+      if (data.grade >= 10) nodeActions.enableViewedNode(subject);
 
       toast.success('Materia marcada exitosamente', {
         description: result.message || 'La materia se marcó como cursada',

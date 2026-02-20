@@ -17,20 +17,26 @@ import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import { Spinner } from '@/components/ui/spinner';
+import { ButtonLink } from '@/components/ui/link';
 
 import type { Id } from '@/interfaces/surrealDb';
 import type { SubjectEntity } from '@/interfaces/Subject';
 
 type OfferedCols = { T1: boolean; T2: boolean; T3: boolean; I: boolean };
 
+interface Props {
+  from: '/_navLayout/oferta/' | '/_navLayout/oferta/edit';
+  editMode: boolean;
+}
+
 // TODO - Considerar usar rate limiting tanto en cliente como en server
-export function OfertaAcademicTable() {
-  const { year, setYear, debouncedYear } = useAcademicYear();
-  const search = useSearch({ from: '/_navLayout/oferta/' });
+export function OfertaAcademicTable({ from, editMode }: Props) {
+  const { year, setYear, debouncedYear } = useAcademicYear({ from });
+  const search = useSearch({ from: from as any });
 
   const { data, isLoading } = useFetchAnnualOfferByYear({
     year: debouncedYear || undefined,
-    career: search.career,
+    career: (search as any).career,
   });
 
   // Keep only user edits for trimesters, keyed by subject code/id
@@ -73,7 +79,7 @@ export function OfertaAcademicTable() {
 
   return (
     <Card className="space-y-4 p-4">
-      <OfferHeader year={year} setYear={setYear} />
+      <OfferHeader year={year} setYear={setYear} from={from} showUpload={editMode} />
 
       <Separator />
 
@@ -98,33 +104,49 @@ export function OfertaAcademicTable() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {(data ?? []).map((item) => {
-            const code = item.subject.id.ID as string;
-            const name = item.subject.name as string;
-            const period = item.period as number;
-            const offered = offeredEdits[code] ?? { T1: false, T2: false, T3: false, I: false };
+          {!data || data.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={7} className="h-24 text-center">
+                No se encontraron asignaturas.
+              </TableCell>
+            </TableRow>
+          ) : (
+            (data ?? []).map((item) => {
+              const code = item.subject.id.ID as string;
+              const name = item.subject.name as string;
+              const period = item.period as number;
+              const offered = offeredEdits[code] ?? { T1: false, T2: false, T3: false, I: false };
 
-            return (
-              <TableRow key={code} className={cn(period % 2 === 0 && 'bg-muted/40')}>
-                <TableCell className="w-16 p-2 align-top font-medium">{numberToRoman(period)}</TableCell>
-                <TableCell className="w-28 p-2 align-top font-mono text-xs">{code}</TableCell>
-                <TableCell className="p-2 align-top">{name}</TableCell>
-                {(['T1', 'T2', 'T3', 'I'] as const).map((col) => (
-                  <OfferCell
-                    key={col}
-                    subject={item.subject}
-                    col={col}
-                    checked={offered[col]}
-                    academicYear={(debouncedYear || '').trim()}
-                    disabled={isLoading}
-                    onToggle={() => toggleOffer(code, col)}
-                  />
-                ))}
-              </TableRow>
-            );
-          })}
+              return (
+                <TableRow key={code} className={cn(period % 2 === 0 && 'bg-muted/40')}>
+                  <TableCell className="w-16 p-2 align-top font-medium">{numberToRoman(period)}</TableCell>
+                  <TableCell className="w-28 p-2 align-top font-mono text-xs">{code}</TableCell>
+                  <TableCell className="p-2 align-top">{name}</TableCell>
+                  {(['T1', 'T2', 'T3', 'I'] as const).map((col) => (
+                    <OfferCell
+                      key={col}
+                      subject={item.subject}
+                      col={col}
+                      checked={offered[col]}
+                      academicYear={(debouncedYear || '').trim()}
+                      disabled={isLoading || !editMode}
+                      onToggle={() => toggleOffer(code, col)}
+                    />
+                  ))}
+                </TableRow>
+              );
+            })
+          )}
         </TableBody>
       </Table>
+      {!editMode && (
+        <div className="text-muted-foreground flex items-center justify-center gap-2 pt-4 text-sm">
+          <span>Si encuentras un error en la oferta académica puedes modificarlo aquí</span>
+          <ButtonLink to="/oferta/edit" search={{}} variant="link" className="h-auto p-0 text-blue-600 underline">
+            Editar oferta
+          </ButtonLink>
+        </div>
+      )}
     </Card>
   );
 }

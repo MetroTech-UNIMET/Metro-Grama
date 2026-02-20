@@ -16,12 +16,15 @@ import { Spinner } from '@ui/spinner';
 interface Props {
   year: string | undefined;
   setYear: (year: string) => void;
+  from: '/_navLayout/oferta/' | '/_navLayout/oferta/edit';
+  showUpload: boolean;
 }
 
-export function OfferHeader({ year, setYear }: Props) {
+export function OfferHeader({ year, setYear, from, showUpload }: Props) {
   const careerOptionsQuery = useFetchCareersOptions();
 
   const { selectedCareer, setSelectedCareer } = useSelectedCareer({
+    from,
     careerOptions: careerOptionsQuery.data,
     useStudentCareersAsDefault: true,
   });
@@ -65,17 +68,21 @@ export function OfferHeader({ year, setYear }: Props) {
           placeholder="Selecciona carrera"
         />
 
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="application/pdf,.pdf"
-          className="hidden"
-          onChange={handleFileChange}
-        />
-        <Button colors={'secondary'} onClick={handleOpenFileDialog} disabled={uploadMutation.isPending}>
-          {uploadMutation.isPending ? <Spinner /> : <Upload />}
-          {uploadMutation.isPending ? 'Subiendo…' : 'Subir PDF de la Oferta Anual'}
-        </Button>
+        {showUpload && (
+          <>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="application/pdf,.pdf"
+              className="hidden"
+              onChange={handleFileChange}
+            />
+            <Button colors={'secondary'} onClick={handleOpenFileDialog} disabled={uploadMutation.isPending}>
+              {uploadMutation.isPending ? <Spinner /> : <Upload />}
+              {uploadMutation.isPending ? 'Subiendo…' : 'Subir PDF de la Oferta Anual'}
+            </Button>
+          </>
+        )}
       </div>
 
       <div className="flex items-center gap-2 text-sm">

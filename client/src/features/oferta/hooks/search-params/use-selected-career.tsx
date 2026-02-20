@@ -6,14 +6,17 @@ import { idToSurrealId } from '@utils/queries';
 
 import type { CareerOption } from '@/hooks/queries/career/use-fetch-careers';
 
+type ValidRoutes = '/_navLayout/oferta/' | '/_navLayout/oferta/edit';
+
 interface Props {
+  from: ValidRoutes;
   careerOptions: CareerOption[];
   useStudentCareersAsDefault?: boolean;
 }
 
-export function useSelectedCareer({ careerOptions, useStudentCareersAsDefault }: Props) {
+export function useSelectedCareer({ from, careerOptions, useStudentCareersAsDefault }: Props) {
   const navigate = useNavigate();
-  const search = useSearch({ from: '/_navLayout/oferta/' });
+  const search = useSearch({ from });
 
   const { data: studentCareersData } = useFetchStudentCareers({
     queryOptions: { enabled: !!useStudentCareersAsDefault },
@@ -48,12 +51,18 @@ export function useSelectedCareer({ careerOptions, useStudentCareersAsDefault }:
     const nextId = selectedCareer?.value ?? '';
     if (currentId !== nextId) {
       navigate({
-        to: '/oferta',
+        to: normalizeForm(from),
         search: { ...search, career: nextId || undefined },
         replace: true,
       });
     }
-  }, [selectedCareer, navigate, search]);
+  }, [selectedCareer, navigate, search, from]);
 
   return { selectedCareer, setSelectedCareer };
+}
+
+// FIXME - Eliminar código repetido
+
+function normalizeForm(from: ValidRoutes) {
+  return from.split('/_navLayout')[1] as '/oferta' | '/oferta/edit';
 }

@@ -20,6 +20,7 @@ import { Route as NavLayoutMateriasIndexRouteImport } from './routes/_navLayout/
 import { Route as NavLayoutHorarioIndexRouteImport } from './routes/_navLayout/horario/index'
 import { Route as AdminCarrerasCrearRouteImport } from './routes/admin/carreras.crear'
 import { Route as NavLayoutStudentStudentIdRouteImport } from './routes/_navLayout/student/$studentId'
+import { Route as NavLayoutOfertaEditRouteImport } from './routes/_navLayout/oferta/edit'
 import { Route as NavLayoutProfileSettingsIndexRouteImport } from './routes/_navLayout/profile/settings/index'
 import { Route as AdminCarrerasEditarIdRouteImport } from './routes/admin/carreras.editar.$id'
 
@@ -78,6 +79,11 @@ const NavLayoutStudentStudentIdRoute =
     path: '/student/$studentId',
     getParentRoute: () => NavLayoutRouteRoute,
   } as any)
+const NavLayoutOfertaEditRoute = NavLayoutOfertaEditRouteImport.update({
+  id: '/oferta/edit',
+  path: '/oferta/edit',
+  getParentRoute: () => NavLayoutRouteRoute,
+} as any)
 const NavLayoutProfileSettingsIndexRoute =
   NavLayoutProfileSettingsIndexRouteImport.update({
     id: '/settings/',
@@ -95,6 +101,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRouteRouteWithChildren
   '/profile': typeof NavLayoutProfileRouteRouteWithChildren
   '/register/student': typeof RegisterStudentRoute
+  '/oferta/edit': typeof NavLayoutOfertaEditRoute
   '/student/$studentId': typeof NavLayoutStudentStudentIdRoute
   '/admin/carreras/crear': typeof AdminCarrerasCrearRoute
   '/horario': typeof NavLayoutHorarioIndexRoute
@@ -108,6 +115,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteRouteWithChildren
   '/register/student': typeof RegisterStudentRoute
+  '/oferta/edit': typeof NavLayoutOfertaEditRoute
   '/student/$studentId': typeof NavLayoutStudentStudentIdRoute
   '/admin/carreras/crear': typeof AdminCarrerasCrearRoute
   '/horario': typeof NavLayoutHorarioIndexRoute
@@ -124,6 +132,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRouteRouteWithChildren
   '/_navLayout/profile': typeof NavLayoutProfileRouteRouteWithChildren
   '/register/student': typeof RegisterStudentRoute
+  '/_navLayout/oferta/edit': typeof NavLayoutOfertaEditRoute
   '/_navLayout/student/$studentId': typeof NavLayoutStudentStudentIdRoute
   '/admin/carreras/crear': typeof AdminCarrerasCrearRoute
   '/_navLayout/horario/': typeof NavLayoutHorarioIndexRoute
@@ -140,6 +149,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/profile'
     | '/register/student'
+    | '/oferta/edit'
     | '/student/$studentId'
     | '/admin/carreras/crear'
     | '/horario'
@@ -153,6 +163,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/register/student'
+    | '/oferta/edit'
     | '/student/$studentId'
     | '/admin/carreras/crear'
     | '/horario'
@@ -168,6 +179,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/_navLayout/profile'
     | '/register/student'
+    | '/_navLayout/oferta/edit'
     | '/_navLayout/student/$studentId'
     | '/admin/carreras/crear'
     | '/_navLayout/horario/'
@@ -264,6 +276,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NavLayoutStudentStudentIdRouteImport
       parentRoute: typeof NavLayoutRouteRoute
     }
+    '/_navLayout/oferta/edit': {
+      id: '/_navLayout/oferta/edit'
+      path: '/oferta/edit'
+      fullPath: '/oferta/edit'
+      preLoaderRoute: typeof NavLayoutOfertaEditRouteImport
+      parentRoute: typeof NavLayoutRouteRoute
+    }
     '/_navLayout/profile/settings/': {
       id: '/_navLayout/profile/settings/'
       path: '/settings'
@@ -298,6 +317,7 @@ const NavLayoutProfileRouteRouteWithChildren =
 
 interface NavLayoutRouteRouteChildren {
   NavLayoutProfileRouteRoute: typeof NavLayoutProfileRouteRouteWithChildren
+  NavLayoutOfertaEditRoute: typeof NavLayoutOfertaEditRoute
   NavLayoutStudentStudentIdRoute: typeof NavLayoutStudentStudentIdRoute
   NavLayoutHorarioIndexRoute: typeof NavLayoutHorarioIndexRoute
   NavLayoutMateriasIndexRoute: typeof NavLayoutMateriasIndexRoute
@@ -306,6 +326,7 @@ interface NavLayoutRouteRouteChildren {
 
 const NavLayoutRouteRouteChildren: NavLayoutRouteRouteChildren = {
   NavLayoutProfileRouteRoute: NavLayoutProfileRouteRouteWithChildren,
+  NavLayoutOfertaEditRoute: NavLayoutOfertaEditRoute,
   NavLayoutStudentStudentIdRoute: NavLayoutStudentStudentIdRoute,
   NavLayoutHorarioIndexRoute: NavLayoutHorarioIndexRoute,
   NavLayoutMateriasIndexRoute: NavLayoutMateriasIndexRoute,

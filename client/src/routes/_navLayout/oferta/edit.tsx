@@ -8,7 +8,7 @@ import { OfertaAcademicTable } from '@/features/oferta/OfertaAcademicTable';
 
 import { fetchAnnualOfferByYearOptions } from '@/hooks/queries/subject_offer/use-fetch-annual-offer-by-year';
 
-const route = '/_navLayout/oferta/';
+const route = '/_navLayout/oferta/edit';
 
 export const Route = createFileRoute(route)({
   validateSearch: ofertaSearchSchema,
@@ -16,15 +16,17 @@ export const Route = createFileRoute(route)({
   loader: async ({ deps: { career, year }, context: { queryClient } }) => {
     queryClient.ensureQueryData(fetchAnnualOfferByYearOptions({ year, career }));
   },
-  head: () => ({
-    meta: getMetaTags({
-      title: 'Oferta Académica | MetroGrama',
-      description: 'Consulta la oferta académica por carrera y año en MetroGrama',
-    }),
-  }),
-  component: OfertaRoute,
+  head: () => {
+    return {
+      meta: getMetaTags({
+        title: 'Editar Oferta Académica | MetroGrama',
+        description: 'Consulta y edita la oferta académica por carrera y año en MetroGrama',
+      }),
+    };
+  },
+  component: OfertaEditPage,
 });
 
-function OfertaRoute() {
-  return <OfertaAcademicTable from={route} editMode={false} />;
+function OfertaEditPage() {
+  return <OfertaAcademicTable from={route} editMode={true} />;
 }

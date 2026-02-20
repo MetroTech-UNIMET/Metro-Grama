@@ -84,6 +84,8 @@ func GetSubjectOfferById(trimesterId string, studentId surrealModels.RecordID, q
 		qb = utils.ConstructTransactionVariables(qb)
 		extraParams["loggedUser"] = studentId
 	}
+	extraParams["enrollable"] = enrollable
+	extraParams["enrolled"] = enrolled
 
 	subjectOffer_Qb, sections_Qb := utils.GetBaseSubjectOfferQuery(careersArray, isUserLogged)
 
@@ -123,13 +125,13 @@ func GetSubjectOfferById(trimesterId string, studentId surrealModels.RecordID, q
 	}
 
 	if queryParams.SubjectsFilter == "enrollable" && len(enrollable) > 0 {
-		subjectOffer_Qb = subjectOffer_Qb.Where("in.id IN ?", enrollable)
+		subjectOffer_Qb = subjectOffer_Qb.Where("in.id IN $enrollable")
 	}
 
 	if studentPtr != nil {
 		subjectOffer_Qb = subjectOffer_Qb.
-			Alias("is_enrolled", "in IN ?", enrolled).
-			Alias("is_enrollable", "in IN ?", enrollable)
+			Alias("is_enrolled", "in IN $enrolled").
+			Alias("is_enrollable", "in IN $enrollable")
 	}
 	qb = qb.Return("?", subjectOffer_Qb)
 
@@ -143,6 +145,7 @@ func GetSubjectOfferById(trimesterId string, studentId surrealModels.RecordID, q
 	}
 	offers := (*result)[0].Result
 	return offers, nil
+	// La 5 es mate basica
 }
 
 // Como conseguir amigos que quieren ver la materia:

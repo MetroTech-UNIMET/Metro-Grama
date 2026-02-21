@@ -176,7 +176,7 @@ function FiltersPopover({
               {sorting.orderDir === 'asc' ? <ArrowDownAZ size={16} /> : <ArrowUpAZ size={16} />}
             </Button>
           </div>
-          <Select value={sorting.orderBy} onValueChange={(val) => setOrderBy(val)} items={orderSelectOptions}>
+          <Select value={sorting.orderBy} onValueChange={(val) => val && setOrderBy(val)} items={orderSelectOptions}>
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>

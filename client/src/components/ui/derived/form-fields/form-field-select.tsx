@@ -77,7 +77,7 @@ function FormSelectField<T extends FieldValues, J = string | number, K = undefin
               onValueChange={(value) => {
                 if (Array.isArray(value)) throw new Error('Array values are not supported, use Multidropdown');
 
-                onValueChangeProps ? onValueChangeProps(value, onChange) : onChange(value);
+                onValueChangeProps ? onValueChangeProps(value as J, onChange) : onChange(value as J);
               }}
               value={value}
               {...field}

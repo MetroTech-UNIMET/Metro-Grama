@@ -34,7 +34,7 @@ export function SchedulesCard({ current_courses, next_courses }: Props) {
       <CardHeader className="flex-row flex-wrap items-center justify-between">
         <CardTitle>Horario </CardTitle>
 
-        <Select items={scheduleOptions} value={scheduleOption} onValueChange={setScheduleOption}>
+        <Select items={scheduleOptions} value={scheduleOption} onValueChange={(val) => val && setScheduleOption(val)}>
           <SelectTrigger className="w-48">
             <SelectValue />
           </SelectTrigger>

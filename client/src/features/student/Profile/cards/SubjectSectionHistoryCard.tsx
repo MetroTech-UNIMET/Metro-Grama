@@ -119,17 +119,15 @@ function SubjectSectionHistoryItem({ item }: { item: SubjectSectionHistoryWithSc
       {/* Collapsible schedules */}
       {item.schedules && item.schedules.length > 0 && (
         <Collapsible>
-          <CollapsibleTrigger asChild>
-            <button
-              className={cn(
-                'flex w-fit items-center gap-1 rounded-md border px-2 py-1 text-xs font-medium',
-                'hover:bg-muted transition-colors',
-              )}
-              aria-label="Mostrar horarios"
-            >
-              Ver horarios
-              <ChevronRight className="h-3 w-3 in-data-[state=open]:rotate-90" />
-            </button>
+          <CollapsibleTrigger
+            className={cn(
+              'flex w-fit items-center gap-1 rounded-md border px-2 py-1 text-xs font-medium',
+              'hover:bg-muted transition-colors',
+            )}
+            aria-label="Mostrar horarios"
+          >
+            Ver horarios
+            <ChevronRight className="h-3 w-3 in-data-[state=open]:rotate-90" />
           </CollapsibleTrigger>
           <CollapsibleContent className="mt-2 flex flex-row flex-wrap gap-8 space-y-2">
             {item.schedules.map((sch) => (

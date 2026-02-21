@@ -25,7 +25,7 @@ export function SubjectsCard({ passed_subjects }: Props) {
         {passed_subjects.length === 0 ? (
           <div className="text-muted-foreground text-sm">Aún no hay materias aprobadas</div>
         ) : (
-          <Tabs defaultValue={(passed_subjects[0]?.trimester).ID}>
+          <Tabs defaultValue={(passed_subjects[0]?.trimester).ID} >
             <TabsList>
               {passed_subjects.map((group) => {
                 const value = group.trimester.ID;

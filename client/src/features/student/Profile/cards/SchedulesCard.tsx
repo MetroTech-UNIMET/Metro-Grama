@@ -84,7 +84,7 @@ export function CourseScheduleView({ courses }: { courses: StudentCourse }) {
         {principalSubjectEvents.length !== 0 ? (
           <StudentPlanner events={principalSubjectEvents} />
         ) : (
-          <div className="text-muted-foreground">Aún no hay cursos principales</div>
+          <div className="text-muted-foreground text-sm">Aún no hay cursos principales</div>
         )}
       </TabsContent>
 
@@ -92,7 +92,7 @@ export function CourseScheduleView({ courses }: { courses: StudentCourse }) {
         {secondarySubjectEvents.length !== 0 ? (
           <StudentPlanner events={secondarySubjectEvents} />
         ) : (
-          <div className="text-muted-foreground">Aún no hay cursos secundarios</div>
+          <div className="text-muted-foreground text-sm">Aún no hay cursos secundarios</div>
         )}
       </TabsContent>
     </>

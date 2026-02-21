@@ -12,13 +12,12 @@ const variant = {
 };
 
 const colors = {
-  neutral: '',
-  // 'text-neutral-50 hover:bg-neutral-800 dark:bg-neutral-800 dark:text-neutral-50 dark:hover:bg-neutral-700',
+  neutral:
+    // 'bg-neutral-900 text-neutral-50 hover:bg-neutral-100 active:bg-neutral-200 dark:bg-neutral-50 ',
+    'bg-background text-foreground hover:bg-neutral-100 active:bg-neutral-200 dark:bg-neutral-900 dark:text-neutral-50 dark:hover:bg-neutral-800 dark:active:bg-neutral-700',
   primary: 'bg-primary text-neutral-50 hover:bg-primary/90 active:bg-primary-900',
-  secondary:
-    'bg-secondary-600 text-white hover:bg-secondary-600/80 active:bg-secondary-700',
-  tertiary:
-    'bg-tertiary-600 text-white hover:bg-tertiary-600/80 active:bg-tertiary-700',
+  secondary: 'bg-secondary-600 text-white hover:bg-secondary-600/80 active:bg-secondary-700',
+  tertiary: 'bg-tertiary-600 text-white hover:bg-tertiary-600/80 active:bg-tertiary-700',
   success:
     'bg-success text-success-foreground hover:bg-green-700/90 dark:bg-green-900 dark:text-neutral-50 dark:hover:bg-green-900/90',
   destructive:
@@ -53,12 +52,12 @@ const buttonVariants = cva(
         className:
           'text-neutral-900 border-neutral-900 border-2 hover:bg-neutral-100 active:bg-neutral-200 dark:text-neutral-50 dark:border-neutral-50 dark:hover:bg-neutral-800 dark:active:bg-neutral-700',
       },
-      // {
-      //   colors: 'neutral',
-      //   variant: 'ghost',
-      //   className:
-      //     'text-neutral-900 hover:bg-neutral-100 active:bg-neutral-200 dark:text-neutral-50 dark:hover:bg-neutral-800 dark:active:bg-neutral-700',
-      // },
+      {
+        colors: 'neutral',
+        variant: 'ghost',
+        className:
+          'text-neutral-900 bg-transparent hover:bg-neutral-100 hover:text-neutral-900 active:bg-neutral-200 dark:text-neutral-50 dark:bg-transparent dark:hover:bg-neutral-800 dark:hover:text-neutral-50 dark:active:bg-neutral-700',
+      },
       {
         colors: 'neutral',
         variant: 'link',
@@ -67,7 +66,8 @@ const buttonVariants = cva(
       {
         colors: 'secondary',
         variant: 'outline',
-        className: 'border-secondary-600 border-2 text-secondary-600 hover:bg-secondary-600 hover:text-white active:bg-secondary-100',
+        className:
+          'border-secondary-600 border-2 text-secondary-600 hover:bg-secondary-600 hover:text-white active:bg-secondary-100',
       },
       {
         colors: 'primary',

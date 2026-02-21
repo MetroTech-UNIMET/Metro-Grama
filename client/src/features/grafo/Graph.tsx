@@ -85,7 +85,7 @@ export default function Graph() {
         loadingCareers={careerOptionsQuery.isLoading}
       />
 
-      {onlyElectives && <ElectiveInfo buttonClassName="fixed right-8 top-20 z-10" />}
+      {onlyElectives && <ElectiveInfo buttonClassName="fixed right-8 top-10 md:top-24 z-10 max-[21rem]:top-44" />}
 
       {selectedCareers.length === 0 && !onlyElectives ? (
         <>

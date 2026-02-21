@@ -9,7 +9,7 @@ import { cva, type VariantProps } from 'class-variance-authority';
 const tabsListVariants = cva('inline-flex h-9', {
   variants: {
     variant: {
-      default: 'items-center justify-start rounded-lg bg-muted p-1 text-muted-foreground  flex-wrap h-auto ',
+      default: 'items-center justify-start rounded-lg bg-muted p-1 text-muted-foreground h-auto',
       table: 'max-md:mb-2 md:translate-y-px gap-3 md:gap-1 max-md:h-10 overflow-x-auto',
       ghost: 'bg-transparent gap-2',
     },
@@ -51,18 +51,50 @@ const tabsContentVariants = cva('', {
 
 type Variants = VariantProps<typeof tabsListVariants>;
 
-const Tabs = TabsPrimitive.Root;
+function Tabs({ className, orientation = 'horizontal', ...props }: React.ComponentProps<typeof TabsPrimitive.Root>) {
+  return (
+    <TabsPrimitive.Root
+      data-slot="tabs"
+      data-orientation={orientation}
+      className={cn('group/tabs ', className)}
+      {...props}
+    />
+  );
+}
 
-function TabsList({ className, variant, ...props }: React.ComponentProps<typeof TabsPrimitive.List> & Variants) {
-  return <TabsPrimitive.List className={cn(tabsListVariants({ variant }), className)} {...props} />;
+function TabsList({
+  className,
+  variant = 'default',
+  ...props
+}: React.ComponentProps<typeof TabsPrimitive.List> & VariantProps<typeof tabsListVariants>) {
+  return (
+    <TabsPrimitive.List
+      data-slot="tabs-list"
+      data-variant={variant}
+      className={cn(tabsListVariants({ variant }), className)}
+      {...props}
+    />
+  );
 }
 
 function TabsTrigger({ className, variant, ...props }: React.ComponentProps<typeof TabsPrimitive.Trigger> & Variants) {
-  return <TabsPrimitive.Trigger className={cn(tabsTriggerVariants({ variant }), className)} {...props} />;
+  return (
+    <TabsPrimitive.Trigger
+      data-slot="tabs-trigger"
+      className={cn(tabsTriggerVariants({ variant }), className)}
+      {...props}
+    />
+  );
 }
 
 function TabsContent({ className, variant, ...props }: React.ComponentProps<typeof TabsPrimitive.Content> & Variants) {
-  return <TabsPrimitive.Content className={cn(tabsContentVariants({ variant }), className)} {...props} />;
+  return (
+    <TabsPrimitive.Content
+      data-slot="tabs-content"
+      className={cn(tabsContentVariants({ variant }), className)}
+      {...props}
+    />
+  );
 }
 
 export { Tabs, TabsList, TabsTrigger, TabsContent };

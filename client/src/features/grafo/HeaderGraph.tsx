@@ -24,34 +24,34 @@ export function HeaderGraph({
   loadingCareers,
 }: Props) {
   return (
-    <div className="fixed z-10 flex w-full flex-row flex-wrap gap-4 pr-12">
+    <div className="fixed z-10 flex w-full flex-row flex-wrap justify-between gap-4 px-8">
       {/* <SideBarGraph /> */}
 
-      <div className="flex flex-col gap-2">
-        <GoogleLogin />
-
+      <div className="flex flex-row flex-wrap gap-2">
         <Tabs
           defaultValue={onlyElectives ? 'electives' : 'by-career'}
-          className="mx-auto"
+          className=" h-11"
           onValueChange={(value) => setOnlyElectives(value === 'electives')}
         >
-          <TabsList>
+          <TabsList className="h-full">
             <TabsTrigger value="by-career">Por carrera</TabsTrigger>
 
             <TabsTrigger value="electives">Electivas</TabsTrigger>
           </TabsList>
         </Tabs>
+
+        <div className="w-full max-w-sm">
+          <CareerMultiDropdown
+            value={selectedCareers}
+            onChange={setSelectedCareers}
+            loadingSubjects={loadingSubjects}
+            isLoading={loadingCareers}
+            disabled={onlyElectives}
+          />
+        </div>
       </div>
 
-      <div className="w-full max-w-sm">
-        <CareerMultiDropdown
-          value={selectedCareers}
-          onChange={setSelectedCareers}
-          loadingSubjects={loadingSubjects}
-          isLoading={loadingCareers}
-          disabled={onlyElectives}
-        />
-      </div>
+      <GoogleLogin />
     </div>
   );
 }

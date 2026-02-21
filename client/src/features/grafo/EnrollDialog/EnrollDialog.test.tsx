@@ -20,18 +20,24 @@ vi.mock('../behaviors/StatusActions', () => ({
 
 vi.mock('@/hooks/queries/trimester/use-FetchTrimesters', () => ({
   useFetchTrimestersOptions: () => ({
-    data: [{ 
-      value: 'trim1', 
-      label: 'Enero-Marzo 2026',
-      data: { is_current: false, is_next: false }
-    }],
+    data: [
+      {
+        value: 'trim1',
+        label: 'Enero-Marzo 2026',
+        data: { is_current: false, is_next: false },
+      },
+    ],
     isLoading: false,
   }),
 }));
 
 // Mock UI components that might cause issues or need simplified rendering
 vi.mock('@ui/dialog', () => ({
-  DialogContent: ({ children, ref }: any) => <div ref={ref} data-testid="dialog-content">{children}</div>,
+  DialogContent: ({ children, ref }: any) => (
+    <div ref={ref} data-testid="dialog-content">
+      {children}
+    </div>
+  ),
   DialogHeader: ({ children }: any) => <div>{children}</div>,
   DialogTitle: ({ children }: any) => <h1>{children}</h1>,
   DialogDescription: ({ children }: any) => <p>{children}</p>,
@@ -70,11 +76,8 @@ describe('EnrollDialog', () => {
   it('renders correctly with subject info', () => {
     render(
       <TooltipProvider>
-        <EnrollDialog
-          selectedSubjectNode={mockSubjectNode}
-          afterSubmit={mockAfterSubmit}
-        />
-      </TooltipProvider>
+        <EnrollDialog subject={mockSubjectNode._cfg.model.data.data} isEditMode={false} afterSubmit={mockAfterSubmit} />
+      </TooltipProvider>,
     );
 
     expect(screen.getByText(/Matemáticas I/)).toBeInTheDocument();
@@ -88,15 +91,16 @@ describe('EnrollDialog', () => {
     render(
       <TooltipProvider>
         <EnrollDialog
-          selectedSubjectNode={mockSubjectNode}
+          subject={mockSubjectNode._cfg.model.data.data as any}
+          isEditMode={false}
           afterSubmit={mockAfterSubmit}
         />
-      </TooltipProvider>
+      </TooltipProvider>,
     );
 
     // Fill form
     await user.type(screen.getByLabelText(/Nota/i), '18');
-    
+
     // Select Trimester (Autocomplete mock handling might be tricky, assuming standard select-like behavior or input)
     // The component uses FormAutocompleteField.
     // If it renders an input, we can type.
@@ -104,11 +108,11 @@ describe('EnrollDialog', () => {
     // In a real test, interacting with Radix UI / Shadcn Select/Autocomplete is verbose.
     // For now, let's assume we can type into the input if it's an autocomplete.
     // Or simpler: Mock the FormAutocompleteField to be a simple input for this test.
-    
+
     // But waiting for the "Guardar" button to be enabled/clickable.
-    
+
     // Let's try to submit without trimester and see validation (optional check).
-    
+
     // To make it easier, let's assume the user fills it.
     // If FormAutocompleteField renders an input with role="combobox" or similar.
     const trimesterInput = screen.getByPlaceholderText(/Selecciona el trimestre/i);
@@ -129,12 +133,15 @@ describe('EnrollDialog', () => {
     await user.click(screen.getByText('Guardar'));
 
     await waitFor(() => {
-      expect(enrollStudent).toHaveBeenCalledWith('MAT101', expect.objectContaining({
-        grade: 18,
-        trimesterId: { ID: 'trim1', Table: 'trimester' },
-        difficulty: 3, 
-        workload: 3,
-      }));
+      expect(enrollStudent).toHaveBeenCalledWith(
+        'MAT101',
+        expect.objectContaining({
+          grade: 18,
+          trimesterId: { ID: 'trim1', Table: 'trimester' },
+          difficulty: 3,
+          workload: 3,
+        }),
+      );
     });
 
     expect(mockAfterSubmit).toHaveBeenCalled();

@@ -70,7 +70,7 @@ export function SaveScheduleButton() {
           onClick={() => saveSchedules(user, events, isPrincipal)}
           title={hasOverlaps ? 'No puedes guardar mientras existan materias que se solapan' : undefined}
         >
-          <Save className="!size-6" />
+          <Save className="size-6!" />
           Guardar horario
         </Button>
 
@@ -83,7 +83,7 @@ export function SaveScheduleButton() {
               className="min-w-10 border-l border-slate-100 py-8"
               title={hasOverlaps ? 'No disponible por materias solapadas' : undefined}
             >
-              <ChevronDown className="!size-6" />
+              <ChevronDown className="size-6!" />
               <span className="sr-only">Abrir opciones</span>
             </Button>
           </DropdownMenuTrigger>

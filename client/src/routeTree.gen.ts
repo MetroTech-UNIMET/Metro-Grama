@@ -104,12 +104,12 @@ export interface FileRoutesByFullPath {
   '/oferta/edit': typeof NavLayoutOfertaEditRoute
   '/student/$studentId': typeof NavLayoutStudentStudentIdRoute
   '/admin/carreras/crear': typeof AdminCarrerasCrearRoute
-  '/horario': typeof NavLayoutHorarioIndexRoute
-  '/materias': typeof NavLayoutMateriasIndexRoute
-  '/oferta': typeof NavLayoutOfertaIndexRoute
+  '/horario/': typeof NavLayoutHorarioIndexRoute
+  '/materias/': typeof NavLayoutMateriasIndexRoute
+  '/oferta/': typeof NavLayoutOfertaIndexRoute
   '/profile/': typeof NavLayoutProfileIndexRoute
   '/admin/carreras/editar/$id': typeof AdminCarrerasEditarIdRoute
-  '/profile/settings': typeof NavLayoutProfileSettingsIndexRoute
+  '/profile/settings/': typeof NavLayoutProfileSettingsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -152,12 +152,12 @@ export interface FileRouteTypes {
     | '/oferta/edit'
     | '/student/$studentId'
     | '/admin/carreras/crear'
-    | '/horario'
-    | '/materias'
-    | '/oferta'
+    | '/horario/'
+    | '/materias/'
+    | '/oferta/'
     | '/profile/'
     | '/admin/carreras/editar/$id'
-    | '/profile/settings'
+    | '/profile/settings/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -209,7 +209,7 @@ declare module '@tanstack/react-router' {
     '/_navLayout': {
       id: '/_navLayout'
       path: ''
-      fullPath: ''
+      fullPath: '/'
       preLoaderRoute: typeof NavLayoutRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
@@ -244,21 +244,21 @@ declare module '@tanstack/react-router' {
     '/_navLayout/oferta/': {
       id: '/_navLayout/oferta/'
       path: '/oferta'
-      fullPath: '/oferta'
+      fullPath: '/oferta/'
       preLoaderRoute: typeof NavLayoutOfertaIndexRouteImport
       parentRoute: typeof NavLayoutRouteRoute
     }
     '/_navLayout/materias/': {
       id: '/_navLayout/materias/'
       path: '/materias'
-      fullPath: '/materias'
+      fullPath: '/materias/'
       preLoaderRoute: typeof NavLayoutMateriasIndexRouteImport
       parentRoute: typeof NavLayoutRouteRoute
     }
     '/_navLayout/horario/': {
       id: '/_navLayout/horario/'
       path: '/horario'
-      fullPath: '/horario'
+      fullPath: '/horario/'
       preLoaderRoute: typeof NavLayoutHorarioIndexRouteImport
       parentRoute: typeof NavLayoutRouteRoute
     }
@@ -286,7 +286,7 @@ declare module '@tanstack/react-router' {
     '/_navLayout/profile/settings/': {
       id: '/_navLayout/profile/settings/'
       path: '/settings'
-      fullPath: '/profile/settings'
+      fullPath: '/profile/settings/'
       preLoaderRoute: typeof NavLayoutProfileSettingsIndexRouteImport
       parentRoute: typeof NavLayoutProfileRouteRoute
     }

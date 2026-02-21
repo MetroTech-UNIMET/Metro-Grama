@@ -175,8 +175,8 @@ func GetEnrollableSubjects(studentId surrealModels.RecordID) ([]surrealModels.Re
 	qb := surrealql.Begin().
 		Let("enrolled", surrealql.Select("enroll").
 			Value("out").
-			WhereEq("in", "$studentId").
-			Where("passed = true")).
+			Where("in = $studentId").
+			Where("grade >= 10")).
 		Return("?", surrealql.
 			Select("subject").
 			Value("id").

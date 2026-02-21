@@ -4,6 +4,7 @@ import SearchPrelations from './behaviors/Search-Prelations';
 import { MenuActions, type SubjectNode } from './behaviors/MenuActions';
 import CreditsMenu from './behaviors/CreditsMenu';
 import UpdateNodeStatusOnGraphChange from './behaviors/Update-Node-Status-OnGraphChange';
+import { useStatusActions } from './behaviors/StatusActions';
 
 import { HeaderGraph } from './HeaderGraph';
 import { ElectiveInfo } from './ElectiveInfo/ElectiveInfo';
@@ -71,6 +72,7 @@ export default function Graph() {
 
   const { Graphin, Behaviors } = graphinImport;
   const { Hoverable } = Behaviors;
+  const { nodeActions } = useStatusActions();
 
   return (
     <>
@@ -113,8 +115,16 @@ export default function Graph() {
             </ContextMenu>
 
             <EnrollDialog
-              selectedSubjectNode={selectedSubjectDialog}
-              afterSubmit={() => setSelectedSubjectDialog(null)}
+              subject={selectedSubjectDialog?._cfg.model.data.data ?? null}
+              afterSubmit={(data) => {
+                if (!selectedSubjectDialog) throw new Error('No se encontró la materia seleccionada');
+
+                if (data.grade >= 10) nodeActions.enableViewedNode(selectedSubjectDialog);
+                else nodeActions.disableViewedNode(selectedSubjectDialog, selectedSubjectDialog.getOutEdges());
+
+                setSelectedSubjectDialog(null);
+              }}
+              isEditMode={selectedSubjectDialog?.hasState('viewed') ?? false}
             />
           </Dialog>
         </div>

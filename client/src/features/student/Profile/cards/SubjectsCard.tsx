@@ -1,9 +1,15 @@
-import { BicepsFlexed, Hourglass, Star } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { BicepsFlexed, Hourglass, Pencil, Star } from 'lucide-react';
 
 import { Card, CardHeader, CardTitle, CardContent } from '@ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@ui/tabs';
+import { Button } from '@ui/button';
+import { Dialog, DialogTrigger } from '@ui/dialog';
+
+import EnrollDialog from '@/features/grafo/EnrollDialog/EnrollDialog';
 
 import type { MyStudentDetails, PassedSubjectEntry } from '@/api/interactions/student.types';
+import type { Subject } from '@/interfaces/Subject';
 
 interface Props {
   passed_subjects: MyStudentDetails['passed_subjects'];
@@ -41,7 +47,11 @@ export function SubjectsCard({ passed_subjects }: Props) {
                   </div>
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     {group.subjects.map((s, idx) => (
-                      <SubjectCard key={`${s.subject.id.ID}-${idx}`} subjectEntry={s} />
+                      <SubjectCard
+                        key={`${s.subject.id.ID}-${idx}`}
+                        subjectEntry={s}
+                        trimesterId={group.trimester.ID}
+                      />
                     ))}
                   </div>
                 </TabsContent>
@@ -56,32 +66,64 @@ export function SubjectsCard({ passed_subjects }: Props) {
 
 interface SubjectsCardProps {
   subjectEntry: PassedSubjectEntry;
+  trimesterId: string;
 }
 
-function SubjectCard({ subjectEntry }: SubjectsCardProps) {
+function SubjectCard({ subjectEntry, trimesterId }: SubjectsCardProps) {
+  const [open, setOpen] = useState(false);
   const subjectCode = subjectEntry.subject.id.ID;
+
+  const subject: Subject = useMemo(
+    () => ({ ...subjectEntry.subject, code: subjectEntry.subject.id }),
+    [subjectEntry.subject],
+  );
+
   return (
-    <Card variant="outline" className="flex flex-row items-center justify-between gap-2">
-      <CardContent className="px-2 pb-4">
-        <CardTitle>{subjectEntry.subject.name}</CardTitle>
-        <span>({subjectCode})</span>
-        <div className="mt-4 space-y-2">
-          {/* Difficulty Row */}
-          <div className="mr-4 flex items-center gap-2">
-            <BicepsFlexed className="text-muted-foreground h-4 w-4" />
-            <Stars value={subjectEntry.difficulty} max={5} />
+    <Dialog open={open} onOpenChange={setOpen}>
+      <Card variant="outline" className="relative flex flex-row items-center justify-between gap-2">
+        <CardContent className="mt-1 px-2 pb-4">
+          <div className="flex w-full items-start justify-between gap-2">
+            <div>
+              <CardTitle>{subjectEntry.subject.name}</CardTitle>
+              <span>({subjectCode})</span>
+            </div>
           </div>
+          <div className="mt-4 space-y-2">
+            {/* Difficulty Row */}
+            <div className="mr-4 flex items-center gap-2">
+              <BicepsFlexed className="text-muted-foreground h-4 w-4" />
+              <Stars value={subjectEntry.difficulty} max={5} />
+            </div>
 
-          {/* Workload Row */}
-          <div className="flex items-center gap-2">
-            <Hourglass className="text-muted-foreground h-4 w-4" />
-            <Stars value={subjectEntry.workload} max={5} />
+            {/* Workload Row */}
+            <div className="flex items-center gap-2">
+              <Hourglass className="text-muted-foreground h-4 w-4" />
+              <Stars value={subjectEntry.workload} max={5} />
+            </div>
           </div>
-        </div>
-      </CardContent>
+        </CardContent>
 
-      <span className="text-2xl font-bold">{subjectEntry.grade}</span>
-    </Card>
+        <span className="mt-1 text-2xl font-bold">{subjectEntry.grade}</span>
+
+        <DialogTrigger asChild className="absolute top-1 right-1">
+          <Button variant="ghost" size="icon">
+            <Pencil />
+          </Button>
+        </DialogTrigger>
+      </Card>
+
+      <EnrollDialog
+        subject={subject}
+        isEditMode
+        initialValues={{
+          grade: subjectEntry.grade,
+          difficulty: subjectEntry.difficulty ?? undefined,
+          workload: subjectEntry.workload ?? undefined,
+          trimesterId,
+        }}
+        afterSubmit={() => setOpen(false)}
+      />
+    </Dialog>
   );
 }
 

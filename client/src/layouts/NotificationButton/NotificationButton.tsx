@@ -18,7 +18,7 @@ export function NotificationButton() {
 
   const handleMarkAsRead = useCallback(() => {
     const unreadNotifications = data?.unread ?? [];
-    // if (unreadNotifications.length === 0) return;
+    if (unreadNotifications.length === 0) return;
 
     emit('MARK_READ', {
       notifications: unreadNotifications.map((notification) => notification.id),
@@ -61,7 +61,7 @@ export function NotificationButton() {
 
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" onClick={handleMarkAsRead}>
+              <Button variant="ghost" size="icon" onClick={handleMarkAsRead} disabled={unreadCount === 0}>
                 <CheckIcon />
               </Button>
             </TooltipTrigger>

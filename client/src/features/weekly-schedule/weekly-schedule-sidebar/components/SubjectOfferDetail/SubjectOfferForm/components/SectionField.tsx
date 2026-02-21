@@ -13,9 +13,9 @@ import { FormTimePickerField } from '@ui/derived/form-fields/form-field-time-pic
 import { FormInputField } from '@ui/derived/form-fields/form-field-input';
 import { FormSelectField } from '@ui/derived/form-fields/form-field-select';
 import TooltipButton from '@ui/derived/tooltip-button';
-import { Popover, PopoverContent, PopoverTrigger } from '@ui/popover';
-import { useSidebar } from '@ui/sidebar';
+import { Popover, PopoverClose, PopoverContent, PopoverTrigger } from '@ui/popover';
 import { Button } from '@ui/button';
+import { ScrollArea } from '@ui/scroll-area';
 
 import type { SubjectScheduleInput } from '../schema';
 import type { StudentWithUser } from '@/interfaces/Student';
@@ -78,68 +78,82 @@ export function SectionField({ sectionIndex, removeSection, last_student_editor 
         </div>
         <FormInputField name={`${baseSectionName}.classroom_code`} placeholder="Código del aula" />
 
-        <PopoverContent className="w-80 px-5" ref={setPopoverContainer}>
-          <Button
-            type="button"
-            colors="success"
-            variant="outline"
-            className="w-full"
-            onClick={() => append(defaultSchedule)}
-            disabled={schedules.length >= 3}
-          >
-            Agregar horario (Sección {sectionIndex + 1}) <Plus />
-          </Button>
-          <div className="mt-4">
-            {schedules.map((field, schIndex) => (
-              <div key={field.id} className={cn('relative space-y-4')}>
-                {/* TODO - No funciona en el mobile, supongo que tengo que pasar container del sidebar */}
-                <FormSelectField
-                  name={`${baseSectionName}.schedules.${schIndex}.day_of_week` as const}
-                  label="Día"
-                  options={weekDayOptions}
-                  popoverContainer={popoverContainer ?? undefined}
-                  className={cn(
-                    formState.errors.sections?.[sectionIndex]?.schedules?.[schIndex] && 'bg-destructive/10',
-                  )}
-                />
+        <PopoverContent className="w-96 overflow-x-visible px-0" ref={setPopoverContainer}>
+          <div className="flex">
+            <ScrollArea className="max-h-90 flex-1 px-4" type="always">
+              <div className='px-1'>
 
-                <div className="flex flex-row gap-2">
-                  <FormTimePickerField
-                    name={`${baseSectionName}.schedules.${schIndex}.starting_time` as const}
-                    label="Hora de Inicio"
-                    containerClassName="basis-1/2"
-                    use12HourFormat
-                    hideSeconds
-                    onChange={(date, onChange) => {
-                      onChange(date);
-                      setValue(
-                        `${baseSectionName}.schedules.${schIndex}.ending_time`,
-                        addMinutes(date, correctIntervalBetweenHours),
-                      );
-                    }}
-                    className={cn(
-                      formState.errors.sections?.[sectionIndex]?.schedules?.[schIndex] && 'bg-destructive/10',
-                    )}
-                  />
-                  <FormTimePickerField
-                    name={`${baseSectionName}.schedules.${schIndex}.ending_time` as const}
-                    label="Hora de Finalización"
-                    containerClassName="basis-1/2"
-                    use12HourFormat
-                    hideSeconds
-                    readOnly
-                    disableHours={{
-                      before: schedules[schIndex].starting_time,
-                    }}
-                    className={cn(
-                      formState.errors.sections?.[sectionIndex]?.schedules?.[schIndex] && 'bg-destructive/10',
-                    )}
-                  />
-                </div>
+              <Button
+                type="button"
+                colors="success"
+                variant="outline"
+                className="w-full"
+                onClick={() => append(defaultSchedule)}
+                disabled={schedules.length >= 3}
+              >
+                Agregar horario (Sección {sectionIndex + 1}) <Plus />
+              </Button>
 
-                <RemoveButton disabled={schedules.length <= 1} onClick={() => remove(schIndex)} />
+              <div className="mt-4">
+                {schedules.map((field, schIndex) => (
+                  <div key={field.id} className={cn('relative space-y-4 pr-10')}>
+                    {/* TODO - No funciona en el mobile, supongo que tengo que pasar container del sidebar */}
+                    <FormSelectField
+                      name={`${baseSectionName}.schedules.${schIndex}.day_of_week` as const}
+                      label="Día"
+                      options={weekDayOptions}
+                      popoverContainer={popoverContainer ?? undefined}
+                      className={cn(
+                        formState.errors.sections?.[sectionIndex]?.schedules?.[schIndex] && 'bg-destructive/10',
+                      )}
+                    />
+
+                    <div className="flex flex-row gap-2">
+                      <FormTimePickerField
+                        name={`${baseSectionName}.schedules.${schIndex}.starting_time` as const}
+                        label="Hora de Inicio"
+                        containerClassName="basis-1/2"
+                        use12HourFormat
+                        hideSeconds
+                        onChange={(date, onChange) => {
+                          onChange(date);
+                          setValue(
+                            `${baseSectionName}.schedules.${schIndex}.ending_time`,
+                            addMinutes(date, correctIntervalBetweenHours),
+                          );
+                        }}
+                        className={cn(
+                          formState.errors.sections?.[sectionIndex]?.schedules?.[schIndex] && 'bg-destructive/10',
+                        )}
+                      />
+                      <FormTimePickerField
+                        name={`${baseSectionName}.schedules.${schIndex}.ending_time` as const}
+                        label="Hora de Finalización"
+                        containerClassName="basis-1/2"
+                        use12HourFormat
+                        hideSeconds
+                        readOnly
+                        disableHours={{
+                          before: schedules[schIndex].starting_time,
+                        }}
+                        className={cn(
+                          formState.errors.sections?.[sectionIndex]?.schedules?.[schIndex] && 'bg-destructive/10',
+                        )}
+                      />
+                    </div>
+
+                    <RemoveButton disabled={schedules.length <= 1} onClick={() => remove(schIndex)} />
+                  </div>
+                ))}
               </div>
-            ))}
+
+              <PopoverClose asChild>
+                <Button variant="outline" className="w-full">
+                  Cerrar
+                </Button>
+              </PopoverClose>
+              </div>
+            </ScrollArea>
           </div>
         </PopoverContent>
       </Popover>
@@ -148,8 +162,6 @@ export function SectionField({ sectionIndex, removeSection, last_student_editor 
 }
 
 function RemoveButton({ onClick, disabled }: { onClick: () => void; disabled: boolean }) {
-  const { open } = useSidebar();
-
   return (
     <TooltipButton
       type="button"
@@ -157,8 +169,7 @@ function RemoveButton({ onClick, disabled }: { onClick: () => void; disabled: bo
       variant="outline"
       size="icon"
       className={cn(
-        'absolute top-[45%] -right-0.5 z-90 translate-x-full rounded-full transition-transform',
-        !open && 'translate-x-0',
+        'absolute top-[45%] -right-1 z-90 rounded-full transition-transform',
       )}
       tooltipText="Eliminar horario"
       contentClassName="text-destructive bg-destructive-foreground font-bold"

@@ -56,7 +56,7 @@ export function SubjectSheetContent() {
   }, [sheetRef]);
 
   return (
-    <SheetContent ref={setSheetRef} className="sm:max-w-md">
+    <SheetContent ref={setSheetRef} className="sm:max-w-md overflow-y-auto">
       {subject && <SubjectSheetBody subject={subject} popoverContainer={sheetRef ?? undefined} />}
     </SheetContent>
   );

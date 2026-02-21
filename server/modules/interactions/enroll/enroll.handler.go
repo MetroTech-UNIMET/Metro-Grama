@@ -18,7 +18,9 @@ func Handlers(e *echo.Group) {
 
 	// POST /enroll/:subject - subject is a code like BPTFI01
 	// Write operations have rate limiting (50 req/min per IP)
-	enrollGroup.POST("/:subject", createPassed, middlewares.WriteRateLimit())
+	enrollGroup.POST("/:subject", createEnroll, middlewares.WriteRateLimit())
+	enrollGroup.PUT("/:subject", updatePassed, middlewares.WriteRateLimit())
+	enrollGroup.GET("/:subject", getPassed)
 	enrollGroup.DELETE("/", deletePassed, middlewares.WriteRateLimit())
 	enrollGroup.GET("/", getEnrolledSubjects)
 }
@@ -49,7 +51,7 @@ func extractData(c echo.Context) (*models.RecordID, []string, error) {
 	return &userID, subjects, nil
 }
 
-// createPassed godoc
+// createEnroll godoc
 // @Summary      Enroll subjects for user
 // @Description  Enrolls the authenticated user into the provided subjects
 // @Tags         enroll
@@ -63,7 +65,7 @@ func extractData(c echo.Context) (*models.RecordID, []string, error) {
 // @Failure      401  {object}  map[string]string
 // @Failure      500  {object}  map[string]string
 // @Router       /enroll/ [post]
-func createPassed(c echo.Context) error {
+func createEnroll(c echo.Context) error {
 	// Get studentId from middleware
 	raw := c.Get("student-id")
 	if raw == nil {
@@ -89,14 +91,107 @@ func createPassed(c echo.Context) error {
 	// Call service
 	enrollment, err := services.EnrollStudent(studentId, subjectId, input)
 	if err != nil {
-		if strings.HasPrefix(err.Error(), "Database index `unique_relationships_by_trimester` already contains") {
-			return echo.NewHTTPError(http.StatusConflict, "Ya marcaste esta materia en este trimestre")
+		if strings.Contains(err.Error(), "unique_relationships_by_trimester") {
+			return echo.NewHTTPError(
+				http.StatusConflict,
+				"Ya cursaste esta materia en el trimestre seleccionado, por favor escoja otro",
+			)
 		}
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 
 	return c.JSON(http.StatusCreated, map[string]any{
 		"message": "Marcaste la materia correctamente!",
+		"data":    enrollment,
+	})
+}
+
+// updatePassed godoc
+// @Summary      Update enrolled subject for user
+// @Description  Updates the authenticated user's enrollment for provided subject
+// @Tags         enroll
+// @Accept       json
+// @Produce      json
+// @Security     CookieAuth
+// @Param        subject  path  string            true  "Subject code (e.g., BPTFI01)"
+// @Param        body     body  DTO.CreateEnrolled  true  "Enrollment payload"
+// @Success      200  {object}  map[string]string
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /enroll/:subject [put]
+func updatePassed(c echo.Context) error {
+	raw := c.Get("student-id")
+	if raw == nil {
+		return echo.NewHTTPError(http.StatusUnauthorized)
+	}
+	studentId, ok := raw.(models.RecordID)
+	if !ok {
+		return echo.NewHTTPError(http.StatusUnauthorized, "Invalid user ID")
+	}
+
+	var input DTO.CreateEnrolled
+	if err := c.Bind(&input); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
+	}
+
+	subjectCode := c.Param("subject")
+	if subjectCode == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "Missing subject code in path")
+	}
+	subjectId := models.NewRecordID("subject", subjectCode)
+
+	enrollment, err := services.UpdateEnrollment(studentId, subjectId, input)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	}
+
+	return c.JSON(http.StatusOK, map[string]any{
+		"message": "Actualizaste la materia correctamente!",
+		"data":    enrollment,
+	})
+}
+
+// getPassed godoc
+// @Summary      Get enrollment details for subject
+// @Description  Get the enrollment details for the authenticated user and provided subject
+// @Tags         enroll
+// @Accept       json
+// @Produce      json
+// @Security     CookieAuth
+// @Param        subject  path  string            true  "Subject code (e.g., BPTFI01)"
+// @Success      200  {object}  map[string]any
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      404  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /enroll/:subject [get]
+func getPassed(c echo.Context) error {
+	raw := c.Get("student-id")
+	if raw == nil {
+		return echo.NewHTTPError(http.StatusUnauthorized)
+	}
+	studentId, ok := raw.(models.RecordID)
+	if !ok {
+		return echo.NewHTTPError(http.StatusUnauthorized, "Invalid user ID")
+	}
+
+	subjectCode := c.Param("subject")
+	if subjectCode == "" {
+		return echo.NewHTTPError(http.StatusBadRequest, "Missing subject code in path")
+	}
+	subjectId := models.NewRecordID("subject", subjectCode)
+
+	enrollment, err := services.GetEnrollment(studentId, subjectId)
+	if err != nil {
+		if err.Error() == "enrollment not found" {
+			return echo.NewHTTPError(http.StatusNotFound, "Materia no encontrada como aprobada")
+		}
+		return echo.NewHTTPError(http.StatusInternalServerError, err)
+	}
+
+	return c.JSON(http.StatusOK, map[string]any{
+		"message": "Información de la materia obtenida",
 		"data":    enrollment,
 	})
 }

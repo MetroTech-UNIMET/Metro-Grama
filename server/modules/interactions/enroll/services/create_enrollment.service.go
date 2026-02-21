@@ -5,6 +5,7 @@ import (
 	"metrograma/db"
 	"metrograma/models"
 	DTO "metrograma/modules/interactions/enroll/DTO"
+	"net/http"
 
 	"github.com/labstack/echo/v4"
 	"github.com/surrealdb/surrealdb.go"
@@ -12,6 +13,7 @@ import (
 	surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
 )
 
+// FIXME - Hacerlo en una sola trasacción
 func EnrollStudent(studentId surrealModels.RecordID, subjectId surrealModels.RecordID, input DTO.CreateEnrolled) (models.EnrollEntity, error) {
 	passedSubjects, err := GetPassedSubjectsIds(studentId)
 	if err != nil {
@@ -29,15 +31,16 @@ func EnrollStudent(studentId surrealModels.RecordID, subjectId surrealModels.Rec
 
 	isEnrollable := (*result_Is_Subject_Enrollable)[0].Result[0]
 	if !isEnrollable {
-		return models.EnrollEntity{}, echo.NewHTTPError(400, "El estudiante no cumple con los requisitos para inscribirse en esta materia")
+		return models.EnrollEntity{}, echo.NewHTTPError(http.StatusForbidden, "El estudiante no cumple con los requisitos para inscribirse en esta materia")
 	}
 
-	qb := surrealql.Relate(studentId, "enroll", subjectId).
-		Set("trimester", input.TrimesterId).
-		Set("grade", input.Grade).
-		Set("difficulty", input.Difficulty).
-		Set("workload", input.Workload)
-
+	// This works an Upsert; if the enrollment already exists, it will update the enrollment with the new trimester, grade, difficulty and workload
+	qb := surrealql.Insert("enroll").Relation().
+		Fields("in", "out", "trimester", "grade", "difficulty", "workload").
+		Values(studentId, subjectId, input.TrimesterId, input.Grade, input.Difficulty, input.Workload).
+		OnDuplicateKeyUpdateSet("grade", input.Grade).
+		OnDuplicateKeyUpdateSet("difficulty", input.Difficulty).
+		OnDuplicateKeyUpdateSet("workload", input.Workload)
 	sql, vars = qb.Build()
 
 	result, err := surrealdb.Query[[]models.EnrollEntity](context.Background(), db.SurrealDB, sql, vars)

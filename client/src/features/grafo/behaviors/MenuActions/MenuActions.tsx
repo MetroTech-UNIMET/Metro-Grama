@@ -68,6 +68,12 @@ function MenuNode({ node, selectSubjectDialog }: MenuNodeProps) {
         </DialogTrigger>
       )}
 
+      {node?.hasState('viewed') && user && (
+        <DialogTrigger asChild onClick={() => selectSubjectDialog(node)}>
+          <ContextMenuItem>Editar cursada</ContextMenuItem>
+        </DialogTrigger>
+      )}
+
       <ContextMenuItem onClick={() => selectSubject(subject)}>Ver detalles</ContextMenuItem>
     </ContextMenuContent>
   );

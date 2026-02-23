@@ -1,5 +1,6 @@
 import { Link, useRouterState, type LinkComponentProps } from '@tanstack/react-router';
-import { cn } from '@utils/className';
+import { ChevronUp } from 'lucide-react';
+
 import {
   computeIndicatorOffset,
   dockContainerVariants,
@@ -9,10 +10,13 @@ import {
 } from './dockVariants';
 import { HorizontalLine, VerticalLine } from './ActiveIndicators';
 import { useUnderlineStyle } from './hooks/useUnderlineStyle';
-import { Button } from '@ui/button';
-import { GripVertical } from 'lucide-react';
+
 import { useToggle } from '@/hooks/shadcn.io/use-toggle';
-import { MenuDockItemBase, MenuDockProps } from './types';
+import { cn } from '@utils/className';
+
+import { Button } from '@ui/button';
+
+import type { MenuDockItemBase, MenuDockProps } from './types';
 
 export interface DockLinkItem extends MenuDockItemBase, Omit<LinkComponentProps, 'children' | 'className'> {
   isActive?: (currentPath: string) => boolean;
@@ -92,7 +96,7 @@ export function MenuDockLink({
         onClick={toggleVisibility}
         variant="ghost"
       >
-        <GripVertical />
+        <ChevronUp className={cn('rotate-0 transition-transform duration-200', isVisible && 'rotate-180')} />
       </Button>
 
       <HorizontalLine

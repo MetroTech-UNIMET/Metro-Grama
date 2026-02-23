@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router';
 import { ChevronDown, LogOutIcon, User } from 'lucide-react';
 
 import { useAuth } from '@/contexts/AuthenticationContext';
@@ -16,7 +17,6 @@ import {
 } from '@ui/dropdown-menu';
 import { GoogleLink } from '@ui/link';
 import { Skeleton } from '@ui/skeleton';
-import { Link } from '@tanstack/react-router';
 
 export default function GoogleLogin() {
   const { user, status, logOut } = useAuth();
@@ -25,15 +25,20 @@ export default function GoogleLogin() {
 
   if (user) {
     const initials = getInitials(user.firstName, user.lastName);
+
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" colors="neutral" className="h-11 items-center gap-2 px-2">
+          <Button
+            variant="ghost"
+            colors="neutral"
+            className="h-11 items-center gap-2 px-2 bg-background"
+          >
             <Avatar className="h-8 w-8">
               <AvatarImage src={user.pictureUrl} />
               <AvatarFallback className="text-black">{initials}</AvatarFallback>
             </Avatar>
-            <span className="font-medium">
+            <span className="font-medium text-black">
               {user.firstName} {user.lastName}
             </span>
             <ChevronDown className="text-muted-foreground h-4 w-4 opacity-50" />
@@ -68,9 +73,10 @@ export default function GoogleLogin() {
 
 function AvatarSkeleton() {
   return (
-    <div className="flex items-center space-x-4">
-      <Skeleton className="h-10 w-10 rounded-full" />
-      <Skeleton className="h-4 w-[100px]" />
+    <div className="bg-card flex h-11 w-42 items-center space-x-4 rounded-md p-2">
+      <Skeleton className="size-8 rounded-full" />
+
+      <Skeleton className="h-4 w-26 rounded" />
     </div>
   );
 }

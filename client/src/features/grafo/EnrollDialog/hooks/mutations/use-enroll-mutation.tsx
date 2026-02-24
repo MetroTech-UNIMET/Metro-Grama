@@ -25,6 +25,7 @@ export function useMutationEnrollSubject({ subjectCode, afterSubmit }: Props) {
       await queryClient.invalidateQueries({ queryKey: ['subjects', subjectCode, 'stats'], refetchType: 'all' });
       await queryClient.invalidateQueries({ queryKey: ['student', 'details', 'my-id'], refetchType: 'all' });
       await queryClient.invalidateQueries({ queryKey: ['subjects', 'offer'], refetchType: 'all' });
+      await queryClient.invalidateQueries({ queryKey: ['student', 'enrolled-subjects'] });
 
       toast.success('Materia marcada exitosamente', {
         description: result.message || 'La materia se marcó como cursada',

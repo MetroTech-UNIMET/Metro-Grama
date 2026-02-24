@@ -10,12 +10,15 @@ import (
 
 var IsProduction = false
 var UserTokenSigninKey = ""
+var RecaptchaSecretKey = ""
 
 func LoadDotEnv() {
 	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found. Using system environment variables or defaults.")
 	}
 	UserTokenSigninKey = GetDotEnv("USER_SIGIN_KEY")
+	// Optional in dev, required in prod, handled by check
+	RecaptchaSecretKey = os.Getenv("RECAPTCHA_SECRET_KEY")
 
 	if val := os.Getenv("MODE"); strings.EqualFold(val, "production") {
 		IsProduction = true

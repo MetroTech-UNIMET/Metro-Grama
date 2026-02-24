@@ -38,6 +38,7 @@
     "react-day-picker": "^9.13.2",
     "react-dom": "^19.2.4",
     "react-dropzone": "^14.4.1",
+    "react-google-recaptcha-v3": "^1.11.0",
     "react-hook-form": "^7.71.2",
     "react-phone-number-input": "^3.4.14",
     "recharts": "^2.15.4",

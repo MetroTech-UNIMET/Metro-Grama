@@ -1,4 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
+import { GoogleReCaptchaProvider } from 'react-google-recaptcha-v3';
 
 import { ofertaSearchSchema } from './queryParams';
 
@@ -28,5 +29,19 @@ export const Route = createFileRoute(route)({
 });
 
 function OfertaEditPage() {
-  return <OfertaAcademicTable from={route} editMode={true} />;
+  const captchaSecret = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
+
+  return (
+    <GoogleReCaptchaProvider
+      reCaptchaKey={captchaSecret}
+      scriptProps={{
+        async: false,
+        defer: false,
+        appendTo: 'head',
+        nonce: undefined,
+      }}
+    >
+      <OfertaAcademicTable from={route} editMode={true} />;
+    </GoogleReCaptchaProvider>
+  );
 }

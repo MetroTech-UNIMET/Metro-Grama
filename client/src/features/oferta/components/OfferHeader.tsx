@@ -1,5 +1,5 @@
 import { useRef, type ChangeEvent } from 'react';
-import { Upload } from 'lucide-react';
+import { Upload, Save, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { pdfFileSchema } from './schema';
@@ -18,9 +18,20 @@ interface Props {
   setYear: (year: string) => void;
   from: '/_navLayout/oferta/' | '/_navLayout/oferta/edit';
   showUpload: boolean;
+  onSave?: () => void;
+  isSaving?: boolean;
+  changesCount?: number;
 }
 
-export function OfferHeader({ year, setYear, from, showUpload }: Props) {
+export function OfferHeader({
+  year,
+  setYear,
+  from,
+  showUpload,
+  onSave,
+  isSaving = false,
+  changesCount = 0,
+}: Props) {
   const careerOptionsQuery = useFetchCareersOptions();
 
   const { selectedCareer, setSelectedCareer } = useSelectedCareer({
@@ -58,7 +69,7 @@ export function OfferHeader({ year, setYear, from, showUpload }: Props) {
   };
 
   return (
-    <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+    <header className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
       <div className="flex flex-wrap items-center gap-4">
         <AutoComplete
           options={careerOptionsQuery.data || []}
@@ -81,6 +92,18 @@ export function OfferHeader({ year, setYear, from, showUpload }: Props) {
               {uploadMutation.isPending ? <Spinner /> : <Upload />}
               {uploadMutation.isPending ? 'Subiendo…' : 'Subir PDF de la Oferta Anual'}
             </Button>
+
+            {changesCount > 0 && onSave && (
+              <Button
+                onClick={onSave}
+                disabled={isSaving}
+                variant='outline'
+                className="animate-in fade-in zoom-in slide-in-from-left-4 duration-300"
+              >
+                {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                Guardar cambios ({changesCount})
+              </Button>
+            )}
           </>
         )}
       </div>

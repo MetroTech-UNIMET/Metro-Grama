@@ -23,7 +23,6 @@ function getComparator(orderBy: SortField): (a: SubjectOfferWithSections, b: Sub
       return compareByWorkload;
     case 'prelations':
       return compareByPrelations;
-    case 'name':
     case 'alphabetical':
     default:
       return compareByName;

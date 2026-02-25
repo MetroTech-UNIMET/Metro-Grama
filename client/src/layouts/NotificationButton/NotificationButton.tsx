@@ -53,7 +53,7 @@ export function NotificationButton({ isDockVisible }: Props) {
         <Button
           className={cn(
             'fixed bottom-4 left-4 z-50 size-12 rounded-full transition-transform [&_svg]:size-6',
-            isDockVisible && 'translate-y-16',
+            isDockVisible && 'max-sm:translate-y-16',
           )}
           colors="secondary"
         >

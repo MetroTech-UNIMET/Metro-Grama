@@ -31,7 +31,6 @@ export const useMutationBatchUpdateOffers = () => {
   return useMutation({
     mutationFn: async (payload: BatchUpdatePayload) => {
       const result = batchUpdatePayloadSchema.safeParse(payload);
-      debugger;
       if (!result.success) throw new Error(z.prettifyError(result.error));
 
       return batchUpdateSubjectOffers(payload);

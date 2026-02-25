@@ -64,7 +64,7 @@ export const Route = createFileRoute('/_navLayout/horario/')({
       qc.ensureQueryData(
         fetchAnnualOfferByTrimesterOptions({
           trimesterId,
-          optionalQuery: { careers: (careers ?? []).map((c: string) => c) },
+          optionalQuery: { careers: careers ?? [] },
         }),
       );
     }

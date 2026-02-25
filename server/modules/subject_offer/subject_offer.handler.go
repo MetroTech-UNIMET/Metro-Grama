@@ -26,6 +26,7 @@ func Handlers(e *echo.Group) {
 	// Pero no pararece /annual/:year dado que no está en belong
 	// Write operations have rate limiting (50 req/min per IP)
 	subject_offerGroup.POST("/upload", uploadPDF, rateLimitMiddlewares.WriteRateLimit())
+	subject_offerGroup.POST("/batch", batchUpdateSubjectOffers, rateLimitMiddlewares.WriteRateLimit())
 	subject_offerGroup.POST("/:subjectId", createSubjectOffer, rateLimitMiddlewares.WriteRateLimit())
 
 	subject_offerGroup.DELETE("/:subjectId", deleteSubjectOffer, rateLimitMiddlewares.WriteRateLimit())
@@ -296,4 +297,37 @@ func deleteSubjectOffer(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 	return c.JSON(http.StatusCreated, map[string]any{"message": "Relación creada correctamente", "data": subjectOffer})
+}
+
+// @Summary      Actualización por lotes de oferta académica
+// @Description  Permite agregar y eliminar ofertas de materias en múltiples trimestres a la vez.
+// @Tags         subject_offer
+// @Accept       json
+// @Produce      json
+// @Param        body body DTO.BatchUpdateOffersRequest true "Datos de actualización"
+// @Success      200 {object} map[string]string
+// @Failure      400 {object} map[string]string
+// @Failure      500 {object} map[string]string
+// @Router       /subject_offer/batch [post]
+func batchUpdateSubjectOffers(c echo.Context) error {
+	var req DTO.BatchUpdateOffersRequest
+	if err := c.Bind(&req); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
+	}
+
+	// Verify Captcha
+	valid, err := tools.VerifyRecaptcha(req.Captcha, "batch_update_offers")
+	if err != nil {
+		// Log error internally if needed
+		return echo.NewHTTPError(http.StatusInternalServerError, "Error verifying captcha")
+	}
+	if !valid {
+		return echo.NewHTTPError(http.StatusForbidden, "Captcha verification failed")
+	}
+
+	if err := services.BatchUpdateSubjectOffers(req.Changes); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+
+	return c.JSON(http.StatusOK, map[string]string{"message": "Oferta actualizada correctamente"})
 }

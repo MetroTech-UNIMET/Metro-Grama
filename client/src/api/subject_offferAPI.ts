@@ -4,6 +4,7 @@ import type { SubjectOffer, SubjectOfferWithSections } from '@/interfaces/Subjec
 import type { SubjectEntity } from '@/interfaces/Subject';
 import type { Id } from '@/interfaces/surrealDb';
 import type { SuccessResponse } from './types';
+import type { BatchUpdatePayload } from '@/features/oferta/hooks/mutations/use-mutation-batch-update-offers';
 
 export interface Query_AnnualOffers {
   careers?: string[];
@@ -55,6 +56,11 @@ export async function deleteSubjectOffer(subjectId: string, trimesterId: Id) {
     data: { trimesterId },
   });
   return response.data;
+}
+
+export async function batchUpdateSubjectOffers(changes: BatchUpdatePayload) {
+  const { data } = await axios.post('/subject_offer/batch', changes);
+  return data;
 }
 
 export async function uploadAnnualOfferPDF(file: File) {

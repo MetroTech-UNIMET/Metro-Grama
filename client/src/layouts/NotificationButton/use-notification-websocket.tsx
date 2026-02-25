@@ -23,7 +23,7 @@ export function useNotificationWebsocket() {
   const { emit } = useWebsocket({
     namespace: 'notifications/ws',
     onConnect: () => {
-      console.log('yeees');
+      // console.log('yeees');
     },
     onEvents: {
       [EVENTS.BULK]: (payload: NotificationDTO) => {

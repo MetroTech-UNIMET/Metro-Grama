@@ -1,7 +1,4 @@
--- Definir tabla de relacion careeras -> materias 
-DEFINE TABLE belong SCHEMAFULL;
-DEFINE FIELD in ON belong TYPE record<subject>;
-DEFINE FIELD out ON belong TYPE record<career>;
+DEFINE TABLE belong TYPE RELATION IN subject OUT career SCHEMAFULL;
 DEFINE FIELD trimester ON belong TYPE number;
 DEFINE INDEX unique_relationships 
     ON TABLE belong 

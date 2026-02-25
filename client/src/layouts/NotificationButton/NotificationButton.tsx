@@ -10,8 +10,13 @@ import { Button } from '@ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@ui/popover';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@ui/tabs';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@ui/tooltip';
+import { cn } from '@utils/className';
 
-export function NotificationButton() {
+interface Props {
+  isDockVisible: boolean;
+}
+
+export function NotificationButton({ isDockVisible }: Props) {
   const { data, isLoading } = useFetchNotifications();
 
   const emit = useNotificationWebsocket();
@@ -45,7 +50,13 @@ export function NotificationButton() {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button className="fixed bottom-4 left-4 z-50 size-12 rounded-full [&_svg]:size-6" colors="secondary">
+        <Button
+          className={cn(
+            'fixed bottom-4 left-4 z-50 size-12 rounded-full transition-transform [&_svg]:size-6',
+            isDockVisible && 'translate-y-16',
+          )}
+          colors="secondary"
+        >
           <Bell />
           {unreadCount > 0 && (
             <span className="absolute -top-1 -right-1 flex size-4 items-center justify-center rounded-full bg-red-500 p-3 text-[10px] text-white">

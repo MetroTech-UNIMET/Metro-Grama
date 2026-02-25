@@ -11,7 +11,6 @@ import {
 import { HorizontalLine, VerticalLine } from './ActiveIndicators';
 import { useUnderlineStyle } from './hooks/useUnderlineStyle';
 
-import { useToggle } from '@/hooks/shadcn.io/use-toggle';
 import { cn } from '@utils/className';
 
 import { Button } from '@ui/button';
@@ -29,6 +28,8 @@ export function MenuDockLink({
   variant: size = 'default',
   orientation = 'horizontal',
   animated = true,
+  isVisible,
+  toggleVisibility,
 }: MenuDockProps<DockLinkItem>) {
   const { location } = useRouterState();
 
@@ -48,8 +49,6 @@ export function MenuDockLink({
     showLabels,
     orientation,
   });
-
-  const [isVisible, toggleVisibility] = useToggle();
 
   return (
     <nav

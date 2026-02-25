@@ -14,4 +14,8 @@ export interface MenuDockProps<Item extends MenuDockItemBase = MenuDockItemBase>
   orientation?: 'horizontal' | 'vertical';
   showLabels?: boolean;
   animated?: boolean;
+
+  // Para compartirlos con el boton de notificaciones
+  isVisible: boolean;
+  toggleVisibility: () => void;
 }

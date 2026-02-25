@@ -37,34 +37,27 @@ func CreateSubjectSchedule(input DTO.CreateSubjectSchedule, userId surrealmodels
 				Where("subject_section = $section.subject_section_id")).
 			Do(surrealql.For("schedule", "$section.schedules").
 				Do(createSubjectScheduleQB_Update)).
-			If("!$DIFF").
-			Then(func(tb *surrealql.ThenBuilder) {
-				// En el caso borde de que no se modifique el subject_section, pero si se modifiquen los horarios,
-				// el update no activa el evento subject_section_audit, por lo que lo actualizamos manualmente aquí.
-				tb.Do(
-					surrealql.Update("subject_section_history").
-						Set("end_date = time::now()").
-						Where("subject_section = $section.subject_section_id AND end_date = NONE"),
-				)
-				tb.Let("subject_section_data",
-					surrealql.SelectOnly("$section.subject_section_id").
-						Field("*"))
-				tb.Do(
-					surrealql.Create("subject_section_history").
-						Set("subject_section = $section.subject_section_id").
-						Set("user_id = $updated_by").
-						Set("new_data = $subject_section_data").
-						Set("start_date = time::now()").
-						Set("end_date = NONE"),
-					// Content(map[string]any{
-					// 	"subject_section": surrealql.Expr("$section.subject_section_id"),
-					// 	"user_id":         surrealql.Expr("$updated_by"),
-					// 	"new_data":        surrealql.Expr("$subject_section_data"),
-					// 	"start_date":      surrealql.Expr("time::now()"),
-					// 	"end_date":        surrealmodels.None,
-					// }),
-				)
-			}).End().
+			// If("!$DIFF").
+			// Then(func(tb *surrealql.ThenBuilder) {
+			// En el caso borde de que no se modifique el subject_section, pero si se modifiquen los horarios,
+			// el update no activa el evento subject_section_audit, por lo que lo actualizamos manualmente aquí.
+			Do(
+				surrealql.Update("subject_section_history").
+					Set("end_date = time::now()").
+					Where("subject_section = $section.subject_section_id AND end_date = NONE"),
+			).
+			Let("subject_section_data",
+				surrealql.SelectOnly("$section.subject_section_id").
+					Field("*")).
+			Do(
+				surrealql.Create("subject_section_history").
+					Set("subject_section = $section.subject_section_id").
+					Set("user_id = $updated_by").
+					Set("new_data = $subject_section_data").
+					Set("start_date = time::now()").
+					Set("end_date = NONE"),
+			).
+			// }).End().
 			Do(updateHistory_SectionsQB_Update),
 		).
 		Do(surrealql.For("section", "?", sectionsToCreate).
@@ -75,7 +68,20 @@ func CreateSubjectSchedule(input DTO.CreateSubjectSchedule, userId surrealmodels
 				Return("VALUE id")).
 			Do(surrealql.For("schedule", "$section.schedules").
 				Do(createSubjectScheduleQB_Create)).
-			Do(updateHistory_SectionsQB_Create),
+			Do(updateHistory_SectionsQB_Create).
+
+			// REVIEW - SE supone que esto debía hacerlo un evento, pero como no se puede pasar el updated_by con el $input a menos que surreal este en la v3, se decidio cambiar asi
+			Let("subject_section_data",
+				surrealql.SelectOnly("$sectionId").
+					Field("*")).
+			Do(
+				surrealql.Create("subject_section_history").
+					Set("subject_section = $sectionId").
+					Set("user_id = $updated_by").
+					Set("new_data = $subject_section_data").
+					Set("start_date = time::now()").
+					Set("end_date = NONE"),
+			),
 		).
 		Return("?", surrealql.Select("subject_schedule").
 			Field("*").

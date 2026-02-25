@@ -29,7 +29,7 @@ function buildBaseItems(): DockLinkItem[] {
         trimester: 'none',
         is_principal: true,
         search: '',
-        orderBy: 'name',
+        orderBy: 'alphabetical',
         filterByDays: [],
       }),
       icon: Calendar,

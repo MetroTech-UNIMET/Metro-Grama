@@ -18,16 +18,16 @@ WHEN $event = "CREATE" AND $after.status = "pending"
 THEN (
     CREATE notification CONTENT {
         user: $after.in.user,
-        type: "friendRequest",
+        type: 'friendRequest',
         extraData: {
-            friend_id: $after.id,
-            sender: $after.out,
-            recipient: $after.in,
-            actor: $after.out.user.firstName + ' ' + $after.out.user.lastName,
-            image: $after.out.user.pictureUrl
+          actor: $after.in.user.firstName + ' ' + $after.in.user.lastName,
+          friend_id: $after.id,
+          image: $after.in.user.pictureUrl,
+          recipient: $after.in,
+          sender: $after.out
         },
-        title: "Nueva petición de amistad",
-        message: "$actor te ha enviado una petición de amistad",
+        title: 'Nueva petición de amistad',
+        message: '$actor te ha enviado una petición de amistad',
     }
 );
 
@@ -35,14 +35,14 @@ DEFINE EVENT friend_request_accepted_notification ON friend
 WHEN $event = "UPDATE" AND $before.status != "accepted" AND $after.status = "accepted"
 THEN (
     CREATE notification CONTENT {
-        user: $after.out.user,
+        user: $after.in.user,
         type: "friendAccepted",
         extraData: {
-            friend_id: $after.id,
-            sender: $after.out,
-            recipient: $after.in,
-            actor: $after.in.user.firstName + ' ' + $after.in.user.lastName,
-            image: $after.in.user.pictureUrl
+          actor: $after.in.user.firstName + ' ' + $after.in.user.lastName,
+          friend_id: $after.id,
+          image: $after.in.user.pictureUrl,
+          recipient: $after.in,
+          sender: $after.out
         },
         title: "Petición de amistad aceptada",
         message: "$actor ha aceptado tu petición de amistad",

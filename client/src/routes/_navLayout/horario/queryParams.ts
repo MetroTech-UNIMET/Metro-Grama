@@ -25,9 +25,7 @@ export const queryParams = z.object({
     })
     .optional()
     .catch(undefined),
-  orderBy: z
-    .enum(['name', 'prelations', 'avg_difficulty', 'avg_grade', 'avg_workload', 'alphabetical'])
-    .catch('alphabetical'),
+  orderBy: z.enum(['prelations', 'avg_difficulty', 'avg_grade', 'avg_workload', 'alphabetical']).catch('alphabetical'),
   orderDir: z.enum(['asc', 'desc']).catch('asc'),
 
   // Averages filters

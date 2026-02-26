@@ -1,13 +1,27 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, redirect } from '@tanstack/react-router';
 
 import { eatErrorsAsync } from '@utils/errors';
 
 import RegisterStudentForm from './components/RegisterStudentForm/RegisterStudentForm';
 
 import { fetchTrimestersSelectOptions } from '@/hooks/queries/trimester/use-FetchTrimesters';
+
 import { getMetaTags } from '@utils/meta';
+import { checkIsAuthenticated } from '@utils/auth';
 
 export const Route = createFileRoute('/register/student')({
+  beforeLoad: async ({ context }) => {
+    const user = await checkIsAuthenticated(context.auth);
+    if (user) {
+      throw redirect({
+        to: '/materias',
+        search: {
+          isElective: false,
+          careers: [],
+        },
+      });
+    }
+  },
   loader: async ({ context }) => {
     eatErrorsAsync(async () => {
       await context.queryClient.ensureQueryData(

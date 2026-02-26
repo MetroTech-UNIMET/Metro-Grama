@@ -1,5 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useNavigate } from '@tanstack/react-router';
+import { ArrowLeft } from 'lucide-react';
 
 import { studentSettingsSchema, type StudentSettingsFormInput, type Visibility } from './schema';
 import { useMutationUpdateMyPreferences } from './mutations/use-update-my-preferences';
@@ -8,7 +10,9 @@ import { onInvalidToast } from '@utils/forms';
 
 import { FormSelectField } from '@ui/derived/form-fields/form-field-select';
 import SubmitButton from '@ui/derived/submit-button';
+
 import { Form } from '@ui/form';
+import { Button } from '@ui/button';
 
 import type { StudentPreferencesEntity } from '@/interfaces/preferences/StudentPreferences';
 import type { Option } from '@ui/types/option.types';
@@ -33,6 +37,8 @@ export default function SettingsForm({ preferences }: Props) {
     },
     mode: 'onChange',
   });
+
+  const navigate = useNavigate();
 
   const updatePreferences = useMutationUpdateMyPreferences();
 
@@ -70,9 +76,16 @@ export default function SettingsForm({ preferences }: Props) {
         </div>
       </form>
 
-      <SubmitButton colors="primary" form="my-preferences-form">
-        Actualizar Preferencias
-      </SubmitButton>
+      <footer className="flex flex-row gap-4">
+        <Button variant="outline" onClick={() => navigate({ to: '/profile' })}>
+          <ArrowLeft className="size-5!" />
+          Volver al perfil
+        </Button>
+
+        <SubmitButton colors="primary" form="my-preferences-form">
+          Actualizar Preferencias
+        </SubmitButton>
+      </footer>
     </Form>
   );
 }

@@ -17,14 +17,14 @@ DEFINE EVENT friend_request_created_notification ON friend
 WHEN $event = "CREATE" AND $after.status = "pending"
 THEN (
     CREATE notification CONTENT {
-        user: $after.in.user,
+        user: $after.out.user,
         type: 'friendRequest',
         extraData: {
           actor: $after.in.user.firstName + ' ' + $after.in.user.lastName,
           friend_id: $after.id,
           image: $after.in.user.pictureUrl,
-          recipient: $after.in,
-          sender: $after.out
+          recipient: $after.out,
+          sender: $after.in
         },
         title: 'Nueva petición de amistad',
         message: '$actor te ha enviado una petición de amistad',
@@ -38,9 +38,9 @@ THEN (
         user: $after.in.user,
         type: "friendAccepted",
         extraData: {
-          actor: $after.in.user.firstName + ' ' + $after.in.user.lastName,
+          actor: $after.out.user.firstName + ' ' + $after.out.user.lastName,
           friend_id: $after.id,
-          image: $after.in.user.pictureUrl,
+          image: $after.out.user.pictureUrl,
           recipient: $after.in,
           sender: $after.out
         },

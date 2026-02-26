@@ -22,14 +22,14 @@ export function ScheduleItem({
           {startStr} - {endStr}
         </div>
       </div>
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1 flex-wrap justify-center">
         {weekDayOptions.map((d, i) => {
           const active = i === schedule.day_of_week;
           return (
             <div
               key={i}
               className={cn(
-                'rounded-md border px-2 py-1 text-xs font-medium transition-colors',
+                'rounded-md border px-1.5 sm:px-2 py-1 text-xs font-medium transition-colors',
                 active ? 'bg-primary text-primary-foreground border-primary' : 'bg-muted text-foreground/70',
               )}
               title={d.label}

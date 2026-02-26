@@ -31,7 +31,6 @@ export function useNotificationWebsocket() {
         queryClient.setQueryData<NotificationDTO>(NOTIFICATIONS_QUERY_KEY, payload);
       },
       [EVENTS.NEW]: (payload: Notification) => {
-        console.log('new', payload);
         if (!payload) return;
         queryClient.setQueryData<NotificationDTO>(NOTIFICATIONS_QUERY_KEY, (old) => {
           const base: NotificationDTO = old ?? { all: [], unread: [] };
@@ -49,7 +48,6 @@ export function useNotificationWebsocket() {
         });
       },
       [EVENTS.UPDATED]: (payload: Notification[]) => {
-        console.log('updated', payload);
         if (!Array.isArray(payload) || payload.length === 0) return;
 
         const updateMap = new Map(payload.map((item) => [surrealIdToId(item.id), item]));

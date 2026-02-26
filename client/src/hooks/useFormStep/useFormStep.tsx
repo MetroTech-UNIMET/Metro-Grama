@@ -203,7 +203,6 @@ export function useFormStep<T extends FieldValues, TTransformedValues = T>({
 
         return true;
       } catch (error) {
-        console.log(error);
         return false;
       }
     },

@@ -7,7 +7,6 @@ interface Props {
 export function ShowAxiosError({ error }: Props) {
   const code = error.response?.status;
   const message = (error.response?.data as any)?.message ?? error.message;
-  console.log(error);
 
   return (
     <div className="grid place-items-center h-full">

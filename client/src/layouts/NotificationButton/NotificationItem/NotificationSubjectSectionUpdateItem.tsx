@@ -20,7 +20,6 @@ export function NotificationSubjectSectionUpdateItem({ notification, className, 
   const content = getNotificationMessage(notification);
   const initials = getInitials(...notification.extraData.actor.split(' '));
 
-  console.log(notification.extraData.image);
   return (
     <div
       // to="/subject-offer/$subjectOfferId"

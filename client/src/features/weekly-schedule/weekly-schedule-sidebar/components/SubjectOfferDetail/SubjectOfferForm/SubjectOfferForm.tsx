@@ -37,7 +37,6 @@ export default function SubjectOfferForm({ subjectOffer, onBack }: Props) {
   });
 
   const { resetField } = form;
-  console.log(form.formState.errors);
 
   const queryClient = useQueryClient();
 

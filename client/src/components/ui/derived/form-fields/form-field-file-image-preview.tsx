@@ -290,7 +290,6 @@ function PreviewDialog({
           type: 'image/png',
         });
         const url = URL.createObjectURL(file);
-        console.log(url, dataUrl);
 
         inputElement.files = createFileList(file);
 

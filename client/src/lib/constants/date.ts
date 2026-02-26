@@ -10,6 +10,6 @@ export const weekDayOptions = weekdayDates.map((date, idx) => ({
 }));
 
 export const daysOfWeek = eachDayOfInterval({
-  start: new Date(new Date().setDate(new Date().getDate() - new Date().getDay() + 1)), // Adjust to the most recent Monday
-  end: new Date(new Date().setDate(new Date().getDate() - new Date().getDay() + 7)),
+  start: new Date(new Date().setDate(new Date().getDate() - new Date().getDay())),
+  end: new Date(new Date().setDate(new Date().getDate() - new Date().getDay() + 6)),
 });

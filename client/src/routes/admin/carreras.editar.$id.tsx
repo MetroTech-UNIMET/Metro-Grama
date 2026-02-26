@@ -41,6 +41,5 @@ function UpdateCareer() {
 
   if (!data) return null;
 
-  console.log(data);
   return <CareerForm mode="edit" data={data} />;
 }

@@ -82,7 +82,6 @@ function SubjectInput({
                 //   'bg-success/10 border-success': !fieldState.invalid && fieldState.isTouched,
                 // })}
                 onSelect={(option) => {
-                  console.log('onSelect', option);
                   const subject: Subject = (option as any).subject;
                   const setValueOption = {
                     shouldTouch: true,

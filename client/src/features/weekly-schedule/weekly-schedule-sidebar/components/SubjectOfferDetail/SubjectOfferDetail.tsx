@@ -60,7 +60,7 @@ const SubjectStat = ({ label, value }: { label: string; value: number }) => (
           <span className="text-muted-foreground text-[10px] font-bold tracking-wider uppercase">{label}</span>
         </div>
       </TooltipTrigger>
-      <TooltipContent className="max-w-[200px] text-center">
+      <TooltipContent className="max-w-50 text-center">
         <p>
           Estos son los promedios de la materia en el trimestre anterior. En caso de no tener datos se muestra un "-"
         </p>
@@ -72,7 +72,6 @@ const SubjectStat = ({ label, value }: { label: string; value: number }) => (
 function SubjectSidebarHeader({ subjectOffer, onBack }: Pick<Props, 'subjectOffer' | 'onBack'>) {
   const differentFriends = subjectOffer.differentFriends;
 
-  console.log('Last Student Editor:', subjectOffer);
   return (
     <SidebarHeader>
       <Button colors="secondary" variant="outline" className="rounded-full" onClick={onBack}>

@@ -143,7 +143,6 @@ export default function CareerForm({ mode, data }: Props) {
     (errors: FieldErrors<CreateCareerInput>, currentStep: number) => {
       if (currentStep === 0) return;
 
-      console.log(errors);
       const subjects = getValues(`subjects.${currentStep - 1}`);
       subjects.forEach((subject) => {
         const code = subject.code;

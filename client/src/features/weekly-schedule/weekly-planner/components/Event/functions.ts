@@ -29,13 +29,7 @@ export function calculateUniformTop(
     .map(Number);
   const totalMinutes = hour * 60 + minute;
   const plannerStartTotal = plannerStartHour * 60 + plannerStartMinute;
-  console.log({
-    totalMinutes,
-    plannerStartTotal,
-    start,
-    planner_start_hour,
-    top: (totalMinutes - plannerStartTotal) / planner_interval,
-  });
+ 
   return (totalMinutes - plannerStartTotal) / planner_interval;
 }
 

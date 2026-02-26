@@ -24,9 +24,7 @@ import type { CommonLabelProps, CommonErrorProps } from '../../types/forms.types
 type OnChangeType = React.ChangeEventHandler<HTMLInputElement>;
 
 export interface InputImageFieldProps<T extends FieldValues>
-  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'type'>,
-    CommonLabelProps,
-    CommonErrorProps {
+  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'type'>, CommonLabelProps, CommonErrorProps {
   name: Path<T>;
 
   onChange?: (e: React.ChangeEvent<HTMLInputElement>, onChange: OnChangeType) => void;
@@ -260,12 +258,7 @@ interface PreviewDialogProps {
   inputElement: HTMLInputElement | null;
 }
 
-function PreviewDialog({
-  label,
-  imagePreview,
-  cropperProps = { stencilProps: {} },
-  inputElement,
-}: PreviewDialogProps) {
+function PreviewDialog({ label, imagePreview, cropperProps = { stencilProps: {} }, inputElement }: PreviewDialogProps) {
   const { stencilProps, ...cropperPropsRest } = cropperProps;
 
   const cropperRef = React.useRef<CropperRef>(null);
@@ -282,14 +275,13 @@ function PreviewDialog({
     if (!cropperRef.current || !inputElement || !resultRef.current) return;
 
     resultRef.current.update();
-    const dataUrl = cropperRef.current.getCanvas()?.toBlob(
+    cropperRef.current.getCanvas()?.toBlob(
       (blob) => {
         if (!blob) return;
 
         const file = new File([blob], 'image.png', {
           type: 'image/png',
         });
-        const url = URL.createObjectURL(file);
 
         inputElement.files = createFileList(file);
 
@@ -315,7 +307,7 @@ function PreviewDialog({
             width="29"
             height="32"
             viewBox="0 0 29 32"
-            className="!size-5"
+            className="size-5!"
             fill="none"
           >
             <path
@@ -371,13 +363,7 @@ function PreviewDialog({
         </div>
 
         <DialogFooter className="mt-4">
-          <Button
-            type="button"
-            variant="outline"
-            colors="secondary"
-            onClick={onCrop}
-            className="w-full sm:w-auto"
-          >
+          <Button type="button" variant="outline" colors="secondary" onClick={onCrop} className="w-full sm:w-auto">
             Aceptar
           </Button>
         </DialogFooter>

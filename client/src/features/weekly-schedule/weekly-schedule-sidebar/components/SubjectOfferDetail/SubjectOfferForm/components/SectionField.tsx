@@ -13,6 +13,7 @@ import { FormTimePickerField } from '@ui/derived/form-fields/form-field-time-pic
 import { FormInputField } from '@ui/derived/form-fields/form-field-input';
 import { FormSelectField } from '@ui/derived/form-fields/form-field-select';
 import TooltipButton from '@ui/derived/tooltip-button';
+
 import { Popover, PopoverClose, PopoverContent, PopoverTrigger } from '@ui/popover';
 import { Button } from '@ui/button';
 import { ScrollArea } from '@ui/scroll-area';
@@ -78,26 +79,23 @@ export function SectionField({ sectionIndex, removeSection, last_student_editor 
         </div>
         <FormInputField name={`${baseSectionName}.classroom_code`} placeholder="Código del aula" />
 
-        <PopoverContent className="w-96 overflow-x-visible px-0" ref={setPopoverContainer}>
-          <div className="flex">
-            <ScrollArea className="max-h-90 flex-1 px-4" type="always">
-              <div className='px-1'>
+        <PopoverContent className="flex w-92 overflow-x-visible px-0" ref={setPopoverContainer}>
+          <ScrollArea className="flex-1 px-4 max-sm:max-h-80">
+            <Button
+              type="button"
+              colors="success"
+              variant="outline"
+              className="w-full"
+              onClick={() => append(defaultSchedule)}
+              disabled={schedules.length >= 3}
+            >
+              Agregar horario (Sección {sectionIndex + 1}) <Plus />
+            </Button>
 
-              <Button
-                type="button"
-                colors="success"
-                variant="outline"
-                className="w-full"
-                onClick={() => append(defaultSchedule)}
-                disabled={schedules.length >= 3}
-              >
-                Agregar horario (Sección {sectionIndex + 1}) <Plus />
-              </Button>
-
-              <div className="mt-4">
-                {schedules.map((field, schIndex) => (
-                  <div key={field.id} className={cn('relative space-y-4 pr-10')}>
-                    {/* TODO - No funciona en el mobile, supongo que tengo que pasar container del sidebar */}
+            <div className="mt-4 space-y-4">
+              {schedules.map((field, schIndex) => (
+                <div key={field.id} className="flex w-full flex-row items-center gap-4">
+                  <div className="">
                     <FormSelectField
                       name={`${baseSectionName}.schedules.${schIndex}.day_of_week` as const}
                       label="Día"
@@ -108,7 +106,7 @@ export function SectionField({ sectionIndex, removeSection, last_student_editor 
                       )}
                     />
 
-                    <div className="flex flex-row gap-2">
+                    <div className="mt-2 flex flex-row gap-2">
                       <FormTimePickerField
                         name={`${baseSectionName}.schedules.${schIndex}.starting_time` as const}
                         label="Hora de Inicio"
@@ -141,20 +139,19 @@ export function SectionField({ sectionIndex, removeSection, last_student_editor 
                         )}
                       />
                     </div>
-
-                    <RemoveButton disabled={schedules.length <= 1} onClick={() => remove(schIndex)} />
                   </div>
-                ))}
-              </div>
 
-              <PopoverClose asChild>
-                <Button variant="outline" className="w-full">
-                  Cerrar
-                </Button>
-              </PopoverClose>
-              </div>
-            </ScrollArea>
-          </div>
+                  <RemoveButton disabled={schedules.length <= 1} onClick={() => remove(schIndex)} />
+                </div>
+              ))}
+            </div>
+
+            <PopoverClose asChild>
+              <Button variant="outline" className="mt-5 w-full">
+                Cerrar
+              </Button>
+            </PopoverClose>
+          </ScrollArea>
         </PopoverContent>
       </Popover>
     </div>
@@ -168,9 +165,7 @@ function RemoveButton({ onClick, disabled }: { onClick: () => void; disabled: bo
       colors="destructive"
       variant="outline"
       size="icon"
-      className={cn(
-        'absolute top-[45%] -right-1 z-90 rounded-full transition-transform',
-      )}
+      className="rounded-full"
       tooltipText="Eliminar horario"
       contentClassName="text-destructive bg-destructive-foreground font-bold"
       onClick={onClick}

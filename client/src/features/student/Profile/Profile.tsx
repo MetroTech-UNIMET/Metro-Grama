@@ -33,7 +33,7 @@ export default function Profile({ data }: Props) {
       <div className="mx-auto max-w-6xl space-y-4 p-4 pb-16">
         <StudentCard data={data} />
 
-        {data.passed_subjects && <SubjectsCard passed_subjects={data.passed_subjects} />}
+        {data.enrolled_subjects && <SubjectsCard enrolled_subjects={data.enrolled_subjects} />}
 
         {isSelf ? (
           <FriendsCard

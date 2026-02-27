@@ -10,9 +10,9 @@ import (
 
 type StudentDetails struct {
 	models.StudentWithUser
-	Careers                   []models.CareerEntity       `json:"careers"`
-	PassedSubjectsByTrimester []passedSubjectsByTrimester `json:"passed_subjects"`
-	Friends                   []models.StudentWithUser    `json:"friends"`
+	Careers                     []models.CareerEntity         `json:"careers"`
+	EnrolledSubjectsByTrimester []enrolledSubjectsByTrimester `json:"enrolled_subjects"`
+	Friends                     []models.StudentWithUser      `json:"friends"`
 
 	FriendshipStatus          string                   `json:"friendship_status,omitempty"`
 	ReceivingFriendshipStatus string                   `json:"receiving_friendship_status,omitempty"`
@@ -30,17 +30,17 @@ type studentCourse struct {
 	Secondary []DTO.QueryCourse `json:"secondary"`
 }
 
-// passedSubjectEntry is a condensed view of a single passed subject.
-type passedSubjectEntry struct {
+// enrolledSubjectEntry is a condensed view of a single enrolled subject.
+type enrolledSubjectEntry struct {
 	Difficulty int                  `json:"difficulty"`
 	Grade      int                  `json:"grade"`
 	Subject    models.SubjectEntity `json:"subject"`
 	Workload   int                  `json:"workload"`
 }
 
-// passedSubjectsByTrimester groups passed subjects for a given trimester.
-type passedSubjectsByTrimester struct {
-	Subjects     []passedSubjectEntry   `json:"subjects"`
+// enrolledSubjectsByTrimester groups enrolled subjects for a given trimester.
+type enrolledSubjectsByTrimester struct {
+	Subjects     []enrolledSubjectEntry `json:"subjects"`
 	Trimester    surrealModels.RecordID `json:"trimester" swaggertype:"object"`
 	AverageGrade float64                `json:"average_grade"`
 }
@@ -79,8 +79,8 @@ func (s *StudentDetails) MarshalJSON() ([]byte, error) {
 		return nil, err
 	}
 
-	if s.PassedSubjectsByTrimester != nil {
-		m["passed_subjects"] = s.PassedSubjectsByTrimester
+	if s.EnrolledSubjectsByTrimester != nil {
+		m["enrolled_subjects"] = s.EnrolledSubjectsByTrimester
 	}
 
 	if s.Friends != nil {

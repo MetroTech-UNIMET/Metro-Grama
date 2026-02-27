@@ -19,13 +19,13 @@ export function SubjectsCard({ enrolled_subjects }: Props) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Materias aprobadas</CardTitle>
+        <CardTitle>Materias incritas</CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
         {enrolled_subjects.length === 0 ? (
-          <div className="text-muted-foreground text-sm">Aún no hay materias aprobadas</div>
+          <div className="text-muted-foreground text-sm">Aún no has incrito materias </div>
         ) : (
-          <Tabs defaultValue={(enrolled_subjects[0]?.trimester).ID} >
+          <Tabs defaultValue={(enrolled_subjects[0]?.trimester).ID}>
             <TabsList>
               {enrolled_subjects.map((group) => {
                 const value = group.trimester.ID;
@@ -43,7 +43,9 @@ export function SubjectsCard({ enrolled_subjects }: Props) {
                 <TabsContent key={value} value={value}>
                   <div className="my-2 ml-auto w-fit">
                     <span className="text-muted-foreground">Promedio del trimestre:</span> {/* TODO - Redondear */}
-                    <span className="font-medium">{group.average_grade.toLocaleString('es-VE', { maximumFractionDigits: 2 })}</span>
+                    <span className="font-medium">
+                      {group.average_grade.toLocaleString('es-VE', { maximumFractionDigits: 2 })}
+                    </span>
                   </div>
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     {group.subjects.map((s, idx) => (

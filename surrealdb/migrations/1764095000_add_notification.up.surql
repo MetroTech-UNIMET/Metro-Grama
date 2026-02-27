@@ -41,8 +41,8 @@ THEN (
           actor: $after.out.user.firstName + ' ' + $after.out.user.lastName,
           friend_id: $after.id,
           image: $after.out.user.pictureUrl,
-          recipient: $after.in,
-          sender: $after.out
+          recipient: $after.out,
+          sender: $after.in
         },
         title: "Petición de amistad aceptada",
         message: "$actor ha aceptado tu petición de amistad",

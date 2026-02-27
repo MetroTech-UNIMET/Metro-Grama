@@ -43,7 +43,7 @@ export function SubjectsCard({ enrolled_subjects }: Props) {
                 <TabsContent key={value} value={value}>
                   <div className="my-2 ml-auto w-fit">
                     <span className="text-muted-foreground">Promedio del trimestre:</span> {/* TODO - Redondear */}
-                    <span className="font-medium">{group.average_grade}</span>
+                    <span className="font-medium">{group.average_grade.toLocaleString('es-VE', { maximumFractionDigits: 2 })}</span>
                   </div>
                   <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                     {group.subjects.map((s, idx) => (

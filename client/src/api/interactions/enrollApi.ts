@@ -3,6 +3,7 @@ import axios from '@/axiosConfig';
 import type { EnrollDialogOutput } from '@/features/grafo/EnrollDialog/schema';
 import type { SuccessResponse } from '../types';
 import type { EnrollEntity } from '@/interfaces/Enroll';
+import { Id } from '@/interfaces/surrealDb';
 
 export async function enrollStudent(subjectCode: string, dataToCreate: EnrollDialogOutput) {
   const { data } = await axios.post<SuccessResponse<EnrollEntity>>(`/enroll/${subjectCode}`, dataToCreate);
@@ -10,8 +11,11 @@ export async function enrollStudent(subjectCode: string, dataToCreate: EnrollDia
   return data;
 }
 
-export async function updateEnrolledStudent(subjectCode: string, dataToUpdate: EnrollDialogOutput) {
-  const { data } = await axios.put<SuccessResponse<EnrollEntity>>(`/enroll/${subjectCode}`, dataToUpdate);
+export async function updateEnrolledStudent(subjectCode: string, dataToUpdate: EnrollDialogOutput, originalTrimesterId: Id<"trimester">) {
+  const { data } = await axios.put<SuccessResponse<EnrollEntity>>(`/enroll/${subjectCode}`, {
+    ...dataToUpdate,
+    originalTrimesterId,
+  });
   return data;
 }
 

@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"errors"
+	"fmt"
 	"metrograma/db"
 	"metrograma/models"
 	DTO "metrograma/modules/interactions/enroll/DTO"
@@ -12,14 +13,29 @@ import (
 	surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
 )
 
-func UpdateEnrollment(studentId surrealModels.RecordID, subjectId surrealModels.RecordID, input DTO.CreateEnrolled) (models.EnrollEntity, error) {
+func UpdateEnrollment(studentId surrealModels.RecordID, subjectId surrealModels.RecordID, input DTO.UpdateEnrolled) (models.EnrollEntity, error) {
 	qb := surrealql.Begin().
 		Let("enrollId", surrealql.SelectOnly("enroll").
 			Value("id").
 			Where("in == $studentId").
 			Where("out == $subjectId").
-			Where("grade >= 10")).
-		Return("?", surrealql.UpdateOnly("$enrollId").
+			Where("trimester == $originalTrimesterId"),
+		).
+		Let("newEnrollId", surrealql.SelectOnly("enroll").
+			Value("id").
+			Where("in == $studentId").
+			Where("out == $subjectId").
+			Where("trimester == $trimesterId"),
+		).
+		// REVIEW - Borrar y crear funciona siempre y cuando el id de enroll no sea usado en otras relaciones
+		Do(surrealql.Delete("$enrollId")).
+		If("$newEnrollId != NONE").
+		Then(
+			func(tb *surrealql.ThenBuilder) {
+				tb.Do(surrealql.Delete("$newEnrollId"))
+			},
+		).End().
+		Return("?", surrealql.RelateOnly("$studentId", "enroll", "$subjectId").
 			Set("trimester", input.TrimesterId).
 			Set("grade", input.Grade).
 			Set("difficulty", input.Difficulty).
@@ -29,6 +45,10 @@ func UpdateEnrollment(studentId surrealModels.RecordID, subjectId surrealModels.
 	query, params := qb.Build()
 	params["studentId"] = studentId
 	params["subjectId"] = subjectId
+	params["trimesterId"] = input.TrimesterId
+	params["originalTrimesterId"] = input.OriginalTrimesterId
+
+	fmt.Println(query)
 
 	resultUpdate, err := surrealdb.Query[models.EnrollEntity](context.Background(), db.SurrealDB, query, params)
 	if err != nil {

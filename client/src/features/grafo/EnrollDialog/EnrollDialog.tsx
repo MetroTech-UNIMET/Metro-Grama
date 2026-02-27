@@ -108,11 +108,11 @@ export default function EnrollDialog({ subject, isEditMode, initialValues, after
 
   const mutationUpdateEnrollSubject = useMutationUpdateEnrollSubject({
     subjectCode,
-
     afterSubmit: (data) => {
       form.reset();
       afterSubmit(data);
     },
+    originalTrimester: initialValues?.trimesterId
   });
 
   if (!subject) return null;

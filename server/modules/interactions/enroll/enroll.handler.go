@@ -130,7 +130,7 @@ func updatePassed(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusUnauthorized, "Invalid user ID")
 	}
 
-	var input DTO.CreateEnrolled
+	var input DTO.UpdateEnrolled
 	if err := c.Bind(&input); err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
 	}

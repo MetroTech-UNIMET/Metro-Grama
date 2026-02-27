@@ -12,22 +12,22 @@ import type { MyStudentDetails, PassedSubjectEntry } from '@/api/interactions/st
 import type { Subject } from '@/interfaces/Subject';
 
 interface Props {
-  passed_subjects: MyStudentDetails['passed_subjects'];
+  enrolled_subjects: MyStudentDetails['enrolled_subjects'];
 }
 
-export function SubjectsCard({ passed_subjects }: Props) {
+export function SubjectsCard({ enrolled_subjects }: Props) {
   return (
     <Card>
       <CardHeader>
         <CardTitle>Materias aprobadas</CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
-        {passed_subjects.length === 0 ? (
+        {enrolled_subjects.length === 0 ? (
           <div className="text-muted-foreground text-sm">Aún no hay materias aprobadas</div>
         ) : (
-          <Tabs defaultValue={(passed_subjects[0]?.trimester).ID} >
+          <Tabs defaultValue={(enrolled_subjects[0]?.trimester).ID} >
             <TabsList>
-              {passed_subjects.map((group) => {
+              {enrolled_subjects.map((group) => {
                 const value = group.trimester.ID;
                 return (
                   <TabsTrigger key={value} value={value}>
@@ -37,7 +37,7 @@ export function SubjectsCard({ passed_subjects }: Props) {
               })}
             </TabsList>
 
-            {passed_subjects.map((group) => {
+            {enrolled_subjects.map((group) => {
               const value = group.trimester.ID;
               return (
                 <TabsContent key={value} value={value}>

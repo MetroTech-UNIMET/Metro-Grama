@@ -29,7 +29,7 @@ export interface StudentCourse {
 }
 
 export interface MyStudentDetails extends StudentDetails {
-  passed_subjects: {
+  enrolled_subjects: {
     subjects: PassedSubjectEntry[];
     trimester: Id<'trimester'>;
     average_grade: number;
@@ -40,7 +40,7 @@ export interface MyStudentDetails extends StudentDetails {
 }
 
 export interface OtherStudentDetails extends StudentDetails {
-  passed_subjects?: MyStudentDetails['passed_subjects'];
+  enrolled_subjects?: MyStudentDetails['enrolled_subjects'];
   friends?: MyStudentDetails['friends'];
 
   receiving_friendship_status: FriendEntity['status'] | 'none';

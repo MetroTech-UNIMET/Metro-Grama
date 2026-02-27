@@ -8,3 +8,8 @@ type CreateEnrolled struct {
 	Difficulty  int                    `json:"difficulty" validate:"required"`
 	Workload    int                    `json:"workload" validate:"required"`
 }
+
+type UpdateEnrolled struct {
+	CreateEnrolled
+	OriginalTrimesterId surrealModels.RecordID `json:"originalTrimesterId" validate:"required" swaggertype:"object"`
+}

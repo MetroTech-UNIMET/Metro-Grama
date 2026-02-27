@@ -42,7 +42,7 @@ describe('Profile', () => {
     next_courses: { principal: [], secondary: [] },
     current_courses: { principal: [], secondary: [] },
     subject_section_history: [],
-    passed_subjects: [], // Mocking empty array for simplicity
+    enrolled_subjects: [], // Mocking empty array for simplicity
   };
 
   const mockMyData: MyStudentDetails = {

@@ -48,11 +48,11 @@ func GetStudentDetails(studentId surrealModels.RecordID, loggedUserId *surrealMo
 				OrderByDesc("start_date").
 				Fetch("schedules")).
 		Field("*").
-		Fetch("user", "careers", "passed_subjects", "friends", "friends.user")
+		Fetch("user", "careers", "enrolled_subjects", "friends", "friends.user")
 
 	qb = utils.ApplyIfVisible(qb, loggedUserId, studentPreferences.ShowSubjects, isFriend, isFriendOfAFriend,
 		func(q *surrealql.SelectQuery) *surrealql.SelectQuery {
-			passed_subjects_Qb := surrealql.Select("$parent->enroll").
+			enrolled_subjects_Qb := surrealql.Select("$parent->enroll").
 				FieldName("trimester").
 				Alias("subjects", `array::group({
 						subject: out,
@@ -62,11 +62,10 @@ func GetStudentDetails(studentId surrealModels.RecordID, loggedUserId *surrealMo
 				})`).
 				Alias("average_grade", "math::mean(<float>grade)").
 				FieldNameAs("trimester.starting_date", "starting_date").
-				Where("grade >= 10").
 				GroupBy("trimester").
 				OrderBy("starting_date").
 				Fetch("subjects.subject")
-			return qb.Alias("passed_subjects", passed_subjects_Qb)
+			return qb.Alias("enrolled_subjects", enrolled_subjects_Qb)
 		},
 	)
 

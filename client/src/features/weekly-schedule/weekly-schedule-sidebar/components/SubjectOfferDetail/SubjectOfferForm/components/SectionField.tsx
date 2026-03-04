@@ -79,7 +79,7 @@ export function SectionField({ sectionIndex, removeSection, last_student_editor 
         </div>
         <FormInputField name={`${baseSectionName}.classroom_code`} placeholder="Código del aula" />
 
-        <PopoverContent className="flex w-92 overflow-x-visible px-0" ref={setPopoverContainer}>
+        <PopoverContent className="flex w-92 px-0" ref={setPopoverContainer}>
           <ScrollArea className="flex-1 px-4 max-sm:max-h-80">
             <Button
               type="button"
@@ -95,7 +95,7 @@ export function SectionField({ sectionIndex, removeSection, last_student_editor 
             <div className="mt-4 space-y-4">
               {schedules.map((field, schIndex) => (
                 <div key={field.id} className="flex w-full flex-row items-center gap-4">
-                  <div className="">
+                  <div className="pl-1">
                     <FormSelectField
                       name={`${baseSectionName}.schedules.${schIndex}.day_of_week` as const}
                       label="Día"

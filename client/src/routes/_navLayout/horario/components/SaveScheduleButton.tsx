@@ -1,20 +1,13 @@
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import { ChevronDown, Save } from 'lucide-react';
-import { isAxiosError } from 'axios';
-import { toast } from 'sonner';
-import z from 'zod/v4';
-
-import { courseSchema } from './schema';
 
 import { useFetchStudentCourseByTrimester } from '@/hooks/queries/course/use-fetch-student-course-by-trimester';
 
 import { useWeeklyPlannerContext } from '@/features/weekly-schedule/weekly-planner/context';
-
-import { createSchedule } from '@/api/interactions/courseApi';
 import { useAuth } from '@/contexts/AuthenticationContext';
+import { useMutationSaveSchedule } from '../hooks/mutations/use-save-schedule-mutation';
 
 import { cn } from '@utils/className';
-import { isStudentUser } from '@/interfaces/User';
 
 import { ButtonGroup, ButtonGroupSeparator } from '@ui/button-group';
 import { Button } from '@ui/button';
@@ -32,9 +25,8 @@ import {
 import { Spinner } from '@ui/spinner';
 
 import type { SubjectEvent } from '..';
-import type { UserType } from '@/hooks/queries/student/use-fetch-my-user';
-import type { Event } from '@/features/weekly-schedule/weekly-planner/types';
 
+// TODO Añadir opción para ver resumen: Materias nuevas que abren, puntos de dificultad, carga academica, etc
 export function SaveScheduleButton() {
   const { events, overlappingEventIds } = useWeeklyPlannerContext<SubjectEvent>();
   const hasOverlaps = overlappingEventIds.size > 0;
@@ -43,6 +35,7 @@ export function SaveScheduleButton() {
   const search = useSearch({ from: '/_navLayout/horario/' });
 
   const { user } = useAuth();
+  const saveScheduleMutation = useMutationSaveSchedule();
 
   const trimesterId = search.trimester !== 'none' ? search.trimester : '';
   const isPrincipal = search.is_principal;
@@ -67,7 +60,7 @@ export function SaveScheduleButton() {
           colors="primary"
           className="w-full py-8"
           disabled={events.length === 0 || hasOverlaps}
-          onClick={() => saveSchedules(user, events, isPrincipal)}
+          onClick={() => saveScheduleMutation.mutate({ user, events, isPrincipal })}
           title={hasOverlaps ? 'No puedes guardar mientras existan materias que se solapan' : undefined}
         >
           <Save className="size-6!" />
@@ -90,14 +83,14 @@ export function SaveScheduleButton() {
           <DropdownMenuContent side="bottom" sideOffset={4} align="end" className="max-w-64 md:max-w-xs!">
             <DropdownMenuGroup>
               <DropdownMenuItem
-                onSelect={() => saveSchedules(user, events, true)}
+                onSelect={() => saveScheduleMutation.mutate({ user, events, isPrincipal: true })}
                 disabled={events.length === 0 || hasOverlaps}
               >
                 <Save />
                 Guardar como principal
               </DropdownMenuItem>
               <DropdownMenuItem
-                onSelect={() => saveSchedules(user, events, false)}
+                onSelect={() => saveScheduleMutation.mutate({ user, events, isPrincipal: false })}
                 disabled={events.length === 0 || hasOverlaps}
               >
                 <Save />
@@ -139,36 +132,3 @@ export function SaveScheduleButton() {
 }
 
 const CustomSpinner = () => <Spinner className="size-4" />;
-
-async function saveSchedules(user: UserType | null, events: Event<SubjectEvent>[], isPrincipal: boolean) {
-  if (!user) throw new Error('User is not authenticated');
-  if (!isStudentUser(user)) throw new Error('User is not a student');
-
-  const subjectEvents = events.map((event) => event.data);
-
-  const resultParsed = courseSchema.safeParse({
-    studentId: user.student.id,
-    subjectEvents,
-    trimesterId: subjectEvents[0].trimesterId,
-    is_principal: isPrincipal,
-  });
-
-  if (!resultParsed.success) {
-    toast.error('Error al guardar el horario', {
-      description: z.prettifyError(resultParsed.error),
-    });
-    return;
-  }
-
-  try {
-    await createSchedule(resultParsed.data);
-    toast.success('Horario guardado con éxito!', {
-      description: `El horario se ha guardado como ${isPrincipal ? 'principal' : 'secundario'}.`,
-    });
-  } catch (error: any) {
-    console.log(error);
-    toast.error('Error al guardar el horario', {
-      description: isAxiosError(error) ? error.response?.data?.message : error.message,
-    });
-  }
-}

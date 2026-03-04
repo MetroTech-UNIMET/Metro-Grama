@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 
 import { cn } from '@utils/className';
 
-import { sectionToSubjectEvents } from '@/features/weekly-schedule/weekly-planner/functions';
+import { sectionToBaseSubjectEvents } from '@/features/weekly-schedule/weekly-planner/functions';
 import { WeeklyPlanner } from '@/features/weekly-schedule/weekly-planner/WeeklyPlanner';
 
 import { getStudentTimeSlots } from '@/routes/_navLayout/horario/functions';
@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@ui/tabs';
 
 import type { Event } from '@/features/weekly-schedule/weekly-planner/types';
-import type { SubjectEvent } from '@/routes/_navLayout/horario';
+import type { BaseSubjectEvent } from '@/routes/_navLayout/horario';
 import type { StudentCourse } from '@/api/interactions/student.types';
 
 interface Props {
@@ -50,16 +50,18 @@ export function SchedulesCard({ current_courses, next_courses }: Props) {
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="principal" className="relative max-h-128 overflow-y-auto">
-          <TabsList className="sticky top-0 z-30">
+          <TabsList className="sticky top-4 z-30">
             <TabsTrigger value="principal">Principal</TabsTrigger>
             <TabsTrigger value="secondary">Secundario</TabsTrigger>
           </TabsList>
 
-          {scheduleOption === 'current' ? (
-            <CourseScheduleView courses={current_courses} />
-          ) : (
-            <CourseScheduleView courses={next_courses} />
-          )}
+          <div className="mt-4">
+            {scheduleOption === 'current' ? (
+              <CourseScheduleView courses={current_courses} />
+            ) : (
+              <CourseScheduleView courses={next_courses} />
+            )}
+          </div>
         </Tabs>
       </CardContent>
     </Card>
@@ -68,12 +70,12 @@ export function SchedulesCard({ current_courses, next_courses }: Props) {
 
 export function CourseScheduleView({ courses }: { courses: StudentCourse }) {
   const principalSubjectEvents = useMemo(
-    () => courses?.principal?.flatMap((section) => sectionToSubjectEvents(section, 'xd')) ?? [],
+    () => courses?.principal?.flatMap((section) => sectionToBaseSubjectEvents(section)) ?? [],
     [courses],
   );
 
   const secondarySubjectEvents = useMemo(
-    () => courses?.secondary?.flatMap((section) => sectionToSubjectEvents(section, 'xd')) ?? [],
+    () => courses?.secondary?.flatMap((section) => sectionToBaseSubjectEvents(section)) ?? [],
     [courses],
   );
 
@@ -99,7 +101,7 @@ export function CourseScheduleView({ courses }: { courses: StudentCourse }) {
   );
 }
 
-function StudentPlanner({ events }: { events: Event<SubjectEvent>[] }) {
+function StudentPlanner({ events }: { events: Event<BaseSubjectEvent>[] }) {
   return (
     <WeeklyPlanner
       events={events}

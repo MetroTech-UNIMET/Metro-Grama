@@ -11,16 +11,18 @@ export interface SubjectOffer {
   trimester: Trimester;
 }
 
-export interface SubjectOfferWithSections extends SubjectOffer {
+export interface AverageMetrics {
+  avg_difficulty: number;
+  avg_grade: number;
+  avg_workload: number;
+}
+
+export interface SubjectOfferWithSections extends SubjectOffer, AverageMetrics {
   sections: SubjectOfferSections[];
   careers: Id[];
   is_enrolled?: boolean;
   is_enrollable?: boolean;
   prelations: SubjectEntity[];
-
-  avg_difficulty: number;
-  avg_grade: number;
-  avg_workload: number;
 
   differentFriends: number;
 }

@@ -13,6 +13,10 @@ import (
 	surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
 )
 
+// FIXME - Detectar cual trimestre es mas viejo que otro, una vez hecho eso, asegurarse que
+// solo el trimestre mas viejo puede tener una grade >= 10, de lo contrario tirar error,
+//
+//	porque no se puede tener mas de un trimestre aprobado
 func UpdateEnrollment(studentId surrealModels.RecordID, subjectId surrealModels.RecordID, input DTO.UpdateEnrolled) (models.EnrollEntity, error) {
 	qb := surrealql.Begin().
 		Let("enrollId", surrealql.SelectOnly("enroll").

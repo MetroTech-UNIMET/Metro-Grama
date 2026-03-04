@@ -14,6 +14,10 @@ type QueryCourse struct {
 	Subject         models.SubjectEntity    `json:"subject"`
 	SubjectOffer    surrealModels.RecordID  `json:"subject_offer" swaggertype:"object"`
 	SubjectSchedule []SubjectScheduleEntity `json:"subject_schedule"`
+
+	AvgDifficulty float64 `json:"avg_difficulty"`
+	AvgGrade      float64 `json:"avg_grade"`
+	AvgWorkload   float64 `json:"avg_workload"`
 }
 
 // SubjectScheduleEntity mirrors subject_schedule table rows.

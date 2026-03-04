@@ -20,9 +20,10 @@ import type { SubjectOfferWithSections } from '@/interfaces/SubjectOffer';
 
 interface Props {
   subjectOffer: SubjectOfferWithSections;
-  onBack: () => void;
+  onBack: (filteredSections: SubjectScheduleOutput['sections']) => void;
 }
 
+// FIXME - Al modificar un horario de una materia seleccionada en el cliente, se debe actualizar
 export default function SubjectOfferForm({ subjectOffer, onBack }: Props) {
   const form = useForm({
     resolver: zodResolver(subjectScheduleSchema),
@@ -84,7 +85,7 @@ export default function SubjectOfferForm({ subjectOffer, onBack }: Props) {
     });
 
     form.reset();
-    onBack();
+    onBack(filteredSections);
   }
 
   return (

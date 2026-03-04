@@ -62,7 +62,7 @@ const SubjectStat = ({ label, value }: { label: string; value: number }) => (
       </TooltipTrigger>
       <TooltipContent className="max-w-50 text-center">
         <p>
-          Estos son los promedios de la materia en el trimestre anterior. En caso de no tener datos se muestra un "-"
+          Estos son los promedios de la materia en los últimos 3 trimestres. En caso de no tener datos se muestra un "-"
         </p>
       </TooltipContent>
     </Tooltip>

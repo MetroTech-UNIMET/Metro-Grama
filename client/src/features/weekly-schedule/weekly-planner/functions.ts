@@ -30,7 +30,6 @@ export function schedulesToSubjectEvents(
     title: extraData.subjectName,
     start_hour: formatTimeHour(subjectSchedule.starting_hour, subjectSchedule.starting_minute),
     end_hour: formatTimeHour(subjectSchedule.ending_hour, subjectSchedule.ending_minute),
-    type: 'rowing' as any,
     dayIndex: subjectSchedule.day_of_week,
     data: {
       id: extraData.subjectOfferId,

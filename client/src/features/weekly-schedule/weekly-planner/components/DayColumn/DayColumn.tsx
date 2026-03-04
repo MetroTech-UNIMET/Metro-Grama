@@ -21,7 +21,7 @@ export function DaysColumns({ schedules }: { schedules: DaySchedule[] }) {
           '--height': `calc(var(--height-row) * ${timeSlots.length + 1})`,
         } as React.CSSProperties
       }
-      className={`relative z-20 ml-[60px] flex h-(--height)`}
+      className={`relative z-20 ml-15 flex h-(--height)`}
     >
       {schedules.map((day) => (
         <DayColumns

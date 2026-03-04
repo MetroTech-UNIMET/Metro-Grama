@@ -12,3 +12,11 @@ DEFINE FIELD is_next ON trimester VALUE <future>
   WHERE time::now() < starting_date 
   ORDER BY starting_date
   LIMIT 1).id };
+
+
+DEFINE FUNCTION fn::previous_trimesters($trimesterId: record, $maxTrimesters: number) {
+    RETURN SELECT * FROM trimester
+        WHERE starting_date < $trimesterId.starting_date
+        ORDER BY starting_date DESC
+        LIMIT $maxTrimesters;
+};

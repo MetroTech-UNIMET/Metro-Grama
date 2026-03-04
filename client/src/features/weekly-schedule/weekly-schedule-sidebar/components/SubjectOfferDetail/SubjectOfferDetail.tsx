@@ -15,6 +15,7 @@ import { Badge } from '@ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@ui/tooltip';
 
 import type { SubjectOfferWithSections } from '@/interfaces/SubjectOffer';
+import { toast } from 'sonner';
 
 interface Props {
   subjectOffer: SubjectOfferWithSections;
@@ -22,7 +23,7 @@ interface Props {
 }
 
 export default function SubjectOfferDetail({ subjectOffer, onBack }: Props) {
-  const { getIsSubjectSelected } = usePlannerSidebarContext();
+  const { getIsSubjectSelected, onRemoveSubject } = usePlannerSidebarContext();
   const { view, go, back } = useSubjectOfferDetailRouter(subjectOffer);
   const handleHeaderBack = () => back(onBack);
 
@@ -34,7 +35,30 @@ export default function SubjectOfferDetail({ subjectOffer, onBack }: Props) {
 
       <SidebarContent>
         {view === 'form' ? (
-          <SubjectOfferForm subjectOffer={subjectOffer} onBack={() => go('list')} />
+          <SubjectOfferForm
+            subjectOffer={subjectOffer}
+            onBack={(filteredSections) => {
+              go('list');
+              let hasChanges = false;
+              subjectOffer.sections.forEach((section, index) => {
+                if (filteredSections.some((s) => s.subject_section_id?.ID === section.id.ID)) {
+                  hasChanges = true;
+                  onRemoveSubject(subjectOffer, index);
+                }
+              });
+              if (hasChanges)
+                toast.info(
+                  <p>
+                    Haz actualizado el horario de la materia <strong>{subjectOffer.subject.name}</strong> la cual ya
+                    tenías en tu horario.
+                  </p>,
+                  {
+                    description:
+                      'Para evitar confusiones, la materia se ha eliminado de tu horario, por favor revisa los cambios realizados y vuelve a agregarla si lo deseas.',
+                  },
+                );
+            }}
+          />
         ) : (
           <SubjectOfferSchedulesList
             subjectOffer={subjectOffer}
@@ -62,7 +86,7 @@ const SubjectStat = ({ label, value }: { label: string; value: number }) => (
       </TooltipTrigger>
       <TooltipContent className="max-w-50 text-center">
         <p>
-          Estos son los promedios de la materia en el trimestre anterior. En caso de no tener datos se muestra un "-"
+          Estos son los promedios de la materia en los últimos 3 trimestres. En caso de no tener datos se muestra un "-"
         </p>
       </TooltipContent>
     </Tooltip>

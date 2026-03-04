@@ -27,7 +27,7 @@ import { cn } from '@utils/className';
 import { SidebarInset, SidebarProvider, SidebarTrigger } from '@ui/sidebar';
 
 import type { Event } from '@/features/weekly-schedule/weekly-planner/types';
-import type { SubjectOffer } from '@/interfaces/SubjectOffer';
+import type { SubjectOffer, SubjectOfferWithSections } from '@/interfaces/SubjectOffer';
 import type { SubjectSection } from '@/interfaces/SubjectSection';
 import type { Trimester } from '@/interfaces/Trimester';
 import type { SubjectSchedule } from '@/interfaces/SubjectSchedule';
@@ -95,10 +95,16 @@ function RouteComponent() {
 
 const studentTimeSlots = getStudentTimeSlots(7, 21);
 
-export interface SubjectEvent {
+export interface BaseSubjectEvent {
   id: SubjectOffer['id'];
   subjectSectionId: SubjectSection['id'];
+}
+
+export interface SubjectEvent extends BaseSubjectEvent {
   trimesterId: Trimester['id'];
+  avg_grade: SubjectOfferWithSections['avg_grade'];
+  avg_difficulty: SubjectOfferWithSections['avg_difficulty'];
+  avg_workload: SubjectOfferWithSections['avg_workload'];
 }
 
 function WeeklySchedulePage() {
@@ -110,7 +116,6 @@ function WeeklySchedulePage() {
   const { setInitialSelectedSections, handleAddSelection, handleRemoveSelection, getAdjustedCount } =
     useSectionEnrollmentAdjustments();
 
-  // Fetch existing saved course (principal or secondary) and map to events
   const courseQuery = useFetchStudentCourseByTrimester({
     trimesterId,
     params: { is_principal: isPrincipal },
@@ -152,6 +157,7 @@ function WeeklySchedulePage() {
     <SidebarProvider customWidth="20rem">
       {/* Memoized sidebar handlers */}
       <PlannerSidebar
+        subjectEvents={subjectEvents}
         onAddSubject={useCallback(
           (subject_offer, sectionIndex) => {
             const section = subject_offer.sections[sectionIndex];
@@ -165,6 +171,10 @@ function WeeklySchedulePage() {
                   trimesterId: subject_offer.trimester.id,
                   subjectOfferId: subject_offer.id,
                   subjectSectionId: section.id,
+
+                  avg_difficulty: subject_offer.avg_difficulty,
+                  avg_grade: subject_offer.avg_grade,
+                  avg_workload: subject_offer.avg_workload,
                 }),
               ),
             ]);

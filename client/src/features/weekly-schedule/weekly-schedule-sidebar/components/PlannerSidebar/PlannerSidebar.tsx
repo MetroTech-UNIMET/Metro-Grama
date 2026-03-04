@@ -2,10 +2,11 @@ import { useEffect, useMemo, useState } from 'react';
 import { useSearch } from '@tanstack/react-router';
 
 import { PlannerSidebarHeader } from './PlannerSidebarHeader';
+import { PlannerSummaryPopover } from './PlannerSummaryPopover';
 import SubjectOfferCard from '../SubjectOfferCard';
 import SubjectOfferDetail from '../SubjectOfferDetail/SubjectOfferDetail';
 
-import { PlannerSidebarProvider, type PlannerSidebarContextValue } from '../../context/PlannerSidebarContext';
+import { PlannerSidebarProvider, type PlannerSidebarContextInput } from '../../context/PlannerSidebarContext';
 import { sortSubjectOffers } from '../../helpers/orderFunctions';
 
 import { useFetchAnnualOfferByTrimester } from '@/hooks/queries/subject_offer/use-fetch-annual-offer-by-trimester';
@@ -20,7 +21,7 @@ import { Skeleton } from '@ui/skeleton';
 import type { SubjectOfferWithSections } from '@/interfaces/SubjectOffer';
 import type { UseQueryResult } from '@tanstack/react-query';
 
-interface Props extends PlannerSidebarContextValue {}
+interface Props extends PlannerSidebarContextInput {}
 
 export function PlannerSidebar({ ...contextProps }: Props) {
   const [selectedSubjectId, setSelectedSubjectId] = useState<string | null>(null);
@@ -54,6 +55,7 @@ export function PlannerSidebar({ ...contextProps }: Props) {
   return (
     <div>
       <PlannerSidebarProvider value={contextProps}>
+        <PlannerSummaryPopover />
         <Sidebar>
           {selectedSubjectId ? (
             freshOfferQuery.isSuccess && selectedSubject ? (

@@ -106,8 +106,9 @@ export function TimePicker({
     () =>
       Array.from({ length: use12HourFormat ? 12 : 24 }, (_, i) => {
         let disabled = false;
-        const hourValue = use12HourFormat ? (i === 0 ? 12 : i) : i;
-        const hDate = setHours(baseDate, use12HourFormat ? i + ampm * 12 : i);
+        const hourValue = use12HourFormat ? i + 1 : i;
+        const hour24 = use12HourFormat ? (hourValue % 12) + ampm * 12 : hourValue;
+        const hDate = setHours(baseDate, hour24);
         const hStart = startOfHour(hDate);
         const hEnd = endOfHour(hDate);
 
@@ -122,6 +123,7 @@ export function TimePicker({
       }),
     [baseDate, min, max, use12HourFormat, ampm],
   );
+
   const minutes: SimpleTimeOption[] = useMemo(() => {
     const anchorDate = setHours(baseDate, _hourIn24h);
     return Array.from({ length: 60 }, (_, i) => {
@@ -138,6 +140,7 @@ export function TimePicker({
       };
     });
   }, [baseDate, min, max, _hourIn24h]);
+
   const seconds: SimpleTimeOption[] = useMemo(() => {
     const anchorDate = setMilliseconds(setMinutes(setHours(baseDate, _hourIn24h), minute), 0);
     const _min = min ? setMilliseconds(min, 0) : undefined;
@@ -298,7 +301,7 @@ export function TimePicker({
       <PopoverContent className="p-0" side="top">
         <div className="flex-col gap-2 p-2">
           <div className="flex h-56 grow">
-            <ScrollArea className="h-full flex-grow">
+            <ScrollArea className="h-full grow">
               <div className="flex grow flex-col items-stretch overflow-y-auto pe-2 pb-48">
                 {hours.map((v) => (
                   <div ref={value && v.value === hour ? hourRef : undefined} key={v.value}>
@@ -313,7 +316,7 @@ export function TimePicker({
                 ))}
               </div>
             </ScrollArea>
-            <ScrollArea className="h-full flex-grow">
+            <ScrollArea className="h-full grow">
               <div className="flex grow flex-col items-stretch overflow-y-auto pe-2 pb-48">
                 {minutes.map((v) => (
                   <div ref={value && v.value === minute ? minuteRef : undefined} key={v.value}>
@@ -329,7 +332,7 @@ export function TimePicker({
               </div>
             </ScrollArea>
             {!hideSeconds && (
-              <ScrollArea className="h-full flex-grow">
+              <ScrollArea className="h-full grow">
                 <div className="flex grow flex-col items-stretch overflow-y-auto pe-2 pb-48">
                   {seconds.map((v) => (
                     <div ref={value && v.value === second ? secondRef : undefined} key={v.value}>
@@ -349,7 +352,7 @@ export function TimePicker({
               </ScrollArea>
             )}
             {use12HourFormat && (
-              <ScrollArea className="h-full flex-grow">
+              <ScrollArea className="h-full grow">
                 <div className="flex grow flex-col items-stretch overflow-y-auto pe-2">
                   {ampmOptions.map((v) => (
                     <TimeItem

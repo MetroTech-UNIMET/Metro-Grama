@@ -16,10 +16,11 @@ func GetSectionsWithSchedules(studentId surrealModels.RecordID, trimesterId stri
 
 	qb := surrealql.SelectOnly("course").
 		Value(GetSectionSubquery(isPrincipal)).
-		WhereEq("out", surrealModels.NewRecordID("trimester", trimesterId)).
+		Where("out = $trimesterId").
 		WhereEq("in", studentId)
 
 	sql, vars := qb.Build()
+	vars["trimesterId"] = surrealModels.NewRecordID("trimester", trimesterId)
 
 	res, err := surrealdb.Query[[]DTO.QueryCourse](context.Background(), db.SurrealDB, sql, vars)
 	if err != nil {
@@ -48,9 +49,20 @@ func GetSectionSubquery(isPrincipal bool) *surrealql.SelectQuery {
 		sectionField = "secondary_sections"
 	}
 
+	//
 	return surrealql.Select(fmt.Sprintf("$parent.%s", sectionField)).
 		Field("*").
 		Alias("subject", "subject_offer.in").
 		Alias("subject_schedule", getScheduleSubquery()).
+		// FIXME Buscar alguna forma de cachear el resultado de fn::previous_trimesters en una variable
+		Alias("avg_difficulty", "math::mean(? ?: [0])", surrealql.Select("enroll").
+			Value("difficulty").
+			Where("out=$parent.subject_offer.in AND trimester IN fn::previous_trimesters($trimesterId, 3).id")).
+		Alias("avg_grade", "math::mean(? ?: [0])", surrealql.Select("enroll").
+			Value("grade").
+			Where("out=$parent.subject_offer.in AND trimester IN fn::previous_trimesters($trimesterId, 3).id")).
+		Alias("avg_workload", "math::mean(? ?: [0])", surrealql.Select("enroll").
+			Value("workload").
+			Where("out=$parent.subject_offer.in AND trimester IN fn::previous_trimesters($trimesterId, 3).id")).
 		Fetch("subject")
 }

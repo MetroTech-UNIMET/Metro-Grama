@@ -57,8 +57,6 @@ interface SectionSchedulesProps {
   sectionIndex: number;
 }
 
-// TODO - Considerar hacer que el studentsPlanningToEnroll aumente dependiendo si fue seleccionado o no
-// Tomar en cuenta que
 function SectionSchedules({ section, sectionIndex, subjectOffer, isSelected }: SectionSchedulesProps) {
   const {
     onAddSubject,

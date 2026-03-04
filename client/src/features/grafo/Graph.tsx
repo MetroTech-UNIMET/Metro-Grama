@@ -120,7 +120,8 @@ export default function Graph() {
                 if (!selectedSubjectDialog) throw new Error('No se encontró la materia seleccionada');
 
                 if (data.grade >= 10) nodeActions.enableViewedNode(selectedSubjectDialog);
-                else nodeActions.disableViewedNode(selectedSubjectDialog, selectedSubjectDialog.getOutEdges());
+                else if (selectedSubjectDialog.hasState('viewed'))
+                  nodeActions.disableViewedNode(selectedSubjectDialog, selectedSubjectDialog.getOutEdges());
 
                 setSelectedSubjectDialog(null);
               }}

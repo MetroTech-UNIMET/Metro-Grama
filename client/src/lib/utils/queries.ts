@@ -16,7 +16,7 @@ export function idToSurrealId(id: string, table: string) {
 }
 
 export function surrealIdToId(surrealId: Id) {
-  return idToSurrealId(surrealId.Table, surrealId.ID);
+  return idToSurrealId(surrealId.ID, surrealId.Table);
 }
 
 export function createSurrealId<Table, X>(table: Table, id: X): Id<Table, X> {

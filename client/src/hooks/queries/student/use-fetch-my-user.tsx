@@ -3,10 +3,10 @@ import { queryOptions, useQuery } from '@tanstack/react-query';
 import { notRetryOnUnauthorized } from '@utils/queries';
 
 import type { AxiosError } from 'axios';
-import type { StudentUser, User } from '@/interfaces/User';
-import { OptionalQueryOptions } from '../types';
+import type { AdminUser, StudentUser, User } from '@/interfaces/User';
+import type { OptionalQueryOptions } from '../types';
 
-export type UserType = StudentUser | User;
+export type UserType = StudentUser | AdminUser | User;
 
 interface Props<T = UserType | null> {
   queryOptions?: OptionalQueryOptions<T, AxiosError>;

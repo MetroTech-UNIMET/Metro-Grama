@@ -18,6 +18,10 @@ export interface StudentUser extends User {
   student: StudentEntity;
 }
 
+export interface AdminUser extends User {
+  role: Id<'role', 'admin'>;
+}
+
 export type UserRole = 'admin' | 'student';
 
 export function isStudentUser(user: User | StudentUser): user is StudentUser {

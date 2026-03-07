@@ -13,6 +13,7 @@ import { Route as AdminRouteRouteImport } from './routes/admin/route'
 import { Route as NavLayoutRouteRouteImport } from './routes/_navLayout/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as RegisterStudentRouteImport } from './routes/register/student'
+import { Route as RegisterAdminRouteImport } from './routes/register/admin'
 import { Route as NavLayoutProfileRouteRouteImport } from './routes/_navLayout/profile/route'
 import { Route as NavLayoutProfileIndexRouteImport } from './routes/_navLayout/profile/index'
 import { Route as NavLayoutOfertaIndexRouteImport } from './routes/_navLayout/oferta/index'
@@ -41,6 +42,11 @@ const IndexRoute = IndexRouteImport.update({
 const RegisterStudentRoute = RegisterStudentRouteImport.update({
   id: '/register/student',
   path: '/register/student',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RegisterAdminRoute = RegisterAdminRouteImport.update({
+  id: '/register/admin',
+  path: '/register/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NavLayoutProfileRouteRoute = NavLayoutProfileRouteRouteImport.update({
@@ -100,6 +106,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteRouteWithChildren
   '/profile': typeof NavLayoutProfileRouteRouteWithChildren
+  '/register/admin': typeof RegisterAdminRoute
   '/register/student': typeof RegisterStudentRoute
   '/oferta/edit': typeof NavLayoutOfertaEditRoute
   '/student/$studentId': typeof NavLayoutStudentStudentIdRoute
@@ -114,6 +121,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteRouteWithChildren
+  '/register/admin': typeof RegisterAdminRoute
   '/register/student': typeof RegisterStudentRoute
   '/oferta/edit': typeof NavLayoutOfertaEditRoute
   '/student/$studentId': typeof NavLayoutStudentStudentIdRoute
@@ -131,6 +139,7 @@ export interface FileRoutesById {
   '/_navLayout': typeof NavLayoutRouteRouteWithChildren
   '/admin': typeof AdminRouteRouteWithChildren
   '/_navLayout/profile': typeof NavLayoutProfileRouteRouteWithChildren
+  '/register/admin': typeof RegisterAdminRoute
   '/register/student': typeof RegisterStudentRoute
   '/_navLayout/oferta/edit': typeof NavLayoutOfertaEditRoute
   '/_navLayout/student/$studentId': typeof NavLayoutStudentStudentIdRoute
@@ -148,6 +157,7 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/profile'
+    | '/register/admin'
     | '/register/student'
     | '/oferta/edit'
     | '/student/$studentId'
@@ -162,6 +172,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/admin'
+    | '/register/admin'
     | '/register/student'
     | '/oferta/edit'
     | '/student/$studentId'
@@ -178,6 +189,7 @@ export interface FileRouteTypes {
     | '/_navLayout'
     | '/admin'
     | '/_navLayout/profile'
+    | '/register/admin'
     | '/register/student'
     | '/_navLayout/oferta/edit'
     | '/_navLayout/student/$studentId'
@@ -194,6 +206,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   NavLayoutRouteRoute: typeof NavLayoutRouteRouteWithChildren
   AdminRouteRoute: typeof AdminRouteRouteWithChildren
+  RegisterAdminRoute: typeof RegisterAdminRoute
   RegisterStudentRoute: typeof RegisterStudentRoute
 }
 
@@ -225,6 +238,13 @@ declare module '@tanstack/react-router' {
       path: '/register/student'
       fullPath: '/register/student'
       preLoaderRoute: typeof RegisterStudentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/register/admin': {
+      id: '/register/admin'
+      path: '/register/admin'
+      fullPath: '/register/admin'
+      preLoaderRoute: typeof RegisterAdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_navLayout/profile': {
@@ -355,6 +375,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   NavLayoutRouteRoute: NavLayoutRouteRouteWithChildren,
   AdminRouteRoute: AdminRouteRouteWithChildren,
+  RegisterAdminRoute: RegisterAdminRoute,
   RegisterStudentRoute: RegisterStudentRoute,
 }
 export const routeTree = rootRouteImport

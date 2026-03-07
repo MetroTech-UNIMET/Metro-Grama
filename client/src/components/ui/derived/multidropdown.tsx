@@ -370,12 +370,12 @@ function MultipleSelector<TValue extends string | number = string | number, TDat
                       badgeClassName,
                     )}
                     data-fixed={option.fixed === true ? true : undefined}
-                    data-disabled={disabled}
+                    data-disabled={option.disabled === true ? true : undefined}
                   >
                     {option.label}
                     <button
                       className={cn(
-                        'ring-offset-background focus:ring-ring ml-1 rounded-full outline-none focus:ring-2 focus:ring-offset-2',
+                        'ring-offset-background focus:ring-ring ml-1 rounded-full outline-none focus:ring-2 focus:ring-offset-2 cursor-pointer',
                         (disabled || option.fixed) && 'hidden',
                       )}
                       onKeyDown={(e) => {
@@ -389,7 +389,7 @@ function MultipleSelector<TValue extends string | number = string | number, TDat
                       }}
                       onClick={() => handleUnselect(option)}
                     >
-                      <X className="hover:text-foreground text-muted-foreground h-3 w-3" />
+                      <X className="hover:text-white text-white/80 h-3 w-3" />
                     </button>
                   </Badge>
                 );

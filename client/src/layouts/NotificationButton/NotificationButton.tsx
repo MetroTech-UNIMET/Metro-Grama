@@ -56,6 +56,8 @@ export function NotificationButton({ isDockVisible }: Props) {
             isDockVisible && 'max-sm:translate-y-16',
           )}
           colors="secondary"
+          aria-label={`Abrir notificaciones${unreadCount > 0 ? ` (${unreadCount} sin leer)` : ''}`}
+          title="Abrir notificaciones"
         >
           <Bell />
           {unreadCount > 0 && (
@@ -72,7 +74,14 @@ export function NotificationButton({ isDockVisible }: Props) {
 
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" onClick={handleMarkAsRead} disabled={unreadCount === 0}>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleMarkAsRead}
+                disabled={unreadCount === 0}
+                aria-label="Marcar todas como leidas"
+                title="Marcar todas como leidas"
+              >
                 <CheckIcon />
               </Button>
             </TooltipTrigger>

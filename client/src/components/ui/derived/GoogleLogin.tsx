@@ -35,7 +35,7 @@ export default function GoogleLogin() {
             className="h-11 items-center gap-2 px-2 bg-background"
           >
             <Avatar className="h-8 w-8">
-              <AvatarImage src={user.pictureUrl} />
+              <AvatarImage src={user.pictureUrl} alt={`${user.firstName} ${user.lastName}`} />
               <AvatarFallback className="text-black">{initials}</AvatarFallback>
             </Avatar>
             <span className="font-medium text-black">

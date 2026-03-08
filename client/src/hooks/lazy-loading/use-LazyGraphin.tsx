@@ -1,11 +1,11 @@
-import { useQuery } from "@tanstack/react-query";
-import { useContext } from "react";
+import { useQuery } from '@tanstack/react-query';
+import { use } from 'react';
 
 export default function useLazyGraphin() {
   const { data: graphinImport, ...query } = useQuery({
-    queryKey: ["graphin"],
+    queryKey: ['graphin'],
     queryFn: async () => {
-      const GraphinModule = await import("@antv/graphin");
+      const GraphinModule = await import('@antv/graphin');
 
       const Graphin = GraphinModule.default;
 
@@ -23,7 +23,7 @@ export function useLazyGraphinContext() {
 
   const { GraphinContext } = graphinImport;
 
-  const graphinContext = useContext(GraphinContext);
+  const graphinContext = use(GraphinContext);
 
-  return graphinContext
+  return graphinContext;
 }

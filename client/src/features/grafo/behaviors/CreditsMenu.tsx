@@ -38,6 +38,8 @@ export default function CreditsMenu() {
           className="bg-card fixed top-1/2 left-0 size-10 -translate-x-10 -translate-y-1/2 rounded-l-md rounded-r-none"
           onClick={() => setOpen(!open)}
           size="icon"
+          aria-label={open ? 'Cerrar panel de creditos' : 'Abrir panel de creditos'}
+          title={open ? 'Cerrar panel de creditos' : 'Abrir panel de creditos'}
         >
           <ChevronLeft className={cn('rotate-0 transition-transform duration-200', open && 'rotate-180')} />
         </Button>

@@ -94,6 +94,8 @@ export function MenuDockLink({
         className="bg-card absolute -top-5 right-1/2 size-9 translate-x-1/2 rounded-full border-2"
         onClick={toggleVisibility}
         variant="ghost"
+        aria-label={isVisible ? 'Ocultar menu de navegación' : 'Mostrar menu de navegación'}
+        title={isVisible ? 'Ocultar menu de navegación' : 'Mostrar menu de navegación'}
       >
         <ChevronUp className={cn('rotate-0 transition-transform duration-200', isVisible && 'rotate-180')} />
       </Button>

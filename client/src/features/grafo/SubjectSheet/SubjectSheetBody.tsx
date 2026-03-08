@@ -1,8 +1,10 @@
+import { Suspense, lazy } from 'react';
 import { AlertCircle } from 'lucide-react';
 
 import { SubjectStatsCareerFilter } from './SubjectStatsFilters';
 import { SubjectStatsQueryProvider, useSubjectStatsQueryContext } from './context/subject-stats-query-context';
-import { GradeChart, OpinionChart } from './SubjectCharts';
+const GradeChart = lazy(() => import('./SubjectCharts').then((module) => ({ default: module.GradeChart })));
+const OpinionChart = lazy(() => import('./SubjectCharts').then((module) => ({ default: module.OpinionChart })));
 
 import { useFetchSubjectStats } from '@/hooks/queries/stats/use-fetch-subject-stats';
 
@@ -88,10 +90,15 @@ function StatsSection({ subject }: { subject: Subject }) {
               </p>
             </Card>
           ) : (
-            <>
+            <Suspense fallback={
+              <>
+                <Skeleton className="h-48 w-full rounded-md" />
+                <Skeleton className="h-48 w-full rounded-md" />
+              </>
+            }>
               <GradeChart data={subjectStatsQuery.data} />
               <OpinionChart data={subjectStatsQuery.data} />
-            </>
+            </Suspense>
           )}
         </>
       )}

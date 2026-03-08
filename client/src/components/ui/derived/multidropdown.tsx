@@ -374,10 +374,13 @@ function MultipleSelector<TValue extends string | number = string | number, TDat
                   >
                     {option.label}
                     <button
+                      type="button"
                       className={cn(
                         'ring-offset-background focus:ring-ring ml-1 rounded-full outline-none focus:ring-2 focus:ring-offset-2 cursor-pointer',
                         (disabled || option.fixed) && 'hidden',
                       )}
+                      aria-label={`Remover ${option.label}`}
+                      title={`Remover ${option.label}`}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
                           handleUnselect(option);

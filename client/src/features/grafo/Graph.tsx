@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback, Suspense, lazy } from 'react';
 
 import SearchPrelations from './behaviors/Search-Prelations';
 import { MenuActions, type SubjectNode } from './behaviors/MenuActions';
@@ -7,8 +7,8 @@ import UpdateNodeStatusOnGraphChange from './behaviors/Update-Node-Status-OnGrap
 import { useStatusActions } from './behaviors/StatusActions';
 
 import { HeaderGraph } from './HeaderGraph';
-import { ElectiveInfo } from './ElectiveInfo/ElectiveInfo';
-import EnrollDialog from './EnrollDialog/EnrollDialog';
+const ElectiveInfo = lazy(() => import('./ElectiveInfo/ElectiveInfo').then((m) => ({ default: m.ElectiveInfo })));
+const EnrollDialog = lazy(() => import('./EnrollDialog/EnrollDialog'));
 
 import useIsElective from './hooks/use-is-elective';
 
@@ -16,7 +16,7 @@ import { ShowAxiosError } from '@components/ShowAxiosError';
 
 import { Spinner } from '@ui/spinner';
 import { ContextMenu } from '@ui/context-menu';
-import { Dialog } from '@ui/dialog';
+import { Dialog, DialogContent } from '@ui/dialog';
 
 import useSubjectGraph from '@/features/grafo/hooks/useSubjectGraph/useSubjectGraph';
 
@@ -58,6 +58,36 @@ export default function Graph() {
   const { graph } = useSubjectGraph(queryToUse.data, selectedCareers);
 
   const { graphinImport, error: graphinError } = useLazyGraphin();
+  const { nodeActions } = useStatusActions();
+
+  const electiveInfoFallback = (
+    <div className="fixed right-8 top-10 z-10 grid size-10 place-items-center rounded-md border bg-background/90 md:top-24 max-[21rem]:top-44">
+      <Spinner size="small" />
+    </div>
+  );
+
+  const enrollDialogFallback = (
+    <DialogContent className="grid h-80 place-items-center p-0">
+      <Spinner />
+    </DialogContent>
+  );
+
+  const handleOpenChange = useCallback((open: boolean) => {
+    if (!open) setSelectedSubjectDialog(null);
+  }, []);
+
+  const handleAfterSubmit = useCallback(
+    (data: { grade: number }) => {
+      if (!selectedSubjectDialog) throw new Error('No se encontró la materia seleccionada');
+
+      if (data.grade >= 10) nodeActions.enableViewedNode(selectedSubjectDialog);
+      else if (selectedSubjectDialog.hasState('viewed'))
+        nodeActions.disableViewedNode(selectedSubjectDialog, selectedSubjectDialog.getOutEdges());
+
+      setSelectedSubjectDialog(null);
+    },
+    [selectedSubjectDialog, nodeActions],
+  );
 
   if (queryToUse.error) return <ShowAxiosError error={queryToUse.error as AxiosError} />;
   if (graphinError) return <ShowAxiosError error={graphinError as AxiosError} />;
@@ -72,7 +102,6 @@ export default function Graph() {
 
   const { Graphin, Behaviors } = graphinImport;
   const { Hoverable } = Behaviors;
-  const { nodeActions } = useStatusActions();
 
   return (
     <>
@@ -85,7 +114,9 @@ export default function Graph() {
         loadingCareers={careerOptionsQuery.isLoading}
       />
 
-      {onlyElectives && <ElectiveInfo buttonClassName="fixed right-8 top-10 md:top-24 z-10 max-[21rem]:top-44" />}
+      <Suspense fallback={electiveInfoFallback}>
+        {onlyElectives && <ElectiveInfo buttonClassName="fixed right-8 top-10 md:top-24 z-10 max-[21rem]:top-44" />}
+      </Suspense>
 
       {selectedCareers.length === 0 && !onlyElectives ? (
         <>
@@ -95,7 +126,7 @@ export default function Graph() {
         </>
       ) : (
         <div className="h-full overflow-hidden">
-          <Dialog open={!!selectedSubjectDialog} onOpenChange={(open) => !open && setSelectedSubjectDialog(null)}>
+          <Dialog open={!!selectedSubjectDialog} onOpenChange={handleOpenChange}>
             <ContextMenu>
               <Graphin
                 data={graph}
@@ -114,19 +145,15 @@ export default function Graph() {
               </Graphin>
             </ContextMenu>
 
-            <EnrollDialog
-              subject={selectedSubjectDialog?._cfg.model.data.data ?? null}
-              afterSubmit={(data) => {
-                if (!selectedSubjectDialog) throw new Error('No se encontró la materia seleccionada');
-
-                if (data.grade >= 10) nodeActions.enableViewedNode(selectedSubjectDialog);
-                else if (selectedSubjectDialog.hasState('viewed'))
-                  nodeActions.disableViewedNode(selectedSubjectDialog, selectedSubjectDialog.getOutEdges());
-
-                setSelectedSubjectDialog(null);
-              }}
-              isEditMode={selectedSubjectDialog?.hasState('viewed') ?? false}
-            />
+            <Suspense fallback={enrollDialogFallback}>
+              {selectedSubjectDialog && (
+                <EnrollDialog
+                  subject={selectedSubjectDialog._cfg.model.data.data}
+                  afterSubmit={handleAfterSubmit}
+                  isEditMode={selectedSubjectDialog.hasState('viewed')}
+                />
+              )}
+            </Suspense>
           </Dialog>
         </div>
       )}

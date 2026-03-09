@@ -7,11 +7,11 @@ import RegisterStudentForm from './components/RegisterStudentForm/RegisterStuden
 import { fetchTrimestersSelectOptions } from '@/hooks/queries/trimester/use-FetchTrimesters';
 
 import { getMetaTags } from '@utils/meta';
-import { checkIsAuthenticated } from '@utils/auth';
+import { getAuthenticatedUser } from '@utils/auth';
 
 export const Route = createFileRoute('/register/student')({
   beforeLoad: async ({ context }) => {
-    const user = await checkIsAuthenticated(context.auth);
+    const user = await getAuthenticatedUser(context.auth);
     if (user) {
       throw redirect({
         to: '/materias',

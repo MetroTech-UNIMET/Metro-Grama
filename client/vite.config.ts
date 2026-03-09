@@ -1,9 +1,9 @@
 /// <reference types="vitest" />
 import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react-swc';
+import viteReact from '@vitejs/plugin-react';
 
 import tailwindcss from '@tailwindcss/vite';
-import { tanstackRouter } from '@tanstack/router-plugin/vite';
+import { tanstackStart } from '@tanstack/react-start/plugin/vite';
 import { devtools } from '@tanstack/devtools-vite';
 
 import * as path from 'path';
@@ -11,13 +11,13 @@ import * as path from 'path';
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
-    tanstackRouter({
-      target: 'react',
-      autoCodeSplitting: true,
-      routeFileIgnorePattern: '((components|hooks)|functions\\.ts|queryParams\\.ts)',
+    tanstackStart({
+      router: {
+        routeFileIgnorePattern: '((components|hooks)|functions\\.ts|queryParams\\.ts)',
+      },
     }),
     devtools(),
-    react(),
+    viteReact(),
     tailwindcss(),
   ],
   resolve: {

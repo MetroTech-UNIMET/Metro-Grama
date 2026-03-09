@@ -1,9 +1,9 @@
 'use client';
 
+import { getAuthTokenFromCookie } from '@/server/auth';
 import { useCallback, useEffect, useRef } from 'react';
 import { useEffectEvent } from 'react';
 
-import { getAuthToken } from '@utils/authToken';
 
 type WebsocketEventHandlers = Record<string, (payload: any, socket: WebSocket) => void>;
 
@@ -32,7 +32,7 @@ function buildWebsocketUrl(namespace: string) {
     const basePath = url.pathname === '/' ? '' : url.pathname.replace(/\/$/, '');
     url.pathname = `${basePath}${normalizedNamespace}`;
 
-    const token = getAuthToken();
+  const token = getAuthTokenFromCookie();
     if (token) {
       url.searchParams.set('token', token);
     }

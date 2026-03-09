@@ -11,24 +11,6 @@ import ErrorPage from '@components/ErrorPage';
 import { fetchStudentByIdOptions } from '@/hooks/queries/student/use-fetch-student-by-id';
 
 export const Route = createFileRoute('/_navLayout/student/$studentId')({
-  loader: ({ context: { queryClient }, params: { studentId } }) =>
-    queryClient.ensureQueryData(fetchStudentByIdOptions({ studentId })),
-
-  // Skeleton loading matching Profile layout
-  head: (context) => {
-    context.loaderData?.user.firstName;
-    const fullName =
-      `${context.loaderData?.user?.firstName || 'Estudiante'} ${context.loaderData?.user?.lastName || ''}`.trim();
-
-    return {
-      meta: getMetaTags({
-        title: `${fullName} | MetroGrama`,
-        description: `Consulta el perfil de ${fullName} en MetroGrama`,
-      }),
-    };
-  },
-  pendingComponent: () => <ProfileSkeleton />,
-  errorComponent: (props) => <ErrorPage title="Error cargando perfil" {...props} />,
   beforeLoad: async ({ params, context }) => {
     const user = await checkIsAuthenticated(context.auth);
 
@@ -44,6 +26,23 @@ export const Route = createFileRoute('/_navLayout/student/$studentId')({
       });
     }
   },
+  loader: ({ context: { queryClient }, params: { studentId } }) =>
+    queryClient.ensureQueryData(fetchStudentByIdOptions({ studentId })),
+  head: (context) => {
+    context.loaderData?.user.firstName;
+    const fullName =
+      `${context.loaderData?.user?.firstName || 'Estudiante'} ${context.loaderData?.user?.lastName || ''}`.trim();
+
+    return {
+      meta: getMetaTags({
+        title: `${fullName} | MetroGrama`,
+        description: `Consulta el perfil de ${fullName} en MetroGrama`,
+      }),
+    };
+  },
+  pendingComponent: () => <ProfileSkeleton />,
+  errorComponent: (props) => <ErrorPage title="Error cargando perfil" {...props} />,
+
   component: function StudentProfileRoute() {
     const { studentId } = Route.useParams();
     const { data } = useSuspenseQuery(fetchStudentByIdOptions({ studentId }));

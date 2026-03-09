@@ -1,11 +1,12 @@
-import { createContext, useContext, useEffect } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useServerFn } from '@tanstack/react-start';
 import { toast } from 'sonner';
 
 import { logOutGoogle } from '@/api/authApi';
-import { clearAuthToken, consumeTokenFromUrl, setAuthToken } from '@utils/authToken';
 
 import { fetchStudentMyUserOptions, useFetchMyUser, type UserType } from '@/hooks/queries/student/use-fetch-my-user';
+import { clearAuthSessionFn, syncAuthSessionFn } from '@/server/auth';
 import type { AxiosError } from 'axios';
 
 export type AuthContextProps = (SucessAuth | LoadingAuth | UnauthenticatedAuth) & {
@@ -44,14 +45,13 @@ export function useAuth() {
 export default function AuthenticationContext({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
   const myUserQuery = useFetchMyUser();
+  const syncAuthSession = useServerFn(syncAuthSessionFn);
+  const clearAuthSession = useServerFn(clearAuthSessionFn);
 
   useEffect(() => {
-    const token = consumeTokenFromUrl();
-    if (token) {
-      setAuthToken(token);
-      queryClient.invalidateQueries({ queryKey: ['users', 'profile'] });
-    }
-  }, [queryClient]);
+    syncAuthSession();
+    queryClient.invalidateQueries({ queryKey: ['users', 'profile'] });
+  }, [queryClient, syncAuthSession]);
 
   const logOutMutation = useMutation({
     mutationFn: logOutGoogle,
@@ -64,46 +64,48 @@ export default function AuthenticationContext({ children }: { children: React.Re
     },
   });
 
-  const logOut: () => void = () => {
-    clearAuthToken();
+  const logOut = useCallback(() => {
+    clearAuthSession();
     logOutMutation.mutate();
-  };
+  }, [clearAuthSession, logOutMutation]);
 
-  const ensureData = async (): Promise<UserType | null> => {
+  const ensureData = useCallback(async (): Promise<UserType | null> => {
     try {
       return await queryClient.ensureQueryData(fetchStudentMyUserOptions());
     } catch {
       return null;
     }
-  };
+  }, [queryClient]);
 
-  let value: AuthContextProps;
+  const value = useMemo<AuthContextProps>(() => {
+    if (myUserQuery.isPending) {
+      return {
+        user: null,
+        status: 'loading',
+        errorAuth: myUserQuery.error,
+        logOut,
+        ensureData,
+      };
+    }
 
-  if (myUserQuery.isPending) {
-    value = {
-      user: null,
-      status: 'loading',
-      errorAuth: myUserQuery.error,
-      logOut,
-      ensureData,
-    };
-  } else if (myUserQuery.data) {
-    value = {
-      user: myUserQuery.data,
-      status: 'authenticated',
-      errorAuth: null,
-      logOut,
-      ensureData,
-    };
-  } else {
-    value = {
+    if (myUserQuery.data) {
+      return {
+        user: myUserQuery.data,
+        status: 'authenticated',
+        errorAuth: null,
+        logOut,
+        ensureData,
+      };
+    }
+
+    return {
       user: null,
       status: 'unauthenticated',
       errorAuth: myUserQuery.error,
       logOut,
       ensureData,
     };
-  }
+  }, [ensureData, logOut, myUserQuery.data, myUserQuery.error, myUserQuery.isPending]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

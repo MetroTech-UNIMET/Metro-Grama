@@ -4,7 +4,6 @@ import { getAuthTokenFromCookie } from '@/server/auth';
 import { useCallback, useEffect, useRef } from 'react';
 import { useEffectEvent } from 'react';
 
-
 type WebsocketEventHandlers = Record<string, (payload: any, socket: WebSocket) => void>;
 
 interface UseWebsocketOptions {
@@ -16,7 +15,7 @@ interface UseWebsocketOptions {
 }
 
 function buildWebsocketUrl(namespace: string) {
-  const baseUrl =  import.meta.env.VITE_WS_URL;
+  const baseUrl = import.meta.env.VITE_WS_URL;
   if (!baseUrl) throw new Error('Setea el .env del websocket');
 
   const normalizedNamespace = namespace.startsWith('/') ? namespace : `/${namespace}`;
@@ -32,7 +31,7 @@ function buildWebsocketUrl(namespace: string) {
     const basePath = url.pathname === '/' ? '' : url.pathname.replace(/\/$/, '');
     url.pathname = `${basePath}${normalizedNamespace}`;
 
-  const token = getAuthTokenFromCookie();
+    const token = getAuthTokenFromCookie();
     if (token) {
       url.searchParams.set('token', token);
     }
@@ -43,13 +42,7 @@ function buildWebsocketUrl(namespace: string) {
   }
 }
 
-export function useWebsocket({
-  namespace,
-  onConnect,
-  onDisconnect,
-  onError,
-  onEvents = {},
-}: UseWebsocketOptions) {
+export function useWebsocket({ namespace, onConnect, onDisconnect, onError, onEvents = {} }: UseWebsocketOptions) {
   const socketRef = useRef<WebSocket | null>(null);
 
   const handleConnect = useEffectEvent((socket: WebSocket) => {

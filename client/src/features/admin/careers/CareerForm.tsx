@@ -114,6 +114,9 @@ export default function CareerForm({ mode, data }: Props) {
     (prevPage: number) => {
       if (prevPage === 0) return;
 
+      // Commit pending free-input values from focused autocomplete fields.
+      (document.activeElement as HTMLElement | null)?.blur();
+
       const subjects = getValues(`subjects.${prevPage - 1}`);
       subjects.forEach((subject) => {
         const isNewSubject = subject.subjectType === 'new';
@@ -145,9 +148,8 @@ export default function CareerForm({ mode, data }: Props) {
       subjects.forEach((subject) => {
         const code = subject.code;
         if (!code) return;
-        const subjectCode = `subject:${code}`;
 
-        removeAdditionalSubject(subjectCode);
+        removeAdditionalSubject(code);
       });
 
       onInvalidToast(errors);

@@ -39,7 +39,7 @@ func GetStudentDetails(studentId surrealModels.RecordID, loggedUserId *surrealMo
 		isFriendOfAFriend = friendOfAFriend
 	}
 
-	qb := surrealql.SelectOnly(studentId).
+	qb := surrealql.SelectOnly("$studentId").
 		Alias("careers", "->study.out").
 		Alias("subject_section_history",
 			surrealql.Select("subject_section_history").
@@ -76,6 +76,7 @@ func GetStudentDetails(studentId surrealModels.RecordID, loggedUserId *surrealMo
 	)
 
 	extraParams := map[string]any{}
+	extraParams["studentId"] = studentId
 
 	if loggedUserId == nil {
 		qb = qb.
@@ -92,7 +93,7 @@ func GetStudentDetails(studentId surrealModels.RecordID, loggedUserId *surrealMo
 
 	qb = utils.ApplyIfVisible(qb, loggedUserId, studentPreferences.ShowSchedule, isFriend, isFriendOfAFriend,
 		func(q *surrealql.SelectQuery) *surrealql.SelectQuery {
-			return addSheduleSubquery(q, studentId)
+			return addSheduleSubquery(q)
 		},
 	)
 
@@ -113,16 +114,16 @@ func GetStudentDetails(studentId surrealModels.RecordID, loggedUserId *surrealMo
 	return &data, nil
 }
 
-func addSheduleSubquery(qb *surrealql.SelectQuery, studentId surrealModels.RecordID) *surrealql.SelectQuery {
-	return qb.Alias("current_courses", getScheduleSubquery(studentId, "current")).
-		Alias("next_courses", getScheduleSubquery(studentId, "next"))
+func addSheduleSubquery(qb *surrealql.SelectQuery) *surrealql.SelectQuery {
+	return qb.Alias("current_courses", getScheduleSubquery("current")).
+		Alias("next_courses", getScheduleSubquery("next"))
 }
 
-func getScheduleSubquery(studentId surrealModels.RecordID, trimesterTime string) *surrealql.SelectQuery {
+func getScheduleSubquery(trimesterTime string) *surrealql.SelectQuery {
 	qb := surrealql.SelectOnly("course").
 		Alias("principal", courseServices.GetSectionSubquery(true)).
 		Alias("secondary", courseServices.GetSectionSubquery(false)).
-		WhereEq("in", studentId)
+		Where("in = $studentId")
 
 	if trimesterTime == "current" {
 		qb = qb.Where("out.is_current = true")

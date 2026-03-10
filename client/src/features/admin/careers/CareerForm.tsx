@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo } from 'react';
 import { type FieldErrors, type Path, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useNavigate } from '@tanstack/react-router';
 import { toast } from 'sonner';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 
@@ -38,6 +39,8 @@ export default function CareerForm({ mode, data }: Props) {
     addAdditionalSubject,
     removeAdditionalSubject,
   } = useSubjectOptions();
+
+  const navigate = useNavigate();
 
   const form = useForm({
     resolver: zodResolver(createCareerSchema),
@@ -104,6 +107,8 @@ export default function CareerForm({ mode, data }: Props) {
       toast.success(toastInfo.title, {
         ...toastInfo,
       });
+
+      navigate({ to: '/materias', search: { careers: [`career:${formData.id}`] } });
     } catch (error: any) {
       toast.error(error.message);
       throw error;

@@ -1,6 +1,7 @@
 import { queryOptions, useQuery } from '@tanstack/react-query';
 
 import { getEnrolledSubjects, type QueryEnrollParams } from '@/api/interactions/enrollApi';
+import { queryKeys } from '@/lib/query-keys';
 
 import { notRetryOnUnauthorized } from '@utils/queries';
 
@@ -14,7 +15,7 @@ interface Props<T = string[]> {
 
 export function fetchEnrolledSubjectsOptions({ queryOptions: queryOpt, params }: Props = {}) {
   return queryOptions({
-    queryKey: ['student', 'enrolled-subjects', params],
+    queryKey: queryKeys.student.enrolledSubjects(params).queryKey,
     queryFn: () => getEnrolledSubjects(params),
     retry: notRetryOnUnauthorized,
     ...queryOpt,

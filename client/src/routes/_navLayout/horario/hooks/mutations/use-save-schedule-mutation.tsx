@@ -7,6 +7,7 @@ import { courseSchema } from '../../components/schema';
 
 import { createSchedule } from '@/api/interactions/courseApi';
 import { isStudentUser } from '@/interfaces/User';
+import { mutationKeys, queryKeys } from '@/lib/query-keys';
 
 import type { SubjectEvent } from '../../';
 import type { UserType } from '@/hooks/queries/student/use-fetch-my-user';
@@ -22,7 +23,7 @@ export function useMutationSaveSchedule() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationKey: ['save-schedule'],
+    mutationKey: mutationKeys.schedule.save,
     mutationFn: async ({ user, events, isPrincipal }: MutationVariables) => {
       if (!user) throw new Error('User is not authenticated');
       if (!isStudentUser(user)) throw new Error('User is not a student');
@@ -44,7 +45,7 @@ export function useMutationSaveSchedule() {
       return createSchedule(resultParsed.data);
     },
     onSuccess: async (_result, { isPrincipal }) => {
-      await queryClient.invalidateQueries({ queryKey: ['student', 'details', 'my-id'], refetchType: 'all' });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.student.details('my-id').queryKey, refetchType: 'all' });
 
       toast.success('Horario guardado con éxito!', {
         description: `El horario se ha guardado como ${isPrincipal ? 'principal' : 'secundario'}.`,

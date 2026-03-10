@@ -1,6 +1,7 @@
 import { useQuery, queryOptions } from '@tanstack/react-query';
 
 import { getSubjectsElectivesGraph } from '@/api/subjectsAPI';
+import { queryKeys } from '@/lib/query-keys';
 
 import type { Graph } from '@/interfaces/Graph';
 import type { SubjectNoCareers } from '@/interfaces/Subject';
@@ -12,7 +13,7 @@ interface Props<T = Graph<SubjectNoCareers>> {
 
 export function fetchSubjectsElectivesGraphOptions({ queryOptions: queryOpt }: Props = {}) {
   return queryOptions({
-    queryKey: ['subjects', 'electives', 'graph'],
+    queryKey: queryKeys.subjects.electivesGraph.queryKey,
     queryFn: () => getSubjectsElectivesGraph(),
     ...queryOpt,
   });

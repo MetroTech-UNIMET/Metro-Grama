@@ -2,10 +2,11 @@ import { useQuery, queryOptions } from '@tanstack/react-query';
 import { useSearch } from '@tanstack/react-router';
 
 import { getSubjectsGraph } from '@/api/subjectsAPI';
+import { queryKeys } from '@/lib/query-keys';
 
 import type { Graph } from '@/interfaces/Graph';
 import type { Subject } from '@/interfaces/Subject';
-import { OptionalQueryOptions } from '../types';
+import type { OptionalQueryOptions } from '../types';
 
 interface Props<T = Graph<Subject>> {
   queryOptions?: OptionalQueryOptions<T>;
@@ -14,13 +15,7 @@ interface Props<T = Graph<Subject>> {
 export function fetchSubjectsGraphByCareerOptions(careers: string[], { queryOptions: queryOpt }: Props = {}) {
   const careersCsv = careers.length === 0 ? 'none' : careers.sort().join(',');
   return queryOptions<Graph<Subject>>({
-    queryKey: [
-      'subjects',
-      'graph',
-      {
-        careers: careersCsv,
-      },
-    ],
+    queryKey: queryKeys.subjects.list(careersCsv)._ctx.graph.queryKey,
     queryFn: () => getSubjectsGraph(careersCsv),
     ...queryOpt,
   });

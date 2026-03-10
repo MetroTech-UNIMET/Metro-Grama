@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 import { enrollStudent } from '@/api/interactions/enrollApi';
+import { mutationKeys, queryKeys } from '@/lib/query-keys';
 
 import type { EnrollDialogOutput } from '../../schema';
 
@@ -14,7 +15,7 @@ export function useMutationEnrollSubject({ subjectCode, afterSubmit }: Props) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationKey: ['enroll-subject', subjectCode],
+    mutationKey: mutationKeys.enroll.create(subjectCode),
     mutationFn: async ({ data }: { data: EnrollDialogOutput }) => {
       if (!subjectCode) throw new Error('Es necesario seleccionar una materia');
 
@@ -22,10 +23,16 @@ export function useMutationEnrollSubject({ subjectCode, afterSubmit }: Props) {
     },
     onSuccess: async (result, { data }) => {
       if (!subjectCode) return;
-      await queryClient.invalidateQueries({ queryKey: ['subjects', subjectCode, 'stats'], refetchType: 'all' });
-      await queryClient.invalidateQueries({ queryKey: ['student', 'details', 'my-id'], refetchType: 'all' });
-      await queryClient.invalidateQueries({ queryKey: ['subjects', 'offer'], refetchType: 'all' });
-      await queryClient.invalidateQueries({ queryKey: ['student', 'enrolled-subjects'] });
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.subjects.details(subjectCode)._ctx.stats(undefined).queryKey,
+        refetchType: 'all',
+      });
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.student.details('my-id').queryKey,
+        refetchType: 'all',
+      });
+      await queryClient.invalidateQueries({ queryKey:  queryKeys.subjectOffers._def, refetchType: 'all' }); //REVIEW Ya ni me acuerdo porq ue invalidaba esto, en verdad es necesario? Capaz para cuando es especifica por trimestre por el tema de los stats
+      await queryClient.invalidateQueries({ queryKey: queryKeys.student.enrolledSubjects._def });
 
       toast.success('Materia marcada exitosamente', {
         description: result.message || 'La materia se marcó como cursada',

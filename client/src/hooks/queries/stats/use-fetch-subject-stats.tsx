@@ -1,6 +1,7 @@
 import { queryOptions, useQuery } from '@tanstack/react-query';
 
 import { getSubjectStats, Query_SubjectStats } from '@/api/statsApi';
+import { queryKeys } from '@/lib/query-keys';
 
 import type { SubjectStats } from '@/interfaces/Subject';
 import type { OptionalQueryOptions } from '../types';
@@ -12,12 +13,12 @@ interface Props<T = SubjectStats[]> {
 
 export function fetchSubjectStatsOptions(subjectCode: string, { queryOptions: queryOpt, optionalQuery }: Props = {}) {
   const { careers, ...restQuery } = optionalQuery ?? {};
-  const careerOrdered = careers?.sort()
+  const careerOrdered = careers?.sort();
 
-  const newQuery = { ...restQuery, careers: careerOrdered};
+  const newQuery = { ...restQuery, careers: careerOrdered };
 
   return queryOptions({
-    queryKey: ['subjects', subjectCode, 'stats', newQuery],
+    queryKey: queryKeys.subjects.details(subjectCode)._ctx.stats(newQuery).queryKey,
     queryFn: () => getSubjectStats(subjectCode, newQuery),
     ...queryOpt,
   });

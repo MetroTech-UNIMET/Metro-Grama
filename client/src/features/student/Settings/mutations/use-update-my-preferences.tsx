@@ -3,6 +3,7 @@ import { useNavigate } from '@tanstack/react-router';
 import { toast } from 'sonner';
 
 import { updateMyStudentPreferences } from '@/api/preferences/studentPreferencesApi';
+import { mutationKeys, queryKeys } from '@/lib/query-keys';
 
 import type { StudentPreferencesEntity } from '@/interfaces/preferences/StudentPreferences';
 
@@ -11,11 +12,11 @@ export function useMutationUpdateMyPreferences() {
   const navigate = useNavigate();
 
   return useMutation({
-    mutationKey: ['student_preferences', 'update'],
+    mutationKey: mutationKeys.preferences.updateMine,
     mutationFn: (data: any) => updateMyStudentPreferences(data),
     onSuccess: (updated) => {
       queryClient.setQueryData<StudentPreferencesEntity | undefined>(
-        ['student_preferences', 'mine'],
+        queryKeys.preferences.mine.queryKey,
         (old) => updated ?? old,
       );
       let timeoutId: ReturnType<typeof setTimeout> | undefined;

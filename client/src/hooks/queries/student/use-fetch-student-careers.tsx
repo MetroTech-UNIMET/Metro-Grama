@@ -1,6 +1,7 @@
 import { queryOptions, useQuery } from '@tanstack/react-query';
 import { getStudentCareers } from '@/api/interactions/studentApi';
 import { notRetryOnUnauthorized } from '@utils/queries';
+import { queryKeys } from '@/lib/query-keys';
 
 import type { AxiosError } from 'axios';
 import type { OptionalQueryOptions } from '../types';
@@ -12,7 +13,7 @@ interface Props<T = Id[]> {
 
 export function fetchStudentCareersOptions({ queryOptions: queryOpt }: Props = {}) {
   return queryOptions({
-    queryKey: ['student', 'careers'],
+    queryKey: queryKeys.student.careers.queryKey,
     queryFn: () => getStudentCareers(),
     retry: notRetryOnUnauthorized,
     ...queryOpt,

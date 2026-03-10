@@ -1,5 +1,6 @@
 import { queryOptions, useQuery } from '@tanstack/react-query';
 import { getMyStudentPreferences } from '@/api/preferences/studentPreferencesApi';
+import { queryKeys } from '@/lib/query-keys';
 
 import type { OptionalQueryOptions } from '../types';
 import type { StudentPreferencesEntity } from '@/interfaces/preferences/StudentPreferences';
@@ -10,7 +11,7 @@ interface Props<T = StudentPreferencesEntity> {
 
 export function fetchMyPreferencesOptions({ queryOptions: queryOpt }: Props = {}) {
   return queryOptions({
-    queryKey: ['student_preferences', 'mine'],
+    queryKey: queryKeys.preferences.mine.queryKey,
     queryFn: () => getMyStudentPreferences(),
     ...queryOpt,
   });

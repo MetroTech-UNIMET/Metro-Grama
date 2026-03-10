@@ -1,8 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
+import { queryKeys } from '@/lib/query-keys';
 
 export default function useLazyGraphIcons() {
   const { data: icons, ...query } = useQuery({
-    queryKey: ["icons"],
+    queryKey: queryKeys.lazy.icons.queryKey,
     queryFn: async () => {
       const { registerFontFamily } = await import("@antv/graphin");
 

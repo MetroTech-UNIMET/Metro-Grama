@@ -2,6 +2,7 @@ import z from 'zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { useNavigate } from '@tanstack/react-router';
+import { mutationKeys, queryKeys } from '@/lib/query-keys';
 
 import { batchUpdateSubjectOffers } from '@/api/subject_offferAPI';
 
@@ -29,6 +30,7 @@ export const useMutationBatchUpdateOffers = () => {
   const navigate = useNavigate();
 
   return useMutation({
+    mutationKey: mutationKeys.offers.batchUpdate,
     mutationFn: async (payload: BatchUpdatePayload) => {
       const result = batchUpdatePayloadSchema.safeParse(payload);
       if (!result.success) throw new Error(z.prettifyError(result.error));
@@ -37,7 +39,7 @@ export const useMutationBatchUpdateOffers = () => {
     },
     onSuccess: () => {
       toast.success('Oferta actualizada correctamente');
-      queryClient.invalidateQueries({ queryKey: ['subjects', 'offer', 'year'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.subjectOffers.byYear._def });
 
       navigate({ to: '/oferta' });
     },

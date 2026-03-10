@@ -1,6 +1,7 @@
 import { useQuery, useQueryClient, queryOptions } from '@tanstack/react-query';
 import { getAllTrimesters, type QueryTrimesterParams } from '@/api/trimestersApi';
 import { fetchAndSetQueryData } from '@utils/tanstack-query';
+import { queryKeys } from '@/lib/query-keys';
 
 import type { Trimester } from '@/interfaces/Trimester';
 import type { OptionalQueryOptions } from '../types';
@@ -13,7 +14,7 @@ interface Props<T = Trimester[]> {
 
 export function fetchTrimestersOptions({ queryOptions: queryOpt, params }: Props = {}) {
   return queryOptions({
-    queryKey: ['trimesters', params],
+    queryKey: queryKeys.trimesters.list(params).queryKey,
     queryFn: () => getAllTrimesters(params),
     ...queryOpt,
   });
@@ -34,10 +35,10 @@ export function fetchTrimestersSelectOptions({
 }: Props<TrimesterOption[]> & {
   queryClient: ReturnType<typeof useQueryClient>;
 }) {
-  const baseQueryKey = ['trimesters', params];
+  const baseQueryKey = queryKeys.trimesters.list(params).queryKey;
 
   return queryOptions({
-    queryKey: [...baseQueryKey, 'options'],
+    queryKey: queryKeys.trimesters.list(params)._ctx.options.queryKey,
     queryFn: async () => {
       const trimesters = await fetchAndSetQueryData(queryClient, baseQueryKey, () => getAllTrimesters(params));
 

@@ -4,8 +4,7 @@ import { useIsMutating } from '@tanstack/react-query';
 import { RejectFriendButton } from '../buttons/RejectFriendButton';
 import { AcceptFriendButton } from '../buttons/AcceptFriendButton';
 
-import { getAcceptFriendMutationKey } from '@/hooks/mutations/friend/use-accept-friend';
-import { getEliminateFriendMutationKey } from '@/hooks/mutations/friend/use-eliminate-friend';
+import { friendsMutationKeys } from '@/lib/query-keys';
 
 import { Avatar, AvatarImage, AvatarFallback } from '@ui/avatar';
 import { Card, CardHeader, CardTitle, CardContent } from '@ui/card';
@@ -92,8 +91,8 @@ function FriendRow({ student, approvable }: FriendRowProps) {
 
   const rootClasses = 'hover:bg-muted flex gap-3 rounded-md p-2 transition-colors max-md:flex-col';
 
-  const isAccepting = useIsMutating({ mutationKey: getAcceptFriendMutationKey(studentId) }) > 0;
-  const isRejecting = useIsMutating({ mutationKey: getEliminateFriendMutationKey(studentId) }) > 0;
+  const isAccepting = useIsMutating({ mutationKey: friendsMutationKeys.accept(studentId) }) > 0;
+  const isRejecting = useIsMutating({ mutationKey: friendsMutationKeys.eliminate(studentId) }) > 0;
 
   const studentInfo = (
     <>

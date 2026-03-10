@@ -1,5 +1,6 @@
 import { queryOptions, useQuery } from '@tanstack/react-query';
 import { getStudentCourseByTrimester, type QueryCourseParams } from '@/api/interactions/courseApi';
+import { queryKeys } from '@/lib/query-keys';
 
 import type { OptionalQueryOptions } from '../types';
 import type { GetCourseByTrimesterResponse } from '@/api/interactions/course.types';
@@ -12,7 +13,7 @@ interface Props<T = GetCourseByTrimesterResponse> {
 
 export function fetchStudentCourseByTrimesterOptions({ trimesterId, params, queryOptions: queryOpt }: Props) {
   return queryOptions({
-    queryKey: ['course', 'student', trimesterId, params],
+    queryKey: queryKeys.course.student(trimesterId, params).queryKey,
     queryFn: async () => {
       try {
         return await getStudentCourseByTrimester(trimesterId, params);

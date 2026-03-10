@@ -1,6 +1,7 @@
 import { queryOptions, useQuery } from '@tanstack/react-query';
 
 import { getCompleteCareer } from '@/api/careersApi';
+import { queryKeys } from '@/lib/query-keys';
 
 import type { OptionalQueryOptions } from '../types';
 import type { CareerWithSubjects } from '@/interfaces/Career';
@@ -16,7 +17,7 @@ export function useFetchCompleteCareer({ id, queryOptions }: Props) {
 
 export function fetchCompleteCareerOptions({ id, queryOptions: queryOpt }: Props) {
   return queryOptions({
-    queryKey: ['career', id],
+    queryKey: queryKeys.careers.detail(id).queryKey,
     queryFn: () => getCompleteCareer(id),
     ...queryOpt,
   });

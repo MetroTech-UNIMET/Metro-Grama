@@ -1,8 +1,8 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
-import { NOTIFICATIONS_QUERY_KEY } from '@/hooks/queries/notifications/use-fetch-notifications';
 import { useWebsocket } from '@/hooks/use-websocket';
+import { queryKeys } from '@/lib/query-keys';
 
 import { surrealIdToId } from '@utils/queries';
 
@@ -28,11 +28,11 @@ export function useNotificationWebsocket() {
     onEvents: {
       [EVENTS.BULK]: (payload: NotificationDTO) => {
         if (!payload || !Array.isArray(payload.all)) return;
-        queryClient.setQueryData<NotificationDTO>(NOTIFICATIONS_QUERY_KEY, payload);
+        queryClient.setQueryData<NotificationDTO>( queryKeys.notifications.all.queryKey, payload);
       },
       [EVENTS.NEW]: (payload: Notification) => {
         if (!payload) return;
-        queryClient.setQueryData<NotificationDTO>(NOTIFICATIONS_QUERY_KEY, (old) => {
+        queryClient.setQueryData<NotificationDTO>( queryKeys.notifications.all.queryKey, (old) => {
           const base: NotificationDTO = old ?? { all: [], unread: [] };
           const key = surrealIdToId(payload.id);
 
@@ -52,7 +52,7 @@ export function useNotificationWebsocket() {
 
         const updateMap = new Map(payload.map((item) => [surrealIdToId(item.id), item]));
 
-        queryClient.setQueryData<NotificationDTO>(NOTIFICATIONS_QUERY_KEY, (old) => {
+        queryClient.setQueryData<NotificationDTO>( queryKeys.notifications.all.queryKey, (old) => {
           if (!old) return old;
 
           const all = old.all.map((item) => updateMap.get(surrealIdToId(item.id)) ?? item);

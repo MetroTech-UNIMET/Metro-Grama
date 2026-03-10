@@ -1,9 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { use } from 'react';
+import { queryKeys } from '@/lib/query-keys';
 
 export default function useLazyGraphin() {
   const { data: graphinImport, ...query } = useQuery({
-    queryKey: ['graphin'],
+    queryKey: queryKeys.lazy.graphin.queryKey,
     queryFn: async () => {
       const GraphinModule = await import('@antv/graphin');
 

@@ -116,7 +116,7 @@ function transformCreateData(data: CreateCareerOutput) {
         }
         return {
           ...subject,
-          prelations: subject.prelations.map((prelation) => idToSurrealId(prelation.value, 'subject')),
+          prelations: subject.prelations.map((prelation) => createSurrealId('subject', prelation.value)),
         };
       }),
     ),

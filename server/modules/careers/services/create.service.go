@@ -6,7 +6,6 @@ import (
 	"metrograma/db"
 	dto "metrograma/modules/careers/DTO"
 	"metrograma/tools"
-	"sync"
 
 	"github.com/surrealdb/surrealdb.go"
 	"github.com/surrealdb/surrealdb.go/contrib/surrealql"
@@ -31,12 +30,12 @@ func CreateCareer(careerForm dto.CareerCreateForm) any {
 			"emoji":               careerForm.Emoji,
 			"electivesTrimesters": electivesTrimesters,
 		})).
-		Do(surrealql.For("i", "0..=array::len($subjects)").
-			Let("subjectsByTrimester", surrealql.Expr("$subjects[$i]")).
-			Let("subjectsByTrimester", surrealql.Expr("IF $subjectsByTrimester = NONE THEN [] ELSE $subjectsByTrimester END")).
-			Do(surrealql.For("j", "0..=array::len($subjectsByTrimester)").
+		Do(surrealql.For("i", "0..array::len($subjects)").
+			Let("subjectsByTrimester", surrealql.Expr("$subjects[$i] ?? []")).
+			// Let("subjectsByTrimester", surrealql.Expr("IF $subjectsByTrimester = NONE THEN [] ELSE $subjectsByTrimester END")).
+			Do(surrealql.For("j", "0..array::len($subjectsByTrimester)").
 				Let("subject", surrealql.Expr("$subjectsByTrimester[$j]")).
-				If("$subject == NONE").
+				If("!$subject").
 				Then(func(tb *surrealql.ThenBuilder) {
 					tb.Raw("continue")
 				}).
@@ -54,8 +53,12 @@ func CreateCareer(careerForm dto.CareerCreateForm) any {
 				End().
 				Do(surrealql.RelateOnly("$subjectID", "belong", "$careerID").Set("trimester = $i + 1")).
 				Do(surrealql.For("prelation", "$subject.prelations").
-					Let("prelationID", surrealql.Expr("type::thing('subject', $prelation)")).
-					Do(surrealql.RelateOnly("$prelationID", "precede", "$subjectID")),
+					Let("existsPrecede", surrealql.Select("precede").Field("id").Where("in = $prelation AND out = $subjectID")).
+					If("count($existsPrecede) = 0").
+					Then(func(tb *surrealql.ThenBuilder) {
+						tb.Do(surrealql.RelateOnly("$prelation", "precede", "$subjectID"))
+					}).
+					End(),
 				),
 			),
 		)
@@ -63,6 +66,8 @@ func CreateCareer(careerForm dto.CareerCreateForm) any {
 	sql, params := qb.Build()
 
 	params["subjects"] = careerForm.Subjects
+	hola, err := tools.CustomMarshal(params)
+	fmt.Println("hola", string(hola), err)
 
 	data, err := surrealdb.Query[any](context.Background(), db.SurrealDB, sql, params)
 	if err != nil {
@@ -73,59 +78,42 @@ func CreateCareer(careerForm dto.CareerCreateForm) any {
 
 func processCareerForm(careerForm dto.CareerCreateForm, electivesTrimesters []int) error {
 	subjectPresence := make(map[string]bool)
-	var wg sync.WaitGroup
-	errChan := make(chan error, 1)
 
 	for i, subjectsByTrimester := range careerForm.Subjects {
 		trimester := i + 1
 		var trimesterSubjects []string
 
-		for j, careerSubject := range subjectsByTrimester {
+		for _, careerSubject := range subjectsByTrimester {
 			if careerSubject == nil {
 				electivesTrimesters = append(electivesTrimesters, trimester)
 				continue
 			}
 
-			wg.Add(1)
-			go func(i, j int, careerSubject *dto.CreateCareerSubject) {
-				defer wg.Done()
+			id := surrealModels.NewRecordID("subject", careerSubject.Code)
 
-				id := surrealModels.NewRecordID("subject", careerSubject.Code)
+			err := tools.ExistRecord(id)
 
-				err := tools.ExistRecord(id)
-
-				switch careerSubject.SubjectType {
-				case "new":
-					if err == nil {
-						fmt.Printf("subject %s already exists \n", careerSubject.Code)
-						errChan <- fmt.Errorf("subject %s already exists", careerSubject.Code)
-						return
-					}
-				case "existing":
-					if err != nil {
-						fmt.Printf("subject %s does not exist \n", careerSubject.Code)
-						errChan <- fmt.Errorf("subject %s does not exist", careerSubject.Code)
-						return
-					}
+			switch careerSubject.SubjectType {
+			case "new":
+				if err == nil {
+					fmt.Printf("subject %s already exists \n", careerSubject.Code)
+					return fmt.Errorf("subject %s already exists", careerSubject.Code)
 				}
-				for _, subjectPrelation := range careerSubject.Prelations {
-					if present, exists := subjectPresence[subjectPrelation.String()]; !exists || !present {
-						fmt.Printf("the prelation subject code %s for the subject %s does not exist \n", subjectPrelation, careerSubject.Code)
-						errChan <- fmt.Errorf("the prelation subject code '%s' for the subject '%s' does not exist", subjectPrelation, careerSubject.Code)
-						return
-					}
+			case "existing":
+				if err != nil {
+					fmt.Printf("subject %s does not exist \n", careerSubject.Code)
+					return fmt.Errorf("subject %s does not exist", careerSubject.Code)
 				}
+			}
+			for _, subjectPrelation := range careerSubject.Prelations {
+				prelationCode := fmt.Sprint(subjectPrelation.ID)
+				if present, exists := subjectPresence[prelationCode]; !exists || !present {
+					fmt.Printf("the prelation subject code %s for the subject %s does not exist \n", prelationCode, careerSubject.Code)
+					return fmt.Errorf("the prelation subject code '%s' for the subject '%s' does not exist", prelationCode, careerSubject.Code)
+				}
+			}
 
-				trimesterSubjects = append(trimesterSubjects, careerSubject.Code)
-			}(i, j, careerSubject)
-		}
-
-		wg.Wait()
-		select {
-		case err := <-errChan:
-			fmt.Println("err", err)
-			return err
-		default:
+			trimesterSubjects = append(trimesterSubjects, careerSubject.Code)
 		}
 
 		for _, subjectID := range trimesterSubjects {

@@ -66,14 +66,24 @@ func UpdateCareer(newCareer dto.CareerWithSubjects, updateForm dto.CareerUpdateF
 				Set("BPCredits = $subject.BPCredits")).
 			Do(surrealql.RelateOnly("$subjectID", "belong", "$careerID").
 				Set("trimester = $subject.trimester")).
-			Do(surrealql.Relate("($subject.prelations)", "precede", "$subjectID")),
+			Do(surrealql.For("prelation", "$subject.prelations").
+				Let("existsPrecede", surrealql.Select("precede").Field("id").Where("in = $prelation AND out = $subjectID")).
+				If("count($existsPrecede) = 0").
+				Then(func(tb *surrealql.ThenBuilder) {
+					tb.Do(surrealql.RelateOnly("$prelation", "precede", "$subjectID"))
+				}).
+				End(),
+			),
 		).
 		Do(surrealql.For("subject", "?", diff.Existing).
 			Let("subjectID", surrealql.Expr("<record<subject>>$subject.code")).
 			Do(surrealql.Update("$subjectID").
 				Set("name = $subject.name ?? name").
 				Set("credits = $subject.credits ?? credits").
-				Set("BPCredits = $subject.BPCredits ?? BPCredits")),
+				Set("BPCredits = $subject.BPCredits ?? BPCredits")).
+			Do(surrealql.Delete("precede").
+				Where("out = $subjectID")).
+			Do(surrealql.Relate("($subject.prelations)", "precede", "$subjectID")),
 		).
 		Do(surrealql.For("subject", "?", diff.ToRemove).
 			Let("subjectID", surrealql.Expr("$subject.code")).

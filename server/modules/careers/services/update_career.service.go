@@ -58,7 +58,7 @@ func UpdateCareer(newCareer dto.CareerWithSubjects, updateForm dto.CareerUpdateF
 
 	qb := surrealql.Begin().
 		Do(updateCareerQb).
-		Do(surrealql.For("index", "0..=array::len($subjectsToAdd)").
+		Do(surrealql.For("index", "0..array::len($subjectsToAdd)").
 			Let("subject", surrealql.Expr("array::at($subjectsToAdd, $index)")).
 			Let("subjectID", surrealql.Expr("<record<subject>>$subject.code")).
 			Do(surrealql.UpsertOnly("$subjectID").

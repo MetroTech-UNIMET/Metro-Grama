@@ -116,7 +116,7 @@ function transformCreateData(data: CreateCareerOutput) {
         }
         return {
           ...subject,
-          prelations: subject.prelations.map((prelation) => prelation.value),
+          prelations: subject.prelations.map((prelation) => idToSurrealId(prelation.value, 'subject')),
         };
       }),
     ),
@@ -139,7 +139,9 @@ function transformEditData(data: Partial<ArrayToObject<CreateCareerOutput>>) {
       if (subject.subjectType === 'elective') {
         transformedData.subjects[trimesterIndex][subjectIndex] = null;
       } else {
-        const prelations = Object.values(subject.prelations || {}).map((prelation) => createSurrealId('subject', prelation.value));
+        const prelations = Object.values(subject.prelations || {}).map((prelation) =>
+          createSurrealId('subject', prelation.value),
+        );
 
         transformedData.subjects[trimesterIndex][subjectIndex] = {
           ...subject,

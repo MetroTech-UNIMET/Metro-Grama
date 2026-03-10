@@ -27,7 +27,7 @@ const tabsTriggerVariants = cva('cursor-pointer', {
       table:
         'md:border-b-white rounded-lg md:rounded-b-none uppercase py-2 px-4 text-xs font-bold bg-gray-100 text-gray-400 data-[state=active]:border data-[state=active]:bg-white data-[state=active]:text-primary-800 max-md:whitespace-nowrap',
       ghost:
-        'bg-transparent hover:bg-accent/50 data-[state=active]:bg-primary-300  data-[state=active]:text-primary-800  text-sm px-3 py-1 rounded-full',
+        'border border-transparent bg-white/60 px-3 py-1.5 text-sm font-medium text-gray-600 rounded-full transition-colors hover:bg-primary-100 hover:text-primary-800 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary-300 data-[state=active]:border-primary-500 data-[state=active]:bg-primary-600 data-[state=active]:text-white',
     },
   },
   defaultVariants: {

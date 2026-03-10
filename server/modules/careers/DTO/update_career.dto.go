@@ -13,6 +13,6 @@ type UpdateCareerSubject struct {
 	Name        string                   `json:"name,omitempty"`
 	Credits     uint8                    `json:"credits" validate:"gte=0,lte=150"`
 	BPCredits   uint8                    `json:"BPCredits" validate:"gte=0,lte=150"`
-	Prelations  []surrealModels.RecordID `json:"prelations,omitempty" swaggertype:"array,object"`
+	Prelations  []surrealModels.RecordID `json:"prelations" swaggertype:"array,object"`
 	SubjectType string                   `json:"subjectType,omitempty" validate:"oneof=elective existing new"`
 }

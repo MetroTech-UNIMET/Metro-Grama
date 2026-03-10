@@ -15,7 +15,7 @@ import (
 func UpdateCareer(newCareer dto.CareerWithSubjects, updateForm dto.CareerUpdateForm) error {
 	type NewSubjectWrapper struct {
 		*dto.UpdateCareerSubject
-		Trimester int
+		Trimester int `json:"trimester"`
 	}
 
 	// Prepare update matrix with wrappers
@@ -65,7 +65,7 @@ func UpdateCareer(newCareer dto.CareerWithSubjects, updateForm dto.CareerUpdateF
 				Set("credits = $subject.credits").
 				Set("BPCredits = $subject.BPCredits")).
 			Do(surrealql.RelateOnly("$subjectID", "belong", "$careerID").
-				Set("trimester = $index + 1")).
+				Set("trimester = $subject.trimester")).
 			Do(surrealql.Relate("($subject.prelations)", "precede", "$subjectID")),
 		).
 		Do(surrealql.For("subject", "?", diff.Existing).

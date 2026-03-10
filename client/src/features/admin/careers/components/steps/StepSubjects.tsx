@@ -14,9 +14,17 @@ interface Props {
   codeOptions: CodeOption[];
   prelationsOptions: Option[];
   isLoading: boolean;
+  removeAdditionalSubject: (code: string) => void;
 }
 
-export default function StepSubjects({ trimesterIndex, mode, codeOptions, prelationsOptions, isLoading }: Props) {
+export default function StepSubjects({
+  trimesterIndex,
+  mode,
+  codeOptions,
+  prelationsOptions,
+  isLoading,
+  removeAdditionalSubject,
+}: Props) {
   const form = useFormContext<CreateCareerInput>();
 
   return (
@@ -36,6 +44,7 @@ export default function StepSubjects({ trimesterIndex, mode, codeOptions, prelat
               codeOptions={codeOptions}
               prelationOptions={prelationsOptions}
               loadingSubjects={isLoading}
+              removeAdditionalSubject={removeAdditionalSubject}
               error={form.formState.errors?.subjects?.[trimesterIndex]?.[subjectIndex]}
               isModeEdit={mode === 'edit'}
               isSubjectElective={form.watch(`subjects.${trimesterIndex}.${subjectIndex}.subjectType`) === 'elective'}

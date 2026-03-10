@@ -1,4 +1,4 @@
-import { memo, useState } from 'react';
+import { memo, useRef, useState } from 'react';
 import { BanIcon, XIcon } from 'lucide-react';
 
 import { cn } from '@utils/className';
@@ -31,6 +31,7 @@ interface Props {
   codeOptions: CodeOption[];
   prelationOptions: Option[];
   loadingSubjects: boolean;
+  removeAdditionalSubject: (code: string) => void;
 
   isSubjectElective: boolean;
   isModeEdit?: boolean;
@@ -51,6 +52,7 @@ function SubjectInput({
   codeOptions,
   prelationOptions,
   loadingSubjects,
+  removeAdditionalSubject,
 
   isModeEdit = false,
   isSubjectElective,
@@ -58,6 +60,7 @@ function SubjectInput({
 }: Props) {
   const subjectName = `subjects.${trimesterIndex}.${subjectIndex}` as const;
   const [usingExistingSubject, setUsingExistingSubject] = useState(isModeEdit);
+  const latestNewCodeRef = useRef<string | null>(null);
 
   //  onMouseLeave={handleTooltipClose}
   // TODO - Mejorar responsive
@@ -99,7 +102,16 @@ function SubjectInput({
                     shouldValidate: true,
                     shouldDirty: true,
                   };
+
                   if (typeof value === 'string') {
+                    const newCode = value.trim();
+
+                    if (latestNewCodeRef.current && latestNewCodeRef.current !== newCode) {
+                      removeAdditionalSubject(latestNewCodeRef.current);
+                    }
+
+                    latestNewCodeRef.current = newCode || null;
+
                     if (usingExistingSubject === false) return;
                     setUsingExistingSubject(false);
                     resetField(`${subjectName}.name`);
@@ -108,6 +120,11 @@ function SubjectInput({
                     resetField(`${subjectName}.subjectType`);
                     setValue(`${subjectName}.subjectType`, 'new', setValueOption);
                   } else {
+                    if (latestNewCodeRef.current) {
+                      removeAdditionalSubject(latestNewCodeRef.current);
+                      latestNewCodeRef.current = null;
+                    }
+
                     setUsingExistingSubject(true);
                     setValue(`${subjectName}.subjectType`, 'existing', setValueOption);
                   }

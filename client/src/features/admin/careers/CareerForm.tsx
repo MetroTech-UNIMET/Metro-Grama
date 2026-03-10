@@ -208,10 +208,11 @@ export default function CareerForm({ mode, data }: Props) {
             codeOptions={codeOptions}
             prelationsOptions={prelationsOptions}
             isLoading={query.isLoading}
+            removeAdditionalSubject={removeAdditionalSubject}
           />
         </TabsContent>
       )),
-    [codeOptions, prelationsOptions, mode, query.isLoading],
+    [codeOptions, prelationsOptions, mode, query.isLoading, removeAdditionalSubject],
   );
 
   return (

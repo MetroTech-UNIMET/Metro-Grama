@@ -105,6 +105,7 @@ export default function CareerForm({ mode, data }: Props) {
       });
     } catch (error: any) {
       toast.error(error.message);
+      throw error;
     }
   }
 
@@ -236,7 +237,7 @@ export default function CareerForm({ mode, data }: Props) {
               <ArrowLeft />
             </Button>
 
-            <SubmitButton colors="primary" disabled={currentStep === steps.length }>
+            <SubmitButton colors="primary" disabled={currentStep === steps.length}>
               {mode === 'edit' ? 'Editar' : 'Crear'} Carrera
             </SubmitButton>
             <Button type="button" onClick={() => next('ignoreValidation')} size="icon" colors="secondary">

@@ -84,6 +84,7 @@ function SubjectInput({
                 onSelect={(option) => {
                   const subject: Subject = (option as any).subject;
                   const setValueOption = {
+                    shouldDirty: true,
                     shouldTouch: true,
                     shouldValidate: true,
                   };

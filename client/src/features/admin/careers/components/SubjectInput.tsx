@@ -112,12 +112,14 @@ function SubjectInput({
 
                     latestNewCodeRef.current = newCode || null;
 
-                    if (usingExistingSubject === false) return;
-                    setUsingExistingSubject(false);
-                    resetField(`${subjectName}.name`);
-                    resetField(`${subjectName}.credits`);
-                    resetField(`${subjectName}.BPCredits`);
-                    resetField(`${subjectName}.subjectType`);
+                    if (usingExistingSubject) {
+                      setUsingExistingSubject(false);
+                      resetField(`${subjectName}.name`);
+                      resetField(`${subjectName}.credits`);
+                      resetField(`${subjectName}.BPCredits`);
+                      resetField(`${subjectName}.subjectType`);
+                    }
+
                     setValue(`${subjectName}.subjectType`, 'new', setValueOption);
                   } else {
                     if (latestNewCodeRef.current) {

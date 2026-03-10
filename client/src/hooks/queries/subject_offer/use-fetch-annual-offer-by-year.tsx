@@ -1,6 +1,7 @@
 import { queryOptions, useQuery } from '@tanstack/react-query';
 
 import { getAnnualOfferByYear, type AnnualOfferByYearItem } from '@/api/subject_offferAPI';
+import { queryKeys } from '@/lib/query-keys';
 
 import type { OptionalQueryOptions } from '../types';
 
@@ -16,7 +17,7 @@ export function useFetchAnnualOfferByYear({ year, career, queryOptions }: Props)
 
 export function fetchAnnualOfferByYearOptions({ year, career, queryOptions: queryOpt }: Props) {
   return queryOptions({
-    queryKey: ['subjects', 'offer', 'year', year, career],
+    queryKey: queryKeys.subjectOffers.byYear(year, career).queryKey,
     queryFn: () => getAnnualOfferByYear(year as string, career),
     enabled: !!year && !!career,
     ...queryOpt,

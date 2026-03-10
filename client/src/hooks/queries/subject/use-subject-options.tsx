@@ -1,16 +1,18 @@
 import { queryOptions, useQueryClient, useQuery, type QueryClient } from '@tanstack/react-query';
 import { getSubjects } from '@/api/subjectsAPI';
+import { queryKeys } from '@/lib/query-keys';
 
 import { fetchAndSetQueryData } from '@utils/tanstack-query';
 
 import type { Option } from '@ui/types/option.types';
 
 export function fetchSubjectOptionsOptions(queryClient: QueryClient) {
+  const careersParam = 'none';
+
   return queryOptions({
-    queryKey: ['subjects', 'options'],
+    queryKey: queryKeys.subjects.list(careersParam)._ctx.options.queryKey,
     queryFn: async () => {
-      const careersParam = 'none';
-      const subjects = await fetchAndSetQueryData(queryClient, ['subjects', { careers: careersParam }], () =>
+      const subjects = await fetchAndSetQueryData(queryClient, queryKeys.subjects.list(careersParam).queryKey, () =>
         getSubjects(careersParam),
       );
 

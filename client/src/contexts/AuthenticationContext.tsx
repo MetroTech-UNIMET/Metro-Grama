@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 
 import { logOutGoogle } from '@/api/authApi';
 import { clearAuthToken, consumeTokenFromUrl, setAuthToken } from '@utils/authToken';
+import { mutationKeys, queryKeys } from '@/lib/query-keys';
 
 import { fetchStudentMyUserOptions, useFetchMyUser, type UserType } from '@/hooks/queries/student/use-fetch-my-user';
 import type { AxiosError } from 'axios';
@@ -49,18 +50,19 @@ export default function AuthenticationContext({ children }: { children: React.Re
     const token = consumeTokenFromUrl();
     if (token) {
       setAuthToken(token);
-      queryClient.invalidateQueries({ queryKey: ['users', 'profile'] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.users.profile.queryKey });
     }
   }, [queryClient]);
 
   const logOutMutation = useMutation({
+    mutationKey: mutationKeys.auth.logout,
     mutationFn: logOutGoogle,
     //@ts-ignore TODO Considerar mostrar una descripción del error
     onError: (error) => {
       toast.error('Error al cerrar sesión');
     },
     onSuccess: async () => {
-      return await queryClient.setQueryData(['users', 'profile'], null);
+      return await queryClient.setQueryData(queryKeys.users.profile.queryKey, null);
     },
   });
 

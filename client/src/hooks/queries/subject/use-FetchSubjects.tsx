@@ -1,6 +1,7 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
 
 import { getSubjects } from "@/api/subjectsAPI";
+import { queryKeys } from '@/lib/query-keys';
 
 import type { Subject } from "@/interfaces/Subject";
 import type { OptionalQueryOptions } from "../types";
@@ -8,12 +9,7 @@ import type { OptionalQueryOptions } from "../types";
 export function fetchSubjectsOptions(careers: string[] = [], queryOpt?: OptionalQueryOptions<Subject[]>) {
   const careersParam = careers.length === 0 ? "none" : careers.sort().join(",");
   return queryOptions({
-    queryKey: [
-      "subjects",
-      {
-        careers: careersParam,
-      },
-    ],
+    queryKey: queryKeys.subjects.list(careersParam).queryKey,
     queryFn: () => getSubjects(careersParam),
     ...queryOpt,
   });

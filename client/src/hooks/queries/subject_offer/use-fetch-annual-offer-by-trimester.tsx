@@ -1,5 +1,6 @@
 import { queryOptions, useQuery } from '@tanstack/react-query';
-import { getAnualOffersByTrimester, type Query_AnnualOffers } from '@/api/subject_offferAPI';
+import { getAnnualOffersByTrimester, type Query_AnnualOffers } from '@/api/subject_offferAPI';
+import { queryKeys } from '@/lib/query-keys';
 
 import type { SubjectOfferWithSections } from '@/interfaces/SubjectOffer';
 import type { OptionalQueryOptions } from '../types';
@@ -24,8 +25,8 @@ export function fetchAnnualOfferByTrimesterOptions({ trimesterId, optionalQuery,
   };
 
   return queryOptions({
-    queryKey: ['subjects', 'offer', trimesterId, optionalQuerParams],
-    queryFn: () => getAnualOffersByTrimester(trimesterId, optionalQuery),
+    queryKey: queryKeys.subjectOffers.byQuery(optionalQuerParams)._ctx.trimester(trimesterId).queryKey,
+    queryFn: () => getAnnualOffersByTrimester(trimesterId, optionalQuery),
     enabled: !!trimesterId && (optionalQuerParams?.careers?.length ?? 0) > 0,
     ...queryOpt,
   });

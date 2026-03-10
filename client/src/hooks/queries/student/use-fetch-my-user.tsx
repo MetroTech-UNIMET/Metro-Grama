@@ -1,6 +1,7 @@
 import { getUserProfile } from '@/api/usersApi';
 import { queryOptions, useQuery } from '@tanstack/react-query';
 import { notRetryOnUnauthorized } from '@utils/queries';
+import { queryKeys } from '@/lib/query-keys';
 
 import type { AxiosError } from 'axios';
 import type { AdminUser, StudentUser, User } from '@/interfaces/User';
@@ -14,7 +15,7 @@ interface Props<T = UserType | null> {
 
 export function fetchStudentMyUserOptions({ queryOptions: queryOpt }: Props = {}) {
   return queryOptions({
-    queryKey: ['users', 'profile'],
+    queryKey: queryKeys.users.profile.queryKey,
     queryFn: getUserProfile,
     retry: notRetryOnUnauthorized,
     ...queryOpt,

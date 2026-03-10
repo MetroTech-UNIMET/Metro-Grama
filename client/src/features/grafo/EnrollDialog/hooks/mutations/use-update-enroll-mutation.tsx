@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 import { updateEnrolledStudent } from '@/api/interactions/enrollApi';
+import { mutationKeys, queryKeys } from '@/lib/query-keys';
 
 import type { EnrollDialogOutput } from '../../schema';
 import type { Id } from '@/interfaces/surrealDb';
@@ -23,7 +24,7 @@ export function useMutationUpdateEnrollSubject({ subjectCode, afterSubmit, origi
     : undefined;
 
   return useMutation({
-    mutationKey: ['update-enroll-subject', subjectCode],
+    mutationKey: mutationKeys.enroll.update(subjectCode),
     mutationFn: async ({ data }: { data: EnrollDialogOutput }) => {
       if (!subjectCode) throw new Error('Es necesario seleccionar una materia');
       if (!originalTrimesterId) throw new Error('El ID del trimestre original es requerido para actualizar la cursada');
@@ -32,13 +33,17 @@ export function useMutationUpdateEnrollSubject({ subjectCode, afterSubmit, origi
     },
     onSuccess: async (result, { data }) => {
       if (!subjectCode) return;
-      await queryClient.invalidateQueries({ queryKey: ['subjects', subjectCode, 'stats'] });
-      await queryClient.invalidateQueries({ queryKey: ['student', 'details', 'my-id'] });
-      await queryClient.invalidateQueries({ queryKey: ['subjects', 'offer'] });
-      await queryClient.invalidateQueries({ queryKey: ['student', 'enrolled-subjects'] });
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.subjects.details(subjectCode)._ctx.stats(undefined).queryKey,
+      });
+      await queryClient.invalidateQueries({ queryKey: queryKeys.student.details('my-id').queryKey });
+      await queryClient.invalidateQueries({ queryKey:  queryKeys.subjectOffers._def  }); //REVIEW Ya ni me acuerdo porq ue invalidaba esto, en verdad es necesario? Capaz para cuando es especifica por trimestre por el tema de los stats
+      await queryClient.invalidateQueries({ queryKey: queryKeys.student.enrolledSubjects().queryKey });
 
       // REVIEW - Capaz sea mejor hacer un setData del enrollment como ya tengo los datos
-      await queryClient.invalidateQueries({ queryKey: ['subjects', subjectCode, 'enrollment'] });
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.subjects.details(subjectCode)._ctx.enrollment.queryKey,
+      });
 
       toast.success('Cursada actualizada exitosamente', {
         description: result.message || 'La materia se actualizó correctamente',

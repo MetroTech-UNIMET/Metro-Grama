@@ -1,5 +1,6 @@
 import { queryOptions, useQuery } from '@tanstack/react-query';
 import { getStudentByID } from '@/api/interactions/studentApi';
+import { queryKeys } from '@/lib/query-keys';
 
 import type { OtherStudentDetails } from '@/api/interactions/student.types';
 import type { OptionalQueryOptions } from '../types';
@@ -11,7 +12,7 @@ interface Props<T = OtherStudentDetails> {
 
 export function fetchStudentByIdOptions({ queryOptions: queryOpt, studentId }: Props) {
   return queryOptions({
-    queryKey: ['student', 'details', studentId],
+    queryKey: queryKeys.student.details(studentId).queryKey,
     queryFn: () => getStudentByID(studentId),
     ...queryOpt,
   });

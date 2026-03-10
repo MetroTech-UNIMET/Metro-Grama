@@ -1,9 +1,11 @@
 import { useQuery, queryOptions, useQueryClient, type QueryClient, useSuspenseQuery } from '@tanstack/react-query';
+
 import { getCareers } from '@/api/careersApi';
+import { queryKeys } from '@/lib/query-keys';
+import { fetchAndSetQueryData } from '@utils/tanstack-query';
 
 import type { Option } from '@ui/types/option.types';
 import type { Career } from '@/interfaces/Career';
-import { fetchAndSetQueryData } from '@utils/tanstack-query';
 
 export type CareerOption = Option<`career:${string}`, Career> & {
   id: string
@@ -11,7 +13,7 @@ export type CareerOption = Option<`career:${string}`, Career> & {
 
 export function fetchCareersOptions() {
   return queryOptions({
-    queryKey: ['careers'],
+    queryKey: queryKeys.careers.all.queryKey,
     queryFn: getCareers,
   });
 }
@@ -24,9 +26,9 @@ export function useFetchCareers() {
 
 export function fetchCareersOptionsOptions(queryClient: QueryClient) {
   return queryOptions({
-    queryKey: ['careers', 'options'],
+    queryKey: queryKeys.careers.all._ctx.options.queryKey,
     queryFn: async () => {
-      const careers = await fetchAndSetQueryData(queryClient, ['careers'], getCareers);
+      const careers = await fetchAndSetQueryData(queryClient, queryKeys.careers.all.queryKey, getCareers);
 
       const data: CareerOption[] =
         careers?.map((career) => ({

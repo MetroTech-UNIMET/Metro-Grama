@@ -1,6 +1,7 @@
 import { queryOptions, useQuery } from '@tanstack/react-query';
 
 import { getEnrollment } from '@/api/interactions/enrollApi';
+import { queryKeys } from '@/lib/query-keys';
 
 import type { OptionalQueryOptions } from '@/hooks/queries/types';
 import type { AxiosError } from 'axios';
@@ -13,7 +14,7 @@ interface Props<T = EnrollEntity> {
 
 export function fetchEnrollmenOptions({ subjectCode, queryOptions: queryOpt }: Props) {
   return queryOptions({
-    queryKey: ['subjects', subjectCode, 'enrollment'],
+    queryKey: queryKeys.subjects.details(subjectCode ?? '')._ctx.enrollment.queryKey,
     queryFn: async () => {
       if (!subjectCode) throw new Error('Es necesario seleccionar una materia');
       return getEnrollment(subjectCode);

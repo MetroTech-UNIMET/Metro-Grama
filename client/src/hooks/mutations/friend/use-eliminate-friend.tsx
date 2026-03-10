@@ -5,6 +5,7 @@ import { eliminateFriend } from '@/api/interactions/friendApi';
 
 import { fetchStudentByIdOptions } from '@/hooks/queries/student/use-fetch-student-by-id';
 import { fetchStudentDetailsOptions } from '@/hooks/queries/student/use-fetch-student-details';
+import { mutationKeys, queryKeys } from '@/lib/query-keys';
 
 import type { OtherStudentDetails } from '@/api/interactions/student.types';
 
@@ -12,15 +13,11 @@ interface Props {
   studentId: string;
 }
 
-export function getEliminateFriendMutationKey(studentId: string) {
-  return ['friend', 'eliminate', studentId] as const;
-}
-
 export function useEliminateFriend({ studentId }: Props) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationKey: getEliminateFriendMutationKey(studentId),
+    mutationKey: mutationKeys.friends.eliminate(studentId),
     mutationFn: () => eliminateFriend(studentId),
     onSuccess: async () => {
       const friendship_status = (await queryClient.ensureQueryData(fetchStudentByIdOptions({ studentId })))
@@ -30,21 +27,27 @@ export function useEliminateFriend({ studentId }: Props) {
 
       toast.success(`${friendship_status === 'pending' ? 'Solicitud de amistad cancelada' : 'Amistad eliminada'}`);
 
-      queryClient.setQueryData(['student', 'details', 'my-id'], (oldData: typeof studentDetails | undefined) => {
-        if (!oldData) return oldData;
-        return {
-          ...oldData,
-          friend_applications: (oldData.friend_applications || []).filter((app) => app.id.ID !== studentId),
-        } as typeof studentDetails;
-      });
+      queryClient.setQueryData(
+        queryKeys.student.details('my-id').queryKey,
+        (oldData: typeof studentDetails | undefined) => {
+          if (!oldData) return oldData;
+          return {
+            ...oldData,
+            friend_applications: (oldData.friend_applications || []).filter((app) => app.id.ID !== studentId),
+          } as typeof studentDetails;
+        },
+      );
 
-      queryClient.setQueryData(['student', 'details', studentId], (oldData: OtherStudentDetails | undefined) => {
-        if (!oldData) return oldData;
-        return {
-          ...oldData,
-          friendship_status: 'none',
-        } as OtherStudentDetails;
-      });
+      queryClient.setQueryData(
+        queryKeys.student.details(studentId).queryKey,
+        (oldData: OtherStudentDetails | undefined) => {
+          if (!oldData) return oldData;
+          return {
+            ...oldData,
+            friendship_status: 'none',
+          } as OtherStudentDetails;
+        },
+      );
     },
 
     onError: async (error) => {

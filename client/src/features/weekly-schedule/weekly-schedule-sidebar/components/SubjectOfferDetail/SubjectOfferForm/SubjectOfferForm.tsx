@@ -10,6 +10,7 @@ import { defaultSchedule } from './constants';
 import { SectionField } from './components/SectionField';
 
 import { isSomeFieldDirty, onInvalidToast } from '@utils/forms';
+import { queryKeys } from '@/lib/query-keys';
 
 import SubmitButton from '@ui/derived/submit-button';
 import { SidebarGroup } from '@ui/sidebar';
@@ -81,7 +82,7 @@ export default function SubjectOfferForm({ subjectOffer, onBack }: Props) {
 
     await upsertSubjectSchedule(payload);
     await queryClient.invalidateQueries({
-      queryKey: ['subjects', 'offer'],
+      queryKey: queryKeys.subjectOffers._def,
     });
 
     form.reset();

@@ -1,3 +1,5 @@
+import { useMutation } from '@tanstack/react-query';
+import { mutationKeys } from '@/lib/query-keys';
 import { useState, useCallback } from 'react';
 
 import { generateRHFPaths } from './functions';
@@ -8,7 +10,6 @@ import { combinePaths, getZodPathFields } from '@/lib/utils/zod/zod-schema-paths
 import type { FieldErrors, FieldValues, Path, UseFormReturn } from 'react-hook-form';
 import type { Step, ValidateAction } from './types';
 import type { FormSchema } from '@/lib/utils/zod/types';
-import { useMutation } from '@tanstack/react-query';
 
 interface Props<T extends FieldValues, TTransformedValues = T> {
   steps: Step[];
@@ -88,6 +89,7 @@ export function useFormStepAsync<T extends FieldValues, TTransformedValues = T>(
   // FIXME - Si la promesa es muy larga, puden ocurrir bugs de sincronización si se trigerea otra vez
   // Entonces siempre deberia haber solo un pending validation que sea el mas reciente y cancelar los demas
   const { mutateAsync: validateFields, isPending: isValidating } = useMutation({
+    mutationKey: mutationKeys.formStep.validate,
     mutationFn: async ({
       currentStep,
       callOnError,

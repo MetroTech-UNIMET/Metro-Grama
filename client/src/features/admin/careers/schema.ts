@@ -64,7 +64,9 @@ const stepCareerSchema = z.object({
     .string()
     .regex(/(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])/, {
       error: 'El emoji no es válido',
-    }),
+    })
+    .length(1, 'El emoji debe ser un solo caracter'),
+
   id: z
     .string()
     .min(5, {

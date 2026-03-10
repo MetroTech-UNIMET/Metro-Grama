@@ -6,13 +6,14 @@ import { toast } from 'sonner';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 
 import { createCareerSchema, defaultCreateCareerValues, steps } from './schema';
-import { onCreate, onEdit } from './functions';
 import { Step1 } from './components/steps/Step1';
 import StepSubjects from './components/steps/StepSubjects';
 import { numberOfTrimesters } from './constants';
 import StepsNavigator from '@/components/forms/StepsNavigator';
 
 import useSubjectOptions from './hooks/useSubjectOptions';
+import { useMutationCreateCareer } from './hooks/mutations/use-create-career-mutation';
+import { useMutationUpdateCareer } from './hooks/mutations/use-update-career-mutation';
 import { useFormStep } from '@/hooks/useFormStep/useFormStep';
 
 import { onInvalidToast } from '@utils/forms';
@@ -41,6 +42,8 @@ export default function CareerForm({ mode, data }: Props) {
   } = useSubjectOptions();
 
   const navigate = useNavigate();
+  const mutationCreateCareer = useMutationCreateCareer();
+  const mutationUpdateCareer = useMutationUpdateCareer();
 
   const form = useForm({
     resolver: zodResolver(createCareerSchema),
@@ -94,14 +97,23 @@ export default function CareerForm({ mode, data }: Props) {
     let toastInfo: { title: string; description: string } = { title: '', description: '' };
     try {
       if (mode === 'create') {
-        toastInfo = await onCreate(formData);
+        await mutationCreateCareer.mutateAsync({ data: formData });
+        toastInfo = {
+          title: 'Carrera creada',
+          description: `La carrera "${formData.name}" ha sido creada exitosamente`,
+        };
       } else {
         if (!data) return;
 
-        const editResult = await onEdit(data, formData, form.formState.dirtyFields);
-        if (!editResult) return;
-
-        toastInfo = editResult;
+        await mutationUpdateCareer.mutateAsync({
+          originalData: data,
+          data: formData,
+          dirtyFields: form.formState.dirtyFields,
+        });
+        toastInfo = {
+          title: 'Carrera actualizada',
+          description: `La carrera "${formData.name}" ha sido actualizada exitosamente`,
+        };
       }
 
       toastInfo.description = `${toastInfo.description}. Será redirigido en 3 segundos a /materias`;

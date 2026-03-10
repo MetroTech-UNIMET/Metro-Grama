@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"fmt"
 	"metrograma/db"
 	dto "metrograma/modules/careers/DTO"
 	"metrograma/tools"
@@ -92,7 +91,6 @@ func UpdateCareer(newCareer dto.CareerWithSubjects, updateForm dto.CareerUpdateF
 
 	params["careerID"] = careerID
 	params["subjectsToAdd"] = diff.ToAdd
-	fmt.Println(sql)
 
 	_, err := surrealdb.Query[any](context.Background(), db.SurrealDB, sql, params)
 	if err != nil {

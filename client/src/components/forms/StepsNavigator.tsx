@@ -35,10 +35,12 @@ export default function StepsNavigator<T extends FieldValues>({
             <button
               onClick={async () => await jumpTo(index, index > currentStep ? 'callOnError' : undefined)}
               type="button"
-              className={cn('rounded-full bg-gray-200 p-2 text-gray-800', {
-                'bg-destructive data-[state=active]:border-destructive text-white data-[state=active]:border-2 data-[state=active]:bg-gray-800 data-[state=active]:text-white':
-                  hasError,
-              })}
+              className={cn(
+                'rounded-full p-2',
+                hasError
+                  ? 'bg-destructive! data-[state=active]:border-destructive! text-white data-[state=active]:border-2! data-[state=active]:bg-gray-800! data-[state=active]:text-white!'
+                  : 'data-[state=inactive]:border-black',
+              )}
             >
               {step.id}
             </button>

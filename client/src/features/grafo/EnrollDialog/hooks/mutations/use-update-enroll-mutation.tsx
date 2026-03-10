@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 
 import { updateEnrolledStudent } from '@/api/interactions/enrollApi';
 import { mutationKeys, queryKeys } from '@/lib/query-keys';
+import { createSurrealId } from '@utils/queries';
 
 import type { EnrollDialogOutput } from '../../schema';
 import type { Id } from '@/interfaces/surrealDb';
@@ -17,10 +18,7 @@ export function useMutationUpdateEnrollSubject({ subjectCode, afterSubmit, origi
   const queryClient = useQueryClient();
 
   const originalTrimesterId: Id<'trimester'> | undefined = originalTrimester
-    ? {
-        Table: 'trimester',
-        ID: originalTrimester,
-      }
+    ? createSurrealId('trimester', originalTrimester)
     : undefined;
 
   return useMutation({
@@ -37,7 +35,7 @@ export function useMutationUpdateEnrollSubject({ subjectCode, afterSubmit, origi
         queryKey: queryKeys.subjects.details(subjectCode)._ctx.stats(undefined).queryKey,
       });
       await queryClient.invalidateQueries({ queryKey: queryKeys.student.details('my-id').queryKey });
-      await queryClient.invalidateQueries({ queryKey:  queryKeys.subjectOffers._def  }); //REVIEW Ya ni me acuerdo porq ue invalidaba esto, en verdad es necesario? Capaz para cuando es especifica por trimestre por el tema de los stats
+      await queryClient.invalidateQueries({ queryKey: queryKeys.subjectOffers._def }); //REVIEW Ya ni me acuerdo porq ue invalidaba esto, en verdad es necesario? Capaz para cuando es especifica por trimestre por el tema de los stats
       await queryClient.invalidateQueries({ queryKey: queryKeys.student.enrolledSubjects().queryKey });
 
       // REVIEW - Capaz sea mejor hacer un setData del enrollment como ya tengo los datos

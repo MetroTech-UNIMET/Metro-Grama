@@ -1,13 +1,12 @@
 import { formatTimeHour } from '@utils/time';
+import { createSurrealId } from '@utils/queries';
 
 import type { SubjectSectionWithSubject, SubjectSectionWithSubjectAndAvgs } from '@/api/interactions/course.types';
 import type { BaseSubjectEvent, SubjectEvent } from '@/routes/_navLayout/horario';
 import type { Event } from '@/features/weekly-schedule/weekly-planner/types';
-import { SubjectSchedule } from '@/interfaces/SubjectSchedule';
+import type { SubjectSchedule } from '@/interfaces/SubjectSchedule';
 
-export function sectionToBaseSubjectEvents(
-  section: SubjectSectionWithSubject,
-): Event<BaseSubjectEvent>[] {
+export function sectionToBaseSubjectEvents(section: SubjectSectionWithSubject): Event<BaseSubjectEvent>[] {
   return section.subject_schedule.map((subjectSchedule) =>
     schedulesToBaseSubjectEvents(subjectSchedule, {
       subjectName: section.subject.name,
@@ -24,7 +23,7 @@ export function sectionToSubjectEvents(
   return section.subject_schedule.map((subjectSchedule) =>
     schedulesToSubjectEvents(subjectSchedule, {
       subjectName: section.subject.name,
-      trimesterId: { Table: 'trimester', ID: trimesterId },
+      trimesterId: createSurrealId('trimester', trimesterId),
       subjectOfferId: section.subject_offer,
       subjectSectionId: section.id,
       avg_difficulty: section.avg_difficulty,

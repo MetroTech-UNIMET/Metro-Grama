@@ -10,6 +10,7 @@ import { defaultSchedule } from './constants';
 import { SectionField } from './components/SectionField';
 
 import { isSomeFieldDirty, onInvalidToast } from '@utils/forms';
+import { createSurrealId } from '@utils/queries';
 import { queryKeys } from '@/lib/query-keys';
 
 import SubmitButton from '@ui/derived/submit-button';
@@ -24,17 +25,13 @@ interface Props {
   onBack: (filteredSections: SubjectScheduleOutput['sections']) => void;
 }
 
-// FIXME - Al modificar un horario de una materia seleccionada en el cliente, se debe actualizar
 export default function SubjectOfferForm({ subjectOffer, onBack }: Props) {
   const form = useForm({
     resolver: zodResolver(subjectScheduleSchema),
     mode: 'onChange',
     defaultValues: {
       ...subjectScheduleDefaultValues,
-      subject_offer_id: {
-        ID: subjectOffer.id.ID,
-        Table: 'subject_offer' as const,
-      },
+      subject_offer_id: createSurrealId('subject_offer' as const, subjectOffer.id.ID),
     },
   });
 
@@ -45,7 +42,7 @@ export default function SubjectOfferForm({ subjectOffer, onBack }: Props) {
   useEffect(() => {
     if (subjectOffer.sections.length > 0) {
       resetField('subject_offer_id', {
-        defaultValue: { ID: subjectOffer.id.ID, Table: 'subject_offer' },
+        defaultValue: createSurrealId('subject_offer' as const, subjectOffer.id.ID),
       });
       resetField('sections', { defaultValue: transformSection(subjectOffer.sections) });
     }

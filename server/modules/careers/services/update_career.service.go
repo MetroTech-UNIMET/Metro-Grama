@@ -58,14 +58,15 @@ func UpdateCareer(newCareer dto.CareerWithSubjects, updateForm dto.CareerUpdateF
 
 	qb := surrealql.Begin().
 		Do(updateCareerQb).
-		Do(surrealql.For("subject", "?", diff.ToAdd).
+		Do(surrealql.For("index", "0..=array::len($subjectsToAdd)").
+			Let("subject", surrealql.Expr("array::at($subjectsToAdd, $index)")).
 			Let("subjectID", surrealql.Expr("<record<subject>>$subject.code")).
 			Do(surrealql.UpsertOnly("$subjectID").
 				Set("name = $subject.name").
 				Set("credits = $subject.credits").
 				Set("BPCredits = $subject.BPCredits")).
 			Do(surrealql.RelateOnly("$subjectID", "belong", "$careerID").
-				Set("trimester = $subject.trimester")).
+				Set("trimester = $index + 1")).
 			Do(surrealql.Relate("($subject.prelations)", "precede", "$subjectID")),
 		).
 		Do(surrealql.For("subject", "?", diff.Existing).
@@ -90,6 +91,7 @@ func UpdateCareer(newCareer dto.CareerWithSubjects, updateForm dto.CareerUpdateF
 	sql, params := qb.Build()
 
 	params["careerID"] = careerID
+	params["subjectsToAdd"] = diff.ToAdd
 	fmt.Println(sql)
 
 	_, err := surrealdb.Query[any](context.Background(), db.SurrealDB, sql, params)

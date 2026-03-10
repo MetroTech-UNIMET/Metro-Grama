@@ -64,25 +64,27 @@ func GetCareerWithSubjectsById(careerId string) (any, error) {
 	careersCurrentTrimester := make([]*dto.CareerSubjectWithoutType, 0)
 
 	for index, subjectComplex := range careerWithSubjectsResponse.Subjects {
-		subject := dto.CareerSubjectWithoutType{
+		subject := &dto.CareerSubjectWithoutType{
 			Name:       subjectComplex.Subject.Name,
 			Code:       subjectComplex.Subject.ID,
 			Credits:    subjectComplex.Subject.Credits,
 			BPCredits:  subjectComplex.Subject.BPCredits,
 			Prelations: subjectComplex.Prelations,
 		}
-		newTrimester := (index != 0 && subjectComplex.Trimester != careerWithSubjectsResponse.Subjects[index-1].Trimester) ||
-			index == len(careerWithSubjectsResponse.Subjects)-1
 
-		if newTrimester {
+		careersCurrentTrimester = append(careersCurrentTrimester, subject)
+
+		isLastSubject := index == len(careerWithSubjectsResponse.Subjects)-1
+		trimesterChangesNext := !isLastSubject &&
+			subjectComplex.Trimester != careerWithSubjectsResponse.Subjects[index+1].Trimester
+
+		if isLastSubject || trimesterChangesNext {
 			for len(careersCurrentTrimester) < 5 {
 				careersCurrentTrimester = append(careersCurrentTrimester, nil)
 			}
 
 			careerWithSubjects.Subjects = append(careerWithSubjects.Subjects, careersCurrentTrimester)
-			careersCurrentTrimester = []*dto.CareerSubjectWithoutType{&subject}
-		} else {
-			careersCurrentTrimester = append(careersCurrentTrimester, &subject)
+			careersCurrentTrimester = make([]*dto.CareerSubjectWithoutType, 0)
 		}
 	}
 

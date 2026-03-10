@@ -16,6 +16,7 @@ import { useFormStep } from '@/hooks/useFormStep/useFormStep';
 
 import { onInvalidToast } from '@utils/forms';
 import { extractShema } from '@utils/zod/zod-type-guards';
+import { createSurrealId } from '@utils/queries';
 
 import { Tabs, TabsContent } from '@ui/tabs';
 import { Form } from '@ui/form';
@@ -118,10 +119,9 @@ export default function CareerForm({ mode, data }: Props) {
         const isNewSubject = subject.subjectType === 'new';
         const code = subject.code;
         if (!code) return;
-        const subjectCode = `subject:${code}`;
 
         if (!isNewSubject) {
-          removeAdditionalSubject(subjectCode);
+          removeAdditionalSubject(code);
           return;
         }
 
@@ -129,10 +129,7 @@ export default function CareerForm({ mode, data }: Props) {
         if (!name) return;
 
         addAdditionalSubject({
-          code: {
-            Table: 'subject',
-            ID: subjectCode,
-          },
+          code: createSurrealId('subject', code),
           name,
         });
       });

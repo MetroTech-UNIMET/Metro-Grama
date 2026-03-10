@@ -12,6 +12,7 @@ import { trimesters } from './queries/trimesters';
 import { users } from './queries/users';
 
 import { authMutationKeys } from './mutations/auth';
+import { careersMutationKeys } from './mutations/careers';
 import { enrollMutationKeys } from './mutations/enroll';
 import { formStepMutationKeys } from './mutations/form-step';
 import { friendsMutationKeys } from './mutations/friends';
@@ -40,6 +41,7 @@ export const queryKeys = {
 
 export const mutationKeys = {
   auth: authMutationKeys,
+  careers: careersMutationKeys,
   friends: friendsMutationKeys,
   schedule: scheduleMutationKeys,
   preferences: preferencesMutationKeys,
@@ -60,6 +62,7 @@ export {
   trimesters,
   users,
   authMutationKeys,
+  careersMutationKeys,
   enrollMutationKeys,
   formStepMutationKeys,
   friendsMutationKeys,

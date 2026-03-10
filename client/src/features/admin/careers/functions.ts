@@ -1,14 +1,12 @@
 import { toast } from 'sonner';
 
-import { createCareer, updateCareer } from '@/api/careersApi';
 import { getDirtyNestedFields } from '@utils/forms';
 import { createSurrealId, idToSurrealId } from '@utils/queries';
 
 import type { CreateCareerInput, CreateCareerOutput } from './schema';
 import type { ArrayToObject, DirtyFields } from '@utils/forms';
-import type { CareerWithSubjects } from '@/interfaces/Career';
 
-function validateOnSubmit(data: CreateCareerInput) {
+export function validateOnSubmit(data: CreateCareerInput) {
   const allCodes: string[] = [];
   for (let trimester of data.subjects) {
     for (let subject of trimester) {
@@ -55,28 +53,12 @@ function validateOnSubmit(data: CreateCareerInput) {
 
   return true;
 }
-
-export async function onCreate(data: CreateCareerOutput) {
-  if (!validateOnSubmit(data)) throw new Error('Datos inválidos');
-
-  const newData = transformCreateData(data);
-
-  await createCareer(newData);
-  return {
-    title: 'Carrera creada',
-    description: `La carrera "${data.name}" ha sido creada exitosamente`,
-  };
-}
-
-export async function onEdit(
-  orinalData: CareerWithSubjects,
+export function buildDirtyCareerFields(
   data: CreateCareerOutput,
   dirtyFields: DirtyFields<CreateCareerInput>,
 ) {
   if (Object.keys(dirtyFields).length === 0)
     throw new Error('Para poder modificar, tiene que realizar un cambio en el formulario');
-
-  if (!validateOnSubmit(data)) return false;
 
   dirtyFields?.subjects?.forEach((subjectTrimester, trimester) => {
     subjectTrimester?.forEach((subjectDirty, index) => {
@@ -94,19 +76,10 @@ export async function onEdit(
     });
   });
 
-  const filtered = getDirtyNestedFields(data, dirtyFields);
-
-  const transformed = transformEditData(filtered);
-
-  await updateCareer(orinalData, transformed);
-
-  return {
-    title: 'Carrera actualizada',
-    description: `La carrera "${data.name}" ha sido actualizada exitosamente`,
-  };
+  return getDirtyNestedFields(data, dirtyFields);
 }
 
-function transformCreateData(data: CreateCareerOutput) {
+export function transformCreateData(data: CreateCareerOutput) {
   return {
     ...data,
     subjects: data.subjects.map((trimester) =>
@@ -123,7 +96,7 @@ function transformCreateData(data: CreateCareerOutput) {
   };
 }
 
-function transformEditData(data: Partial<ArrayToObject<CreateCareerOutput>>) {
+export function transformEditData(data: Partial<ArrayToObject<CreateCareerOutput>>) {
   if (!data.subjects) return data;
 
   const transformedData: {

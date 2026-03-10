@@ -104,11 +104,15 @@ export default function CareerForm({ mode, data }: Props) {
         toastInfo = editResult;
       }
 
+      toastInfo.description = `${toastInfo.description}. Será redirigido en 3 segundos a /materias`;
+
       toast.success(toastInfo.title, {
         ...toastInfo,
       });
 
-      navigate({ to: '/materias', search: { careers: [`career:${formData.id}`] } });
+      setTimeout(() => {
+        navigate({ to: '/materias', search: { careers: [`career:${formData.id}`] } });
+      }, 3000);
     } catch (error: any) {
       toast.error(error.message);
       throw error;

@@ -3,8 +3,9 @@ import { differenceInMinutes, getHours, getMinutes } from 'date-fns';
 
 import { correctIntervalBetweenHours, default10Hour, default8Hour } from './constants';
 
-import { createSurrealIdSchema } from '@/lib/schemas/surrealId';
+import { createIdSchema } from '@/lib/schemas/surreal';
 import { getOverlappingScheduleIndices } from '@utils/time-overlapping';
+import { createSurrealId } from '@utils/queries';
 
 const scheduleSchema = z
   .object({
@@ -70,7 +71,7 @@ const sectionsSchema = z
         message: 'Se permiten un máximo de 3 horarios para la materia',
       }),
     classroom_code: z.string().optional(),
-    subject_section_id: createSurrealIdSchema('subject_section').optional(),
+    subject_section_id: createIdSchema('subject_section').optional(),
   })
   .check((ctx) => {
     const { schedules } = ctx.value as any;
@@ -96,7 +97,7 @@ export const subjectScheduleSchema = z.object({
       error: 'Se permiten un máximo de 10 secciones para la materia',
     })
     .transform((value) => value.map((section, index) => ({ ...section, section_number: index + 1 }))),
-  subject_offer_id: createSurrealIdSchema('subject_offer'),
+  subject_offer_id: createIdSchema('subject_offer'),
 });
 
 export type SubjectScheduleInput = z.input<typeof subjectScheduleSchema>;
@@ -114,5 +115,5 @@ export const subjectScheduleDefaultValues: SubjectScheduleInput = {
       ],
     },
   ],
-  subject_offer_id: { ID: '', Table: 'subject_offer' },
+  subject_offer_id: createSurrealId('subject_offer', ''),
 };

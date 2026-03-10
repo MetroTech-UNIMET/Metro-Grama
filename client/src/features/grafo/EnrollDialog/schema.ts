@@ -3,6 +3,7 @@ import z from 'zod/v4';
 import { maxScaleNumber, minScaleNumber } from './constants';
 
 import { createOptionSchema } from '@/lib/schemas/option';
+import { createSurrealId } from '@utils/queries';
 
 export const enrollDialogSchema = z.object({
   grade: z
@@ -13,10 +14,7 @@ export const enrollDialogSchema = z.object({
     .max(20, 'La nota debe ser como máximo 20'),
   trimesterId: createOptionSchema((issue) =>
     !issue.input ? 'El trimestre es requerido' : 'El trimestre debe ser una opción válida',
-  ).transform((option) => ({
-    ID: option.value,
-    Table: 'trimester',
-  })),
+  ).transform((option) => createSurrealId('trimester', option.value)),
   difficulty: z
     .int({
       error: (issue) => (!issue.input ? 'La dificultad es requerida' : 'La dificultad debe ser un número entero'),

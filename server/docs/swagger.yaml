@@ -1,5 +1,34 @@
 basePath: /api
 definitions:
+  DTO.BatchSubjectOfferChange:
+    properties:
+      add:
+        description: List of Trimester IDs
+        items:
+          type: string
+        type: array
+      remove:
+        description: List of Trimester IDs
+        items:
+          type: string
+        type: array
+      subjectId:
+        type: string
+    required:
+    - subjectId
+    type: object
+  DTO.BatchUpdateOffersRequest:
+    properties:
+      captcha:
+        description: for reCAPTCHA validation
+        type: string
+      changes:
+        items:
+          $ref: '#/definitions/DTO.BatchSubjectOfferChange'
+        type: array
+    required:
+    - changes
+    type: object
   DTO.CareerWithTrimester:
     properties:
       career:
@@ -183,6 +212,21 @@ definitions:
     required:
     - id
     type: object
+  DTO.SubjectElectiveForm:
+    properties:
+      code:
+        type: string
+      name:
+        type: string
+      prelations:
+        items:
+          type: string
+        type: array
+    required:
+    - code
+    - name
+    - prelations
+    type: object
   DTO.SubjectNode:
     properties:
       BPCredits:
@@ -222,6 +266,18 @@ definitions:
       workload:
         type: number
     type: object
+  DTO.UserLoginForm:
+    properties:
+      email:
+        type: string
+      password:
+        maxLength: 40
+        minLength: 8
+        type: string
+    required:
+    - email
+    - password
+    type: object
   DTO.hourMinute:
     properties:
       hours:
@@ -251,7 +307,17 @@ definitions:
     - ending_time
     - starting_time
     type: object
-  models.CareerCreateForm:
+  careers.updateCareerWithSubjectsParam:
+    properties:
+      newCareer:
+        $ref: '#/definitions/dto.CareerUpdateForm'
+      oldCareer:
+        $ref: '#/definitions/dto.CareerWithSubjects'
+    required:
+    - newCareer
+    - oldCareer
+    type: object
+  dto.CareerCreateForm:
     properties:
       emoji:
         type: string
@@ -262,7 +328,7 @@ definitions:
       subjects:
         items:
           items:
-            $ref: '#/definitions/models.CreateCareerSubject'
+            $ref: '#/definitions/dto.CreateCareerSubject'
           type: array
         type: array
     required:
@@ -271,24 +337,7 @@ definitions:
     - name
     - subjects
     type: object
-  models.CareerEntity:
-    properties:
-      electivesTrimesters:
-        items:
-          type: integer
-        type: array
-      emoji:
-        type: string
-      id:
-        type: object
-      name:
-        type: string
-    required:
-    - emoji
-    - id
-    - name
-    type: object
-  models.CareerSubjectWithoutType:
+  dto.CareerSubjectWithoutType:
     properties:
       BPCredits:
         maximum: 150
@@ -311,7 +360,20 @@ definitions:
     - name
     - prelations
     type: object
-  models.CareerWithSubjects:
+  dto.CareerUpdateForm:
+    properties:
+      emoji:
+        type: string
+      name:
+        type: string
+      subjects:
+        additionalProperties:
+          additionalProperties:
+            $ref: '#/definitions/dto.UpdateCareerSubject'
+          type: object
+        type: object
+    type: object
+  dto.CareerWithSubjects:
     properties:
       electivesTrimesters:
         items:
@@ -326,7 +388,7 @@ definitions:
       subjects:
         items:
           items:
-            $ref: '#/definitions/models.CareerSubjectWithoutType'
+            $ref: '#/definitions/dto.CareerSubjectWithoutType'
           type: array
         type: array
     required:
@@ -335,7 +397,7 @@ definitions:
     - name
     - subjects
     type: object
-  models.CreateCareerSubject:
+  dto.CreateCareerSubject:
     properties:
       BPCredits:
         maximum: 150
@@ -364,6 +426,50 @@ definitions:
     - name
     - prelations
     - subjectType
+    type: object
+  dto.UpdateCareerSubject:
+    properties:
+      BPCredits:
+        maximum: 150
+        minimum: 0
+        type: integer
+      code:
+        type: string
+      credits:
+        maximum: 150
+        minimum: 0
+        type: integer
+      name:
+        type: string
+      prelations:
+        items:
+          type: object
+        type: array
+      subjectType:
+        enum:
+        - elective
+        - existing
+        - new
+        type: string
+    required:
+    - code
+    type: object
+  models.CareerEntity:
+    properties:
+      electivesTrimesters:
+        items:
+          type: integer
+        type: array
+      emoji:
+        type: string
+      id:
+        type: object
+      name:
+        type: string
+    required:
+    - emoji
+    - id
+    - name
     type: object
   models.Edge:
     properties:
@@ -437,17 +543,6 @@ definitions:
       user:
         $ref: '#/definitions/models.UserEntity'
     type: object
-  models.SubjectCareer:
-    properties:
-      careerID:
-        type: string
-      trimester:
-        maximum: 20
-        type: integer
-    required:
-    - careerID
-    - trimester
-    type: object
   models.SubjectEntity:
     properties:
       BPCredits:
@@ -460,26 +555,6 @@ definitions:
         type: boolean
       name:
         type: string
-    type: object
-  models.SubjectForm:
-    properties:
-      careers:
-        items:
-          $ref: '#/definitions/models.SubjectCareer'
-        type: array
-      code:
-        type: object
-      name:
-        type: string
-      precedesID:
-        items:
-          type: string
-        type: array
-    required:
-    - careers
-    - code
-    - name
-    - precedesID
     type: object
   models.SubjectScheduleEntity:
     properties:
@@ -559,18 +634,6 @@ definitions:
       verified:
         type: boolean
     type: object
-  models.UserLoginForm:
-    properties:
-      email:
-        type: string
-      password:
-        maxLength: 40
-        minLength: 8
-        type: string
-    required:
-    - email
-    - password
-    type: object
 info:
   contact: {}
   description: MetroGrama API documentation.<br><br><b>Google Login:</b> <a href="/api/auth/google/login?redirect=/swagger/index.html"
@@ -624,7 +687,7 @@ paths:
         name: credentials
         required: true
         schema:
-          $ref: '#/definitions/models.UserLoginForm'
+          $ref: '#/definitions/DTO.UserLoginForm'
       produces:
       - application/json
       responses:
@@ -684,7 +747,7 @@ paths:
         name: career
         required: true
         schema:
-          $ref: '#/definitions/models.CareerCreateForm'
+          $ref: '#/definitions/dto.CareerCreateForm'
       produces:
       - application/json
       responses:
@@ -746,6 +809,42 @@ paths:
       summary: Delete a career
       tags:
       - careers
+    patch:
+      consumes:
+      - application/json
+      description: Updates a career and its subjects by id
+      parameters:
+      - description: Career ID
+        in: path
+        name: careerId
+        required: true
+        type: string
+      - description: Career form
+        in: body
+        name: career
+        required: true
+        schema:
+          $ref: '#/definitions/careers.updateCareerWithSubjectsParam'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update a career with its subjects
+      tags:
+      - careers
   /careers/withSubjects/{careerId}/:
     get:
       consumes:
@@ -763,7 +862,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.CareerWithSubjects'
+            $ref: '#/definitions/dto.CareerWithSubjects'
         "400":
           description: Bad Request
           schema:
@@ -1007,6 +1106,103 @@ paths:
       security:
       - CookieAuth: []
       summary: Enroll subjects for user
+      tags:
+      - enroll
+  /enroll/:subject:
+    get:
+      consumes:
+      - application/json
+      description: Get the enrollment details for the authenticated user and provided
+        subject
+      parameters:
+      - description: Subject code (e.g., BPTFI01)
+        in: path
+        name: subject
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - CookieAuth: []
+      summary: Get enrollment details for subject
+      tags:
+      - enroll
+    put:
+      consumes:
+      - application/json
+      description: Updates the authenticated user's enrollment for provided subject
+      parameters:
+      - description: Subject code (e.g., BPTFI01)
+        in: path
+        name: subject
+        required: true
+        type: string
+      - description: Enrollment payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/DTO.CreateEnrolled'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - CookieAuth: []
+      summary: Update enrolled subject for user
       tags:
       - enroll
   /friend/accept/{studentToAccept}:
@@ -1670,6 +1866,43 @@ paths:
       summary: Lista oferta anual por año académico
       tags:
       - subject_offer
+  /subject_offer/batch:
+    post:
+      consumes:
+      - application/json
+      description: Permite agregar y eliminar ofertas de materias en múltiples trimestres
+        a la vez.
+      parameters:
+      - description: Datos de actualización
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/DTO.BatchUpdateOffersRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Actualización por lotes de oferta académica
+      tags:
+      - subject_offer
   /subject_offer/upload:
     post:
       consumes:
@@ -1784,17 +2017,18 @@ paths:
       summary: List subjects
       tags:
       - subjects
+  /subjects/electives/:
     post:
       consumes:
       - application/json
-      description: Create a subject with careers and precedes
+      description: Create an elective subject with precedes
       parameters:
-      - description: Subject form
+      - description: Subject elective form
         in: body
         name: subject
         required: true
         schema:
-          $ref: '#/definitions/models.SubjectForm'
+          $ref: '#/definitions/DTO.SubjectElectiveForm'
       produces:
       - application/json
       responses:
@@ -1828,7 +2062,7 @@ paths:
             additionalProperties:
               type: string
             type: object
-      summary: Create a new subject
+      summary: Create a new elective subject
       tags:
       - subjects
   /subjects/electives/graph/:

@@ -28,7 +28,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.UserLoginForm"
+                            "$ref": "#/definitions/DTO.UserLoginForm"
                         }
                     }
                 ],
@@ -171,7 +171,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.CareerCreateForm"
+                            "$ref": "#/definitions/dto.CareerCreateForm"
                         }
                     }
                 ],
@@ -241,7 +241,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.CareerWithSubjects"
+                            "$ref": "#/definitions/dto.CareerWithSubjects"
                         }
                     },
                     "400": {
@@ -255,6 +255,60 @@
                     },
                     "404": {
                         "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "Updates a career and its subjects by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "careers"
+                ],
+                "summary": "Update a career with its subjects",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Career ID",
+                        "name": "careerId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Career form",
+                        "name": "career",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/careers.updateCareerWithSubjectsParam"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -629,6 +683,154 @@
                 "responses": {
                     "201": {
                         "description": "Created",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/enroll/:subject": {
+            "get": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Get the enrollment details for the authenticated user and provided subject",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "enroll"
+                ],
+                "summary": "Get enrollment details for subject",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Subject code (e.g., BPTFI01)",
+                        "name": "subject",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "CookieAuth": []
+                    }
+                ],
+                "description": "Updates the authenticated user's enrollment for provided subject",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "enroll"
+                ],
+                "summary": "Update enrolled subject for user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Subject code (e.g., BPTFI01)",
+                        "name": "subject",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Enrollment payload",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/DTO.CreateEnrolled"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
                         "schema": {
                             "type": "object",
                             "additionalProperties": {
@@ -1479,6 +1681,61 @@
                 }
             }
         },
+        "/subject_offer/batch": {
+            "post": {
+                "description": "Permite agregar y eliminar ofertas de materias en múltiples trimestres a la vez.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "subject_offer"
+                ],
+                "summary": "Actualización por lotes de oferta académica",
+                "parameters": [
+                    {
+                        "description": "Datos de actualización",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/DTO.BatchUpdateOffersRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/subject_offer/upload": {
             "post": {
                 "description": "Sube un archivo PDF de oferta académica. Máx 100 KB. Content-Type: application/pdf.",
@@ -1833,9 +2090,11 @@
                         }
                     }
                 }
-            },
+            }
+        },
+        "/subjects/electives/": {
             "post": {
-                "description": "Create a subject with careers and precedes",
+                "description": "Create an elective subject with precedes",
                 "consumes": [
                     "application/json"
                 ],
@@ -1845,15 +2104,15 @@
                 "tags": [
                     "subjects"
                 ],
-                "summary": "Create a new subject",
+                "summary": "Create a new elective subject",
                 "parameters": [
                     {
-                        "description": "Subject form",
+                        "description": "Subject elective form",
                         "name": "subject",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.SubjectForm"
+                            "$ref": "#/definitions/DTO.SubjectElectiveForm"
                         }
                     }
                 ],
@@ -2068,6 +2327,49 @@
         }
     },
     "definitions": {
+        "DTO.BatchSubjectOfferChange": {
+            "type": "object",
+            "required": [
+                "subjectId"
+            ],
+            "properties": {
+                "add": {
+                    "description": "List of Trimester IDs",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "remove": {
+                    "description": "List of Trimester IDs",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "subjectId": {
+                    "type": "string"
+                }
+            }
+        },
+        "DTO.BatchUpdateOffersRequest": {
+            "type": "object",
+            "required": [
+                "changes"
+            ],
+            "properties": {
+                "captcha": {
+                    "description": "for reCAPTCHA validation",
+                    "type": "string"
+                },
+                "changes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/DTO.BatchSubjectOfferChange"
+                    }
+                }
+            }
+        },
         "DTO.CareerWithTrimester": {
             "type": "object",
             "required": [
@@ -2343,6 +2645,28 @@
                 }
             }
         },
+        "DTO.SubjectElectiveForm": {
+            "type": "object",
+            "required": [
+                "code",
+                "name",
+                "prelations"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "prelations": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
         "DTO.SubjectNode": {
             "type": "object",
             "properties": {
@@ -2403,6 +2727,23 @@
                 }
             }
         },
+        "DTO.UserLoginForm": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string",
+                    "maxLength": 40,
+                    "minLength": 8
+                }
+            }
+        },
         "DTO.hourMinute": {
             "type": "object",
             "required": [
@@ -2443,7 +2784,22 @@
                 }
             }
         },
-        "models.CareerCreateForm": {
+        "careers.updateCareerWithSubjectsParam": {
+            "type": "object",
+            "required": [
+                "newCareer",
+                "oldCareer"
+            ],
+            "properties": {
+                "newCareer": {
+                    "$ref": "#/definitions/dto.CareerUpdateForm"
+                },
+                "oldCareer": {
+                    "$ref": "#/definitions/dto.CareerWithSubjects"
+                }
+            }
+        },
+        "dto.CareerCreateForm": {
             "type": "object",
             "required": [
                 "emoji",
@@ -2466,38 +2822,13 @@
                     "items": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/definitions/models.CreateCareerSubject"
+                            "$ref": "#/definitions/dto.CreateCareerSubject"
                         }
                     }
                 }
             }
         },
-        "models.CareerEntity": {
-            "type": "object",
-            "required": [
-                "emoji",
-                "id",
-                "name"
-            ],
-            "properties": {
-                "electivesTrimesters": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "emoji": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "object"
-                },
-                "name": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.CareerSubjectWithoutType": {
+        "dto.CareerSubjectWithoutType": {
             "type": "object",
             "required": [
                 "code",
@@ -2529,7 +2860,27 @@
                 }
             }
         },
-        "models.CareerWithSubjects": {
+        "dto.CareerUpdateForm": {
+            "type": "object",
+            "properties": {
+                "emoji": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "subjects": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "$ref": "#/definitions/dto.UpdateCareerSubject"
+                        }
+                    }
+                }
+            }
+        },
+        "dto.CareerWithSubjects": {
             "type": "object",
             "required": [
                 "emoji",
@@ -2558,13 +2909,13 @@
                     "items": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/definitions/models.CareerSubjectWithoutType"
+                            "$ref": "#/definitions/dto.CareerSubjectWithoutType"
                         }
                     }
                 }
             }
         },
-        "models.CreateCareerSubject": {
+        "dto.CreateCareerSubject": {
             "type": "object",
             "required": [
                 "code",
@@ -2602,6 +2953,69 @@
                         "existing",
                         "new"
                     ]
+                }
+            }
+        },
+        "dto.UpdateCareerSubject": {
+            "type": "object",
+            "required": [
+                "code"
+            ],
+            "properties": {
+                "BPCredits": {
+                    "type": "integer",
+                    "maximum": 150,
+                    "minimum": 0
+                },
+                "code": {
+                    "type": "string"
+                },
+                "credits": {
+                    "type": "integer",
+                    "maximum": 150,
+                    "minimum": 0
+                },
+                "name": {
+                    "type": "string"
+                },
+                "prelations": {
+                    "type": "array",
+                    "items": {
+                        "type": "object"
+                    }
+                },
+                "subjectType": {
+                    "type": "string",
+                    "enum": [
+                        "elective",
+                        "existing",
+                        "new"
+                    ]
+                }
+            }
+        },
+        "models.CareerEntity": {
+            "type": "object",
+            "required": [
+                "emoji",
+                "id",
+                "name"
+            ],
+            "properties": {
+                "electivesTrimesters": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "emoji": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "object"
+                },
+                "name": {
+                    "type": "string"
                 }
             }
         },
@@ -2716,22 +3130,6 @@
                 }
             }
         },
-        "models.SubjectCareer": {
-            "type": "object",
-            "required": [
-                "careerID",
-                "trimester"
-            ],
-            "properties": {
-                "careerID": {
-                    "type": "string"
-                },
-                "trimester": {
-                    "type": "integer",
-                    "maximum": 20
-                }
-            }
-        },
         "models.SubjectEntity": {
             "type": "object",
             "properties": {
@@ -2749,35 +3147,6 @@
                 },
                 "name": {
                     "type": "string"
-                }
-            }
-        },
-        "models.SubjectForm": {
-            "type": "object",
-            "required": [
-                "careers",
-                "code",
-                "name",
-                "precedesID"
-            ],
-            "properties": {
-                "careers": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.SubjectCareer"
-                    }
-                },
-                "code": {
-                    "type": "object"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "precedesID": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
                 }
             }
         },
@@ -2886,23 +3255,6 @@
                 },
                 "verified": {
                     "type": "boolean"
-                }
-            }
-        },
-        "models.UserLoginForm": {
-            "type": "object",
-            "required": [
-                "email",
-                "password"
-            ],
-            "properties": {
-                "email": {
-                    "type": "string"
-                },
-                "password": {
-                    "type": "string",
-                    "maxLength": 40,
-                    "minLength": 8
                 }
             }
         }

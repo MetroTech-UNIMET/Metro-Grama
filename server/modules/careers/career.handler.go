@@ -46,7 +46,7 @@ func getCareers(c echo.Context) error {
 // @Tags         careers
 // @Accept       json
 // @Produce      json
-// @Param        career  body      models.CareerCreateForm  true  "Career form"
+// @Param        career  body      dto.CareerCreateForm true  "Career form"
 // @Success      201  {object}  map[string]string
 // @Failure      400  {object}  map[string]string
 // @Failure      409  {object}  map[string]string
@@ -114,6 +114,18 @@ type updateCareerWithSubjectsParam struct {
 	NewCareerForm dto.CareerUpdateForm   `json:"newCareer" validate:"required"`
 }
 
+// updateCareerWithSubjects godoc
+// @Summary      Update a career with its subjects
+// @Description  Updates a career and its subjects by id
+// @Tags         careers
+// @Accept       json
+// @Produce      json
+// @Param        careerId  path  string  true  "Career ID"
+// @Param        career  body     updateCareerWithSubjectsParam  true  "Career form"
+// @Success      204
+// @Failure      400  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /careers/withSubjects/{careerId}/ [patch]
 func updateCareerWithSubjects(c echo.Context) error {
 	var target updateCareerWithSubjectsParam
 	if err := c.Bind(&target); err != nil {
@@ -140,7 +152,7 @@ func updateCareerWithSubjects(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Param        careerId  path  string  true  "Career ID"
-// @Success      200  {object}  models.CareerWithSubjects
+// @Success      200  {object}  dto.CareerWithSubjects
 // @Failure      400  {object}  map[string]string
 // @Failure      404  {object}  map[string]string
 // @Failure      500  {object}  map[string]string

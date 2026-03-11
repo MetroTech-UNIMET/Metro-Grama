@@ -10,8 +10,9 @@ import (
 	"github.com/surrealdb/surrealdb.go/contrib/surrealql"
 )
 
-// TODO - Ver como hago para distinguir actualizar/crear/eliminar
-// Chequear en yet las funciones que hice para comparar arrays
+// FIXME - Testear update en equimica y ver por que falla
+// "The query was not executed due to a failed transaction\nDatabase index `unique_relationships` already contains [subject:BPTEN13, career:quimica], with record `belong:11a1cv2uus3n3cr3we1n`\nThe query was not executed due to a failed transaction\nThe query was not executed due to a failed transaction"
+
 func UpdateCareer(newCareer dto.CareerWithSubjects, updateForm dto.CareerUpdateForm) error {
 	type NewSubjectWrapper struct {
 		*dto.UpdateCareerSubject
@@ -57,6 +58,11 @@ func UpdateCareer(newCareer dto.CareerWithSubjects, updateForm dto.CareerUpdateF
 
 	qb := surrealql.Begin().
 		Do(updateCareerQb).
+		Do(surrealql.For("subject", "?", diff.ToRemove).
+			Let("subjectID", surrealql.Expr("$subject.code")).
+			Do(surrealql.Delete("belong").
+				Where("in = $subjectID AND out = $careerID")),
+		).
 		Do(surrealql.For("index", "0..array::len($subjectsToAdd)").
 			Let("subject", surrealql.Expr("array::at($subjectsToAdd, $index)")).
 			Let("subjectID", surrealql.Expr("<record<subject>>$subject.code")).
@@ -84,11 +90,6 @@ func UpdateCareer(newCareer dto.CareerWithSubjects, updateForm dto.CareerUpdateF
 			Do(surrealql.Delete("precede").
 				Where("out = $subjectID")).
 			Do(surrealql.Relate("($subject.prelations)", "precede", "$subjectID")),
-		).
-		Do(surrealql.For("subject", "?", diff.ToRemove).
-			Let("subjectID", surrealql.Expr("$subject.code")).
-			Do(surrealql.Delete("belong").
-				Where("in = $subjectID AND out = $careerID")),
 		)
 
 	// 	// Update belong relation (trimester)

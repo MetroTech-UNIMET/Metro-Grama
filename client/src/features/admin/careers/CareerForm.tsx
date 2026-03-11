@@ -80,7 +80,7 @@ export default function CareerForm({ mode, data }: Props) {
             BPCredits: subject.BPCredits,
             prelations: subject.prelations.map(({ ID }) => ({
               value: ID,
-              label: subjectsById[ID] ? `(${subjectCode}) - ${subjectsById[ID]}` : 'Materia no encontrada',
+              label: subjectsById[ID] ? `(${ID}) - ${subjectsById[ID]}` : 'Materia no encontrada',
             })),
           };
 

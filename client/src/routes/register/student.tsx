@@ -12,7 +12,7 @@ import { checkIsAuthenticated } from '@utils/auth';
 export const Route = createFileRoute('/register/student')({
   beforeLoad: async ({ context }) => {
     const user = await checkIsAuthenticated(context.auth);
-    if (user) {
+    if (user.verified) {
       throw redirect({
         to: '/materias',
         search: {

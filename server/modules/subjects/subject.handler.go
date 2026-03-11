@@ -97,7 +97,7 @@ func getElectiveSubjectsGraph(c echo.Context) error {
 // @Tags         subjects
 // @Accept       json
 // @Produce      json
-// @Param        subject  body      models.SubjectElectiveForm  true  "Subject elective form"
+// @Param        subject  body      DTO.SubjectElectiveForm  true  "Subject elective form"
 // @Success      201  {object}  map[string]string
 // @Failure      400  {object}  map[string]string
 // @Failure      404  {object}  map[string]string

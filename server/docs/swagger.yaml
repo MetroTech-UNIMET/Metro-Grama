@@ -809,42 +809,6 @@ paths:
       summary: Delete a career
       tags:
       - careers
-    patch:
-      consumes:
-      - application/json
-      description: Updates a career and its subjects by id
-      parameters:
-      - description: Career ID
-        in: path
-        name: careerId
-        required: true
-        type: string
-      - description: Career form
-        in: body
-        name: career
-        required: true
-        schema:
-          $ref: '#/definitions/careers.updateCareerWithSubjectsParam'
-      produces:
-      - application/json
-      responses:
-        "204":
-          description: No Content
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Update a career with its subjects
-      tags:
-      - careers
   /careers/withSubjects/{careerId}/:
     get:
       consumes:
@@ -882,6 +846,42 @@ paths:
               type: string
             type: object
       summary: Get career with subjects
+      tags:
+      - careers
+    patch:
+      consumes:
+      - application/json
+      description: Updates a career and its subjects by id
+      parameters:
+      - description: Career ID
+        in: path
+        name: careerId
+        required: true
+        type: string
+      - description: Career form
+        in: body
+        name: career
+        required: true
+        schema:
+          $ref: '#/definitions/careers.updateCareerWithSubjectsParam'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update a career with its subjects
       tags:
       - careers
   /course/:

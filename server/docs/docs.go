@@ -279,53 +279,6 @@ const docTemplate = `{
                         }
                     }
                 }
-            }
-        },
-        "/careers/{careerId}/": {
-            "delete": {
-                "description": "Deletes a career by id",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "careers"
-                ],
-                "summary": "Delete a career",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Career ID",
-                        "name": "careerId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
             },
             "patch": {
                 "description": "Updates a career and its subjects by id",
@@ -355,6 +308,53 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/careers.updateCareerWithSubjectsParam"
                         }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/careers/{careerId}/": {
+            "delete": {
+                "description": "Deletes a career by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "careers"
+                ],
+                "summary": "Delete a career",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Career ID",
+                        "name": "careerId",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {

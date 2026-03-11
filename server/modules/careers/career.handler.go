@@ -125,7 +125,7 @@ type updateCareerWithSubjectsParam struct {
 // @Success      204
 // @Failure      400  {object}  map[string]string
 // @Failure      500  {object}  map[string]string
-// @Router       /careers/{careerId}/ [patch]
+// @Router       /careers/withSubjects/{careerId}/ [patch]
 func updateCareerWithSubjects(c echo.Context) error {
 	var target updateCareerWithSubjectsParam
 	if err := c.Bind(&target); err != nil {

@@ -45,7 +45,7 @@ interface Props {
 // TODO - Afer submission, show error tooltip if there are errors
 function SubjectInput({
   setValue,
-  resetField,
+  // resetField,
   trigger,
   subjectIndex,
   trimesterIndex,
@@ -114,10 +114,9 @@ function SubjectInput({
 
                     if (usingExistingSubject) {
                       setUsingExistingSubject(false);
-                      resetField(`${subjectName}.name`);
-                      resetField(`${subjectName}.credits`);
-                      resetField(`${subjectName}.BPCredits`);
-                      resetField(`${subjectName}.subjectType`);
+                      setValue(`${subjectName}.name`, '', setValueOption);
+                      setValue(`${subjectName}.credits`, 0, setValueOption);
+                      setValue(`${subjectName}.BPCredits`, 0, setValueOption);
                     }
 
                     setValue(`${subjectName}.subjectType`, 'new', setValueOption);

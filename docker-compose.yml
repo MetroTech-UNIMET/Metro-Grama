@@ -4,12 +4,13 @@ services:
     container_name: backend
     build: ./server
     ports:
-      - 6969:6969
+      - "6969:6969"
     develop:
       watch:
         - action: rebuild
           path: ./server
     restart: on-failure
+    network_mode: host
     environment:
       - USER_SIGIN_KEY=${USER_SIGIN_KEY}
       - ADMIN_SIGIN_KEY=${ADMIN_SIGIN_KEY}

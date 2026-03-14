@@ -8,7 +8,7 @@ require (
 	github.com/labstack/echo/v4 v4.13.4
 	github.com/ledongthuc/pdf v0.0.0-20250511090121-5959a4027728
 	github.com/stretchr/testify v1.11.1
-	github.com/surrealdb/surrealdb.go v1.0.1-0.20251016015804-ed1a5ebb5e52
+	github.com/surrealdb/surrealdb.go v1.4.0
 	github.com/swaggo/echo-swagger v1.4.1
 	github.com/swaggo/swag v1.16.6
 )

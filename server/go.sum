@@ -97,8 +97,8 @@ github.com/rogpeppe/go-internal v1.12.0 h1:exVL4IDcn6na9z1rAb56Vxr+CgyK3nn3O+epU
 github.com/rogpeppe/go-internal v1.12.0/go.mod h1:E+RYuTGaKKdloAfM02xzb0FW3Paa99yedzYV+kq4uf4=
 github.com/stretchr/testify v1.11.1 h1:7s2iGBzp5EwR7/aIZr8ao5+dra3wiQyKjjFuvgVKu7U=
 github.com/stretchr/testify v1.11.1/go.mod h1:wZwfW3scLgRK+23gO65QZefKpKQRnfz6sD981Nm4B6U=
-github.com/surrealdb/surrealdb.go v1.0.1-0.20251016015804-ed1a5ebb5e52 h1:zYvdKu5wtddnIQGVGYbtrPAjXHjCt3pO9KKRQLVz8bo=
-github.com/surrealdb/surrealdb.go v1.0.1-0.20251016015804-ed1a5ebb5e52/go.mod h1:NAvd5SLxlPxp+zc4L0z+JNeaJgkedynJVo9DQaG5E4c=
+github.com/surrealdb/surrealdb.go v1.4.0 h1:c3Tump5z+b1j27M6Puj0By59axd13ME2NFYptHiIdRw=
+github.com/surrealdb/surrealdb.go v1.4.0/go.mod h1:ju3vn9OHXde9Ulvc7/fP9I8ylkiapOdBSdrEs2PmTtA=
 github.com/swaggo/echo-swagger v1.4.1 h1:Yf0uPaJWp1uRtDloZALyLnvdBeoEL5Kc7DtnjzO/TUk=
 github.com/swaggo/echo-swagger v1.4.1/go.mod h1:C8bSi+9yH2FLZsnhqMZLIZddpUxZdBYuNHbtaS1Hljc=
 github.com/swaggo/files/v2 v2.0.2 h1:Bq4tgS/yxLB/3nwOMcul5oLEUKa877Ykgz3CJMVbQKU=

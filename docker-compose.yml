@@ -5,12 +5,7 @@ services:
     build: ./server
     ports:
       - "6969:6969"
-    develop:
-      watch:
-        - action: rebuild
-          path: ./server
     restart: on-failure
-    network_mode: host
     environment:
       - USER_SIGIN_KEY=${USER_SIGIN_KEY}
       - ADMIN_SIGIN_KEY=${ADMIN_SIGIN_KEY}
@@ -18,7 +13,6 @@ services:
       - SURREAL_PASS=${SURREAL_PASS}
       - SURREAL_NS=${SURREAL_NS}
       - SURREAL_DB=${SURREAL_DB}
-      - SURREAL_HOST=${SURREAL_HOST}
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
       - PORT=${PORT}

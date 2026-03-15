@@ -145,9 +145,8 @@ func GetSubjectOfferById(trimesterId string, studentId surrealModels.RecordID, q
 	if err != nil {
 		return nil, err
 	}
-	offers := (*result)[0].Result
+	offers := (*result)[len(*result)-2].Result
 	return offers, nil
-	// La 5 es mate basica
 }
 
 // Como conseguir amigos que quieren ver la materia:

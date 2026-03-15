@@ -11,6 +11,7 @@ import (
 var IsProduction = false
 var UserTokenSigninKey = ""
 var RecaptchaSecretKey = ""
+var GroupNotWorking = false
 
 func LoadDotEnv() {
 	if err := godotenv.Load(); err != nil {
@@ -22,6 +23,10 @@ func LoadDotEnv() {
 
 	if val := os.Getenv("MODE"); strings.EqualFold(val, "production") {
 		IsProduction = true
+	}
+
+	if val := os.Getenv("GROUP_NOT_WORKING"); strings.EqualFold(val, "true") {
+		GroupNotWorking = true
 	}
 }
 

@@ -11,3 +11,9 @@ type SubjectsByCareers struct {
 	Prelations []surrealModels.RecordID `json:"prelations" swaggertype:"array,object"`
 	Subject    models.SubjectEntity
 }
+
+type SubjectsByCareersPORQUERIA struct {
+	Careers    []surrealModels.RecordID     `json:"careers" swaggertype:"array,object"`
+	Prelations [][][]surrealModels.RecordID `json:"prelations" swaggertype:"array,object"`
+	Subject    models.SubjectEntity
+}

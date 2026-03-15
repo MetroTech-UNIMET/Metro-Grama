@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"metrograma/db"
+	"metrograma/env"
 	"metrograma/models"
 	"metrograma/modules/subjects/DTO"
 	"metrograma/modules/subjects/helpers"
@@ -17,7 +18,7 @@ import (
 	surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
 )
 
-func useGetSubjectsQuery(careers string) (*[]surrealdb.QueryResult[[]DTO.SubjectsByCareers], error) {
+func useGetSubjectsQuery(careers string) ([]DTO.SubjectsByCareers, error) {
 	// TODO - Encontrar mejor manera de filtrar un -> path condicionalmente
 	qb := surrealql.Select("belong").
 		Alias("subject", "in").
@@ -26,21 +27,68 @@ func useGetSubjectsQuery(careers string) (*[]surrealdb.QueryResult[[]DTO.Subject
 		GroupBy("subject").
 		Fetch("subject")
 
-	if careers == "all" || careers == "" {
-		sql, vars := qb.Build()
-		sql = strings.Replace(sql, "$prelationsConditions", "", 1)
+	var sql string
+	var vars map[string]interface{}
 
-		return surrealdb.Query[[]DTO.SubjectsByCareers](context.Background(), db.SurrealDB, sql, vars)
+	if careers == "all" || careers == "" {
+		sql, vars = qb.Build()
+		sql = strings.Replace(sql, "$prelationsConditions", "", 1)
 	} else {
 		careersArray := tools.StringToIdArray(careers)
-
 		qb = qb.Where("out IN $careersId")
-		sql, vars := qb.Build()
+		sql, vars = qb.Build()
 		sql = strings.Replace(sql, "$prelationsConditions", "[WHERE ->belong.out ANYINSIDE $careersId]", 1)
-
 		vars["careersId"] = careersArray
+	}
 
-		return surrealdb.Query[[]DTO.SubjectsByCareers](context.Background(), db.SurrealDB, sql, vars)
+	if env.GroupNotWorking {
+		result, err := surrealdb.Query[[]DTO.SubjectsByCareersPORQUERIA](context.Background(), db.SurrealDB, sql, vars)
+		if err != nil {
+			return nil, err
+		}
+
+		if len(*result) == 0 {
+			return []DTO.SubjectsByCareers{}, nil
+		}
+
+		porqueria := (*result)[0].Result
+		subjects := make([]DTO.SubjectsByCareers, len(porqueria))
+
+		for i, item := range porqueria {
+			// Flatten and deduplicate prelations
+			prelationsMap := make(map[string]surrealModels.RecordID)
+			for _, layer1 := range item.Prelations {
+				for _, layer2 := range layer1 {
+					for _, rec := range layer2 {
+						prelationsMap[rec.String()] = rec
+					}
+				}
+			}
+
+			prelations := make([]surrealModels.RecordID, 0, len(prelationsMap))
+			for _, rec := range prelationsMap {
+				prelations = append(prelations, rec)
+			}
+
+			subjects[i] = DTO.SubjectsByCareers{
+				Careers:    item.Careers,
+				Prelations: prelations,
+				Subject:    item.Subject,
+			}
+		}
+
+		return subjects, nil
+	} else {
+		result, err := surrealdb.Query[[]DTO.SubjectsByCareers](context.Background(), db.SurrealDB, sql, vars)
+		if err != nil {
+			return nil, err
+		}
+
+		if len(*result) == 0 {
+			return []DTO.SubjectsByCareers{}, nil
+		}
+
+		return (*result)[0].Result, nil
 	}
 }
 
@@ -59,6 +107,7 @@ func GetSubjects(careers string) ([]DTO.SubjectNode, error) {
 	}
 
 	sql, vars := qb.Build()
+	vars["careers"] = careersArray
 
 	result, err := surrealdb.Query[[]DTO.SubjectNode](context.Background(), db.SurrealDB, sql, vars)
 
@@ -76,17 +125,15 @@ func GetSubjects(careers string) ([]DTO.SubjectNode, error) {
 }
 
 func GetSubjectsGraph(careers string) (models.Graph[DTO.SubjectNode], error) {
-	result, err := useGetSubjectsQuery(careers)
+	subjectsByCareers, err := useGetSubjectsQuery(careers)
 
 	if err != nil {
 		return models.Graph[DTO.SubjectNode]{}, err
 	}
 
-	if len((*result)[0].Result) == 0 {
+	if len(subjectsByCareers) == 0 {
 		return models.Graph[DTO.SubjectNode]{}, echo.NewHTTPError(http.StatusNotFound, "No hay materias para las carreras proporcionadas")
 	}
-
-	subjectsByCareers := (*result)[0].Result
 
 	graph := helpers.ProcessSubjectGraph(
 		subjectsByCareers,
@@ -180,7 +227,8 @@ func GetEnrollableSubjects(studentId surrealModels.RecordID) ([]surrealModels.Re
 		Return("?", surrealql.
 			Select("subject").
 			Value("id").
-			Where("fn::is_subject_enrollable(id, $studentId, $enrolled) = true"))
+			// TODO - Por la porqueria de 3.x.x por ahora $enrolled tiene que ser un array
+			Where("fn::is_subject_enrollable(id, $studentId, $enrolled.distinct()) = true"))
 
 	sql, params := qb.Build()
 	params["studentId"] = studentId
@@ -194,7 +242,8 @@ func GetEnrollableSubjects(studentId surrealModels.RecordID) ([]surrealModels.Re
 	if res == nil || len(*res) == 0 {
 		return []surrealModels.RecordID{}, nil
 	}
-	qr := (*res)[len(*res)-1]
+	// Por alguna razon antes era -1 y ahora tiene que ser -2
+	qr := (*res)[len(*res)-2]
 	ids := qr.Result
 	if ids == nil {
 		return []surrealModels.RecordID{}, nil

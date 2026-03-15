@@ -20,7 +20,8 @@ func EnrollStudent(studentId surrealModels.RecordID, subjectId surrealModels.Rec
 		return models.EnrollEntity{}, err
 	}
 
-	qb_Is_Subject_Enrollable := surrealql.Select(surrealql.Expr("fn::is_subject_enrollable(?, ?, ?)", subjectId, studentId, passedSubjects))
+	// TODO - Por la porqueria de 3.x.x por ahora $enrolled tiene que ser un array
+	qb_Is_Subject_Enrollable := surrealql.Select(surrealql.Expr("fn::is_subject_enrollable(?, ?, ?.distinct())", subjectId, studentId, passedSubjects))
 
 	sql, vars := qb_Is_Subject_Enrollable.Build()
 

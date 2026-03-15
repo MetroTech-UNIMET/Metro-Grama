@@ -5,9 +5,9 @@ DEFINE FIELD phone ON user TYPE option<string> ASSERT {
 };
 DEFINE TABLE student SCHEMAFULL;
     DEFINE FIELD id_card on TABLE student TYPE string  
-      ASSERT string::is::numeric($value) AND string::len($value) = 11;
+      ASSERT string::is_numeric($value) AND string::len($value) = 11;
 
-    DEFINE FIELD user ON TABLE student TYPE record<user>;
+    DEFINE FIELD user ON TABLE student TYPE record<user> REFERENCE;
 
     DEFINE INDEX unique_id_card ON student FIELDS id_card UNIQUE;
     DEFINE INDEX unique_user ON student FIELDS user UNIQUE;

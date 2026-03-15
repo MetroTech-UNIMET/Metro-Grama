@@ -1,8 +1,8 @@
 DEFINE TABLE notification SCHEMAFULL;
 
-DEFINE FIELD user ON notification TYPE record<user>;
+DEFINE FIELD user ON notification TYPE record<user> REFERENCE ON DELETE CASCADE;
 DEFINE FIELD type ON notification TYPE 'friendRequest' | 'friendAccepted' | 'subject_section_update';
-DEFINE FIELD extraData ON notification FLEXIBLE TYPE object DEFAULT {};
+DEFINE FIELD extraData ON notification TYPE object FLEXIBLE DEFAULT {};
 DEFINE FIELD title ON notification TYPE string ASSERT string::len($value) <= 160;
 DEFINE FIELD message ON notification TYPE string ASSERT string::len($value) <= 2048;
 DEFINE FIELD read ON notification TYPE bool DEFAULT false;

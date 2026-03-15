@@ -1,11 +1,11 @@
 DEFINE TABLE OVERWRITE subject_section_history SCHEMAFULL;
 
-DEFINE FIELD OVERWRITE subject_section ON subject_section_history TYPE record<subject_section>;
+DEFINE FIELD OVERWRITE subject_section ON subject_section_history TYPE record<subject_section> REFERENCE;
 DEFINE FIELD OVERWRITE user_id            ON subject_section_history TYPE record<user>;
-DEFINE FIELD OVERWRITE new_data           ON subject_section_history FLEXIBLE TYPE object;
+DEFINE FIELD OVERWRITE new_data           ON subject_section_history TYPE object FLEXIBLE;
 DEFINE FIELD OVERWRITE start_date         ON subject_section_history TYPE option<datetime>;
 DEFINE FIELD OVERWRITE end_date           ON subject_section_history TYPE option<datetime>;
-DEFINE FIELD OVERWRITE schedules          ON subject_section_history TYPE array<record<subject_schedule>> DEFAULT [];
+DEFINE FIELD OVERWRITE schedules          ON subject_section_history TYPE array<record<subject_schedule>> DEFAULT [] REFERENCE;
 
 -- DEFINE EVENT OVERWRITE subject_section_audit ON TABLE subject_section
 --     WHEN $event = "CREATE" OR $event = "UPDATE"

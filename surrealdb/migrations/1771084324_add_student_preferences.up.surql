@@ -1,6 +1,6 @@
 DEFINE TABLE student_preferences SCHEMAFULL;
 
-DEFINE FIELD student ON TABLE student_preferences TYPE record<student>
+DEFINE FIELD student ON TABLE student_preferences TYPE record<student> REFERENCE ON DELETE CASCADE
     ASSERT $value != NONE;
 
 DEFINE FIELD show_friends ON TABLE student_preferences TYPE 'public' | 'friendsFriends' | 'onlyFriends' | 'private'

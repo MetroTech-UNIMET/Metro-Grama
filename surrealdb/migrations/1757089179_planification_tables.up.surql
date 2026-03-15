@@ -1,7 +1,20 @@
-DEFINE TABLE course TYPE RELATION IN student OUT trimester SCHEMAFULL PERMISSIONS NONE;
+DEFINE TABLE OVERWRITE course TYPE RELATION IN student OUT trimester SCHEMAFULL PERMISSIONS NONE;
 
-DEFINE FIELD principal_sections ON course TYPE set<record<subject_section>, 7> ASSERT { IF ($value.subject_offer.out.all(|$t: record<trimester>| $t = out)) = false { THROW 'All the sections from principal_sections must belong to the same trimester of the schedule'; } ELSE { RETURN true; }; } PERMISSIONS FULL;
-DEFINE FIELD secondary_sections ON course TYPE set<record<subject_section>, 7> DEFAULT [] ASSERT { IF ($value.subject_offer.out.all(|$t: record<trimester>| $t = out)) = false { THROW 'All the sections from secondary_sections must belong to the same trimester of the schedule'; } ELSE { RETURN true; }; } PERMISSIONS FULL;
+-- FIXME - Por alguna razon no puedo aplicar que esa de tipo set
+DEFINE FIELD OVERWRITE principal_sections ON course TYPE array<record<subject_section>> REFERENCE ASSERT { 
+  IF (array::len($value) == 0) {
+    RETURN TRUE;
+  };
+  RETURN TRUE;
+  IF ($trimesters.all(|$t: record<trimester>| $t = out)) = false { THROW 'All the sections from principal_sections must belong to the same trimester of the schedule'; } ELSE { RETURN true; }; 
+  } PERMISSIONS FULL;
+DEFINE FIELD OVERWRITE secondary_sections ON course TYPE array<record<subject_section>> REFERENCE DEFAULT [] ASSERT { 
+  IF (array::len($value) == 0) {
+    RETURN TRUE;
+  };
+  RETURN TRUE;
+  IF ($trimesters.all(|$t: record<trimester>| $t = out)) = false { THROW 'All the sections from secondary_sections must belong to the same trimester of the schedule'; } ELSE { RETURN true; }; 
+  } PERMISSIONS FULL;
 
 DEFINE INDEX unique_relationships ON course FIELDS in, out UNIQUE;
 
@@ -19,23 +32,24 @@ DEFINE FIELD ending_hour ON subject_schedule TYPE int ASSERT $value >= 0 AND $va
 DEFINE FIELD ending_minute ON subject_schedule TYPE int ASSERT $value >= 0 AND $value <= 59 PERMISSIONS FULL;
 DEFINE FIELD starting_hour ON subject_schedule TYPE int ASSERT $value >= 0 AND $value <= 23 PERMISSIONS FULL;
 DEFINE FIELD starting_minute ON subject_schedule TYPE int ASSERT $value >= 0 AND $value <= 59 PERMISSIONS FULL;
-DEFINE FIELD subject_section ON subject_schedule TYPE record<subject_section> DEFAULT NULL PERMISSIONS FULL;
+DEFINE FIELD subject_section ON subject_schedule TYPE record<subject_section> REFERENCE DEFAULT NULL PERMISSIONS FULL;
 
 
 DEFINE TABLE subject_section TYPE NORMAL SCHEMAFULL PERMISSIONS NONE;
 
 DEFINE FIELD classroom_code ON subject_section TYPE option<string> PERMISSIONS FULL;
 DEFINE FIELD section_number ON subject_section TYPE int ASSERT $value >= 1 AND $value <= 10 PERMISSIONS FULL;
-DEFINE FIELD subject_offer ON subject_section TYPE record<subject_offer> PERMISSIONS FULL;
+DEFINE FIELD subject_offer ON subject_section TYPE record<subject_offer> REFERENCE PERMISSIONS FULL;
 
 DEFINE FUNCTION fn::is_subject_enrollable($subjectId: record<subject>, $studentId: record<student>, $enrolled: set<record<subject>> ) -> bool | 'already_seen' {
   LET $subject = (SELECT * FROM ONLY $subjectId);
   LET $studentCredits = fn::get_student_credits($studentId, $enrolled);
 
   LET $has_credits = $subject.credits <= $studentCredits.total_credits OR $subject.BPCredits <= $studentCredits.total_bp_credits;
-  
+  LET $prelations = (SELECT VALUE <-precede.in FROM ONLY $subjectId);
+
   LET $is_enrollable = (SELECT VALUE id INSIDE $enrolled 
-    FROM (SELECT VALUE <-precede.in FROM ONLY $subjectId))
+    FROM $prelations)
     .all(|$wasEnrolled: any| $wasEnrolled);
   
   RETURN IF $subjectId NOTINSIDE $enrolled

@@ -3,7 +3,7 @@ DEFINE TABLE user SCHEMAFULL;
 
 DEFINE FIELD firstName ON user TYPE string;
 DEFINE FIELD lastName ON user TYPE string;
-DEFINE FIELD email ON user TYPE string ASSERT string::is::email($value);
+DEFINE FIELD email ON user TYPE string ASSERT string::is_email($value);
 DEFINE FIELD pictureUrl ON user TYPE string;
 DEFINE FIELD password ON user TYPE string;
 DEFINE FIELD verified ON user TYPE bool DEFAULT false;

@@ -12,7 +12,7 @@ DEFINE FIELD grade ON enroll TYPE int ASSERT {
 IF !($value >= 0 AND $value <= 20) { THROW 'Difficulty must be on the range [0,20]. Value passsed: ' + <string> $value; };
 RETURN true;
 } PERMISSIONS FULL;
-DEFINE FIELD trimester ON enroll TYPE record<trimester> PERMISSIONS FULL;
+DEFINE FIELD trimester ON enroll TYPE record<trimester> REFERENCE PERMISSIONS FULL;
 DEFINE FIELD workload ON enroll TYPE int DEFAULT NONE ASSERT {
 IF !($value >= 1 AND $value <= 5) { THROW 'Workload must be on the range [1,5]. Value passsed: ' + <string> $value; };
 RETURN true;

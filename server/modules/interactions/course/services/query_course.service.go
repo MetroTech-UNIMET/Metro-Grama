@@ -15,7 +15,7 @@ import (
 func GetSectionsWithSchedules(studentId surrealModels.RecordID, trimesterId string, isPrincipal bool) ([]DTO.QueryCourse, error) {
 
 	qb := surrealql.SelectOnly("course").
-		Value(GetSectionSubquery(isPrincipal)).
+		Value("?", GetSectionSubquery(isPrincipal)).
 		Where("out = $trimesterId").
 		WhereEq("in", studentId)
 

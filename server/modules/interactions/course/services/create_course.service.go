@@ -15,12 +15,6 @@ import (
 )
 
 func CreateCourse(studentId surrealModels.RecordID, input DTO.CreateCourse) (models.CourseEntity, error) {
-	data := map[string]any{}
-	if input.IsPrincipal {
-		data["principal_sections"] = input.Sections
-	} else {
-		data["secondary_sections"] = input.Sections
-	}
 
 	delete_Qb := surrealql.Delete("course").
 		Where("in = $studentId").
@@ -45,7 +39,6 @@ func CreateCourse(studentId surrealModels.RecordID, input DTO.CreateCourse) (mod
 
 	params["studentId"] = studentId
 	params["trimesterId"] = input.TrimesterId
-	params["data"] = data
 
 	res, err := surrealdb.Query[models.CourseEntity](context.Background(), db.SurrealDB, sql, params)
 	if err != nil {

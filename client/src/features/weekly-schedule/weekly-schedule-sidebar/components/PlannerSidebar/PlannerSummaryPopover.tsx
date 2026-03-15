@@ -31,6 +31,7 @@ const difficultyLabelsByGender: Record<'feminine' | 'masculine', Record<Difficul
 };
 
 function getDifficulty(value: number, ranges: readonly [number, number]): DifficultyLevel {
+  if (value === 0) return 'low';
   if (value >= ranges[0]) return 'low';
   if (value >= ranges[1]) return 'medium';
   return 'high';

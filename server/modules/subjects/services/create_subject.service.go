@@ -14,7 +14,7 @@ import (
 func CreateSubjectElective(subject DTO.SubjectElectiveForm) (models.SubjectEntity, error) {
 
 	qb := surrealql.Begin().
-		Let("subjectId", surrealql.Expr("type::thing('subject', ?)", subject.Code)).
+		Let("subjectId", surrealql.Expr("type::record('subject', ?)", subject.Code)).
 		Do(
 			surrealql.Create("$subjectId").Content(map[string]any{
 				"name":       subject.Name,
@@ -23,7 +23,7 @@ func CreateSubjectElective(subject DTO.SubjectElectiveForm) (models.SubjectEntit
 		).
 		Do(surrealql.For("precede", "? ", subject.Prelations).
 			Do(
-				surrealql.Relate(surrealql.Expr("$subjectId"), "precede", surrealql.Expr("(type::thing('subject', $precede))")),
+				surrealql.Relate(surrealql.Expr("$subjectId"), "precede", surrealql.Expr("(type::record('subject', $precede))")),
 			),
 		).Return("?", surrealql.SelectOnly("$subjectId").Field("*"))
 

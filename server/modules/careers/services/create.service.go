@@ -40,7 +40,7 @@ func CreateCareer(careerForm dto.CareerCreateForm) any {
 					tb.Raw("continue")
 				}).
 				End().
-				Let("subjectID", surrealql.Expr("type::thing('subject', $subject.code)")).
+				Let("subjectID", surrealql.Expr("type::record('subject', $subject.code)")).
 				If("$subject.subjectType = 'new'").
 				Then(func(tb *surrealql.ThenBuilder) {
 					// TODO - Hacerlo con Content

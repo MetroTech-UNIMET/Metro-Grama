@@ -22,7 +22,7 @@ func Handlers(e *echo.Group) {
 	careersGroup.DELETE("/:careerId", deleteCareer, authMiddlewares.AdminAuth, middlewares.WriteRateLimit())
 
 	careersGroup.GET("/withSubjects/:careerId", getCareerWithSubjectsById)
-	careersGroup.PATCH("/withSubjects/:careerId", updateCareerWithSubjects, authMiddlewares.AdminAuth, middlewares.WriteRateLimit())
+	careersGroup.PATCH("/withSubjects/:careerId", updateCareerWithSubjects, middlewares.WriteRateLimit())
 }
 
 // getCareers godoc
@@ -156,7 +156,7 @@ func updateCareerWithSubjects(c echo.Context) error {
 // @Failure      400  {object}  map[string]string
 // @Failure      404  {object}  map[string]string
 // @Failure      500  {object}  map[string]string
-// @Router       /careers/withSubjects/{careerId}/ [get]
+// @Router       /careers/withSubjects/{careerId} [get]
 func getCareerWithSubjectsById(c echo.Context) error {
 	careerId := c.Param("careerId")
 	if careerId == "" {

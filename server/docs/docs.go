@@ -222,7 +222,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/careers/withSubjects/{careerId}/": {
+        "/careers/withSubjects/{careerId}": {
             "get": {
                 "description": "Returns a career and its subjects by id",
                 "consumes": [
@@ -279,7 +279,9 @@ const docTemplate = `{
                         }
                     }
                 }
-            },
+            }
+        },
+        "/careers/withSubjects/{careerId}/": {
             "patch": {
                 "description": "Updates a career and its subjects by id",
                 "consumes": [

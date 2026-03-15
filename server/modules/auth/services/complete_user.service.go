@@ -31,7 +31,7 @@ func CompleteStudent(idUser string, data DTO.CompleteStudentDTO) (models.Student
 		Let("studentId", surrealql.Expr("$student.id")).
 		Do(surrealql.For("careerTri", "?", data.CareersWithTrimesters).
 			LetTyped("careerId", "record<career>", surrealql.Expr("<record>$careerTri.career")).
-			LetTyped("trimesterId", "record<trimester>", surrealql.Expr("type::thing('trimester',  $careerTri.trimester)")).
+			LetTyped("trimesterId", "record<trimester>", surrealql.Expr("type::record('trimester',  $careerTri.trimester)")).
 			Do(surrealql.Relate("$studentId", "study", "$careerId").
 				Set("startingTrimester", surrealql.Expr("$trimesterId"))),
 		).

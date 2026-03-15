@@ -79,11 +79,12 @@ func CreateSimpleUser(user DTO.SimpleUserSigninForm) (models.UserEntity, error) 
 		"role":       surrealModels.NewRecordID("role", user.Role),
 	}
 
-	data, err := surrealdb.Create[models.UserEntity](context.Background(), db.SurrealDB, surrealModels.Table("user"), queryParams)
+	data, err := surrealdb.Create[[]models.UserEntity](context.Background(), db.SurrealDB, surrealModels.Table("user"), queryParams)
 
 	// data, err := db.SurrealDB.Query(createSimpleUserQuery, queryParams)
 	if err != nil {
 		return models.UserEntity{}, err
 	}
-	return *data, nil
+	result := (*data)[0]
+	return result, nil
 }

@@ -19,19 +19,30 @@ interface Props {
 }
 
 export function FriendsCard({ friends, pending_friends, friend_applications }: Props) {
+  const applicationsCount = friend_applications.length;
+
   return (
     <Card className="pb-2">
       <CardHeader>
         <CardTitle>Amigos</CardTitle>
       </CardHeader>
-      <CardContent className="max-h-86 overflow-y-auto">
-        <Tabs defaultValue="amigos" className="relative">
-          <TabsList className="sticky top-0 z-10">
+      <Tabs defaultValue="amigos" className="relative">
+        <div className="relative px-6">
+          <TabsList className="z-10">
             <TabsTrigger value="amigos">Amigos</TabsTrigger>
             <TabsTrigger value="pendientes">Solicitudes pendientes</TabsTrigger>
-            <TabsTrigger value="por-aceptar">Solicitudes por aceptar</TabsTrigger>
+            <TabsTrigger value="por-aceptar" className="relative">
+              Solicitudes por aceptar
+              {applicationsCount > 0 && (
+                <span className="bg-destructive text-destructive-foreground pointer-events-none absolute -top-2 -right-2 inline-flex min-h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[10px] leading-none font-semibold">
+                  <span className="bg-destructive absolute inset-0 animate-ping rounded-full opacity-75" />
+                  <span className="relative">{applicationsCount}</span>
+                </span>
+              )}
+            </TabsTrigger>
           </TabsList>
-
+        </div>
+        <CardContent className="max-h-86 overflow-y-auto">
           <TabsContent value="amigos" className="space-y-3">
             {friends?.length ? (
               friends.map((f) => <FriendRow key={f.id.ID} student={f} />)
@@ -55,8 +66,8 @@ export function FriendsCard({ friends, pending_friends, friend_applications }: P
               <div className="text-muted-foreground text-sm">No tienes solicitudes por aceptar</div>
             )}
           </TabsContent>
-        </Tabs>
-      </CardContent>
+        </CardContent>
+      </Tabs>
     </Card>
   );
 }

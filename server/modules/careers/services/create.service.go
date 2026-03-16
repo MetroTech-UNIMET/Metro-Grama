@@ -23,9 +23,7 @@ func CreateCareer(careerForm dto.CareerCreateForm) any {
 	careerId := surrealModels.NewRecordID("career", careerForm.Id)
 
 	qb := surrealql.Begin().
-		LetTyped("careerID", "record<career>", surrealql.Expr("$content_1.ID")).
 		Do(surrealql.Create("$careerID").Content(map[string]any{
-			"ID":                  careerId,
 			"name":                careerForm.Name,
 			"emoji":               careerForm.Emoji,
 			"electivesTrimesters": electivesTrimesters,
@@ -66,8 +64,7 @@ func CreateCareer(careerForm dto.CareerCreateForm) any {
 	sql, params := qb.Build()
 
 	params["subjects"] = careerForm.Subjects
-	hola, err := tools.CustomMarshal(params)
-	fmt.Println("hola", string(hola), err)
+	params["careerID"] = careerId
 
 	data, err := surrealdb.Query[any](context.Background(), db.SurrealDB, sql, params)
 	if err != nil {

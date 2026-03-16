@@ -3,6 +3,7 @@ package auth
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	"metrograma/env"
 
@@ -23,11 +24,12 @@ func InitGoogleOauth() {
 		store.Options.SameSite = http.SameSiteLaxMode
 	}
 	gothic.Store = store
+	serverAddr := strings.TrimSuffix(env.GetDotEnv("SERVER_ADDRS"), "/")
 
 	googleProvider := google.New(
 		env.GetDotEnv("GOOGLE_CLIENT_ID"),
 		env.GetDotEnv("GOOGLE_CLIENT_SECRET"),
-		fmt.Sprintf("%s/api/auth/google/callback", env.GetDotEnv("SERVER_ADDRS")),
+		fmt.Sprintf("%s/api/auth/google/callback", serverAddr),
 		"email", "profile",
 	)
 

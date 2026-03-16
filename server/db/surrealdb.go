@@ -17,7 +17,12 @@ type SurrealErrMsg struct {
 }
 
 func InitSurrealDB() {
-	db, err := surrealdb.FromEndpointURLString(context.Background(), fmt.Sprintf("ws://%s/rpc", env.GetDotEnv("SURREAL_HOST")))
+	protocol := "ws"
+	if env.IsProduction {
+		protocol = "wss"
+	}
+
+	db, err := surrealdb.FromEndpointURLString(context.Background(), fmt.Sprintf("%s://%s/rpc", protocol, env.GetDotEnv("SURREAL_HOST")))
 	if err != nil {
 		panic(err.Error())
 	}

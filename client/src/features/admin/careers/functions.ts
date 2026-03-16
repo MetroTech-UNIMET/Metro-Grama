@@ -61,11 +61,14 @@ export function buildDirtyCareerFields(
     throw new Error('Para poder modificar, tiene que realizar un cambio en el formulario');
 
   dirtyFields?.subjects?.forEach((subjectTrimester, trimester) => {
-    subjectTrimester?.forEach((subjectDirty, index) => {
+    subjectTrimester?.forEach((_, index) => {
       if (dirtyFields.subjects?.[trimester][index]) {
         dirtyFields.subjects[trimester][index] = {
           code: true,
-          ...subjectDirty,
+          name: true,
+          BPCredits: true,
+          credits: true,
+          subjectType: true,
           prelations:
             data.subjects[trimester]?.[index]?.prelations?.map(() => ({
               label: true,

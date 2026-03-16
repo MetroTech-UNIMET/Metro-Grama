@@ -26,7 +26,7 @@ export default function StepsNavigator<T extends FieldValues>({
   errors,
 }: Props<T>) {
   return (
-    <TabsList className={cn('flex gap-4', headerClassName)} variant="ghost">
+    <TabsList className={cn('flex gap-4 h-auto', headerClassName)} variant="ghost">
       {steps.map((step, index) => {
         const hasError = stepHasErrors?.(step, index, errors) ?? false;
 

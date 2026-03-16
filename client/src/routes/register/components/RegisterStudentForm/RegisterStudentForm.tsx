@@ -65,10 +65,10 @@ export default function RegisterStudentForm() {
     await registerStudent(user.id.ID, data);
 
     navigate({
-      to: '/materias' ,
+      to: '/materias',
       search: {
         careers: data.careersWithTrimesters.map((career) => career.career as `${string}:${string}`),
-        isElective: false
+        isElective: false,
       },
     });
   }
@@ -87,53 +87,63 @@ export default function RegisterStudentForm() {
   });
 
   return (
-    <div>
+    <div className="w-full max-w-5xl">
       <Form {...form}>
-        <Tabs asChild value={String(formSteps[currentStep].id)}>
-          <form id="studentForm" onSubmit={formSubmit} className="p-16">
-            <StepsNavigator
-              jumpTo={jumpTo}
-              steps={formSteps}
-              currentStep={currentStep}
-              headerClassName="mb-8"
-              errors={form.formState.errors}
-              touchedFields={form.formState.touchedFields}
-              stepHasErrors={(step, _, errors) => {
-                if (!step.schema) return false;
+        <div className="rounded-4xl border border-white/15 bg-white/10 shadow-2xl shadow-black/30 backdrop-blur-xl">
+          <Tabs asChild value="Datos académicos">
+            <form id="studentForm" onSubmit={formSubmit} className="space-y-6 p-5 sm:p-8 lg:p-12">
+              <div className="space-y-2">
+                <p className="text-primary-foreground/80 text-sm tracking-[0.28em] uppercase">Registro de estudiante</p>
+                <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">Completa tu perfil académico</h1>
+                <p className="text-primary-foreground/70 max-w-2xl text-sm sm:text-base">
+                  Ingresa tus datos personales y selecciona las carreras con las que quieres comenzar.
+                </p>
+              </div>
 
-                const extracted = extractShema(step.schema);
-                const careerSchemaKeys = Object.keys(extracted.shape);
-                const hasError = careerSchemaKeys.some((key) => {
-                  return errors[key as keyof FieldErrors<RegisterStudentSchema>] !== undefined;
-                });
-                return hasError;
-              }}
-            />
+              <StepsNavigator
+                jumpTo={jumpTo}
+                steps={formSteps}
+                currentStep={currentStep}
+                headerClassName="mb-6 overflow-x-auto pb-2"
+                errors={form.formState.errors}
+                touchedFields={form.formState.touchedFields}
+                stepHasErrors={(step, _, errors) => {
+                  if (!step.schema) return false;
 
-            <TabsContent value="Datos personales" className="grid grid-cols-2 gap-4">
-              <Step1 />
-            </TabsContent>
+                  const extracted = extractShema(step.schema);
+                  const careerSchemaKeys = Object.keys(extracted.shape);
+                  const hasError = careerSchemaKeys.some((key) => {
+                    return errors[key as keyof FieldErrors<RegisterStudentSchema>] !== undefined;
+                  });
+                  return hasError;
+                }}
+              />
 
-            <TabsContent value="Datos académicos" className="grid gap-4">
-              <Step2 />
-            </TabsContent>
-          </form>
-        </Tabs>
+              <TabsContent value="Datos personales" className="mt-0 grid grid-cols-1 gap-4 md:grid-cols-2">
+                <Step1 />
+              </TabsContent>
 
-        <div className="flex flex-row gap-2">
-          <Button type="button" onClick={() => previous()} size="icon">
-            <ArrowLeft />
-          </Button>
+              <TabsContent value="Datos académicos" className="mt-0 grid gap-4">
+                <Step2 />
+              </TabsContent>
+            </form>
+          </Tabs>
 
-          {currentStep !== formSteps.length - 1 ? (
-            <Button type="button" onClick={() => next('callOnError')} size="icon">
-              <ArrowRight />
+          <div className="flex flex-row gap-3 border-t border-white/10 px-5 py-5 sm:justify-between sm:px-8 lg:px-12">
+            <Button type="button" onClick={() => previous()} size="icon" className="self-start w-1/2">
+              <ArrowLeft />
             </Button>
-          ) : (
-            <SubmitButton form="studentForm" colors="primary">
-              Guardar Perfil
-            </SubmitButton>
-          )}
+
+            {currentStep !== formSteps.length - 1 ? (
+              <Button type="button" onClick={() => next('callOnError')} size="icon" className="self-end w-1/2">
+                <ArrowRight />
+              </Button>
+            ) : (
+              <SubmitButton form="studentForm" colors="primary" className="self-end w-1/2">
+                Guardar Perfil
+              </SubmitButton>
+            )}
+          </div>
         </div>
       </Form>
     </div>

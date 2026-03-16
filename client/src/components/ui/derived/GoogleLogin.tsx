@@ -29,11 +29,7 @@ export default function GoogleLogin() {
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button
-            variant="ghost"
-            colors="neutral"
-            className="h-11 items-center gap-2 px-2 bg-background"
-          >
+          <Button variant="ghost" colors="neutral" className="bg-background h-11 items-center gap-2 px-2">
             <Avatar className="h-8 w-8">
               <AvatarImage src={user.pictureUrl} alt={`${user.firstName} ${user.lastName}`} />
               <AvatarFallback className="text-black">{initials}</AvatarFallback>
@@ -55,6 +51,16 @@ export default function GoogleLogin() {
                 <User />
 
                 <span>Ver mi cuenta</span>
+              </Link>
+            </DropdownMenuItem>
+          )}
+
+          {user.role.ID === 'admin' && (
+            <DropdownMenuItem asChild>
+              <Link to="/register/admin">
+                <User />
+
+                <span>Ver panel de administrador</span>
               </Link>
             </DropdownMenuItem>
           )}

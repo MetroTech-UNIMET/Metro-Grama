@@ -9,6 +9,7 @@ import type { BatchUpdatePayload } from '@/features/oferta/hooks/mutations/use-m
 export interface Query_AnnualOffers {
   careers?: string[];
   subjectsFilter?: 'enrollable' | 'none';
+  includeElectives?: boolean;
 }
 
 export async function getAnnualOffersByTrimester(trimesterId: string, query: Query_AnnualOffers = {}) {
@@ -17,6 +18,8 @@ export async function getAnnualOffersByTrimester(trimesterId: string, query: Que
   if (query.careers && query.careers.length > 0) queryParams.append('careers', query.careers.join(','));
 
   if (query.subjectsFilter) queryParams.append('subjectsFilter', query.subjectsFilter);
+
+  if (query.includeElectives !== undefined) queryParams.append('includeElectives', String(query.includeElectives));
 
   const response = await axios.get(`/subject_offer/${trimesterId}?${queryParams.toString()}`);
   return response.data as SubjectOfferWithSections[];

@@ -35,12 +35,13 @@ import ErrorPage from '@components/ErrorPage';
 
 export const Route = createFileRoute('/_navLayout/horario/')({
   validateSearch: queryParams,
-  loaderDeps: ({ search: { trimester, is_principal, careers } }) => ({
+  loaderDeps: ({ search: { trimester, is_principal, careers, includeElectives } }) => ({
     trimester,
     is_principal,
     careers,
+    includeElectives,
   }),
-  loader: async ({ context, deps: { trimester, is_principal, careers } }) => {
+  loader: async ({ context, deps: { trimester, is_principal, careers, includeElectives } }) => {
     const qc = context.queryClient;
 
     const tasks: Promise<any>[] = [
@@ -64,7 +65,7 @@ export const Route = createFileRoute('/_navLayout/horario/')({
       qc.ensureQueryData(
         fetchAnnualOfferByTrimesterOptions({
           trimesterId,
-          optionalQuery: { careers: careers ?? [] },
+          optionalQuery: { careers, includeElectives },
         }),
       );
     }

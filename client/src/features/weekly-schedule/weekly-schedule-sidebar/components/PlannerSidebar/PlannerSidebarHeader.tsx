@@ -5,6 +5,7 @@ import { useFilterByDays } from '../../hooks/search-params/use-filter-by-days';
 import { TimeRange, useFilterByTimeRange } from '../../hooks/search-params/use-filter-by-time-range';
 import { useFilterByAverages } from '../../hooks/search-params/use-filter-by-averages';
 import { useSortSubjectOffers } from '../../hooks/search-params/use-sort-subject-offers';
+import { useIncludeElectives } from '../../hooks/search-params/use-include-electives';
 
 import { useSearchTerm } from '../../hooks/search-params/use-search-term';
 import { FilterByDays } from '../FilterByDays/FilterByDays';
@@ -51,6 +52,7 @@ export function PlannerSidebarHeader({ showEnrollable, setShowEnrollable }: Prop
     reset: resetAverages,
   } = useFilterByAverages();
   const { sorting, setOrderBy, toggleOrderDir } = useSortSubjectOffers();
+  const { includeElectives, setIncludeElectives } = useIncludeElectives();
 
   const { user } = useAuth();
 
@@ -115,6 +117,15 @@ export function PlannerSidebarHeader({ showEnrollable, setShowEnrollable }: Prop
           Solo materias inscribibles
         </label>
       )}
+
+      <label className="flex items-center gap-2 text-sm font-medium">
+        <Checkbox
+          className="h-4 w-4"
+          checked={includeElectives}
+          onCheckedChange={(value) => setIncludeElectives(value === true)}
+        />
+        Incluir electivas
+      </label>
     </SidebarHeader>
   );
 }

@@ -27,7 +27,7 @@ export function fetchAnnualOfferByTrimesterOptions({ trimesterId, optionalQuery,
   return queryOptions({
     queryKey: queryKeys.subjectOffers.byQuery(optionalQuerParams)._ctx.trimester(trimesterId).queryKey,
     queryFn: () => getAnnualOffersByTrimester(trimesterId, optionalQuery),
-    enabled: !!trimesterId && (optionalQuerParams?.careers?.length ?? 0) > 0,
+    enabled: !!trimesterId && ((optionalQuerParams?.careers?.length ?? 0) > 0 || !!optionalQuerParams.includeElectives),
     ...queryOpt,
   });
 }

@@ -34,6 +34,7 @@ export function PlannerSidebar({ ...contextProps }: Props) {
     trimesterId: params.trimester,
     optionalQuery: {
       careers: params.careers,
+      includeElectives: params.includeElectives,
       // Do not pass subjectsFilter here to avoid filtering out the selected subject
     },
     queryOptions: {
@@ -108,11 +109,9 @@ function HomeSidebar({
     trimesterId: params.trimester,
     optionalQuery: {
       careers: params.careers,
+      includeElectives: params.includeElectives,
       // Only send subjectsFilter when a user exists; backend defaults to 'none' otherwise
       subjectsFilter: user ? (showEnrollable ? 'enrollable' : 'none') : undefined,
-    },
-    queryOptions: {
-      enabled: !!params.trimester && params.careers.length > 0,
     },
   });
 
@@ -210,12 +209,13 @@ function HomeSidebar({
 
       <SidebarContent className="mt-4">
         <SidebarGroup className="gap-2">
-          <SubjectsSection
-            selectedCareers={params.careers}
-            query={subjectsOfferQuery}
-            filteredData={filteredData}
-            onSelect={setSelectedSubject}
-          />
+          {params.careers.length === 0 && !params.includeElectives ? (
+            <div className="text-muted-foreground text-sm">
+              Escoja una carrera o incluya electivas para ver la oferta académica
+            </div>
+          ) : (
+            <SubjectsSection query={subjectsOfferQuery} filteredData={filteredData} onSelect={setSelectedSubject} />
+          )}
         </SidebarGroup>
       </SidebarContent>
     </>
@@ -223,20 +223,14 @@ function HomeSidebar({
 }
 
 function SubjectsSection({
-  selectedCareers,
   query,
   filteredData,
   onSelect,
 }: {
-  selectedCareers: string[];
   query: UseQueryResult<SubjectOfferWithSections[]>;
   filteredData: SubjectOfferWithSections[];
   onSelect: (subject: SubjectOfferWithSections | null) => void;
 }) {
-  if (selectedCareers.length === 0) {
-    return <div className="text-muted-foreground text-sm">Escoja una carrera para ver la oferta académica</div>;
-  }
-
   if (query.isPending) {
     return (
       <>
@@ -255,7 +249,6 @@ function SubjectsSection({
     return <div className="text-muted-foreground text-sm">No hay materias para los filtros seleccionados</div>;
   }
 
-  // Data state
   return (
     <>
       {filteredData.map((offer, index) => (

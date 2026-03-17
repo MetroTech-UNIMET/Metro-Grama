@@ -8,6 +8,7 @@ export const queryParams = z.object({
   trimester: trimesterQueryParam,
   is_principal: z.boolean().default(true),
   careers: careersQueryParam,
+  includeElectives: z.boolean().default(false),
 
   // Client only
   search: z.string().catch(''),

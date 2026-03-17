@@ -8,14 +8,24 @@ import { useAddFriend } from '@/hooks/mutations/friend/use-add-friend';
 import { LoadingButton } from '@ui/derived/submit-button';
 
 import type { OtherStudentDetails } from '@/api/interactions/student.types';
+import { AcceptFriendButton } from './AcceptFriendButton';
 
-interface Props
-  extends Omit<React.ComponentProps<typeof LoadingButton>, 'isLoading' | 'onClick' | 'disabled' | 'children'> {
+interface Props extends Omit<
+  React.ComponentProps<typeof LoadingButton>,
+  'isLoading' | 'onClick' | 'disabled' | 'children'
+> {
   userToAddId: string;
+  receiving_friendship_status: OtherStudentDetails['receiving_friendship_status'];
   friendshipStatus: OtherStudentDetails['friendship_status'];
 }
 
-export function AddFriendButton({ userToAddId, friendshipStatus, className, ...props }: Props) {
+export function AddFriendButton({
+  userToAddId,
+  friendshipStatus,
+  receiving_friendship_status,
+  className,
+  ...props
+}: Props) {
   const addMutation = useAddFriend({ studentId: userToAddId });
   const eliminateMutation = useEliminateFriend({ studentId: userToAddId });
 
@@ -28,6 +38,16 @@ export function AddFriendButton({ userToAddId, friendshipStatus, className, ...p
   }
 
   const isLoading = addMutation.isPending || eliminateMutation.isPending;
+
+  if (receiving_friendship_status === 'pending')
+    return (
+      <AcceptFriendButton
+        userToAcceptId={userToAddId}
+        colors="tertiary"
+        variant="outline"
+        className={className}
+      />
+    );
 
   const icon = isLoading ? undefined : friendshipStatus === 'accepted' ? (
     <UserCheck />

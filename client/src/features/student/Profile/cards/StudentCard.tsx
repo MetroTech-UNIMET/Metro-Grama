@@ -69,6 +69,7 @@ export function StudentCard({ data }: Props) {
           <AddFriendButton
             userToAddId={data.id.ID}
             friendshipStatus={data.friendship_status}
+            receiving_friendship_status={data.receiving_friendship_status}
             className="ml-auto max-sm:mr-auto"
           />
         )}

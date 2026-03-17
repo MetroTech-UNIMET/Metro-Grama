@@ -14,8 +14,11 @@ export interface MarkNotificationsAsReadPayload {
 }
 
 export async function getNotifications() {
-  const response = await axios.get<SuccessResponse<NotificationDTO>>('/notifications/');
-  return response.data.data;
+  const {data} = await axios.get<SuccessResponse<NotificationDTO>>('/notifications/');
+  return {
+    all: data.data.all ?? [],
+    unread: data.data.unread ?? [],
+  }
 }
 
 export async function markNotificationsAsRead(payload: MarkNotificationsAsReadPayload) {

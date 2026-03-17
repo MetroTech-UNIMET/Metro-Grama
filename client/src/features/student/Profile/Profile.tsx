@@ -27,7 +27,7 @@ export default function Profile({ data }: Props) {
           <span>
             <strong>{name}</strong> quiere ser tu amigo, aceptalo!{' '}
           </span>
-          <AcceptFriendButton userToAcceptId={data.id.ID} colors="tertiary" variant="outline" className="" />
+          <AcceptFriendButton userToAcceptId={data.id.ID} colors="tertiary" variant="outline" />
         </div>
       )}
       <div className="mx-auto max-w-6xl space-y-4 p-4 pb-16">

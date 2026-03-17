@@ -28,15 +28,15 @@ export function useNotificationWebsocket() {
     onEvents: {
       [EVENTS.BULK]: (payload: NotificationDTO) => {
         if (!payload || !Array.isArray(payload.all)) return;
-        queryClient.setQueryData<NotificationDTO>( queryKeys.notifications.all.queryKey, payload);
+        queryClient.setQueryData<NotificationDTO>(queryKeys.notifications.all.queryKey, payload);
       },
       [EVENTS.NEW]: (payload: Notification) => {
         if (!payload) return;
-        queryClient.setQueryData<NotificationDTO>( queryKeys.notifications.all.queryKey, (old) => {
-          const base: NotificationDTO = old ?? { all: [], unread: [] };
+        queryClient.setQueryData<NotificationDTO>(queryKeys.notifications.all.queryKey, (old) => {
+          const base = old ?? { all: [], unread: [] };
           const key = surrealIdToId(payload.id);
 
-          const dedupedAll = [payload, ...base.all.filter((item) => surrealIdToId(item.id) !== key)];
+          const dedupedAll = [payload, ...base.all?.filter((item) => surrealIdToId(item.id) !== key)];
           const updatedUnread = payload.read
             ? base.unread.filter((item) => surrealIdToId(item.id) !== key)
             : [payload, ...base.unread.filter((item) => surrealIdToId(item.id) !== key)];
@@ -52,7 +52,7 @@ export function useNotificationWebsocket() {
 
         const updateMap = new Map(payload.map((item) => [surrealIdToId(item.id), item]));
 
-        queryClient.setQueryData<NotificationDTO>( queryKeys.notifications.all.queryKey, (old) => {
+        queryClient.setQueryData<NotificationDTO>(queryKeys.notifications.all.queryKey, (old) => {
           if (!old) return old;
 
           const all = old.all.map((item) => updateMap.get(surrealIdToId(item.id)) ?? item);

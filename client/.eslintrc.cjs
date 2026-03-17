@@ -8,10 +8,11 @@ module.exports = {
     // This disables the formatting rules in ESLint that Prettier is going to be responsible for handling.
     // Make sure it's always the last config, so it gets the chance to override other configs.
     'eslint-config-prettier',
+    'plugin:@tanstack/eslint-plugin-query/recommended',
   ],
   ignorePatterns: ['dist', '.eslintrc.cjs'],
   parser: '@typescript-eslint/parser',
-  plugins: ['react-refresh'],
+  plugins: ['@typescript-eslint', 'react-hooks', 'import', 'prettier', '@tanstack/query', 'react-refresh'],
   rules: {
     'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
   },

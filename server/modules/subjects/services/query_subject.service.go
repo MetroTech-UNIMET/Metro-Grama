@@ -131,10 +131,6 @@ func GetSubjectsGraph(careers string) (models.Graph[DTO.SubjectNode], error) {
 		return models.Graph[DTO.SubjectNode]{}, err
 	}
 
-	if len(subjectsByCareers) == 0 {
-		return models.Graph[DTO.SubjectNode]{}, echo.NewHTTPError(http.StatusNotFound, "No hay materias para las carreras proporcionadas")
-	}
-
 	graph := helpers.ProcessSubjectGraph(
 		subjectsByCareers,
 		func(item DTO.SubjectsByCareers) models.Node[DTO.SubjectNode] {
@@ -178,10 +174,6 @@ func GetSubjectsElectiveGraph() (models.Graph[DTO.SubjectNodeBase], error) {
 
 	if err != nil {
 		return models.Graph[DTO.SubjectNodeBase]{}, err
-	}
-
-	if len((*res)[0].Result) == 0 {
-		return models.Graph[DTO.SubjectNodeBase]{}, echo.NewHTTPError(http.StatusNotFound, "No hay materias electivas")
 	}
 
 	subjectsElective := (*res)[0].Result

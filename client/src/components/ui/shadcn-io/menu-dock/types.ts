@@ -5,6 +5,7 @@ export type IconComponentType = React.ElementType<{ className?: string }>;
 export interface MenuDockItemBase {
   label: string;
   icon: IconComponentType;
+  tooltipMessage: string;
 }
 
 export interface MenuDockProps<Item extends MenuDockItemBase = MenuDockItemBase> {

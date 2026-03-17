@@ -21,6 +21,7 @@ function buildBaseItems(): DockLinkItem[] {
       search: (prev) => ({
         careers: prev?.careers ?? [],
       }),
+      tooltipMessage: 'Ver las materias (Alt+1)',
     },
     {
       label: 'Horario',
@@ -34,6 +35,7 @@ function buildBaseItems(): DockLinkItem[] {
         filterByDays: [],
       }),
       icon: Calendar,
+      tooltipMessage: 'Planificar horario (Alt+2)',
     },
     {
       label: 'Oferta anual',
@@ -43,6 +45,7 @@ function buildBaseItems(): DockLinkItem[] {
         year: 'none',
       }),
       icon: LayoutListInverted,
+      tooltipMessage: 'Ver oferta anual de materias (Alt+3)',
     },
   ];
 }
@@ -54,7 +57,7 @@ export function NavLayout({ children }: { children?: React.ReactNode }) {
   const items = useMemo(() => {
     const baseItems = buildBaseItems();
     if (status === 'authenticated') {
-      baseItems.push({ label: 'Perfil', to: '/profile', icon: User });
+      baseItems.push({ label: 'Perfil', to: '/profile', icon: User, tooltipMessage: 'Ver mi perfil (Alt+4)' });
     }
     return baseItems;
   }, [status]);

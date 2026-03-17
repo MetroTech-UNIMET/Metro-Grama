@@ -83,6 +83,7 @@ export function MenuDockLink({
             ref={(el) => {
               itemRefs.current[index] = el;
             }}
+            title={item.tooltipMessage}
           >
             <Icon className={cn(dockIconVariants({ size }), active && 'animate-bounce')} />
             {showLabels && (

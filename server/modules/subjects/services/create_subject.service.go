@@ -9,6 +9,7 @@ import (
 
 	"github.com/surrealdb/surrealdb.go"
 	"github.com/surrealdb/surrealdb.go/contrib/surrealql"
+	surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
 )
 
 func CreateSubjectElective(subject DTO.SubjectElectiveForm) (models.SubjectEntity, error) {
@@ -29,11 +30,36 @@ func CreateSubjectElective(subject DTO.SubjectElectiveForm) (models.SubjectEntit
 
 	sql, params := qb.Build()
 
-	result, err := surrealdb.Query[models.SubjectEntity](context.Background(), db.SurrealDB, sql, params)
+	result, err := surrealdb.Query[any](context.Background(), db.SurrealDB, sql, params)
 	if err != nil {
 		return models.SubjectEntity{}, fmt.Errorf("error creating subject: %v", err)
 	}
 
-	data := (*result)[0].Result
+	// FIXME - Por alguna razon, a no puedo pasar models.SubjectEntity al query
+	rawSubject, ok := (*result)[4].Result.(map[string]any)
+	if !ok {
+		return models.SubjectEntity{}, fmt.Errorf("error creating subject: unexpected result type %T", (*result)[4].Result)
+	}
+
+	data := models.SubjectEntity{
+		ID: surrealModels.NewRecordID("subject", subject.Code),
+	}
+
+	if id, ok := rawSubject["id"].(surrealModels.RecordID); ok {
+		data.ID = id
+	}
+	if name, ok := rawSubject["name"].(string); ok {
+		data.Name = name
+	}
+	if credits, ok := rawSubject["credits"].(float64); ok {
+		data.Credits = uint8(credits)
+	}
+	if bpCredits, ok := rawSubject["BPCredits"].(float64); ok {
+		data.BPCredits = uint8(bpCredits)
+	}
+	if isElective, ok := rawSubject["isElective"].(bool); ok {
+		data.IsElective = isElective
+	}
+
 	return data, nil
 }

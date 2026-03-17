@@ -68,13 +68,18 @@ func RelateFriends(me surrealModels.RecordID, other surrealModels.RecordID) (mod
 		if strings.Contains(err.Error(), "already_friends") {
 			return models.FriendEntity{}, echo.NewHTTPError(http.StatusConflict, "Ya son amigos")
 		}
+		if strings.Contains(err.Error(), "Ya eres amigo de esta persona") {
+			return models.FriendEntity{}, echo.NewHTTPError(http.StatusConflict, "Ya son amigos")
+
+		}
 		return models.FriendEntity{}, err
 	}
 
 	if res == nil || len(*res) == 0 {
 		return models.FriendEntity{}, echo.NewHTTPError(http.StatusInternalServerError, "No se recibió respuesta de la transacción")
 	}
-	last := (*res)[len(*res)-1].Result
+	// FIXME For some reason, I have to get the second to last
+	last := (*res)[len(*res)-2].Result
 
 	notification, err := services.GetNotificationFriendRequest(last.ID)
 	if err != nil {

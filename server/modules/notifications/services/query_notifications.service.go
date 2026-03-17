@@ -28,7 +28,8 @@ func GetNotificationsByUser(userID surrealModels.RecordID) (DTO.NotificationDTO,
 		return DTO.NotificationDTO{}, err
 	}
 
-	result := (*res)[0].Result
+	// FIXME - Por alguna razon no puedo pasar DTO.NotificationDTO al query
+	result := (*res)[len(*res)-2].Result
 
 	return result, nil
 }

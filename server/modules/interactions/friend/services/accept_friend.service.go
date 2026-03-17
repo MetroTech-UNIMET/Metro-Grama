@@ -46,7 +46,8 @@ func AcceptFriendshipRequest(me surrealModels.RecordID, other surrealModels.Reco
 		return models.FriendEntity{}, echo.NewHTTPError(http.StatusInternalServerError, "No se pudo eliminar la relación de amistad")
 	}
 
-	acceptedFriendRequest := (*res)[0].Result
+	// FIXME - For some reason, I have to get the second to last
+	acceptedFriendRequest := (*res)[len(*res)-2].Result
 
 	notification, err := services.GetNotificationFriendAccepted(acceptedFriendRequest.ID)
 	if err != nil {

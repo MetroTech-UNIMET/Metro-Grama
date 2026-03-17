@@ -116,7 +116,7 @@ func createSubjectElective(c echo.Context) error {
 
 	codeId := surrealModels.NewRecordID("subject", subjectForm.Code)
 	if err := tools.ExistRecord(codeId); err == nil {
-		return echo.NewHTTPError(http.StatusConflict, "Already exist")
+		return echo.NewHTTPError(http.StatusConflict, "Ya existe una materia con el código proporcionado")
 	}
 
 	for _, p := range subjectForm.Prelations {

@@ -90,7 +90,7 @@ export default function RegisterStudentForm() {
     <div className="w-full max-w-5xl">
       <Form {...form}>
         <div className="rounded-4xl border border-white/15 bg-white/10 shadow-2xl shadow-black/30 backdrop-blur-xl">
-          <Tabs asChild value="Datos académicos">
+          <Tabs asChild value={String(formSteps[currentStep].id)}>
             <form id="studentForm" onSubmit={formSubmit} className="space-y-6 p-5 sm:p-8 lg:p-12">
               <div className="space-y-2">
                 <p className="text-primary-foreground/80 text-sm tracking-[0.28em] uppercase">Registro de estudiante</p>

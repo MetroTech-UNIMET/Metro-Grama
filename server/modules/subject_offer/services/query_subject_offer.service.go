@@ -9,42 +9,19 @@ import (
 	"metrograma/modules/subject_offer/utils"
 	subjectservices "metrograma/modules/subjects/services"
 	"metrograma/tools"
-	"net/http"
 
-	"github.com/labstack/echo/v4"
 	"github.com/surrealdb/surrealdb.go"
 	"github.com/surrealdb/surrealdb.go/contrib/surrealql"
 	surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
 )
 
-// AnnualOfferQueryParams groups optional query params for annual offer queries
-type AnnualOfferQueryParams struct {
-	Careers        string
-	SubjectsFilter string
-}
-
-// GetAllSubjectOffers retrieves all subject_offer edges with their related subject and trimester.
-func GetAllSubjectOffers(careers string) ([]DTO.QueryAnnualOffer, error) {
-	careersArray := tools.StringToIdArray(careers)
-	// careers is required and must contain at least one valid id
-	if len(careersArray) == 0 {
-		return nil, echo.NewHTTPError(http.StatusBadRequest, "careers debe contener al menos 1 carrera válida")
-	}
-
-	qb, _ := utils.GetBaseSubjectOfferQuery(careersArray, false)
-	query, params := qb.Build()
-
-	result, err := surrealdb.Query[[]DTO.QueryAnnualOffer](context.Background(), db.SurrealDB, query, params)
-	if err != nil {
-		return nil, err
-	}
-	offers := (*result)[0].Result
-	return offers, nil
-}
-
 // GetSubjectOfferById retrieves subject_offer edges filtered by trimester ID.
-func GetSubjectOfferById(trimesterId string, studentId surrealModels.RecordID, queryParams AnnualOfferQueryParams) ([]DTO.QueryAnnualOfferWithPlanning, error) {
+func GetSubjectOfferById(trimesterId string, studentId surrealModels.RecordID, queryParams DTO.AnnualOfferQueryParams) ([]DTO.QueryAnnualOfferWithPlanning, error) {
 	isUserLogged := studentId != (surrealModels.RecordID{})
+	includeElectives := false
+	if queryParams.IncludeElectives != nil {
+		includeElectives = *queryParams.IncludeElectives
+	}
 
 	var enrollable []surrealModels.RecordID
 	// Fetch enrollable subjects if requested or if student context is present
@@ -73,10 +50,6 @@ func GetSubjectOfferById(trimesterId string, studentId surrealModels.RecordID, q
 	}
 
 	careersArray := tools.StringToIdArray(queryParams.Careers)
-	// careers is required and must contain at least one valid id
-	if len(careersArray) == 0 {
-		return nil, echo.NewHTTPError(http.StatusBadRequest, "careers debe contener al menos 1 carrera válida")
-	}
 
 	extraParams := make(map[string]any)
 	qb := surrealql.Begin()
@@ -87,10 +60,9 @@ func GetSubjectOfferById(trimesterId string, studentId surrealModels.RecordID, q
 	extraParams["enrollable"] = enrollable
 	extraParams["enrolled"] = enrolled
 
-	subjectOffer_Qb, sections_Qb := utils.GetBaseSubjectOfferQuery(careersArray, isUserLogged)
+	subjectOffer_Qb, sections_Qb := utils.GetBaseSubjectOfferQuery(careersArray, isUserLogged, includeElectives)
 
 	subjectOffer_Qb = subjectOffer_Qb.
-
 		// FIXME Buscar alguna forma de cachear el resultado de fn::previous_trimesters en una variable
 		Alias("avg_difficulty", "math::mean(? ?: [0])", surrealql.Select("enroll").
 			Value("difficulty").

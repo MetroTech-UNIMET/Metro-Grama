@@ -6,8 +6,22 @@ import (
 )
 
 // getBaseSubjectOfferQuery constructs the query and params for annual offers combining optional filters.
-// If enrollable is provided (non-empty), the query will restrict to those subject IDs.
-func GetBaseSubjectOfferQuery(careers []surrealModels.RecordID, includeFriends bool) (*surrealql.SelectQuery, *surrealql.SelectQuery) {
+func GetBaseSubjectOfferQuery(careers []surrealModels.RecordID, includeFriends bool, includeElectives bool) (*surrealql.SelectQuery, *surrealql.SelectQuery) {
+	whereCondition := ""
+	hasCareers := len(careers) > 0
+	if hasCareers {
+		whereCondition = "in->belong->career ANYINSIDE ?"
+	}
+	if includeElectives {
+		if whereCondition != "" {
+			whereCondition += " OR "
+		}
+		whereCondition += "in.isElective = true"
+	}
+	if whereCondition != "" {
+		whereCondition = "(" + whereCondition + ")"
+	}
+
 	schedules_Qb := surrealql.
 		Select("subject_schedule").
 		Field("*").
@@ -29,8 +43,15 @@ func GetBaseSubjectOfferQuery(careers []surrealModels.RecordID, includeFriends b
 		Alias("prelations", `in->(precede
 					WHERE out->belong->career ANYINSIDE  ?
 				).out`, careers).
-		Where("in->belong->career ANYINSIDE ?", careers).
 		Fetch("subject", "trimester", "prelations")
+
+	if whereCondition != "" {
+		if hasCareers {
+			subjectOffer_Qb = subjectOffer_Qb.Where(whereCondition, careers)
+		} else {
+			subjectOffer_Qb = subjectOffer_Qb.Where(whereCondition)
+		}
+	}
 
 	if includeFriends {
 		sections_Qb.

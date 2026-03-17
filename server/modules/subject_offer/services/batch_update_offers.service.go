@@ -19,8 +19,8 @@ func BatchUpdateSubjectOffers(changes []DTO.BatchSubjectOfferChange) error {
 				"subject_offer",
 				surrealql.Expr("($subjectChange.add.map(|$t| type::record('trimester', $t)))"),
 			)).
-			Do(surrealql.Delete(surrealql.Expr("$subjectId->subject_offer")).
-				Where("out IN $subjectChange.remove.map(|$t| type::record('trimester', $t))")),
+			Do(surrealql.Delete("subject_offer").
+				Where("in = $subjectId AND out IN $subjectChange.remove.map(|$t| type::record('trimester', $t)) ?? []")),
 		)
 
 	// for _, change := range changes {

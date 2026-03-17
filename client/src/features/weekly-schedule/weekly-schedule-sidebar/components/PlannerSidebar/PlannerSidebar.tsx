@@ -11,11 +11,12 @@ import { sortSubjectOffers } from '../../helpers/orderFunctions';
 
 import { useFetchAnnualOfferByTrimester } from '@/hooks/queries/subject_offer/use-fetch-annual-offer-by-trimester';
 import { useDebounceValue } from '@/hooks/shadcn.io/debounce/use-debounce-value';
+import { useHotkeyFocus } from '@/hooks/use-hotkey-action';
 
 import { useAuth } from '@/contexts/AuthenticationContext';
 import { normalize } from '@utils/strings';
 
-import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarRail } from '@ui/sidebar';
+import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarRail, useSidebar } from '@ui/sidebar';
 import { Skeleton } from '@ui/skeleton';
 
 import type { SubjectOfferWithSections } from '@/interfaces/SubjectOffer';
@@ -25,6 +26,7 @@ interface Props extends PlannerSidebarContextInput {}
 
 export function PlannerSidebar({ ...contextProps }: Props) {
   const [selectedSubjectId, setSelectedSubjectId] = useState<string | null>(null);
+  const { isMobile, open, openMobile, toggleSidebar } = useSidebar();
 
   const params = useSearch({ from: '/_navLayout/horario/' });
 
@@ -51,6 +53,17 @@ export function PlannerSidebar({ ...contextProps }: Props) {
       setSelectedSubjectId(null);
     }
   }, [selectedSubjectId, freshOfferQuery.isSuccess, selectedSubject]);
+
+  useHotkeyFocus({
+    hotkey: 'Mod+K',
+    querySelector: 'input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"])',
+    beforeAction: () => {
+      if (['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName || '')) return false;
+
+      const isSidebarOpen = isMobile ? openMobile : open;
+      if (!isSidebarOpen) toggleSidebar();
+    },
+  });
 
   return (
     <div>

@@ -13,6 +13,8 @@ import { useUnderlineStyle } from './hooks/useUnderlineStyle';
 
 import { cn } from '@utils/className';
 
+import { useHotkey } from '@tanstack/react-hotkeys';
+
 import { Button } from '@ui/button';
 
 import type { MenuDockItemBase, MenuDockProps } from './types';
@@ -30,8 +32,14 @@ export function MenuDockLink({
   animated = true,
   isVisible,
   toggleVisibility,
+  open,
 }: MenuDockProps<DockLinkItem>) {
   const { location } = useRouterState();
+
+  useHotkey('Mod+O', (e) => {
+    e.preventDefault();
+    toggleVisibility();
+  });
 
   const path = location.pathname;
 
@@ -67,6 +75,7 @@ export function MenuDockLink({
             key={item.label}
             to={item.to}
             search={item.search}
+            onFocus={open}
             className={cn(
               'relative flex flex-col items-center justify-center rounded-lg transition-colors',
               dockItemVariants({ size, active }),
@@ -94,8 +103,8 @@ export function MenuDockLink({
         className="bg-card absolute -top-5 right-1/2 size-9 translate-x-1/2 rounded-full border-2"
         onClick={toggleVisibility}
         variant="ghost"
-        aria-label={isVisible ? 'Ocultar menu de navegación' : 'Mostrar menu de navegación'}
-        title={isVisible ? 'Ocultar menu de navegación' : 'Mostrar menu de navegación'}
+        aria-label={isVisible ? 'Ocultar menu de navegación (Ctrl+O)' : 'Mostrar menu de navegación (Ctrl+O)'}
+        title={isVisible ? 'Ocultar menu de navegación (Ctrl+O)' : 'Mostrar menu de navegación (Ctrl+O)'}
       >
         <ChevronUp className={cn('rotate-0 transition-transform duration-200', isVisible && 'rotate-180')} />
       </Button>

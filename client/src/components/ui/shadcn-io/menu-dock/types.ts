@@ -18,4 +18,5 @@ export interface MenuDockProps<Item extends MenuDockItemBase = MenuDockItemBase>
   // Para compartirlos con el boton de notificaciones
   isVisible: boolean;
   toggleVisibility: () => void;
+  open: () => void;
 }

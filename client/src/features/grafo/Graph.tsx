@@ -26,6 +26,7 @@ import useFetchSubjectsElectivesGraph from '@/hooks/queries/subject/use-fetch-su
 
 import { useSelectedCareers } from '@/hooks/search-params/use-selected-careers';
 
+import { useHotkeyFocus } from '@/hooks/use-hotkey-action';
 import useLazyGraphin from '@/hooks/lazy-loading/use-LazyGraphin';
 
 import type { AxiosError } from 'axios';
@@ -60,8 +61,16 @@ export default function Graph() {
   const { graphinImport, error: graphinError } = useLazyGraphin();
   const { nodeActions } = useStatusActions();
 
+  useHotkeyFocus({
+    hotkey: 'Mod+K',
+    querySelector: 'input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"])',
+    beforeAction: () => {
+      if (['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName || '')) return false;
+    },
+  });
+
   const electiveInfoFallback = (
-    <div className="fixed right-8 top-10 z-10 grid size-10 place-items-center rounded-md border bg-background/90 md:top-24 max-[21rem]:top-44">
+    <div className="bg-background/90 fixed top-10 right-8 z-10 grid size-10 place-items-center rounded-md border max-[21rem]:top-44 md:top-24">
       <Spinner size="small" />
     </div>
   );

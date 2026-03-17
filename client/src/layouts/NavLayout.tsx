@@ -1,11 +1,12 @@
 import { useMemo } from 'react';
-import { Outlet } from '@tanstack/react-router';
+import { Outlet, useNavigate } from '@tanstack/react-router';
+import { useHotkey } from '@tanstack/react-hotkeys';
 import { Home, Calendar, LayoutList, User } from 'lucide-react';
 
 import { NotificationButton } from './NotificationButton/NotificationButton';
 
 import { useAuth } from '@/contexts/AuthenticationContext';
-import { useToggle } from '@/hooks/shadcn.io/use-toggle';
+import { useBoolean } from '@/hooks/shadcn.io/use-boolean';
 
 import MenuDockLink, { type DockLinkItem } from '@ui/shadcn-io/menu-dock/menu-dock-link';
 
@@ -48,6 +49,7 @@ function buildBaseItems(): DockLinkItem[] {
 
 export function NavLayout({ children }: { children?: React.ReactNode }) {
   const { status } = useAuth();
+  const navigate = useNavigate();
 
   const items = useMemo(() => {
     const baseItems = buildBaseItems();
@@ -57,7 +59,32 @@ export function NavLayout({ children }: { children?: React.ReactNode }) {
     return baseItems;
   }, [status]);
 
-  const [isVisible, toggleVisibility] = useToggle();
+  const { value: isVisible, toggle: toggleVisibility, setTrue: open } = useBoolean();
+
+  function navigateToItem(index: number) {
+    const item = items[index];
+    if (item) navigate({ to: item.to, search: item.search });
+  }
+
+  useHotkey('Alt+1', (e) => {
+    e.preventDefault();
+    navigateToItem(0);
+  });
+
+  useHotkey('Alt+2', (e) => {
+    e.preventDefault();
+    navigateToItem(1);
+  });
+
+  useHotkey('Alt+3', (e) => {
+    e.preventDefault();
+    navigateToItem(2);
+  });
+
+  useHotkey('Alt+4', (e) => {
+    e.preventDefault();
+    navigateToItem(3);
+  });
 
   return (
     <>
@@ -68,9 +95,10 @@ export function NavLayout({ children }: { children?: React.ReactNode }) {
         items={items}
         isVisible={isVisible}
         toggleVisibility={toggleVisibility}
+        open={open}
       />
 
-      {status === 'authenticated' && <NotificationButton  isDockVisible={isVisible} />}
+      {status === 'authenticated' && <NotificationButton isDockVisible={isVisible} />}
     </>
   );
 }

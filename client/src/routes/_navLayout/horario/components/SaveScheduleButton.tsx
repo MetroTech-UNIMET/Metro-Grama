@@ -1,5 +1,6 @@
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import { ChevronDown, Save } from 'lucide-react';
+import { useRef } from 'react';
 
 import { useFetchStudentCourseByTrimester } from '@/hooks/queries/course/use-fetch-student-course-by-trimester';
 
@@ -25,11 +26,13 @@ import {
 import { Spinner } from '@ui/spinner';
 
 import type { SubjectEvent } from '..';
+import { useHotkeyClick } from '@/hooks/use-hotkey-action';
 
 // TODO Añadir opción para ver resumen: Materias nuevas que abren, puntos de dificultad, carga academica, etc
 export function SaveScheduleButton() {
   const { events, overlappingEventIds } = useWeeklyPlannerContext<SubjectEvent>();
   const hasOverlaps = overlappingEventIds.size > 0;
+  const saveButtonRef = useRef<HTMLButtonElement | null>(null);
 
   const navigate = useNavigate();
   const search = useSearch({ from: '/_navLayout/horario/' });
@@ -53,10 +56,19 @@ export function SaveScheduleButton() {
     });
   }
 
+  useHotkeyClick({
+    hotkey: 'Mod+S',
+    targetRef: saveButtonRef,
+    beforeAction: () => {
+      if (['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName || '')) return false;
+    },
+  });
+
   return (
     <div className={cn('fixed right-1/2 bottom-10 z-20 flex w-full translate-x-1/2 flex-col items-center gap-2')}>
       <ButtonGroup className={cn('w-full max-w-80 text-lg')}>
         <Button
+          ref={saveButtonRef}
           colors="primary"
           className="w-full py-8"
           disabled={events.length === 0 || hasOverlaps}

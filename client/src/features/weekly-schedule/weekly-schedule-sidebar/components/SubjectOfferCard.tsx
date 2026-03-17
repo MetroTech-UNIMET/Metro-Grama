@@ -28,6 +28,15 @@ export default function SubjectOfferCard({ subjectOffer, onSelect, state }: Prop
   const numSections = subjectOffer.sections.length;
   const numPrelations = subjectOffer.prelations.length;
 
+  const handleSelect = () => onSelect(subjectOffer);
+
+  const handleKeyDown: React.KeyboardEventHandler<HTMLDivElement> = (event) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      handleSelect();
+    }
+  };
+
   return (
     <Card
       className={cn('cursor-pointer transition-shadow hover:shadow-lg', {
@@ -35,7 +44,10 @@ export default function SubjectOfferCard({ subjectOffer, onSelect, state }: Prop
         'border-blue-400 bg-blue-50': state === 'isEnrollable',
         'border-gray-200': state === 'default',
       })}
-      onClick={() => onSelect(subjectOffer)}
+      role="button"
+      tabIndex={0}
+      onClick={handleSelect}
+      onKeyDown={handleKeyDown}
     >
       <CardHeader>
         <CardTitle className="text-lg">{subject.name}</CardTitle>

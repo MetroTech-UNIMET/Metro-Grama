@@ -59,6 +59,9 @@ func ExistRecord(id models.RecordID) error {
 }
 
 func StringToIdArray(value string) []models.RecordID {
+	if value == "" {
+		return []models.RecordID{}
+	}
 	values := strings.Split(value, ",")
 
 	return ToIdArray(values)

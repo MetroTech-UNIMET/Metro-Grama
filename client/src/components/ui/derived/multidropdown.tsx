@@ -1,11 +1,12 @@
 import React, { useEffect } from 'react';
-import { Command as CommandPrimitive, useCommandState } from 'cmdk';
+import { Command as CommandPrimitive, defaultFilter, useCommandState } from 'cmdk';
 import { X } from 'lucide-react';
 
 import { transToGroupOption } from '../utils/options';
 
 import { cn } from '@/lib/utils/className';
 import { useDebounceValue } from '@/hooks/shadcn.io/debounce/use-debounce-value';
+import { normalize } from '@utils/strings';
 
 import { Spinner } from '@ui/spinner';
 import { Badge } from '@/components/ui/badge';
@@ -334,8 +335,7 @@ function MultipleSelector<TValue extends string | number = string | number, TDat
         return value.toLowerCase().includes(search.toLowerCase()) ? 1 : -1;
       };
     }
-    // Using default filter in `cmdk`. We don't have to provide it.
-    return undefined;
+    return (value: string, search: string) => defaultFilter(normalize(value), normalize(search));
   }, [creatable, commandProps?.filter]);
 
   return (
@@ -376,7 +376,7 @@ function MultipleSelector<TValue extends string | number = string | number, TDat
                     <button
                       type="button"
                       className={cn(
-                        'ring-offset-background focus:ring-ring ml-1 rounded-full outline-none focus:ring-2 focus:ring-offset-2 cursor-pointer',
+                        'ring-offset-background focus:ring-ring ml-1 cursor-pointer rounded-full outline-none focus:ring-2 focus:ring-offset-2',
                         (disabled || option.fixed) && 'hidden',
                       )}
                       aria-label={`Remover ${option.label}`}
@@ -392,7 +392,7 @@ function MultipleSelector<TValue extends string | number = string | number, TDat
                       }}
                       onClick={() => handleUnselect(option)}
                     >
-                      <X className="hover:text-white text-white/80 h-3 w-3" />
+                      <X className="h-3 w-3 text-white/80 hover:text-white" />
                     </button>
                   </Badge>
                 );

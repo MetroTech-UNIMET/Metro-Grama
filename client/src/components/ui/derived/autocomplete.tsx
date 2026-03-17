@@ -1,7 +1,7 @@
 // Modified from https://www.armand-salle.fr/post/autocomplete-select-shadcn-ui/
 import { useState, useRef, useCallback, type KeyboardEvent, type InputHTMLAttributes, useEffect, useMemo } from 'react';
 import { Check } from 'lucide-react';
-import { Command as CommandPrimitive } from 'cmdk';
+import { Command as CommandPrimitive, defaultFilter } from 'cmdk';
 
 import { CommandInput, CommandGroup, CommandItem, CommandList, Command } from '@/components/ui/command';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -9,13 +9,15 @@ import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from '@/compon
 
 import { transToGroupOption } from '@/components/ui/utils/options';
 import { cn } from '@/lib/utils/className';
+import { normalize } from '@utils/strings';
 
 import type { Option, GroupOption } from '@/components/ui/types/option.types';
 import type { BaseCustomCommand } from './custom-command-items/types';
-// import { filterIgnoringAccents } from "@utils/filters";
 
-export interface AutoCompleteProps<TValue = string | number, TData = undefined>
-  extends Omit<InputHTMLAttributes<HTMLInputElement>, 'value' | 'onSelect'> {
+export interface AutoCompleteProps<TValue = string | number, TData = undefined> extends Omit<
+  InputHTMLAttributes<HTMLInputElement>,
+  'value' | 'onSelect'
+> {
   options: Option<TValue, TData>[] | GroupOption<TValue, TData>;
   emptyIndicator?: React.ReactNode;
   value?: Option<TValue, TData> | Option<TValue, TData>['value'];
@@ -231,11 +233,11 @@ export default function AutoComplete<TValue extends string | number = string | n
     },
     [selected, inputValue, allowFreeInput, onValueChange, onChangeProps, onBlurProps, options, handleSelectOption],
   );
-
   return (
     <Popover open={isOpen || inputIsFocused} onOpenChange={setOpen}>
       <Command
         className="h-auto"
+        filter={(value, search) => defaultFilter(normalize(value), normalize(search))}
         // {...commandProps}
         onKeyDown={(e) => {
           handleKeyDown(e);
@@ -289,7 +291,7 @@ export default function AutoComplete<TValue extends string | number = string | n
         >
           <CommandList
             className={cn(
-              'bg-popover text-popover-foreground animate-in w-[var(--radix-popper-anchor-width)] rounded-md border p-1 shadow-md outline-none',
+              'bg-popover text-popover-foreground animate-in w-(--radix-popper-anchor-width) rounded-md border p-1 shadow-md outline-none',
               listClassName,
             )}
           >

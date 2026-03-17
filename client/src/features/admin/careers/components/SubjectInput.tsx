@@ -65,11 +65,11 @@ function SubjectInput({
   //  onMouseLeave={handleTooltipClose}
   // TODO - Mejorar responsive
   return (
-    <div className="flex flex-row gap-4">
+    <div className="flex flex-row  gap-4">
       <TooltipProvider>
         <Tooltip delayDuration={300}>
           <div className="w-full space-y-4">
-            <fieldset className="flex flex-row gap-4">
+            <fieldset className="flex flex-col sm:flex-row  gap-4">
               <FormAutocompleteField
                 name={`${subjectName}.code`}
                 label="Código de la materia"
@@ -169,7 +169,7 @@ function SubjectInput({
               />
             </fieldset>
 
-            <fieldset className="flex flex-row gap-4">
+            <fieldset className="flex flex-col sm:flex-row  gap-4">
               <FormInputNumberField
                 name={`${subjectName}.credits`}
                 id={`${subjectName}.credits`}

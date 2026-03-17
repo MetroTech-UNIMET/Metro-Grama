@@ -21,6 +21,7 @@ const academicYearSchema = z
 
 export const ofertaSearchSchema = z.object({
   career: createStringIdSchema('career').optional().catch(undefined),
+  includeElectives: z.boolean().default(false),
   year: academicYearSchema.optional().catch(undefined),
 });
 

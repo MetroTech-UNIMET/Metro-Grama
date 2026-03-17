@@ -9,5 +9,8 @@ export const subjectOffers = createQueryKeys('subjectOffers', {
       trimester: (trimesterId: string) => [trimesterId],
     },
   }),
-  byYear: (year?: string, careerId?: string) => [year, careerId],
+  byYear: (year?: string, careerId?: string, includeElectives?: boolean) => [
+    year,
+    { career: careerId, includeElectives },
+  ],
 });

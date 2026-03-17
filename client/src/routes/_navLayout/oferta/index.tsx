@@ -12,9 +12,9 @@ const route = '/_navLayout/oferta/';
 
 export const Route = createFileRoute(route)({
   validateSearch: ofertaSearchSchema,
-  loaderDeps: ({ search: { career, year } }) => ({ career, year }),
-  loader: async ({ deps: { career, year }, context: { queryClient } }) => {
-    queryClient.ensureQueryData(fetchAnnualOfferByYearOptions({ year, career }));
+  loaderDeps: ({ search }) => search,
+  loader: async ({ deps: { career, year, includeElectives }, context: { queryClient } }) => {
+    queryClient.ensureQueryData(fetchAnnualOfferByYearOptions({ year, query: { career, includeElectives } }));
   },
   head: () => ({
     meta: getMetaTags({

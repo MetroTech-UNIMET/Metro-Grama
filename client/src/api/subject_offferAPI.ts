@@ -28,9 +28,15 @@ export interface AnnualOfferByYearItem {
   trimesters: Id[];
 }
 
-export async function getAnnualOfferByYear(year: string, career: string | undefined) {
+export interface Query_AnnualOfferByYear {
+  career?: string;
+  includeElectives?: boolean;
+}
+
+export async function getAnnualOfferByYear(year: string, { career, includeElectives }: Query_AnnualOfferByYear = {}) {
   const params = new URLSearchParams();
   if (career) params.append('career', career);
+  if (includeElectives !== undefined) params.append('includeElectives', String(includeElectives));
 
   const res = await axios.get(`/subject_offer/annual/${encodeURIComponent(year)}?${params.toString()}`);
   return res.data as AnnualOfferByYearItem[];

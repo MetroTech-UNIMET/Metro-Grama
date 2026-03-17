@@ -29,7 +29,7 @@ export function useSelectedCareer({ from, careerOptions, useStudentCareersAsDefa
   useEffect(() => {
     if (gotInitialValue.current || !careerOptions.length) return;
 
-    let id: string | undefined = (search as any)?.career;
+    let id: string | undefined = search?.career;
 
     // If no career in search and flag enabled, try student careers (pick first)
     if ((!id || id.length === 0) && useStudentCareersAsDefault && studentCareersData?.length) {

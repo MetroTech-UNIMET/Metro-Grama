@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { pdfFileSchema } from './schema';
 
 import { useSelectedCareer } from '../hooks/search-params/use-selected-career';
+import { useIncludeElectives } from '../hooks/search-params/use-include-electives';
 import { useMutationUploadAnnualOfferPDF } from '../hooks/mutations/use-mutation-uploadAnnualOfferPDF';
 
 import { useFetchCareersOptions } from '@/hooks/queries/career/use-fetch-careers';
@@ -12,6 +13,7 @@ import { useFetchCareersOptions } from '@/hooks/queries/career/use-fetch-careers
 import AutoComplete from '@ui/derived/autocomplete';
 import { Button } from '@ui/button';
 import { Spinner } from '@ui/spinner';
+import { Checkbox } from '@ui/checkbox';
 
 interface Props {
   year: string | undefined;
@@ -39,6 +41,7 @@ export function OfferHeader({
     careerOptions: careerOptionsQuery.data,
     useStudentCareersAsDefault: true,
   });
+  const { includeElectives, setIncludeElectives } = useIncludeElectives({ from });
 
   // File input ref
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -78,6 +81,11 @@ export function OfferHeader({
           onSelect={(option) => setSelectedCareer(option as any)}
           placeholder="Selecciona carrera"
         />
+
+        <label className="flex items-center gap-2 text-sm">
+          <Checkbox checked={includeElectives} onCheckedChange={(checked) => setIncludeElectives(checked === true)} />
+          <span>Incluir electivas</span>
+        </label>
 
         {showUpload && (
           <>

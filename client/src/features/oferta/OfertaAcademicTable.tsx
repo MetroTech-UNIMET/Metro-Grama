@@ -1,7 +1,7 @@
-import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useSearch } from '@tanstack/react-router';
+import { useIsMutating } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
-import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
 
 import { OfferHeader } from './components/OfferHeader';
 import { ConfirmSaveDialog } from './components/ConfirmSaveDialog';
@@ -9,17 +9,16 @@ import { useAcademicYear } from './hooks/search-params/use-academic-year';
 import { numberToRoman } from './utils/numberToRoman';
 
 import { useFetchAnnualOfferByYear } from '@/hooks/queries/subject_offer/use-fetch-annual-offer-by-year';
-import {
-  useMutationBatchUpdateOffers,
-  type BatchUpdatePayload,
-} from './hooks/mutations/use-mutation-batch-update-offers';
 
 import { cn } from '@utils/className';
+import { mutationKeys } from '@/lib/query-keys';
 
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card } from '@/components/ui/card';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import { ButtonLink } from '@/components/ui/link';
+
+import type { BatchUpdatePayload } from './hooks/mutations/use-mutation-batch-update-offers';
 
 type OfferedCols = { [key: string]: boolean }; // T1, T2, T3, I or others if needed
 
@@ -32,14 +31,15 @@ export function OfertaAcademicTable({ from, editMode }: Props) {
   const { year, setYear, debouncedYear } = useAcademicYear({ from });
   const search = useSearch({ from });
 
-  const { executeRecaptcha } = useGoogleReCaptcha();
+  const isBatchPending =
+    useIsMutating({
+      mutationKey: mutationKeys.offers.batchUpdate,
+    }) > 0;
 
   const { data, isLoading } = useFetchAnnualOfferByYear({
     year: debouncedYear || undefined,
-    career: search.career,
+    query: { career: search.career, includeElectives: search.includeElectives },
   });
-
-  const batchMutation = useMutationBatchUpdateOffers();
 
   const [localOffers, setLocalOffers] = useState<Record<string, OfferedCols>>({});
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
@@ -122,18 +122,6 @@ export function OfertaAcademicTable({ from, editMode }: Props) {
     setIsConfirmOpen(true);
   };
 
-  const handleConfirmSave = useCallback(async () => {
-    if (!executeRecaptcha) return;
-
-    try {
-      const token = await executeRecaptcha('batch_update_offers');
-      await batchMutation.mutateAsync({ changes, captcha: token });
-      setIsConfirmOpen(false);
-    } catch (error) {
-      console.error('ReCAPTCHA failed:', error);
-    }
-  }, [changes, executeRecaptcha, batchMutation]);
-
   return (
     <Card className="space-y-4 p-4">
       <OfferHeader
@@ -142,17 +130,11 @@ export function OfertaAcademicTable({ from, editMode }: Props) {
         from={from}
         showUpload={editMode}
         onSave={handleSaveClick}
-        isSaving={batchMutation.isPending}
+        isSaving={isBatchPending}
         changesCount={changes.length}
       />
 
-      <ConfirmSaveDialog
-        open={isConfirmOpen}
-        onOpenChange={setIsConfirmOpen}
-        onConfirm={handleConfirmSave}
-        isLoading={batchMutation.isPending}
-        changes={changes}
-      />
+      {editMode && <ConfirmSaveDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen} changes={changes} />}
 
       <div className="relative w-full overflow-auto">
         <Table className="min-w-150">
@@ -197,7 +179,9 @@ export function OfertaAcademicTable({ from, editMode }: Props) {
 
                 return (
                   <TableRow key={code} className={cn(period % 2 === 0 && 'bg-muted/30 hover:bg-muted/50')}>
-                    <TableCell className="text-muted-foreground font-medium">{numberToRoman(period)}</TableCell>
+                    <TableCell className="text-muted-foreground text-center font-medium">
+                      {getPeriodSymbol(period)}
+                    </TableCell>
                     <TableCell className="text-muted-foreground font-mono text-xs">{code}</TableCell>
                     <TableCell className="font-medium">{name}</TableCell>
                     {(['T1', 'T2', 'T3', 'I'] as const).map((col) => (
@@ -206,7 +190,7 @@ export function OfertaAcademicTable({ from, editMode }: Props) {
                           <Checkbox
                             checked={rowState[col]}
                             onCheckedChange={() => toggleOffer(code, col)}
-                            disabled={!editMode || batchMutation.isPending}
+                            disabled={!editMode || isBatchPending}
                           />
                         </div>
                       </TableCell>
@@ -222,11 +206,16 @@ export function OfertaAcademicTable({ from, editMode }: Props) {
       {!editMode && (
         <div className="text-muted-foreground flex items-center justify-center gap-2 pt-4 text-sm">
           <span>Si encuentras un error en la oferta académica puedes modificarlo aquí</span>
-          <ButtonLink to="/oferta/edit" search={{}} variant="link" className="h-auto p-0 text-blue-600 underline">
+          <ButtonLink to="/oferta/edit" search={search} variant="link" className="h-auto p-0 text-blue-600 underline">
             Editar oferta
           </ButtonLink>
         </div>
       )}
     </Card>
   );
+}
+
+function getPeriodSymbol(num: number) {
+  if (num > 0) return numberToRoman(num);
+  if (num === 0) return 'ELECTIVA';
 }

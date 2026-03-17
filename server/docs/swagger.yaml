@@ -1664,45 +1664,6 @@ paths:
       summary: Update current student's preferences
       tags:
       - preferences
-  /subject_offer/:
-    get:
-      consumes:
-      - application/json
-      description: |-
-        Returns subject_offer edges with related subject and trimester. Optional filter by careers (CSV of record IDs). Use careers=none to get an error.
-        Nota: Cuando subjectsFilter='enrollable' se requiere sesión de estudiante (student-id en la sesión). No enviar studentId por query.
-      parameters:
-      - description: careers filter (comma-separated RecordIDs)
-        in: query
-        name: careers
-        required: true
-        type: string
-      - default: none
-        description: 'Filtro de materias: ''enrollable'' o ''none'' (default ''none'')'
-        enum:
-        - enrollable
-        - none
-        in: query
-        name: subjectsFilter
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/DTO.QueryAnnualOffer'
-            type: array
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: List all subject_offer edges
-      tags:
-      - subject_offer
   /subject_offer/{subjectId}:
     delete:
       consumes:
@@ -1798,7 +1759,6 @@ paths:
       - description: careers filter (comma-separated RecordIDs)
         in: query
         name: careers
-        required: true
         type: string
       - default: none
         description: 'Filtro de materias: ''enrollable'' o ''none'' (default ''none'')'
@@ -1808,6 +1768,10 @@ paths:
         in: query
         name: subjectsFilter
         type: string
+      - description: Incluir materias electivas (default false)
+        in: query
+        name: includeElectives
+        type: boolean
       produces:
       - application/json
       responses:
@@ -1836,8 +1800,11 @@ paths:
       - description: Filtro de carreras (RecordID)
         in: query
         name: career
-        required: true
         type: string
+      - description: Incluir materias electivas (default false)
+        in: query
+        name: includeElectives
+        type: boolean
       - description: Año académico (e.g. 2425)
         in: path
         name: year

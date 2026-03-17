@@ -6,7 +6,7 @@ import (
 	"io"
 	"net/http"
 	"regexp"
-	"strings"
+	"strconv"
 
 	rateLimitMiddlewares "metrograma/middlewares"
 	authMiddlewares "metrograma/modules/auth/middlewares"
@@ -31,7 +31,6 @@ func Handlers(e *echo.Group) {
 
 	subject_offerGroup.DELETE("/:subjectId", deleteSubjectOffer, rateLimitMiddlewares.WriteRateLimit())
 
-	subject_offerGroup.GET("/", getSubjectOffer)
 	subject_offerGroup.GET("/annual/:year", getAnnualOfferByYear)
 	subject_offerGroup.GET("/:trimesterId", getSubjectOfferById)
 }
@@ -100,36 +99,6 @@ func uploadPDF(c echo.Context) error {
 	return c.JSON(http.StatusCreated, map[string]any{"message": "Oferta académica procesada correctamente", "result": subjectOffer})
 }
 
-// getSubjectOffer godoc
-// @Summary      List all subject_offer edges
-// @Description  Returns subject_offer edges with related subject and trimester. Optional filter by careers (CSV of record IDs). Use careers=none to get an error.
-// @Tags         subject_offer
-// @Accept       json
-// @Produce      json
-// @Param        careers         query     string  true   "careers filter (comma-separated RecordIDs)"
-// @Param        subjectsFilter  query     string  false  "Filtro de materias: 'enrollable' o 'none' (default 'none')" Enums(enrollable,none) default(none)
-// @Description  Nota: Cuando subjectsFilter='enrollable' se requiere sesión de estudiante (student-id en la sesión). No enviar studentId por query.
-// @Success      200       {array}   DTO.QueryAnnualOffer
-// @Failure      500       {object}  map[string]string
-// @Router       /subject_offer/ [get]
-func getSubjectOffer(c echo.Context) error {
-	careers := c.QueryParam("careers")
-	if careers == "" || careers == "none" {
-		return echo.NewHTTPError(http.StatusBadRequest, "El parámetro 'careers' es requerido y debe contener al menos 1 carrera")
-	}
-	// Validate parsed careers contains at least 1 valid RecordID
-	if ids := tools.StringToIdArray(careers); len(ids) == 0 {
-		return echo.NewHTTPError(http.StatusBadRequest, "El parámetro 'careers' debe contener al menos 1 carrera válida")
-	}
-	// Always attempt to get student, ignore error here (no trimester filtering endpoint)
-	_, _ = authMiddlewares.GetStudentFromSession(c)
-	offers, err := services.GetAllSubjectOffers(careers)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
-	}
-	return c.JSON(http.StatusOK, offers)
-}
-
 // getAnnualOfferById godoc
 // @Summary      List subject_offer edges filtered by trimester ID
 // @Description  Returns subject_offer edges for the specified trimester
@@ -137,31 +106,43 @@ func getSubjectOffer(c echo.Context) error {
 // @Accept       json
 // @Produce      json
 // @Param        trimesterId     path      string  true   "Trimester ID"
-// @Param        careers         query     string  true   "careers filter (comma-separated RecordIDs)"
+// @Param        careers         query     string  false   "careers filter (comma-separated RecordIDs)"
 // @Param        subjectsFilter  query     string  false  "Filtro de materias: 'enrollable' o 'none' (default 'none')" Enums(enrollable,none) default(none)
+// @Param        includeElectives query     bool    false  "Incluir materias electivas (default false)"
 // @Description  Nota: Cuando subjectsFilter='enrollable' se requiere sesión de estudiante (student-id en la sesión).
 // @Success      200       {array}   DTO.QueryAnnualOffer
 // @Failure      500       {object}  map[string]string
 // @Router       /subject_offer/{trimesterId} [get]
 func getSubjectOfferById(c echo.Context) error {
 	trimesterId := c.Param("trimesterId")
-	careers := c.QueryParam("careers")
-	if careers == "" || careers == "none" {
-		return echo.NewHTTPError(http.StatusBadRequest, "El parámetro 'careers' es requerido y debe contener al menos 1 carrera")
+	queryParams := DTO.AnnualOfferQueryParams{
+		Careers:        c.QueryParam("careers"),
+		SubjectsFilter: c.QueryParam("subjectsFilter"),
 	}
-	// Validate parsed careers contains at least 1 valid RecordID
-	if ids := tools.StringToIdArray(careers); len(ids) == 0 {
-		return echo.NewHTTPError(http.StatusBadRequest, "El parámetro 'careers' debe contener al menos 1 carrera válida")
+	if includeElectivesRaw := c.QueryParam("includeElectives"); includeElectivesRaw != "" {
+		includeElectives, err := strconv.ParseBool(includeElectivesRaw)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, "includeElectives inválido. Use 'true' o 'false'")
+		}
+		queryParams.IncludeElectives = &includeElectives
+	}
+	if (queryParams.Careers == "" || queryParams.Careers == "none") && queryParams.IncludeElectives == nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Debe enviar al menos uno: 'careers' o 'includeElectives'")
+	}
+	// Validate parsed careers contains at least 1 valid RecordID only when careers is provided.
+	if queryParams.Careers != "" && queryParams.Careers != "none" {
+		if ids := tools.StringToIdArray(queryParams.Careers); len(ids) == 0 {
+			return echo.NewHTTPError(http.StatusBadRequest, "El parámetro 'careers' debe contener al menos 1 carrera válida")
+		}
 	}
 
 	// Always attempt to get student (may be nil if not logged in)
 	student, _ := authMiddlewares.GetStudentFromSession(c)
 
-	subjectsFilter := c.QueryParam("subjectsFilter")
-	if subjectsFilter == "" {
-		subjectsFilter = "none"
+	if queryParams.SubjectsFilter == "" {
+		queryParams.SubjectsFilter = "none"
 	}
-	if subjectsFilter != "none" && subjectsFilter != "enrollable" {
+	if queryParams.SubjectsFilter != "none" && queryParams.SubjectsFilter != "enrollable" {
 		return echo.NewHTTPError(http.StatusBadRequest, "subjectsFilter inválido. Use 'enrollable' o 'none'")
 	}
 
@@ -170,12 +151,11 @@ func getSubjectOfferById(c echo.Context) error {
 		studentId = student.ID
 	}
 	// If enrollable requested but no student, force empty response early (no error thrown per requirement not to throw)
-	if subjectsFilter == "enrollable" && student == nil {
+	if queryParams.SubjectsFilter == "enrollable" && student == nil {
 		return c.JSON(http.StatusOK, []any{})
 	}
 
-	qp := services.AnnualOfferQueryParams{Careers: careers, SubjectsFilter: subjectsFilter}
-	offers, err := services.GetSubjectOfferById(trimesterId, studentId, qp)
+	offers, err := services.GetSubjectOfferById(trimesterId, studentId, queryParams)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 	}
@@ -188,17 +168,28 @@ func getSubjectOfferById(c echo.Context) error {
 // @Tags         subject_offer
 // @Accept       json
 // @Produce      json
-// @Param        career  query string true  "Filtro de carreras (RecordID)"
+// @Param        career  query string false  "Filtro de carreras (RecordID)"
+// @Param        includeElectives query bool false "Incluir materias electivas (default false)"
 // @Param        year     path  string true  "Año académico (e.g. 2425)"
 // @Success      200 {array} DTO.QueryAnnualOfferYear
 // @Failure      400 {object} map[string]string
 // @Failure      500 {object} map[string]string
 // @Router       /subject_offer/annual/{year} [get]
 func getAnnualOfferByYear(c echo.Context) error {
-	career := c.QueryParam("career")
+	queryParams := DTO.AnnualOfferByYearQueryParams{
+		Career: c.QueryParam("career"),
+	}
+	if includeElectivesRaw := c.QueryParam("includeElectives"); includeElectivesRaw != "" {
+		includeElectives, err := strconv.ParseBool(includeElectivesRaw)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, "includeElectives inválido. Use 'true' o 'false'")
+		}
+		queryParams.IncludeElectives = &includeElectives
+	}
+
 	year := c.Param("year")
-	if career == "" || career == "none" {
-		return echo.NewHTTPError(http.StatusBadRequest, "El parámetro 'careers' es requerido y debe contener al menos 1 carrera")
+	if (queryParams.Career == "" || queryParams.Career == "none") && (queryParams.IncludeElectives == nil || !*queryParams.IncludeElectives) {
+		return echo.NewHTTPError(http.StatusBadRequest, "Debe enviar al menos uno: 'career' o 'includeElectives'")
 	}
 
 	if year == "" {
@@ -208,16 +199,16 @@ func getAnnualOfferByYear(c echo.Context) error {
 		return err
 	}
 
-	parts := strings.Split(career, ":")
-	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
-		return echo.NewHTTPError(http.StatusBadRequest, "El parámetro 'career' debe ser un RecordID válido (formato: career:id)")
+	var careerID *surrealModels.RecordID
+	if queryParams.Career != "" && queryParams.Career != "none" {
+		parsedCareerID, err := surrealModels.ParseRecordID(queryParams.Career)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, "El parámetro 'career' no es un RecordID válido")
+		}
+		careerID = parsedCareerID
 	}
 
-	carreerId := surrealModels.NewRecordID(
-		parts[0], parts[1],
-	)
-
-	result, err := services.QueryAnnualOfferByYear(carreerId, year)
+	result, err := services.QueryAnnualOfferByYear(careerID, year, queryParams)
 	if err != nil {
 		if he, ok := err.(*echo.HTTPError); ok {
 			return he

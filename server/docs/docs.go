@@ -1575,61 +1575,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/subject_offer/": {
-            "get": {
-                "description": "Returns subject_offer edges with related subject and trimester. Optional filter by careers (CSV of record IDs). Use careers=none to get an error.\nNota: Cuando subjectsFilter='enrollable' se requiere sesión de estudiante (student-id en la sesión). No enviar studentId por query.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "subject_offer"
-                ],
-                "summary": "List all subject_offer edges",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "careers filter (comma-separated RecordIDs)",
-                        "name": "careers",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "enum": [
-                            "enrollable",
-                            "none"
-                        ],
-                        "type": "string",
-                        "default": "none",
-                        "description": "Filtro de materias: 'enrollable' o 'none' (default 'none')",
-                        "name": "subjectsFilter",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/DTO.QueryAnnualOffer"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            }
-        },
         "/subject_offer/annual/{year}": {
             "get": {
                 "description": "Devuelve materias con su período (trimester plan) y los trimestres en los que se ofrece dentro del año académico dado.",
@@ -1648,8 +1593,13 @@ const docTemplate = `{
                         "type": "string",
                         "description": "Filtro de carreras (RecordID)",
                         "name": "career",
-                        "in": "query",
-                        "required": true
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Incluir materias electivas (default false)",
+                        "name": "includeElectives",
+                        "in": "query"
                     },
                     {
                         "type": "string",
@@ -1943,8 +1893,7 @@ const docTemplate = `{
                         "type": "string",
                         "description": "careers filter (comma-separated RecordIDs)",
                         "name": "careers",
-                        "in": "query",
-                        "required": true
+                        "in": "query"
                     },
                     {
                         "enum": [
@@ -1955,6 +1904,12 @@ const docTemplate = `{
                         "default": "none",
                         "description": "Filtro de materias: 'enrollable' o 'none' (default 'none')",
                         "name": "subjectsFilter",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Incluir materias electivas (default false)",
+                        "name": "includeElectives",
                         "in": "query"
                     }
                 ],

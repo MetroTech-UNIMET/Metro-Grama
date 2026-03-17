@@ -62,11 +62,14 @@ func main() {
 
 	handlers.CreateHandlers(e)
 
-	docs.SwaggerInfo.Host = fmt.Sprintf("localhost:%s", env.GetDotEnv("PORT"))
-	docs.SwaggerInfo.BasePath = "/api"
-	docs.SwaggerInfo.Schemes = []string{"http"}
-	e.GET("/swagger/*", echoSwagger.WrapHandler)
+	if !env.IsProduction {
+		docs.SwaggerInfo.Host = fmt.Sprintf("localhost:%s", env.GetDotEnv("PORT"))
+		docs.SwaggerInfo.BasePath = "/api"
+		docs.SwaggerInfo.Schemes = []string{"http"}
 
+		// La ruta solo existirá en desarrollo/staging
+		e.GET("/swagger/*", echoSwagger.WrapHandler)
+	}
 	e.Logger.Fatal(e.Start(fmt.Sprintf(":%s", env.GetDotEnv("PORT"))))
 
 }

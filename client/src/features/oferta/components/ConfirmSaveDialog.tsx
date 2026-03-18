@@ -10,6 +10,7 @@ import {
   useMutationBatchUpdateOffers,
   type BatchUpdatePayload,
 } from '../hooks/mutations/use-mutation-batch-update-offers';
+import { toast } from 'sonner';
 
 interface Props {
   open: boolean;
@@ -31,7 +32,13 @@ export function ConfirmSaveDialog({ open, onOpenChange, changes }: Props) {
       await batchMutation.mutateAsync({ changes, captcha: token });
       onOpenChange(false);
     } catch (error) {
-      console.error('ReCAPTCHA failed:', error);
+      if (error instanceof Error && error.message.includes('reCAPTCHA')) {
+        toast.error('Error de verificación', {
+          description: 'No se pudo verificar reCAPTCHA. Intente de nuevo.',
+        });
+      }
+      // Mutation errors are handled by the mutation's onError
+      console.error('Save failed:', error);
     }
   }, [changes, executeRecaptcha, batchMutation]);
 

@@ -53,7 +53,7 @@ export function SubjectSheetContent() {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [sheetRef]);
+  }, [sheetRef, selectSubject]);
 
   return (
     <SheetContent ref={setSheetRef} className="sm:max-w-md overflow-y-auto">

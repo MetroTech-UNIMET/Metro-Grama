@@ -7,6 +7,7 @@ import { hotkeysDevtoolsPlugin } from '@tanstack/react-hotkeys-devtools'
 
 import { getRootMeta } from '.';
 
+import { GlobalErrorBoundary } from '@components/GlobalErrorBoundary';
 import { TooltipProvider } from '@ui/tooltip';
 import { Toaster } from '@ui/sonner';
 
@@ -28,7 +29,9 @@ export const Route = createRootRouteWithContext<RootRouteContext>()({
     <>
       <HeadContent />
       <TooltipProvider>
-        <Outlet />
+        <GlobalErrorBoundary>
+          <Outlet />
+        </GlobalErrorBoundary>
 
         <TanStackDevtools
           config={{ position: 'bottom-right' }}

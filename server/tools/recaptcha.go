@@ -30,7 +30,8 @@ func VerifyRecaptcha(token string, action string) (bool, error) {
 		return false, fmt.Errorf("RECAPTCHA_SECRET_KEY not configured")
 	}
 
-	resp, err := http.PostForm("https://www.google.com/recaptcha/api/siteverify",
+	client := &http.Client{Timeout: 5 * time.Second}
+	resp, err := client.PostForm("https://www.google.com/recaptcha/api/siteverify",
 		url.Values{
 			"secret":   {env.RecaptchaSecretKey},
 			"response": {token},

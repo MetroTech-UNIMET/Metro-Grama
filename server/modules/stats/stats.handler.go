@@ -1,7 +1,6 @@
 package stats
 
 import (
-	"fmt"
 	"net/http"
 
 	middlewares "metrograma/modules/auth/middlewares"
@@ -67,7 +66,6 @@ func getSubjectStats(c echo.Context) error {
 
 	// Optional careers filter: comma-separated RecordIDs (e.g., "career:sistemas,career:quimica")
 	careersParam := c.QueryParam("careers")
-	fmt.Printf("Careers param: %s\n", careersParam)
 
 	var careers []surrealModels.RecordID
 	if careersParam == "" {

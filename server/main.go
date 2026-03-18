@@ -1,14 +1,20 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
+	"log/slog"
 	"metrograma/auth"
 	"metrograma/db"
 	"metrograma/env"
 	"metrograma/handlers"
 	"metrograma/middlewares"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/gorilla/sessions"
 	"github.com/labstack/echo-contrib/session"
@@ -32,6 +38,11 @@ import (
 // @name            auth
 
 func main() {
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+		Level: slog.LevelInfo,
+	}))
+	slog.SetDefault(logger)
+
 	env.LoadDotEnv()
 	db.InitSurrealDB()
 	auth.InitGoogleOauth()
@@ -44,11 +55,17 @@ func main() {
 		DisableStackAll:   false,
 		DisablePrintStack: false,
 		LogErrorFunc: func(c echo.Context, err error, stack []byte) error {
-			// Replace with structured logger when available (see BE-M1)
-			log.Printf("[PANIC RECOVERED] %v\n%s", err, string(stack))
+			slog.Error("panic recovered",
+				"error", err,
+				"method", c.Request().Method,
+				"path", c.Request().URL.Path,
+				"stack", string(stack),
+			)
 			return nil
 		},
 	}))
+	e.Use(echoMiddleware.RequestID())
+
 	e.Use(middlewares.Cors())
 
 	store := sessions.NewCookieStore([]byte(env.UserTokenSigninKey))
@@ -81,6 +98,51 @@ func main() {
 		// La ruta solo existirá en desarrollo/staging
 		e.GET("/swagger/*", echoSwagger.WrapHandler)
 	}
-	e.Logger.Fatal(e.Start(fmt.Sprintf(":%s", env.GetDotEnv("PORT"))))
 
+	go func() {
+		port := env.GetDotEnv("PORT")
+		if err := e.Start(fmt.Sprintf(":%s", port)); err != nil && err != http.ErrServerClosed {
+			e.Logger.Fatal("server error", err)
+		}
+	}()
+
+	// Wait for interrupt signal
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+
+	// Graceful shutdown with 10-second timeout
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if err := e.Shutdown(ctx); err != nil {
+		e.Logger.Fatal("forced shutdown", err)
+	}
+	log.Println("Server stopped gracefully")
 }
+
+// TODO
+// BE-M2: Every DB call uses context.Background() instead of request context
+// Files: 82 occurrences across 46 files
+
+// Problem: When a client disconnects (closes browser, network timeout), the DB query continues running. This means:
+
+// Long-running queries block server resources after clients give up
+// No request timeout propagation
+// No request tracing context propagation
+// Memory and goroutine leaks under load
+// Fix — propagate request context through the call chain:
+
+// Add context.Context as the first parameter to all service functions:
+// // Before:
+// func GetCareers() ([]models.CareerEntity, error) {
+//     result, err := surrealdb.Query[...](context.Background(), db.SurrealDB, ...)
+
+// // After:
+// func GetCareers(ctx context.Context) ([]models.CareerEntity, error) {
+//     result, err := surrealdb.Query[...](ctx, db.SurrealDB, ...)
+// Pass the request context from handlers:
+// func getCareers(c echo.Context) error {
+//     careers, err := services.GetCareers(c.Request().Context())
+//     // ...
+// }
+// This is a large refactor. Prioritize: auth services (high traffic), notification services (long-running), and any service that builds complex queries.

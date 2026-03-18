@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"fmt"
 	"metrograma/db"
 	"metrograma/env"
 	"metrograma/models"
@@ -180,8 +179,6 @@ func GetSubjectsElectiveGraph() (models.Graph[DTO.SubjectNodeBase], error) {
 	if err != nil {
 		return models.Graph[DTO.SubjectNodeBase]{}, err
 	}
-
-	fmt.Println(subjectsElective, sql)
 
 	graph := helpers.ProcessSubjectGraph(
 		subjectsElective,

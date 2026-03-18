@@ -3,7 +3,6 @@ package services
 import (
 	"context"
 	"errors"
-	"fmt"
 	"metrograma/db"
 	"metrograma/models"
 	DTO "metrograma/modules/interactions/enroll/DTO"
@@ -52,8 +51,6 @@ func UpdateEnrollment(studentId surrealModels.RecordID, subjectId surrealModels.
 	params["subjectId"] = subjectId
 	params["trimesterId"] = input.TrimesterId
 	params["originalTrimesterId"] = input.OriginalTrimesterId
-
-	fmt.Println(query)
 
 	result, err := surrealdb.Query[models.EnrollEntity](context.Background(), db.SurrealDB, query, params)
 	if err != nil {

@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"metrograma/db"
 	dto "metrograma/modules/careers/DTO"
 	"metrograma/tools"
@@ -93,19 +94,32 @@ func processCareerForm(careerForm dto.CareerCreateForm, electivesTrimesters []in
 			switch careerSubject.SubjectType {
 			case "new":
 				if err == nil {
-					fmt.Printf("subject %s already exists \n", careerSubject.Code)
+					slog.Error("subject already exists for new subject type",
+						"subjectCode", careerSubject.Code,
+						"trimester", trimester,
+						// "requestId", c.Response().Header().Get(echo.HeaderXRequestID),
+					)
 					return fmt.Errorf("subject %s already exists", careerSubject.Code)
 				}
 			case "existing":
 				if err != nil {
-					fmt.Printf("subject %s does not exist \n", careerSubject.Code)
+					slog.Error("subject does not exist for existing subject type",
+						"subjectCode", careerSubject.Code,
+						"trimester", trimester,
+						// "requestId", c.Response().Header().Get(echo.HeaderXRequestID),
+					)
 					return fmt.Errorf("subject %s does not exist", careerSubject.Code)
 				}
 			}
 			for _, subjectPrelation := range careerSubject.Prelations {
 				prelationCode := fmt.Sprint(subjectPrelation.ID)
 				if present, exists := subjectPresence[prelationCode]; !exists || !present {
-					fmt.Printf("the prelation subject code %s for the subject %s does not exist \n", prelationCode, careerSubject.Code)
+					slog.Error("prelation subject does not exist in previous trimesters",
+						"prelationCode", prelationCode,
+						"subjectCode", careerSubject.Code,
+						"trimester", trimester,
+						// "requestId", c.Response().Header().Get(echo.HeaderXRequestID),
+					)
 					return fmt.Errorf("the prelation subject code '%s' for the subject '%s' does not exist", prelationCode, careerSubject.Code)
 				}
 			}

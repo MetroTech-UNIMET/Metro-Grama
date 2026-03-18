@@ -1,7 +1,7 @@
 package friend
 
 import (
-	"fmt"
+	"log/slog"
 	"net/http"
 
 	"metrograma/middlewares"
@@ -55,7 +55,12 @@ func addFriend(c echo.Context) error {
 
 	data, err := services.RelateFriends(me, toAdd)
 	if err != nil {
-		fmt.Println("Error relating friends:", err)
+		slog.Error("failed to relate friends",
+			"error", err,
+			"studentId", me.String(),
+			"studentToAdd", toAdd.String(),
+			"requestId", c.Response().Header().Get(echo.HeaderXRequestID),
+		)
 		return err
 	}
 
@@ -96,7 +101,12 @@ func eliminateFriend(c echo.Context) error {
 
 	data, err := services.UnrelateFriends(me, other)
 	if err != nil {
-		fmt.Println("Error unrelating friends:", err)
+		slog.Error("failed to unrelate friends",
+			"error", err,
+			"studentId", me.String(),
+			"studentToEliminate", other.String(),
+			"requestId", c.Response().Header().Get(echo.HeaderXRequestID),
+		)
 		return err
 	}
 
@@ -139,7 +149,12 @@ func acceptFriend(c echo.Context) error {
 
 	data, err := services.AcceptFriendshipRequest(me, studentToAccept)
 	if err != nil {
-		fmt.Println("Error accepting friend request:", err)
+		slog.Error("failed to accept friend request",
+			"error", err,
+			"studentId", me.String(),
+			"studentToAccept", studentToAccept.String(),
+			"requestId", c.Response().Header().Get(echo.HeaderXRequestID),
+		)
 		return err
 	}
 

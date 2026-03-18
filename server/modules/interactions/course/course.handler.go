@@ -40,7 +40,14 @@ func createCourse(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid body")
 	}
 
-	studentId := c.Get("student-id").(surrealModels.RecordID)
+	raw := c.Get("student-id")
+	if raw == nil {
+		return echo.NewHTTPError(http.StatusUnauthorized)
+	}
+	studentId, ok := raw.(surrealModels.RecordID)
+	if !ok {
+		return echo.NewHTTPError(http.StatusUnauthorized, "Invalid student ID")
+	}
 
 	data, err := services.CreateCourse(studentId, input)
 	if err != nil {

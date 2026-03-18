@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 
+	"metrograma/env"
 	"metrograma/models"
 	DTO "metrograma/modules/notifications/DTO"
 	"metrograma/modules/notifications/services"
@@ -18,7 +20,16 @@ var wsUpgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
 	CheckOrigin: func(r *http.Request) bool {
-		return true
+		origin := r.Header.Get("Origin")
+		if origin == "" {
+			return false
+		}
+		for _, allowed := range strings.Split(env.GetDotEnv("FRONTEND_ADDRS"), ",") {
+			if strings.TrimSpace(allowed) == origin {
+				return true
+			}
+		}
+		return false
 	},
 }
 

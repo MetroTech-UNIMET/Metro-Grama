@@ -2,6 +2,7 @@ package websocket
 
 import (
 	"encoding/json"
+	"log"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -40,6 +41,9 @@ func newClient(hub *Hub, conn *websocket.Conn, userID surrealModels.RecordID, ha
 
 func (c *client) readPump() {
 	defer func() {
+		if r := recover(); r != nil {
+			log.Printf("[WARN] readPump panic for user %s: %v", c.userKey, r)
+		}
 		c.hub.unregister <- c
 		_ = c.conn.Close()
 	}()
@@ -74,6 +78,10 @@ func (c *client) readPump() {
 func (c *client) writePump() {
 	ticker := time.NewTicker(pingPeriod)
 	defer func() {
+		if r := recover(); r != nil {
+			log.Printf("[WARN] readPump panic for user %s: %v", c.userKey, r)
+		}
+
 		ticker.Stop()
 		_ = c.conn.Close()
 	}()

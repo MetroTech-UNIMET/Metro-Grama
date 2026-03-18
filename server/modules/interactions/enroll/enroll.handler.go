@@ -73,7 +73,7 @@ func createEnroll(c echo.Context) error {
 	}
 	studentId, ok := raw.(models.RecordID)
 	if !ok {
-		return echo.NewHTTPError(http.StatusUnauthorized, "Invalid user ID")
+		return echo.NewHTTPError(http.StatusUnauthorized, "Invalid student ID")
 	}
 
 	// Bind DTO
@@ -127,7 +127,7 @@ func updatePassed(c echo.Context) error {
 	}
 	studentId, ok := raw.(models.RecordID)
 	if !ok {
-		return echo.NewHTTPError(http.StatusUnauthorized, "Invalid user ID")
+		return echo.NewHTTPError(http.StatusUnauthorized, "Invalid student ID")
 	}
 
 	var input DTO.UpdateEnrolled
@@ -173,7 +173,7 @@ func getPassed(c echo.Context) error {
 	}
 	studentId, ok := raw.(models.RecordID)
 	if !ok {
-		return echo.NewHTTPError(http.StatusUnauthorized, "Invalid user ID")
+		return echo.NewHTTPError(http.StatusUnauthorized, "Invalid student ID")
 	}
 
 	subjectCode := c.Param("subject")
@@ -237,7 +237,14 @@ func deletePassed(c echo.Context) error {
 // @Failure      500  {object}  map[string]string
 // @Router       /enroll/ [get]
 func getEnrolledSubjects(c echo.Context) error {
-	studentId := c.Get("student-id").(models.RecordID)
+	raw := c.Get("student-id")
+	if raw == nil {
+		return echo.NewHTTPError(http.StatusUnauthorized)
+	}
+	studentId, ok := raw.(models.RecordID)
+	if !ok {
+		return echo.NewHTTPError(http.StatusUnauthorized, "Invalid student ID")
+	}
 	// Optional: onlyPassed query param (defaults to false)
 	onlyPassedStr := c.QueryParam("onlyPassed")
 	opts := services.GetEnrolledSubjectsOptions{}

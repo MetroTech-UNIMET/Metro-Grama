@@ -2,6 +2,7 @@ package websocket
 
 import (
 	"encoding/json"
+	"log"
 	"sync"
 
 	surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
@@ -39,6 +40,12 @@ func getHub() *Hub {
 }
 
 func (h *Hub) run() {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Printf("[CRITICAL] WebSocket hub panicked: %v — restarting", r)
+			go h.run() // restart the hub
+		}
+	}()
 	for {
 		select {
 		case wsClient := <-h.register:

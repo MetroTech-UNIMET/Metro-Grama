@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"metrograma/auth"
 	"metrograma/db"
 	"metrograma/env"
@@ -38,6 +39,16 @@ func main() {
 	e := echo.New()
 	e.Validator = middlewares.NewValidator()
 
+	e.Use(echoMiddleware.RecoverWithConfig(echoMiddleware.RecoverConfig{
+		StackSize:         4 << 10, // 4 KB
+		DisableStackAll:   false,
+		DisablePrintStack: false,
+		LogErrorFunc: func(c echo.Context, err error, stack []byte) error {
+			// Replace with structured logger when available (see BE-M1)
+			log.Printf("[PANIC RECOVERED] %v\n%s", err, string(stack))
+			return nil
+		},
+	}))
 	e.Use(middlewares.Cors())
 
 	store := sessions.NewCookieStore([]byte(env.UserTokenSigninKey))

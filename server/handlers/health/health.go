@@ -1,6 +1,7 @@
 package health
 
 import (
+	"metrograma/db"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -19,5 +20,11 @@ func Handlers(e *echo.Group) {
 // @Success      200  {string}  string
 // @Router       /health [get]
 func health(c echo.Context) error {
-	return c.String(http.StatusOK, "😎")
+	if err := db.HealthCheck(c.Request().Context()); err != nil {
+		return c.JSON(http.StatusServiceUnavailable, map[string]string{
+			"status": "unhealthy",
+			"db":     err.Error(),
+		})
+	}
+	return c.JSON(http.StatusOK, map[string]string{"status": "healthy 😎"})
 }

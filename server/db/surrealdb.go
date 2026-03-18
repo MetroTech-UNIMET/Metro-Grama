@@ -41,3 +41,28 @@ func InitSurrealDB() {
 
 	SurrealDB = db
 }
+
+func HealthCheck(ctx context.Context) error {
+	_, err := surrealdb.Query[any](ctx, SurrealDB, "RETURN true", nil)
+	return err
+}
+
+// TODO
+// fix — add reconnection (longer-term): Wrap SurrealDB in a struct with mutex-protected reconnection logic:
+
+// type DBClient struct {
+//     mu sync.RWMutex
+//     db *surrealdb.DB
+// }
+
+// func (c *DBClient) Get() *surrealdb.DB {
+//     c.mu.RLock()
+//     defer c.mu.RUnlock()
+//     return c.db
+// }
+
+// func (c *DBClient) Reconnect(ctx context.Context) error {
+//     c.mu.Lock()
+//     defer c.mu.Unlock()
+//     // ... reconnection logic
+// }

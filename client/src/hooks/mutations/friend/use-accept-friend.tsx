@@ -6,8 +6,6 @@ import { acceptFriend } from '@/api/interactions/friendApi';
 import { fetchStudentDetailsOptions } from '@/hooks/queries/student/use-fetch-student-details';
 import { mutationKeys, queryKeys } from '@/lib/query-keys';
 
-import type { OtherStudentDetails } from '@/api/interactions/student.types';
-
 interface Props {
   studentId: string;
 }
@@ -38,17 +36,7 @@ export function useAcceptFriend({ studentId }: Props) {
         },
       );
 
-      queryClient.setQueryData(
-        queryKeys.student.details(studentId).queryKey,
-        (oldData: OtherStudentDetails | undefined) => {
-          if (!oldData) return oldData;
-          return {
-            ...oldData,
-            receiving_friendship_status: 'accepted',
-            friendship_status: 'accepted',
-          };
-        },
-      );
+      await queryClient.invalidateQueries({ queryKey: queryKeys.student.details(studentId).queryKey });
     },
     onError: (error) => {
       toast.error('Error al aceptar la solicitud de amistad', {

@@ -11,6 +11,5 @@ COPY . .
 
 ENV GOCACHE=/root/.cache/go-build
 
-RUN --mount=type=cache,target="/root/.cache/go-build" go build -o app.o
-
+RUN --mount=type=cache,target="/root/.cache/go-build" go build -o app.o .
 CMD [ "/app/app.o" ]

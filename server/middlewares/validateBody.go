@@ -22,7 +22,7 @@ func (cv *CustomValidator) Validate(i interface{}) error {
 
 func NewValidator() *CustomValidator {
 	validate := validator.New()
-	regex := regexp.MustCompile(`[\w-\.]+@correo.unimet.edu.ve`)
+	regex := regexp.MustCompile(`^[\w\-\.]+@correo\.unimet\.edu\.ve$`)
 	err := validate.RegisterValidation("unimet_email", func(fl validator.FieldLevel) bool {
 		value := fl.Field().String()
 		return regex.MatchString(value)

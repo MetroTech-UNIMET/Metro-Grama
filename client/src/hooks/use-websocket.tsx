@@ -16,7 +16,7 @@ interface UseWebsocketOptions {
 }
 
 function buildWebsocketUrl(namespace: string) {
-  const baseUrl =  import.meta.env.VITE_WS_URL;
+  const baseUrl = import.meta.env.VITE_WS_URL;
   if (!baseUrl) throw new Error('Setea el .env del websocket');
 
   const normalizedNamespace = namespace.startsWith('/') ? namespace : `/${namespace}`;
@@ -43,13 +43,7 @@ function buildWebsocketUrl(namespace: string) {
   }
 }
 
-export function useWebsocket({
-  namespace,
-  onConnect,
-  onDisconnect,
-  onError,
-  onEvents = {},
-}: UseWebsocketOptions) {
+export function useWebsocket({ namespace, onConnect, onDisconnect, onError, onEvents = {} }: UseWebsocketOptions) {
   const socketRef = useRef<WebSocket | null>(null);
 
   const handleConnect = useEffectEvent((socket: WebSocket) => {
@@ -82,25 +76,62 @@ export function useWebsocket({
   });
 
   useEffect(() => {
-    const socket = new WebSocket(buildWebsocketUrl(namespace));
-    socketRef.current = socket;
+    let retryCount = 0;
+    let retryTimeout: ReturnType<typeof setTimeout> | null = null;
+    let unmounted = false;
 
-    const openListener = () => handleConnect(socket);
-    const closeListener = () => handleDisconnect(socket);
-    const errorListener = (event: Event) => handleError(event, socket);
-    const messageListener = (event: MessageEvent) => handleMessage(event, socket);
+    const connect = () => {
+      if (unmounted) return;
 
-    socket.addEventListener('open', openListener);
-    socket.addEventListener('close', closeListener);
-    socket.addEventListener('error', errorListener);
-    socket.addEventListener('message', messageListener);
+      const socket = new WebSocket(buildWebsocketUrl(namespace));
+      socketRef.current = socket;
+
+      const openListener = () => {
+        if (unmounted) return;
+        retryCount = 0;
+        handleConnect(socket);
+      };
+
+      const closeListener = () => {
+        if (unmounted) return;
+
+        handleDisconnect(socket);
+        const delay = Math.min(1000 * 2 ** retryCount, 30000);
+        retryCount += 1;
+
+        if (retryTimeout) {
+          clearTimeout(retryTimeout);
+        }
+        retryTimeout = setTimeout(connect, delay);
+      };
+
+      const errorListener = (event: Event) => {
+        if (unmounted) return;
+        handleError(event, socket);
+      };
+
+      const messageListener = (event: MessageEvent) => {
+        if (unmounted) return;
+        handleMessage(event, socket);
+      };
+
+      socket.addEventListener('open', openListener);
+      socket.addEventListener('close', closeListener);
+      socket.addEventListener('error', errorListener);
+      socket.addEventListener('message', messageListener);
+    };
+
+    connect();
 
     return () => {
-      socket.removeEventListener('open', openListener);
-      socket.removeEventListener('close', closeListener);
-      socket.removeEventListener('error', errorListener);
-      socket.removeEventListener('message', messageListener);
-      socket.close();
+      unmounted = true;
+      if (retryTimeout) {
+        clearTimeout(retryTimeout);
+      }
+
+      const socket = socketRef.current;
+      socket?.close();
+
       if (socketRef.current === socket) {
         socketRef.current = null;
       }
@@ -121,3 +152,25 @@ export function useWebsocket({
 
   return { emit, socket: socketRef.current };
 }
+
+// TODO
+// FE-H5: Auth token exposed in WebSocket URL query parameter
+// File: client/src/hooks/use-websocket.tsx Lines: 35–38
+
+// Problem: Same issue as BE-H7 but from the client side. The token appears in browser history, developer tools, and can be leaked.
+
+// Current code:
+
+// const token = getAuthToken();
+// if (token) {
+//     url.searchParams.set('token', token);
+// }
+// Fix (short-term): This is acceptable if the backend requires it for the initial WebSocket handshake. Document the tradeoff.
+
+// Fix (long-term): Send the token as the first message after connection opens instead of in the URL:
+
+// socket.addEventListener('open', () => {
+//     socket.send(JSON.stringify({ event: 'auth', payload: { token: getAuthToken() } }));
+//     onConnectRef.current?.(socket);
+// });
+// This requires backend changes to handle auth via message instead of query parameter.

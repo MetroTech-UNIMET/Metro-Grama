@@ -155,7 +155,8 @@ func isAllowedRedirect(target string, req *http.Request) bool {
 
 func normalizeRedirect(target string) string {
 	if strings.HasPrefix(target, "/") {
-		base := strings.TrimRight(env.GetDotEnv("FRONTEND_ADDRS"), "/")
+		addrs := strings.Split(env.GetDotEnv("FRONTEND_ADDRS"), ",")
+		base := strings.TrimRight(strings.TrimSpace(addrs[0]), "/")
 		return base + target
 	}
 	return target

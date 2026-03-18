@@ -7,6 +7,7 @@ import (
 	"metrograma/db"
 	"metrograma/models"
 	DTO "metrograma/modules/interactions/enroll/DTO"
+	"metrograma/tools"
 
 	"github.com/surrealdb/surrealdb.go"
 	"github.com/surrealdb/surrealdb.go/contrib/surrealql"
@@ -54,15 +55,15 @@ func UpdateEnrollment(studentId surrealModels.RecordID, subjectId surrealModels.
 
 	fmt.Println(query)
 
-	resultUpdate, err := surrealdb.Query[models.EnrollEntity](context.Background(), db.SurrealDB, query, params)
+	result, err := surrealdb.Query[models.EnrollEntity](context.Background(), db.SurrealDB, query, params)
 	if err != nil {
 		return models.EnrollEntity{}, err
 	}
 
-	if len(*resultUpdate) == 0 {
+	enrollment, err := tools.SafeResult(result, 0)
+	if err != nil {
 		return models.EnrollEntity{}, errors.New("failed to update enrollment")
 	}
-	enrollment := (*resultUpdate)[0].Result
 
 	return enrollment, nil
 }

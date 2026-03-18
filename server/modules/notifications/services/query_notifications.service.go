@@ -6,6 +6,7 @@ import (
 	"metrograma/db"
 	"metrograma/models"
 	"metrograma/modules/notifications/DTO"
+	"metrograma/tools"
 
 	"github.com/surrealdb/surrealdb.go"
 	"github.com/surrealdb/surrealdb.go/contrib/surrealql"
@@ -29,7 +30,10 @@ func GetNotificationsByUser(userID surrealModels.RecordID) (DTO.NotificationDTO,
 	}
 
 	// FIXME - Por alguna razon no puedo pasar DTO.NotificationDTO al query
-	result := (*res)[len(*res)-2].Result
+	result, err := tools.SafeResult(res, -2)
+	if err != nil {
+		return DTO.NotificationDTO{}, err
+	}
 
 	return result, nil
 }
@@ -46,7 +50,10 @@ func GetNotificationFriendAccepted(friendId surrealModels.RecordID) (models.Noti
 		return models.Notification{}, err
 	}
 
-	result := (*res)[0].Result
+	result, err := tools.SafeResult(res, 0)
+	if err != nil {
+		return models.Notification{}, err
+	}
 
 	return result, nil
 }
@@ -63,7 +70,10 @@ func GetNotificationFriendRequest(friendId surrealModels.RecordID) (models.Notif
 		return models.Notification{}, err
 	}
 
-	result := (*res)[0].Result
+	result, err := tools.SafeResult(res, 0)
+	if err != nil {
+		return models.Notification{}, err
+	}
 
 	return result, nil
 }
@@ -89,7 +99,10 @@ func GetNotificationsSubjectSectionUpdate(subjectSectionIds []surrealModels.Reco
 		return nil, err
 	}
 
-	notifs := (*res)[0].Result
+	notifs, err := tools.SafeResult(res, 0)
+	if err != nil {
+		return []models.Notification{}, nil
+	}
 	return notifs, nil
 }
 

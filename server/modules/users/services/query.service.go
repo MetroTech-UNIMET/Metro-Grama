@@ -4,6 +4,7 @@ import (
 	"context"
 	"metrograma/db"
 	"metrograma/modules/users/DTO"
+	"metrograma/tools"
 
 	"github.com/surrealdb/surrealdb.go"
 	"github.com/surrealdb/surrealdb.go/contrib/surrealql"
@@ -25,7 +26,10 @@ func GetUser(id surrealModels.RecordID) (DTO.UserProfile, error) {
 		return DTO.UserProfile{}, err
 	}
 
-	user := (*result)[0].Result
+	user, err := tools.SafeResult(result, 0)
+	if err != nil {
+		return DTO.UserProfile{}, err
+	}
 
 	return user, nil
 }

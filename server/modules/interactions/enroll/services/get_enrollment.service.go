@@ -5,6 +5,7 @@ import (
 	"errors"
 	"metrograma/db"
 	"metrograma/models"
+	"metrograma/tools"
 
 	"github.com/surrealdb/surrealdb.go"
 	"github.com/surrealdb/surrealdb.go/contrib/surrealql"
@@ -20,16 +21,15 @@ func GetEnrollment(studentId surrealModels.RecordID, subjectId surrealModels.Rec
 
 	query, params := qb.Build()
 
-	resultSelect, err := surrealdb.Query[models.EnrollEntity](context.Background(), db.SurrealDB, query, params)
+	result, err := surrealdb.Query[models.EnrollEntity](context.Background(), db.SurrealDB, query, params)
 	if err != nil {
 		return models.EnrollEntity{}, err
 	}
 
-	if len(*resultSelect) == 0 {
+	enrollment, err := tools.SafeResult(result, 0)
+	if err != nil {
 		return models.EnrollEntity{}, errors.New("enrollment not found")
 	}
-
-	enrollment := (*resultSelect)[0].Result
 
 	return enrollment, nil
 }

@@ -7,6 +7,7 @@ import (
 	notificationServices "metrograma/modules/notifications/services"
 	notificationws "metrograma/modules/notifications/websocket"
 	"metrograma/modules/subject_schedule/DTO"
+	"metrograma/tools"
 
 	"github.com/surrealdb/surrealdb.go"
 	"github.com/surrealdb/surrealdb.go/contrib/surrealql"
@@ -96,7 +97,10 @@ func CreateSubjectSchedule(input DTO.CreateSubjectSchedule, userId surrealmodels
 	if err != nil {
 		return nil, err
 	}
-	schedules := (*result)[0].Result
+	schedules, err := tools.SafeResult(result, 0)
+	if err != nil {
+		return nil, err
+	}
 
 	subjectSectionIds := make([]surrealmodels.RecordID, 0, len(sectionsToUpdate))
 	for _, sec := range sectionsToUpdate {

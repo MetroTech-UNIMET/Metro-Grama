@@ -5,6 +5,7 @@ import (
 	"metrograma/db"
 	"metrograma/models"
 	"metrograma/modules/auth/services"
+	"metrograma/tools"
 	"net/http"
 	"strings"
 
@@ -47,7 +48,10 @@ func GetStudentFromSession(c echo.Context) (*models.StudentWithUser, error) {
 		return nil, echo.NewHTTPError(http.StatusUnauthorized)
 	}
 
-	student := (*res)[0].Result
+	student, err := tools.SafeResult(res, 0)
+	if err != nil {
+		return nil, echo.NewHTTPError(http.StatusBadRequest, "query failed: %w", err)
+	}
 	if !student.User.Verified {
 		return nil, echo.NewHTTPError(http.StatusUnauthorized, "El estudiante no está verificado")
 	}

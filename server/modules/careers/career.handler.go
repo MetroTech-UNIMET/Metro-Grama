@@ -68,7 +68,7 @@ func createCareer(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusConflict, fmt.Errorf("career with id '%s' already exists", careerID))
 	}
 
-	if err := services.CreateCareer(careerForm); err != nil {
+	if _, err := services.CreateCareer(careerForm); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 
@@ -106,7 +106,7 @@ func deleteCareer(c echo.Context) error {
 	if err := services.DeleteCareer(target.ID); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
-	return nil
+	return c.NoContent(http.StatusNoContent)
 }
 
 type updateCareerWithSubjectsParam struct {

@@ -79,3 +79,17 @@ func ToIdArray(value []string) []models.RecordID {
 	}
 	return recordIDs
 }
+
+func SafeResult[T any](result *[]surrealdb.QueryResult[T], index int) (T, error) {
+	var zero T
+	if result == nil {
+		return zero, fmt.Errorf("query returned nil result")
+	}
+	if index < 0 {
+		index = len(*result) + index
+	}
+	if index < 0 || index >= len(*result) {
+		return zero, fmt.Errorf("query result index %d out of range (len=%d)", index, len(*result))
+	}
+	return (*result)[index].Result, nil
+}

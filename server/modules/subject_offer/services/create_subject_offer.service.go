@@ -6,6 +6,7 @@ import (
 	"metrograma/db"
 	"metrograma/models"
 	"metrograma/modules/subject_offer/DTO"
+	"metrograma/tools"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -85,7 +86,10 @@ func RelateSubjectToTrimester(subjectId surrealModels.RecordID, trimesterId surr
 		return models.SubjectOfferEntity{}, err
 	}
 
-	subjectOffer := (*result)[0].Result
+	subjectOffer, err := tools.SafeResult(result, 0)
+	if err != nil {
+		return models.SubjectOfferEntity{}, err
+	}
 	return subjectOffer, nil
 
 }

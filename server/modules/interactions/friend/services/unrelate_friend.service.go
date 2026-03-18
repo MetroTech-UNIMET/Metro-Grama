@@ -6,6 +6,7 @@ import (
 
 	"metrograma/db"
 	"metrograma/models"
+	"metrograma/tools"
 
 	"github.com/labstack/echo/v4"
 	"github.com/surrealdb/surrealdb.go"
@@ -32,11 +33,11 @@ func UnrelateFriends(me surrealModels.RecordID, other surrealModels.RecordID) (m
 	if err != nil {
 		return models.FriendEntity{}, err
 	}
-	if res == nil || len(*res) == 0 {
+
+	friend, err := tools.SafeResult(res, 0)
+	if err != nil {
 		return models.FriendEntity{}, echo.NewHTTPError(http.StatusInternalServerError, "Se eliminó pero no se devolvieron datos")
 	}
-
-	friend := (*res)[0].Result
 	if len(friend) == 0 {
 		return models.FriendEntity{}, echo.NewHTTPError(http.StatusInternalServerError, "Se eliminó pero no se devolvieron datos")
 	}

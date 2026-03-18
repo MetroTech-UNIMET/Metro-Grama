@@ -9,6 +9,7 @@ import (
 	"metrograma/models"
 	"metrograma/modules/notifications/services"
 	notificationsws "metrograma/modules/notifications/websocket"
+	"metrograma/tools"
 
 	"github.com/labstack/echo/v4"
 	"github.com/surrealdb/surrealdb.go"
@@ -75,11 +76,11 @@ func RelateFriends(me surrealModels.RecordID, other surrealModels.RecordID) (mod
 		return models.FriendEntity{}, err
 	}
 
-	if res == nil || len(*res) == 0 {
+	// FIXME For some reason, I have to get the second to last
+	last, err := tools.SafeResult(res, -2)
+	if err != nil {
 		return models.FriendEntity{}, echo.NewHTTPError(http.StatusInternalServerError, "No se recibió respuesta de la transacción")
 	}
-	// FIXME For some reason, I have to get the second to last
-	last := (*res)[len(*res)-2].Result
 
 	notification, err := services.GetNotificationFriendRequest(last.ID)
 	if err != nil {

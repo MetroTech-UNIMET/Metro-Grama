@@ -5,6 +5,7 @@ import (
 	"metrograma/db"
 	"metrograma/models"
 	DTO "metrograma/modules/interactions/enroll/DTO"
+	"metrograma/tools"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -30,7 +31,11 @@ func EnrollStudent(studentId surrealModels.RecordID, subjectId surrealModels.Rec
 		return models.EnrollEntity{}, err
 	}
 
-	isEnrollable := (*result_Is_Subject_Enrollable)[0].Result[0]
+	isEnrollableResult, err := tools.SafeResult(result_Is_Subject_Enrollable, 0)
+	if err != nil || len(isEnrollableResult) == 0 {
+		return models.EnrollEntity{}, echo.NewHTTPError(http.StatusForbidden, "El estudiante no cumple con los requisitos para inscribirse en esta materia")
+	}
+	isEnrollable := isEnrollableResult[0]
 	if !isEnrollable {
 		return models.EnrollEntity{}, echo.NewHTTPError(http.StatusForbidden, "El estudiante no cumple con los requisitos para inscribirse en esta materia")
 	}
@@ -48,7 +53,10 @@ func EnrollStudent(studentId surrealModels.RecordID, subjectId surrealModels.Rec
 	if err != nil {
 		return models.EnrollEntity{}, err
 	}
-	enrollmentData := (*result)[0].Result
+	enrollmentData, err := tools.SafeResult(result, 0)
+	if err != nil || len(enrollmentData) == 0 {
+		return models.EnrollEntity{}, echo.NewHTTPError(http.StatusInternalServerError, "No se pudo crear la inscripción")
+	}
 
 	return enrollmentData[0], nil
 }

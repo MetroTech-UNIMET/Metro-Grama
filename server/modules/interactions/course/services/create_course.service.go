@@ -54,6 +54,9 @@ func CreateCourse(studentId surrealModels.RecordID, input DTO.CreateCourse) (mod
 	if err != nil {
 		return models.CourseEntity{}, err
 	}
-	course := (*res)[0].Result
+	course, err := tools.SafeResult(res, 0)
+	if err != nil {
+		return models.CourseEntity{}, err
+	}
 	return course, nil
 }

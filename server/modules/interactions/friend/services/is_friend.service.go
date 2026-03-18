@@ -4,6 +4,7 @@ import (
 	"context"
 	"metrograma/db"
 	"metrograma/models"
+	"metrograma/tools"
 
 	"github.com/surrealdb/surrealdb.go"
 	"github.com/surrealdb/surrealdb.go/contrib/surrealql"
@@ -26,7 +27,10 @@ func IsFriend(a, b surrealModels.RecordID) (bool, error) {
 		return false, err
 	}
 
-	friendEntities := (*res)[0].Result
+	friendEntities, err := tools.SafeResult(res, 0)
+	if err != nil {
+		return false, nil
+	}
 
 	if len(friendEntities) == 2 {
 		return true, nil
@@ -43,7 +47,10 @@ func IsFriendOfAFriend(a, b surrealModels.RecordID) (bool, error) {
 		return false, err
 	}
 
-	isFriendOfAFriend := (*res)[0].Result
+	isFriendOfAFriend, err := tools.SafeResult(res, 0)
+	if err != nil {
+		return false, nil
+	}
 
 	return isFriendOfAFriend, nil
 }

@@ -17,7 +17,10 @@ func DeleteUserByEmail(email string) error {
 		return err
 	}
 
-	data := (*result)[0].Result
+	data, err := tools.SafeResult(result, 0)
+	if err != nil {
+		return err
+	}
 
 	return tools.GetSurrealErrorMsgs(data)
 }

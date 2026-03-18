@@ -47,11 +47,10 @@ func useGetSubjectsQuery(careers string) ([]DTO.SubjectsByCareers, error) {
 			return nil, err
 		}
 
-		if len(*result) == 0 {
+		porqueria, err := tools.SafeResult(result, 0)
+		if err != nil {
 			return []DTO.SubjectsByCareers{}, nil
 		}
-
-		porqueria := (*result)[0].Result
 		subjects := make([]DTO.SubjectsByCareers, len(porqueria))
 
 		for i, item := range porqueria {
@@ -83,12 +82,12 @@ func useGetSubjectsQuery(careers string) ([]DTO.SubjectsByCareers, error) {
 		if err != nil {
 			return nil, err
 		}
-
-		if len(*result) == 0 {
+		subjects, err := tools.SafeResult(result, 0)
+		if err != nil {
 			return []DTO.SubjectsByCareers{}, nil
 		}
 
-		return (*result)[0].Result, nil
+		return subjects, nil
 	}
 }
 
@@ -114,8 +113,10 @@ func GetSubjects(careers string) ([]DTO.SubjectNode, error) {
 	if err != nil {
 		return []DTO.SubjectNode{}, err
 	}
-
-	subjects := (*result)[0].Result
+	subjects, err := tools.SafeResult(result, 0)
+	if err != nil {
+		return []DTO.SubjectNode{}, err
+	}
 
 	if len(subjects) == 0 {
 		return []DTO.SubjectNode{}, echo.NewHTTPError(http.StatusNotFound, "No hay materias para las carreras proporcionadas")
@@ -175,8 +176,10 @@ func GetSubjectsElectiveGraph() (models.Graph[DTO.SubjectNodeBase], error) {
 	if err != nil {
 		return models.Graph[DTO.SubjectNodeBase]{}, err
 	}
-
-	subjectsElective := (*res)[0].Result
+	subjectsElective, err := tools.SafeResult(res, 0)
+	if err != nil {
+		return models.Graph[DTO.SubjectNodeBase]{}, err
+	}
 
 	fmt.Println(subjectsElective, sql)
 
@@ -229,14 +232,11 @@ func GetEnrollableSubjects(studentId surrealModels.RecordID) ([]surrealModels.Re
 	if err != nil {
 		return nil, err
 	}
-	// The RETURN result will be in the last meaningful statement's result.
-	// For safety, pick the last QueryResult entry.
-	if res == nil || len(*res) == 0 {
+	// Por alguna razon antes era -1 y ahora tiene que ser -2
+	ids, err := tools.SafeResult(res, -2)
+	if err != nil {
 		return []surrealModels.RecordID{}, nil
 	}
-	// Por alguna razon antes era -1 y ahora tiene que ser -2
-	qr := (*res)[len(*res)-2]
-	ids := qr.Result
 	if ids == nil {
 		return []surrealModels.RecordID{}, nil
 	}

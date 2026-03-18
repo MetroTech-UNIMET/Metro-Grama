@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"metrograma/db"
 	"metrograma/models"
+	"metrograma/tools"
 
 	"github.com/surrealdb/surrealdb.go"
 	"github.com/surrealdb/surrealdb.go/contrib/surrealql"
@@ -25,7 +26,10 @@ func GetAllTrimesters(noFuture bool) ([]models.TrimesterEntity, error) {
 	if err != nil {
 		return []models.TrimesterEntity{}, err
 	}
-	trimesters := (*result)[0].Result
+	trimesters, err := tools.SafeResult(result, 0)
+	if err != nil {
+		return []models.TrimesterEntity{}, err
+	}
 
 	if len(trimesters) == 0 {
 		return []models.TrimesterEntity{}, fmt.Errorf("no trimesters found")

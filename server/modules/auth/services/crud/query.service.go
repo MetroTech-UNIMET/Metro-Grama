@@ -5,6 +5,7 @@ import (
 	"metrograma/db"
 	"metrograma/models"
 	"metrograma/modules/auth/DTO"
+	"metrograma/tools"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -27,7 +28,10 @@ func ExistUserByEmail(email string) (*DTO.MinimalUser, error) {
 		return nil, err
 	}
 
-	user := (*result)[0].Result
+	user, err := tools.SafeResult(result, 0)
+	if err != nil {
+		return nil, err
+	}
 	if user.ID.ID == nil {
 		return nil, echo.NewHTTPError(http.StatusNotFound, "incorrect credentials")
 	}

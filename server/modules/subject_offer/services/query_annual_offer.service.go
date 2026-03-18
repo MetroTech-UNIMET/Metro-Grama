@@ -4,6 +4,7 @@ import (
 	"context"
 	"metrograma/db"
 	"metrograma/modules/subject_offer/DTO"
+	"metrograma/tools"
 	"sort"
 
 	"github.com/surrealdb/surrealdb.go/contrib/surrealql"
@@ -75,7 +76,10 @@ func QueryAnnualOfferByYear(career *surrealModels.RecordID, year string, queryPa
 	if err != nil {
 		return nil, err
 	}
-	offers := (*res)[0].Result
+	offers, err := tools.SafeResult(res, 0)
+	if err != nil {
+		return []DTO.QueryAnnualOfferYear{}, nil
+	}
 
 	if offers == nil {
 		offers = []DTO.QueryAnnualOfferYear{}

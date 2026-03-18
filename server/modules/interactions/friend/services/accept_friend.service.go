@@ -8,6 +8,7 @@ import (
 	"metrograma/models"
 	"metrograma/modules/notifications/services"
 	notificationsws "metrograma/modules/notifications/websocket"
+	"metrograma/tools"
 
 	"github.com/labstack/echo/v4"
 	"github.com/surrealdb/surrealdb.go"
@@ -42,12 +43,12 @@ func AcceptFriendshipRequest(me surrealModels.RecordID, other surrealModels.Reco
 	if err != nil {
 		return models.FriendEntity{}, err
 	}
-	if res == nil || len(*res) == 0 {
-		return models.FriendEntity{}, echo.NewHTTPError(http.StatusInternalServerError, "No se pudo eliminar la relación de amistad")
-	}
 
 	// FIXME - For some reason, I have to get the second to last
-	acceptedFriendRequest := (*res)[len(*res)-2].Result
+	acceptedFriendRequest, err := tools.SafeResult(res, -2)
+	if err != nil {
+		return models.FriendEntity{}, echo.NewHTTPError(http.StatusInternalServerError, "No se pudo eliminar la relación de amistad")
+	}
 
 	notification, err := services.GetNotificationFriendAccepted(acceptedFriendRequest.ID)
 	if err != nil {

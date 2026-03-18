@@ -5,6 +5,7 @@ import (
 
 	"metrograma/db"
 	"metrograma/models"
+	"metrograma/tools"
 
 	"github.com/surrealdb/surrealdb.go"
 	"github.com/surrealdb/surrealdb.go/contrib/surrealql"
@@ -32,7 +33,10 @@ func MarkNotificationsAsRead(userID surrealModels.RecordID, notificationIDs []su
 		return nil, err
 	}
 
-	updated := (*res)[0].Result
+	updated, err := tools.SafeResult(res, 0)
+	if err != nil {
+		return []models.Notification{}, nil
+	}
 	if updated == nil {
 		return []models.Notification{}, nil
 	}

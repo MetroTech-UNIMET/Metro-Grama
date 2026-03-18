@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"metrograma/db"
+	"metrograma/tools"
 
 	surrealdb "github.com/surrealdb/surrealdb.go"
 	"github.com/surrealdb/surrealdb.go/contrib/surrealql"
@@ -20,10 +21,11 @@ func GetStudentCareers(studentId surrealModels.RecordID) ([]surrealModels.Record
 	if err != nil {
 		return nil, err
 	}
-	if res == nil || len(*res) == 0 {
+	careers, err := tools.SafeResult(res, 0)
+	if err != nil {
 		return []surrealModels.RecordID{}, nil
 	}
-	careers := (*res)[0].Result
+
 	if careers == nil {
 		return []surrealModels.RecordID{}, nil
 	}

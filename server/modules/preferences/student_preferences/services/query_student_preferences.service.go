@@ -4,6 +4,7 @@ import (
 	"context"
 	"metrograma/db"
 	"metrograma/models"
+	"metrograma/tools"
 
 	"github.com/surrealdb/surrealdb.go"
 	"github.com/surrealdb/surrealdb.go/contrib/surrealql"
@@ -20,7 +21,10 @@ func GetStudentPreferencesByStudent(studentId surrealModels.RecordID) (models.St
 		return models.StudentPreferencesEntity{}, err
 	}
 
-	preference := (*res)[0].Result
+	preference, err := tools.SafeResult(res, 0)
+	if err != nil {
+		return models.StudentPreferencesEntity{}, err
+	}
 
 	return preference, nil
 

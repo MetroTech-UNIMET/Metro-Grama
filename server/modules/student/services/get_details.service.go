@@ -9,6 +9,7 @@ import (
 	studentPreferenceServices "metrograma/modules/preferences/student_preferences/services"
 	studentDTO "metrograma/modules/student/DTO"
 	"metrograma/modules/student/utils"
+	"metrograma/tools"
 
 	surrealdb "github.com/surrealdb/surrealdb.go"
 	"github.com/surrealdb/surrealdb.go/contrib/surrealql"
@@ -106,10 +107,10 @@ func GetStudentDetails(studentId surrealModels.RecordID, loggedUserId *surrealMo
 	if err != nil {
 		return nil, err
 	}
-	if res == nil || len(*res) == 0 {
+	data, err := tools.SafeResult(res, 0)
+	if err != nil {
 		return nil, nil
 	}
-	data := (*res)[0].Result
 
 	return &data, nil
 }

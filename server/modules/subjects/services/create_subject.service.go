@@ -6,6 +6,7 @@ import (
 	"metrograma/db"
 	"metrograma/models"
 	"metrograma/modules/subjects/DTO"
+	"metrograma/tools"
 
 	"github.com/surrealdb/surrealdb.go"
 	"github.com/surrealdb/surrealdb.go/contrib/surrealql"
@@ -36,9 +37,13 @@ func CreateSubjectElective(subject DTO.SubjectElectiveForm) (models.SubjectEntit
 	}
 
 	// FIXME - Por alguna razon, a no puedo pasar models.SubjectEntity al query
-	rawSubject, ok := (*result)[4].Result.(map[string]any)
+	rawSubjectResult, err := tools.SafeResult(result, 4)
+	if err != nil {
+		return models.SubjectEntity{}, fmt.Errorf("error creating subject: %w", err)
+	}
+	rawSubject, ok := rawSubjectResult.(map[string]any)
 	if !ok {
-		return models.SubjectEntity{}, fmt.Errorf("error creating subject: unexpected result type %T", (*result)[4].Result)
+		return models.SubjectEntity{}, fmt.Errorf("error creating subject: unexpected result type %T", rawSubjectResult)
 	}
 
 	data := models.SubjectEntity{

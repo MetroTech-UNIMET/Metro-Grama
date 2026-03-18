@@ -12,12 +12,12 @@ import (
 	surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
 )
 
-func CreateCareer(careerForm dto.CareerCreateForm) any {
+func CreateCareer(careerForm dto.CareerCreateForm) (any, error) {
 	electivesTrimesters := []int{}
 
 	processErr := processCareerForm(careerForm, electivesTrimesters)
 	if processErr != nil {
-		return processErr
+		return nil, processErr
 	}
 
 	careerId := surrealModels.NewRecordID("career", careerForm.Id)
@@ -68,9 +68,9 @@ func CreateCareer(careerForm dto.CareerCreateForm) any {
 
 	data, err := surrealdb.Query[any](context.Background(), db.SurrealDB, sql, params)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return tools.GetSurrealErrorMsgs(data)
+	return tools.GetSurrealErrorMsgs(data), nil
 }
 
 func processCareerForm(careerForm dto.CareerCreateForm, electivesTrimesters []int) error {

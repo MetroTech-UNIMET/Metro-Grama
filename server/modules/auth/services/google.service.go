@@ -2,6 +2,7 @@ package services
 
 import (
 	"fmt"
+	"log"
 	"metrograma/env"
 	"metrograma/modules/auth/DTO"
 	"net/http"
@@ -42,7 +43,10 @@ func OauthGoogleLogin(c echo.Context) error {
 				sess.Values["redirect"] = r
 			}
 		}
-		sess.Save(c.Request(), c.Response())
+		if err := sess.Save(c.Request(), c.Response()); err != nil {
+			// Log the error — don't block the flow, but make it visible
+			log.Printf("[WARN] Failed to save session: %v", err)
+		}
 	}
 
 	// Tell Goth we are using "google"
@@ -118,7 +122,10 @@ func OauthGoogleCallback(c echo.Context) error {
 			finalRedirect = r
 			// Clear it
 			delete(sess.Values, "redirect")
-			sess.Save(c.Request(), c.Response())
+			if err := sess.Save(c.Request(), c.Response()); err != nil {
+				// Log the error — don't block the flow, but make it visible
+				log.Printf("[WARN] Failed to save session: %v", err)
+			}
 		}
 	}
 

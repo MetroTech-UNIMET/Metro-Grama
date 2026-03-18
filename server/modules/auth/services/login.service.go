@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"metrograma/db"
 	"metrograma/modules/auth/DTO"
+	"metrograma/tools"
 
 	"github.com/surrealdb/surrealdb.go"
 	"github.com/surrealdb/surrealdb.go/contrib/surrealql"
@@ -33,11 +34,11 @@ func LoginUser(login DTO.UserLoginForm) (*AuthResult, error) {
 		return nil, err
 	}
 
-	if len(*result) == 0 {
+	userResult, err := tools.SafeResult(result, 0)
+	if err != nil {
 		return nil, fmt.Errorf("incorrect credentials")
 	}
 
-	userResult := (*result)[0].Result
 	user := DTO.MinimalUser{
 		ID:   userResult.ID,
 		Role: userResult.Role,

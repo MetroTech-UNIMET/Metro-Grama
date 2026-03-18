@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"metrograma/db"
 	DTO "metrograma/modules/stats/DTO"
+	"metrograma/tools"
 	"reflect"
 
 	"github.com/surrealdb/surrealdb.go"
@@ -60,9 +61,14 @@ func QuerySubjectStats(subjectId surrealModels.RecordID, studentId surrealModels
 		return []DTO.SubjectStat{}, nil
 	}
 
-	rawStats, ok := unwrapRaw((*results)[0].Result).([]any)
+	firstResult, err := tools.SafeResult(results, 0)
+	if err != nil {
+		return nil, err
+	}
+
+	rawStats, ok := unwrapRaw(firstResult).([]any)
 	if !ok {
-		return nil, fmt.Errorf("unexpected subject stats result type: %T", (*results)[0].Result)
+		return nil, fmt.Errorf("unexpected subject stats result type: %T", firstResult)
 	}
 
 	stats := make([]DTO.SubjectStat, 0, len(rawStats))

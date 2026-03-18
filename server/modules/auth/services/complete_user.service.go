@@ -6,6 +6,7 @@ import (
 	"metrograma/db"
 	"metrograma/models"
 	"metrograma/modules/auth/DTO"
+	"metrograma/tools"
 
 	"github.com/surrealdb/surrealdb.go"
 	"github.com/surrealdb/surrealdb.go/contrib/surrealql"
@@ -45,15 +46,14 @@ func CompleteStudent(idUser string, data DTO.CompleteStudentDTO) (models.Student
 	// params["update"] = data
 
 	result, err := surrealdb.Query[models.StudentWithUser](context.Background(), db.SurrealDB, sql, params)
-	if result == nil || len(*result) == 0 {
-		return models.StudentWithUser{}, fmt.Errorf("CompleteStudent returned empty result")
-	}
-
 	if err != nil {
 		return models.StudentWithUser{}, fmt.Errorf("CompleteStudent query failed: %w", err)
 	}
 
-	user := (*result)[0].Result
+	user, err := tools.SafeResult(result, 0)
+	if err != nil {
+		return models.StudentWithUser{}, fmt.Errorf("CompleteStudent returned empty result: %w", err)
+	}
 
-	return user, err
+	return user, nil
 }

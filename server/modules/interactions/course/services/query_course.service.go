@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"metrograma/db"
 	"metrograma/modules/interactions/course/DTO"
+	"metrograma/tools"
 
 	surrealdb "github.com/surrealdb/surrealdb.go"
 	"github.com/surrealdb/surrealdb.go/contrib/surrealql"
@@ -26,10 +27,11 @@ func GetSectionsWithSchedules(studentId surrealModels.RecordID, trimesterId stri
 	if err != nil {
 		return nil, err
 	}
-	if res == nil || len(*res) == 0 {
+	sections, err := tools.SafeResult(res, 0)
+	if err != nil {
 		return []DTO.QueryCourse{}, nil
 	}
-	sections := (*res)[0].Result
+
 	if sections == nil {
 		return []DTO.QueryCourse{}, nil
 	}

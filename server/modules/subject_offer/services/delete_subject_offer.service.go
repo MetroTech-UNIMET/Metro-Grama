@@ -4,6 +4,7 @@ import (
 	"context"
 	"metrograma/db"
 	"metrograma/models"
+	"metrograma/tools"
 
 	"github.com/surrealdb/surrealdb.go"
 	"github.com/surrealdb/surrealdb.go/contrib/surrealql"
@@ -22,6 +23,9 @@ func UnRelateSubjectFromTrimester(subjectId surrealModels.RecordID, trimesterId 
 		return models.SubjectOfferEntity{}, err
 	}
 
-	subjectOffer := (*result)[0].Result
+	subjectOffer, err := tools.SafeResult(result, 0)
+	if err != nil {
+		return models.SubjectOfferEntity{}, err
+	}
 	return subjectOffer, nil
 }

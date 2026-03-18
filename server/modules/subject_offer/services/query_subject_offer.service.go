@@ -117,7 +117,10 @@ func GetSubjectOfferById(trimesterId string, studentId surrealModels.RecordID, q
 	if err != nil {
 		return nil, err
 	}
-	offers := (*result)[len(*result)-2].Result
+	offers, err := tools.SafeResult(result, -2)
+	if err != nil {
+		return []DTO.QueryAnnualOfferWithPlanning{}, nil
+	}
 	return offers, nil
 }
 

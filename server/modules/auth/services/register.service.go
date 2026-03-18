@@ -1,9 +1,11 @@
 package services
 
 import (
+	"errors"
 	"fmt"
 	"metrograma/modules/auth/DTO"
 	crudServices "metrograma/modules/auth/services/crud"
+	"net/http"
 	"strings"
 
 	"github.com/labstack/echo/v4"
@@ -13,8 +15,16 @@ import (
 func RegisterUser(userForm DTO.SimpleUserSigninForm) (*AuthResult, error) {
 	// Check if user already exists
 	existingUser, err := crudServices.ExistUserByEmail(userForm.Email)
-	if err != nil && err == echo.ErrNotFound {
-		return nil, err
+	if err != nil {
+		// If the user simply doesn't exist, proceed to create them
+		// ExistUserByEmail should return a sentinel error for "not found"
+		var httpErr *echo.HTTPError
+		if errors.As(err, &httpErr) && httpErr.Code == http.StatusNotFound {
+			// User doesn't exist — proceed to creation below
+		} else {
+			// Unexpected error — abort
+			return nil, fmt.Errorf("failed to check existing user: %w", err)
+		}
 	}
 	if existingUser != nil {
 		// User already exists, get their verification status

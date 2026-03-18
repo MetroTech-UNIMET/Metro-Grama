@@ -5,6 +5,7 @@ import (
 	"metrograma/db"
 	"metrograma/models"
 	DTO "metrograma/modules/preferences/student_preferences/DTO"
+	"metrograma/tools"
 
 	"github.com/surrealdb/surrealdb.go"
 	"github.com/surrealdb/surrealdb.go/contrib/surrealql"
@@ -27,7 +28,10 @@ func UpdateStudentPreferences(studentId surrealModels.RecordID, input DTO.Update
 		return nil, err
 	}
 
-	updated := (*res)[0].Result
+	updated, err := tools.SafeResult(res, 0)
+	if err != nil {
+		return nil, err
+	}
 
 	return &updated, nil
 }

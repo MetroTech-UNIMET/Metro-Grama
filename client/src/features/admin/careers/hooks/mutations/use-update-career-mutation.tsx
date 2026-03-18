@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 
 import { updateCareer } from '@/api/careersApi';
 import { mutationKeys, queryKeys } from '@/lib/query-keys';
@@ -38,6 +39,12 @@ export function useMutationUpdateCareer() {
       await queryClient.invalidateQueries({ queryKey: queryKeys.careers.all.queryKey });
 
       await queryClient.invalidateQueries({ queryKey: queryKeys.careers.detail(oldCareerId).queryKey });
+    },
+    onError: (error) => {
+      toast.error('Error al guardar la carrera', {
+        description: error.message || 'Intente de nuevo más tarde',
+      });
+      throw error;
     },
   });
 }

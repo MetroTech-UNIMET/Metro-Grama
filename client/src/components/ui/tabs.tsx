@@ -6,7 +6,7 @@ import { Tabs as TabsPrimitive } from 'radix-ui';
 import { cn } from '@/lib/utils/className';
 import { cva, type VariantProps } from 'class-variance-authority';
 
-const tabsListVariants = cva('inline-flex h-9', {
+const tabsListVariants = cva('inline-flex h-9 flex-wrap', {
   variants: {
     variant: {
       default: 'items-center justify-start rounded-lg bg-muted p-1 text-muted-foreground h-auto',
@@ -56,7 +56,7 @@ function Tabs({ className, orientation = 'horizontal', ...props }: React.Compone
     <TabsPrimitive.Root
       data-slot="tabs"
       data-orientation={orientation}
-      className={cn('group/tabs ', className)}
+      className={cn('group/tabs', className)}
       {...props}
     />
   );

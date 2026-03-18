@@ -24,13 +24,13 @@ export function HeaderGraph({
   loadingCareers,
 }: Props) {
   return (
-    <div className="fixed z-10 flex w-full flex-row flex-wrap justify-between gap-4 px-8">
+    <div className="pointer-events-none fixed z-50 flex w-full flex-row flex-wrap justify-between gap-4 px-8">
       {/* <SideBarGraph /> */}
 
-      <div className="flex flex-row flex-wrap gap-2">
+      <div className="pointer-events-none flex flex-row flex-wrap gap-2 w-fit">
         <Tabs
           defaultValue={onlyElectives ? 'electives' : 'by-career'}
-          className=" h-11"
+          className="pointer-events-auto h-11"
           onValueChange={(value) => setOnlyElectives(value === 'electives')}
         >
           <TabsList className="h-full">
@@ -40,7 +40,7 @@ export function HeaderGraph({
           </TabsList>
         </Tabs>
 
-        <div className="w-full max-w-sm">
+        <div className="pointer-events-auto w-full max-w-sm">
           <CareerMultiDropdown
             value={selectedCareers}
             onChange={setSelectedCareers}
@@ -51,7 +51,7 @@ export function HeaderGraph({
         </div>
       </div>
 
-      <GoogleLogin />
+      <GoogleLogin className="pointer-events-auto" />
     </div>
   );
 }

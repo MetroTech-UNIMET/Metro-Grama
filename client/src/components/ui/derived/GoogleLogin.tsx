@@ -4,6 +4,7 @@ import { ChevronDown, LogOutIcon, User } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthenticationContext';
 
 import { getInitials } from '@utils/strings';
+import { cn } from '@utils/className';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@ui/avatar';
 import { Button } from '@ui/button';
@@ -18,7 +19,11 @@ import {
 import { GoogleLink } from '@ui/link';
 import { Skeleton } from '@ui/skeleton';
 
-export default function GoogleLogin() {
+interface Props {
+  className?: string;
+}
+
+export default function GoogleLogin({ className }: Props) {
   const { user, status, logOut } = useAuth();
 
   if (status === 'loading') return <AvatarSkeleton />;
@@ -29,7 +34,11 @@ export default function GoogleLogin() {
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" colors="neutral" className="bg-background h-11 items-center gap-2 px-2">
+          <Button
+            variant="ghost"
+            colors="neutral"
+            className={cn('bg-background h-11 items-center gap-2 px-2', className)}
+          >
             <Avatar className="h-8 w-8">
               <AvatarImage src={user.pictureUrl} alt={`${user.firstName} ${user.lastName}`} />
               <AvatarFallback className="text-black">{initials}</AvatarFallback>
@@ -74,7 +83,7 @@ export default function GoogleLogin() {
     );
   }
 
-  return <GoogleLink />;
+  return <GoogleLink className={className} />;
 }
 
 function AvatarSkeleton() {

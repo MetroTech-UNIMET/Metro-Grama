@@ -11,8 +11,10 @@ export async function registerStudent(userId: string, data: RegisterStudentOutpu
     toast.success('Registro completado exitosamente', {
       description: `Bienvenido a MetroGrama ${studentCreated.user.firstName} ${studentCreated.user.lastName}`,
     });
-  } catch (error) {
-    toast.error('Error al completar el registro');
+  } catch (error: any) {
+    toast.error('Error al completar el registro', {
+      description: error.message || 'Intente de nuevo más tarde',
+    });
     throw error;
   }
 }

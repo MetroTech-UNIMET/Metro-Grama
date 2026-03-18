@@ -73,18 +73,19 @@ export default function RegisterStudentForm() {
     });
   }
 
-  const formSubmit = useCallback(
-    form.handleSubmit(onSubmit, (errors) => {
-      onInvalidToast(errors);
-      jumpToFirstErrorStep();
-    }),
-    [form.handleSubmit, onSubmit],
-  );
-
   const { currentStep, next, previous, jumpTo, jumpToFirstErrorStep } = useFormStep({
     steps: formSteps,
     form: form,
   });
+
+  const formSubmit = useCallback(
+    () =>
+      form.handleSubmit(onSubmit, (errors) => {
+        onInvalidToast(errors);
+        jumpToFirstErrorStep();
+      })(),
+    [form.handleSubmit, onSubmit, jumpToFirstErrorStep],
+  );
 
   return (
     <div className="w-full max-w-5xl">

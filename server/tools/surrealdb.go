@@ -68,14 +68,14 @@ func StringToIdArray(value string) []models.RecordID {
 }
 
 func ToIdArray(value []string) []models.RecordID {
-	recordIDs := make([]models.RecordID, len(value))
+	recordIDs := make([]models.RecordID, 0, len(value))
 
-	for i, v := range value {
+	for _, v := range value {
 		parsed, err := models.ParseRecordID(v)
 		if err != nil {
 			continue
 		}
-		recordIDs[i] = *parsed
+		recordIDs = append(recordIDs, *parsed)
 	}
 	return recordIDs
 }

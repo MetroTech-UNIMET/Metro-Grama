@@ -27,6 +27,8 @@ const (
 func createRateLimiter(rateLimit int) echo.MiddlewareFunc {
 	config := middleware.RateLimiterConfig{
 		Skipper: middleware.DefaultSkipper,
+		// NOTE: In-memory store — rate limits are per-instance. If running multiple
+		// instances, replace with a Redis-backed store.
 		Store: middleware.NewRateLimiterMemoryStoreWithConfig(
 			middleware.RateLimiterMemoryStoreConfig{
 				Rate:      rate.Limit(rateLimit),

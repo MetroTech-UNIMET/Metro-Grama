@@ -87,7 +87,7 @@ func mapSubjectStat(raw map[string]any) DTO.SubjectStat {
 	stat := DTO.SubjectStat{}
 
 	if v, ok := raw["count"]; ok {
-		stat.Count = asUint(v)
+		stat.Count = asInt(v)
 	}
 	if v, ok := raw["difficulty"]; ok {
 		stat.Difficulty = asFloat32(v)
@@ -129,54 +129,33 @@ func unwrapRaw(v any) any {
 	return nil
 }
 
-func asUint(v any) uint {
+func asInt(v any) int {
 	v = unwrapRaw(v)
 	switch n := v.(type) {
-	case uint:
-		return n
-	case uint8:
-		return uint(n)
-	case uint16:
-		return uint(n)
-	case uint32:
-		return uint(n)
-	case uint64:
-		return uint(n)
 	case int:
-		if n < 0 {
-			return 0
-		}
-		return uint(n)
+		return n
 	case int8:
-		if n < 0 {
-			return 0
-		}
-		return uint(n)
+		return int(n)
 	case int16:
-		if n < 0 {
-			return 0
-		}
-		return uint(n)
+		return int(n)
 	case int32:
-		if n < 0 {
-			return 0
-		}
-		return uint(n)
+		return int(n)
 	case int64:
-		if n < 0 {
-			return 0
-		}
-		return uint(n)
+		return int(n)
+	case uint:
+		return int(n)
+	case uint8:
+		return int(n)
+	case uint16:
+		return int(n)
+	case uint32:
+		return int(n)
+	case uint64:
+		return int(n)
 	case float32:
-		if n < 0 {
-			return 0
-		}
-		return uint(n)
+		return int(n)
 	case float64:
-		if n < 0 {
-			return 0
-		}
-		return uint(n)
+		return int(n)
 	default:
 		return 0
 	}

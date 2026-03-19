@@ -14,7 +14,7 @@ import (
 )
 
 // QueryAnnualOfferByYear returns subjects (curriculum period + offered trimesters) for the given filters and academic year.
-func QueryAnnualOfferByYear(career *surrealModels.RecordID, year string, queryParams DTO.AnnualOfferByYearQueryParams) ([]DTO.QueryAnnualOfferYear, error) {
+func QueryAnnualOfferByYear(ctx context.Context, career *surrealModels.RecordID, year string, queryParams DTO.AnnualOfferByYearQueryParams) ([]DTO.QueryAnnualOfferYear, error) {
 	includeElectives := false
 	if queryParams.IncludeElectives != nil {
 		includeElectives = *queryParams.IncludeElectives
@@ -72,7 +72,7 @@ func QueryAnnualOfferByYear(career *surrealModels.RecordID, year string, queryPa
 		vars[k] = v
 	}
 
-	res, err := surrealdb.Query[[]DTO.QueryAnnualOfferYear](context.Background(), db.SurrealDB, sql, vars)
+	res, err := surrealdb.Query[[]DTO.QueryAnnualOfferYear](ctx, db.SurrealDB, sql, vars)
 	if err != nil {
 		return nil, err
 	}

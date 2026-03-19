@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"metrograma/modules/auth/DTO"
@@ -12,9 +13,9 @@ import (
 )
 
 // RegisterUser handles the registration process and returns the appropriate redirect path
-func RegisterUser(userForm DTO.SimpleUserSigninForm) (*AuthResult, error) {
+func RegisterUser(ctx context.Context, userForm DTO.SimpleUserSigninForm) (*AuthResult, error) {
 	// Check if user already exists
-	existingUser, err := crudServices.ExistUserByEmail(userForm.Email)
+	existingUser, err := crudServices.ExistUserByEmail(ctx, userForm.Email)
 	if err != nil {
 		// If the user simply doesn't exist, proceed to create them
 		// ExistUserByEmail should return a sentinel error for "not found"
@@ -28,7 +29,7 @@ func RegisterUser(userForm DTO.SimpleUserSigninForm) (*AuthResult, error) {
 	}
 	if existingUser != nil {
 		// User already exists, get their verification status
-		user, err := crudServices.GetUser(existingUser.ID)
+		user, err := crudServices.GetUser(ctx, existingUser.ID)
 		if err != nil {
 			return nil, err
 		}
@@ -53,7 +54,7 @@ func RegisterUser(userForm DTO.SimpleUserSigninForm) (*AuthResult, error) {
 		return nil, fmt.Errorf("the email domain %s is not allowed", domain)
 	}
 
-	createdUser, err := crudServices.CreateSimpleUser(userForm)
+	createdUser, err := crudServices.CreateSimpleUser(ctx, userForm)
 
 	if err != nil {
 		return nil, err

@@ -52,8 +52,9 @@ func getUserFromToken(c echo.Context) (*DTO.MinimalUser, error) {
 	if err != nil {
 		return nil, echo.NewHTTPError(http.StatusUnauthorized)
 	}
+	ctx := c.Request().Context()
 
-	user, err := crudServices.ExistUser(surrealModels.NewRecordID("user", claims.UserID))
+	user, err := crudServices.ExistUser(ctx, surrealModels.NewRecordID("user", claims.UserID))
 	if err != nil {
 		return nil, echo.NewHTTPError(http.StatusUnauthorized)
 	}

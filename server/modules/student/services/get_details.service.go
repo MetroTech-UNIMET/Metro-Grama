@@ -17,8 +17,8 @@ import (
 )
 
 // GetStudentDetails returns the student with user, careers, and passed subjects (enroll edges)
-func GetStudentDetails(studentId surrealModels.RecordID, loggedUserId *surrealModels.RecordID) (*studentDTO.StudentDetails, error) {
-	studentPreferences, err := studentPreferenceServices.GetStudentPreferencesByStudent(studentId)
+func GetStudentDetails(ctx context.Context, studentId surrealModels.RecordID, loggedUserId *surrealModels.RecordID) (*studentDTO.StudentDetails, error) {
+	studentPreferences, err := studentPreferenceServices.GetStudentPreferencesByStudent(ctx, studentId)
 	if err != nil {
 		return nil, err
 	}
@@ -27,13 +27,13 @@ func GetStudentDetails(studentId surrealModels.RecordID, loggedUserId *surrealMo
 	isFriendOfAFriend := false
 
 	if loggedUserId != nil {
-		friend, err := friendServices.IsFriend(*loggedUserId, studentId)
+		friend, err := friendServices.IsFriend(ctx, *loggedUserId, studentId)
 		if err != nil {
 			return nil, err
 		}
 		isFriend = friend
 
-		friendOfAFriend, err := friendServices.IsFriendOfAFriend(*loggedUserId, studentId)
+		friendOfAFriend, err := friendServices.IsFriendOfAFriend(ctx, *loggedUserId, studentId)
 		if err != nil {
 			return nil, err
 		}
@@ -102,7 +102,7 @@ func GetStudentDetails(studentId surrealModels.RecordID, loggedUserId *surrealMo
 
 	maps.Copy(params, extraParams)
 
-	res, err := surrealdb.Query[studentDTO.StudentDetails](context.Background(), db.SurrealDB, query, params)
+	res, err := surrealdb.Query[studentDTO.StudentDetails](ctx, db.SurrealDB, query, params)
 
 	if err != nil {
 		return nil, err

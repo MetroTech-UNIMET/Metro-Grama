@@ -92,7 +92,7 @@ func uploadPDF(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("Error al procesar PDF: %v", err))
 	}
-	err = services.CreateSubjectOffer(subjectOffer)
+	err = services.CreateSubjectOffer(c.Request().Context(), subjectOffer)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("Error al crear oferta: %v", err))
 	}
@@ -155,7 +155,7 @@ func getSubjectOfferById(c echo.Context) error {
 		return c.JSON(http.StatusOK, []any{})
 	}
 
-	offers, err := services.GetSubjectOfferById(trimesterId, studentId, queryParams)
+	offers, err := services.GetSubjectOfferById(c.Request().Context(), trimesterId, studentId, queryParams)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 	}
@@ -208,7 +208,7 @@ func getAnnualOfferByYear(c echo.Context) error {
 		careerID = parsedCareerID
 	}
 
-	result, err := services.QueryAnnualOfferByYear(careerID, year, queryParams)
+	result, err := services.QueryAnnualOfferByYear(c.Request().Context(), careerID, year, queryParams)
 	if err != nil {
 		if he, ok := err.(*echo.HTTPError); ok {
 			return he
@@ -246,7 +246,7 @@ func createSubjectOffer(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	subjectOffer, err := services.RelateSubjectToTrimester(subjectId, body.TrimesterId)
+	subjectOffer, err := services.RelateSubjectToTrimester(c.Request().Context(), subjectId, body.TrimesterId)
 
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
@@ -282,7 +282,7 @@ func deleteSubjectOffer(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	subjectOffer, err := services.UnRelateSubjectFromTrimester(subjectId, body.TrimesterId)
+	subjectOffer, err := services.UnRelateSubjectFromTrimester(c.Request().Context(), subjectId, body.TrimesterId)
 
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
@@ -316,7 +316,7 @@ func batchUpdateSubjectOffers(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusForbidden, "Captcha verification failed")
 	}
 
-	if err := services.BatchUpdateSubjectOffers(req.Changes); err != nil {
+	if err := services.BatchUpdateSubjectOffers(c.Request().Context(), req.Changes); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 

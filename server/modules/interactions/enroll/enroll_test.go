@@ -33,7 +33,7 @@ func setupEnrollTest(t *testing.T) {
 	    { 'already_seen' };
 	};`
 
-	_, err := surrealdb.Query[any](context.Background(), db.SurrealDB, query, nil)
+	_, err := surrealdb.Query[any](t.Context(), db.SurrealDB, query, nil)
 	assert.NoError(t, err)
 }
 
@@ -83,7 +83,7 @@ func TestEnroll_Prerequisites(t *testing.T) {
 		Workload:    0,
 	}
 
-	_, err = services.EnrollStudent(studentID, math2ID, input)
+	_, err = services.EnrollStudent(t.Context(), studentID, math2ID, input)
 
 	// Expect failure because Math 1 is not passed
 	assert.Error(t, err)
@@ -98,7 +98,7 @@ func TestEnroll_Prerequisites(t *testing.T) {
 	assert.NoError(t, err)
 
 	// 4. Try to enroll in Math 2 again
-	_, err = services.EnrollStudent(studentID, math2ID, input)
+	_, err = services.EnrollStudent(t.Context(), studentID, math2ID, input)
 	assert.NoError(t, err)
 }
 
@@ -130,12 +130,12 @@ func TestMarkAsSeen(t *testing.T) {
 		Workload:    5,
 	}
 
-	result, err := services.EnrollStudent(studentID, subjectID, input)
+	result, err := services.EnrollStudent(t.Context(), studentID, subjectID, input)
 	assert.NoError(t, err)
 	assert.Equal(t, 15, result.Grade)
 
 	// Verify in DB
-	check, err := surrealdb.Query[[]map[string]any](context.Background(), db.SurrealDB, "SELECT * FROM enroll WHERE in=$student AND out=$subject", map[string]any{
+	check, err := surrealdb.Query[[]map[string]any](t.Context(), db.SurrealDB, "SELECT * FROM enroll WHERE in=$student AND out=$subject", map[string]any{
 		"student": studentID,
 		"subject": subjectID,
 	})

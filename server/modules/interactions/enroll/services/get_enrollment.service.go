@@ -12,7 +12,7 @@ import (
 	surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
 )
 
-func GetEnrollment(studentId surrealModels.RecordID, subjectId surrealModels.RecordID) (models.EnrollEntity, error) {
+func GetEnrollment(ctx context.Context, studentId surrealModels.RecordID, subjectId surrealModels.RecordID) (models.EnrollEntity, error) {
 
 	qb := surrealql.SelectOnly("enroll").
 		Where("in = ?", studentId).
@@ -21,7 +21,7 @@ func GetEnrollment(studentId surrealModels.RecordID, subjectId surrealModels.Rec
 
 	query, params := qb.Build()
 
-	result, err := surrealdb.Query[models.EnrollEntity](context.Background(), db.SurrealDB, query, params)
+	result, err := surrealdb.Query[models.EnrollEntity](ctx, db.SurrealDB, query, params)
 	if err != nil {
 		return models.EnrollEntity{}, err
 	}

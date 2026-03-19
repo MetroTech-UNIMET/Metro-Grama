@@ -90,7 +90,7 @@ func getSubjectStats(c echo.Context) error {
 		endingTrimesterId = &parsedRecord
 	}
 
-	stats, err := services.QuerySubjectStats(subjectRecord, studentId, studentFilter, careers, startingTrimesterId, endingTrimesterId)
+	stats, err := services.QuerySubjectStats(c.Request().Context(), subjectRecord, studentId, studentFilter, careers, startingTrimesterId, endingTrimesterId)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}

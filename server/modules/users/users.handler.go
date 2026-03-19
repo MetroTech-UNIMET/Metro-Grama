@@ -20,7 +20,7 @@ func userProfile(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusUnauthorized)
 	}
 
-	student, err := services.GetUser(userID.(surrealModels.RecordID))
+	student, err := services.GetUser(c.Request().Context(), userID.(surrealModels.RecordID))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusNotFound, "El usuario no existe")
 	}

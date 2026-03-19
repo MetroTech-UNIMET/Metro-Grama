@@ -17,7 +17,7 @@ import (
 	surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
 )
 
-func useGetSubjectsQuery(careers string) ([]DTO.SubjectsByCareers, error) {
+func useGetSubjectsQuery(ctx context.Context, careers string) ([]DTO.SubjectsByCareers, error) {
 	// TODO - Encontrar mejor manera de filtrar un -> path condicionalmente
 	qb := surrealql.Select("belong").
 		Alias("subject", "in").
@@ -41,7 +41,7 @@ func useGetSubjectsQuery(careers string) ([]DTO.SubjectsByCareers, error) {
 	}
 
 	if env.GroupNotWorking {
-		result, err := surrealdb.Query[[]DTO.SubjectsByCareersPORQUERIA](context.Background(), db.SurrealDB, sql, vars)
+		result, err := surrealdb.Query[[]DTO.SubjectsByCareersPORQUERIA](ctx, db.SurrealDB, sql, vars)
 		if err != nil {
 			return nil, err
 		}
@@ -77,7 +77,7 @@ func useGetSubjectsQuery(careers string) ([]DTO.SubjectsByCareers, error) {
 
 		return subjects, nil
 	} else {
-		result, err := surrealdb.Query[[]DTO.SubjectsByCareers](context.Background(), db.SurrealDB, sql, vars)
+		result, err := surrealdb.Query[[]DTO.SubjectsByCareers](ctx, db.SurrealDB, sql, vars)
 		if err != nil {
 			return nil, err
 		}
@@ -90,7 +90,7 @@ func useGetSubjectsQuery(careers string) ([]DTO.SubjectsByCareers, error) {
 	}
 }
 
-func GetSubjects(careers string) ([]DTO.SubjectNode, error) {
+func GetSubjects(ctx context.Context, careers string) ([]DTO.SubjectNode, error) {
 	careersArray := []surrealModels.RecordID{}
 	if careers != "none" {
 		careersArray = tools.StringToIdArray(careers)
@@ -107,7 +107,7 @@ func GetSubjects(careers string) ([]DTO.SubjectNode, error) {
 	sql, vars := qb.Build()
 	vars["careers"] = careersArray
 
-	result, err := surrealdb.Query[[]DTO.SubjectNode](context.Background(), db.SurrealDB, sql, vars)
+	result, err := surrealdb.Query[[]DTO.SubjectNode](ctx, db.SurrealDB, sql, vars)
 
 	if err != nil {
 		return []DTO.SubjectNode{}, err
@@ -124,8 +124,8 @@ func GetSubjects(careers string) ([]DTO.SubjectNode, error) {
 	return subjects, nil
 }
 
-func GetSubjectsGraph(careers string) (models.Graph[DTO.SubjectNode], error) {
-	subjectsByCareers, err := useGetSubjectsQuery(careers)
+func GetSubjectsGraph(ctx context.Context, careers string) (models.Graph[DTO.SubjectNode], error) {
+	subjectsByCareers, err := useGetSubjectsQuery(ctx, careers)
 
 	if err != nil {
 		return models.Graph[DTO.SubjectNode]{}, err
@@ -162,7 +162,7 @@ func GetSubjectsGraph(careers string) (models.Graph[DTO.SubjectNode], error) {
 	return graph, nil
 }
 
-func GetSubjectsElectiveGraph() (models.Graph[DTO.SubjectNodeBase], error) {
+func GetSubjectsElectiveGraph(ctx context.Context) (models.Graph[DTO.SubjectNodeBase], error) {
 	qb := surrealql.Select("subject").
 		Field("*").
 		Alias("prelations", "id->precede->subject").
@@ -170,7 +170,7 @@ func GetSubjectsElectiveGraph() (models.Graph[DTO.SubjectNodeBase], error) {
 
 	sql, vars := qb.Build()
 
-	res, err := surrealdb.Query[[]DTO.SubjectElective](context.Background(), db.SurrealDB, sql, vars)
+	res, err := surrealdb.Query[[]DTO.SubjectElective](ctx, db.SurrealDB, sql, vars)
 
 	if err != nil {
 		return models.Graph[DTO.SubjectNodeBase]{}, err
@@ -210,7 +210,7 @@ func GetSubjectsElectiveGraph() (models.Graph[DTO.SubjectNodeBase], error) {
 
 // getEnrollableSubjects returns the list of subject RecordIDs that are enrollable for a given student.
 // It runs a transaction in SurrealDB utilizing a helper function fn::is_subject_enrollable.
-func GetEnrollableSubjects(studentId surrealModels.RecordID) ([]surrealModels.RecordID, error) {
+func GetEnrollableSubjects(ctx context.Context, studentId surrealModels.RecordID) ([]surrealModels.RecordID, error) {
 	qb := surrealql.Begin().
 		Let("enrolled", surrealql.Select("enroll").
 			Value("out").
@@ -225,7 +225,7 @@ func GetEnrollableSubjects(studentId surrealModels.RecordID) ([]surrealModels.Re
 	sql, params := qb.Build()
 	params["studentId"] = studentId
 
-	res, err := surrealdb.Query[[]surrealModels.RecordID](context.Background(), db.SurrealDB, sql, params)
+	res, err := surrealdb.Query[[]surrealModels.RecordID](ctx, db.SurrealDB, sql, params)
 	if err != nil {
 		return nil, err
 	}

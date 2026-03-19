@@ -42,7 +42,7 @@ func getSubjects(c echo.Context) error {
 		careers = "none"
 	}
 
-	subjects, err := services.GetSubjects(careers)
+	subjects, err := services.GetSubjects(c.Request().Context(), careers)
 	return tools.GetResponse(c, subjects, err)
 }
 
@@ -71,7 +71,7 @@ func getSubjectsGraph(c echo.Context) error {
 		})
 	}
 
-	subjects, err := services.GetSubjectsGraph(careers)
+	subjects, err := services.GetSubjectsGraph(c.Request().Context(), careers)
 	return tools.GetResponse(c, subjects, err)
 }
 
@@ -87,7 +87,7 @@ func getSubjectsGraph(c echo.Context) error {
 // @Failure      500  {object}  map[string]string
 // @Router       /subjects/electives/graph/ [get]
 func getElectiveSubjectsGraph(c echo.Context) error {
-	graph, err := services.GetSubjectsElectiveGraph()
+	graph, err := services.GetSubjectsElectiveGraph(c.Request().Context())
 	return tools.GetResponse(c, graph, err)
 }
 
@@ -129,7 +129,7 @@ func createSubjectElective(c echo.Context) error {
 		}
 	}
 
-	subject, err := services.CreateSubjectElective(subjectForm)
+	subject, err := services.CreateSubjectElective(c.Request().Context(), subjectForm)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}

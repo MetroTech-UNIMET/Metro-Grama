@@ -19,7 +19,7 @@ import (
 
 // REVIEW - Dado que la notificaion se crea en un evento, tengo que hacer un select para obtenerla
 // Si ocurre un error al obtenerla, la transaccion de la amistad ya se hizo
-func RelateFriends(me surrealModels.RecordID, other surrealModels.RecordID) (models.FriendEntity, error) {
+func RelateFriends(ctx context.Context, me surrealModels.RecordID, other surrealModels.RecordID) (models.FriendEntity, error) {
 	if me.Table != "student" || other.Table != "student" {
 		return models.FriendEntity{}, echo.NewHTTPError(http.StatusBadRequest, "Both IDs must be student RecordIDs")
 	}
@@ -32,7 +32,7 @@ func RelateFriends(me surrealModels.RecordID, other surrealModels.RecordID) (mod
 		Field("*").
 		Where("(in = $other AND out = $me) OR (in = $me AND out = $other)")
 
-	Update_QB, Create_QB := getAcceptFriendQueries()
+	Update_QB, Create_QB := getAcceptFriendQueries(ctx)
 
 	tx := surrealql.Begin().
 		Let("exists", exists_Qb).
@@ -63,7 +63,7 @@ func RelateFriends(me surrealModels.RecordID, other surrealModels.RecordID) (mod
 	vars["me"] = me
 	vars["other"] = other
 
-	res, err := surrealdb.Query[models.FriendEntity](context.Background(), db.SurrealDB, sql, vars)
+	res, err := surrealdb.Query[models.FriendEntity](ctx, db.SurrealDB, sql, vars)
 	if err != nil {
 		// Map friendly conflict to HTTP 409
 		if strings.Contains(err.Error(), "already_friends") {
@@ -82,7 +82,7 @@ func RelateFriends(me surrealModels.RecordID, other surrealModels.RecordID) (mod
 		return models.FriendEntity{}, echo.NewHTTPError(http.StatusInternalServerError, "No se recibió respuesta de la transacción")
 	}
 
-	notification, err := services.GetNotificationFriendRequest(last.ID)
+	notification, err := services.GetNotificationFriendRequest(ctx, last.ID)
 	if err != nil {
 		return models.FriendEntity{}, err
 	}

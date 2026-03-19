@@ -15,14 +15,14 @@ type GetEnrolledSubjectsOptions struct {
 	OnlyPassed bool
 }
 
-func GetEnrolledSubjects(studentId surrealModels.RecordID, opts ...GetEnrolledSubjectsOptions) ([]string, error) {
+func GetEnrolledSubjects(ctx context.Context, studentId surrealModels.RecordID, opts ...GetEnrolledSubjectsOptions) ([]string, error) {
 	qb := surrealql.Select("enroll").Field("VALUE <string>out").Where("in == ?", studentId)
 	if len(opts) > 0 && opts[0].OnlyPassed {
 		qb = qb.Where("grade >= 10")
 	}
 	sql, vars := qb.Build()
 
-	query, err := surrealdb.Query[[]string](context.Background(), db.SurrealDB, sql, vars)
+	query, err := surrealdb.Query[[]string](ctx, db.SurrealDB, sql, vars)
 
 	if err != nil {
 		return []string{}, err
@@ -33,12 +33,12 @@ func GetEnrolledSubjects(studentId surrealModels.RecordID, opts ...GetEnrolledSu
 	return subjects, nil
 }
 
-func GetPassedSubjectsIds(studentId surrealModels.RecordID) ([]surrealModels.RecordID, error) {
+func GetPassedSubjectsIds(ctx context.Context, studentId surrealModels.RecordID) ([]surrealModels.RecordID, error) {
 	qb := surrealql.Select("enroll").Field("VALUE out").Where("in == ?", studentId).Where("grade >= 10")
 
 	sql, vars := qb.Build()
 
-	query, err := surrealdb.Query[[]surrealModels.RecordID](context.Background(), db.SurrealDB, sql, vars)
+	query, err := surrealdb.Query[[]surrealModels.RecordID](ctx, db.SurrealDB, sql, vars)
 
 	if err != nil {
 		return []surrealModels.RecordID{}, err

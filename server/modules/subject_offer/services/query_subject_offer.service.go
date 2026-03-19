@@ -16,7 +16,7 @@ import (
 )
 
 // GetSubjectOfferById retrieves subject_offer edges filtered by trimester ID.
-func GetSubjectOfferById(trimesterId string, studentId surrealModels.RecordID, queryParams DTO.AnnualOfferQueryParams) ([]DTO.QueryAnnualOfferWithPlanning, error) {
+func GetSubjectOfferById(ctx context.Context, trimesterId string, studentId surrealModels.RecordID, queryParams DTO.AnnualOfferQueryParams) ([]DTO.QueryAnnualOfferWithPlanning, error) {
 	isUserLogged := studentId != (surrealModels.RecordID{})
 	includeElectives := false
 	if queryParams.IncludeElectives != nil {
@@ -26,7 +26,7 @@ func GetSubjectOfferById(trimesterId string, studentId surrealModels.RecordID, q
 	var enrollable []surrealModels.RecordID
 	// Fetch enrollable subjects if requested or if student context is present
 	if queryParams.SubjectsFilter == "enrollable" || (isUserLogged && queryParams.SubjectsFilter == "none") {
-		ids, err := subjectservices.GetEnrollableSubjects(studentId)
+		ids, err := subjectservices.GetEnrollableSubjects(ctx, studentId)
 		if err != nil {
 			return nil, err
 		}
@@ -40,7 +40,7 @@ func GetSubjectOfferById(trimesterId string, studentId surrealModels.RecordID, q
 	var enrolled []surrealModels.RecordID
 	studentPtr := &studentId
 	if isUserLogged {
-		ids, err := enrollServices.GetPassedSubjectsIds(studentId)
+		ids, err := enrollServices.GetPassedSubjectsIds(ctx, studentId)
 		if err != nil {
 			return nil, err
 		}
@@ -113,7 +113,7 @@ func GetSubjectOfferById(trimesterId string, studentId surrealModels.RecordID, q
 
 	maps.Copy(params, extraParams)
 
-	result, err := surrealdb.Query[[]DTO.QueryAnnualOfferWithPlanning](context.Background(), db.SurrealDB, query, params)
+	result, err := surrealdb.Query[[]DTO.QueryAnnualOfferWithPlanning](ctx, db.SurrealDB, query, params)
 	if err != nil {
 		return nil, err
 	}

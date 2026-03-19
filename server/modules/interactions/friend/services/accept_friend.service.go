@@ -19,7 +19,7 @@ import (
 // REVIEW - Estoy asumiendo que si una persona le manda una solicitud de amistad a otra
 // este la acepta y se crea otra solicitud de amistad en sentido contrario
 // Si ambos usuarios se mandan solicitudes de amistad entre sí, esto no funcionaría
-func AcceptFriendshipRequest(me surrealModels.RecordID, other surrealModels.RecordID) (models.FriendEntity, error) {
+func AcceptFriendshipRequest(ctx context.Context, me surrealModels.RecordID, other surrealModels.RecordID) (models.FriendEntity, error) {
 	if me.Table != "student" || other.Table != "student" {
 		return models.FriendEntity{}, echo.NewHTTPError(http.StatusBadRequest, "Both IDs must be student RecordIDs")
 	}
@@ -27,7 +27,7 @@ func AcceptFriendshipRequest(me surrealModels.RecordID, other surrealModels.Reco
 		return models.FriendEntity{}, echo.NewHTTPError(http.StatusBadRequest, "No puedes agregarte a ti mismo")
 	}
 
-	Update_QB, Create_QB := getAcceptFriendQueries()
+	Update_QB, Create_QB := getAcceptFriendQueries(ctx)
 
 	qb := surrealql.Begin().
 		Let("result", Update_QB).
@@ -39,7 +39,7 @@ func AcceptFriendshipRequest(me surrealModels.RecordID, other surrealModels.Reco
 	vars["me"] = me
 	vars["other"] = other
 
-	res, err := surrealdb.Query[models.FriendEntity](context.Background(), db.SurrealDB, sql, vars)
+	res, err := surrealdb.Query[models.FriendEntity](ctx, db.SurrealDB, sql, vars)
 	if err != nil {
 		return models.FriendEntity{}, err
 	}
@@ -50,7 +50,7 @@ func AcceptFriendshipRequest(me surrealModels.RecordID, other surrealModels.Reco
 		return models.FriendEntity{}, echo.NewHTTPError(http.StatusInternalServerError, "No se pudo eliminar la relación de amistad")
 	}
 
-	notification, err := services.GetNotificationFriendAccepted(acceptedFriendRequest.ID)
+	notification, err := services.GetNotificationFriendAccepted(ctx, acceptedFriendRequest.ID)
 	if err != nil {
 		return models.FriendEntity{}, err
 	}
@@ -67,7 +67,7 @@ func AcceptFriendshipRequest(me surrealModels.RecordID, other surrealModels.Reco
 
 }
 
-func getAcceptFriendQueries() (*surrealql.UpdateQuery, *surrealql.RelateQuery) {
+func getAcceptFriendQueries(ctx context.Context) (*surrealql.UpdateQuery, *surrealql.RelateQuery) {
 	Update_QB := surrealql.UpdateOnly("friend").
 		Set("status = 'accepted'").
 		Where("in = $other AND out = $me AND status = 'pending'").

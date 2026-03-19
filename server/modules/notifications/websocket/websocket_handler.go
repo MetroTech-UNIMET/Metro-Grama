@@ -59,13 +59,14 @@ func SubscribeNotifications(c echo.Context) error {
 	}
 
 	hub := getHub()
-	client := newClient(hub, conn, userID, handleInboundEvent)
+	ctx := c.Request().Context()
+	client := newClient(ctx, hub, conn, userID, handleInboundEvent)
 	hub.register <- client
 
 	go client.writePump()
 	go client.readPump()
 
-	notifications, err := services.GetNotificationsByUser(userID)
+	notifications, err := services.GetNotificationsByUser(ctx, userID)
 	if err != nil {
 		client.sendError("fetch_failed", err.Error())
 		return nil
@@ -98,7 +99,7 @@ func handleMarkAsReadEvent(c *client, payload json.RawMessage) {
 		return
 	}
 
-	updatedNotifications, err := services.MarkNotificationsAsRead(c.userID, body.Notifications)
+	updatedNotifications, err := services.MarkNotificationsAsRead(c.ctx, c.userID, body.Notifications)
 	if err != nil {
 		c.sendError("mark_failed", err.Error())
 		return

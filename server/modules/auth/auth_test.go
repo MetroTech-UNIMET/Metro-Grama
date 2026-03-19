@@ -56,12 +56,12 @@ func TestInstitutionalEmailDomain(t *testing.T) {
 				Password:  "token",
 			}
 			// Cleanup before test
-			existing, _ := crud.ExistUserByEmail(tt.email)
+			existing, _ := crud.ExistUserByEmail(t.Context(), tt.email)
 			if existing != nil {
-				crud.DeleteUserByEmail(tt.email)
+				crud.DeleteUserByEmail(t.Context(), tt.email)
 			}
 
-			_, err := services.RegisterUser(form)
+			_, err := services.RegisterUser(t.Context(), form)
 			if tt.shouldErr {
 				assert.Error(t, err)
 			} else {
@@ -100,12 +100,12 @@ func TestCompleteStudent_RegistrationAndCareerSelection(t *testing.T) {
 	}
 
 	// Cleanup
-	existing, _ := crud.ExistUserByEmail(email)
+	existing, _ := crud.ExistUserByEmail(t.Context(), email)
 	if existing != nil {
-		crud.DeleteUserByEmail(email)
+		crud.DeleteUserByEmail(t.Context(), email)
 	}
 
-	res, err := services.RegisterUser(form)
+	res, err := services.RegisterUser(t.Context(), form)
 	assert.NoError(t, err)
 	userID := res.User.ID.ID.(string)
 

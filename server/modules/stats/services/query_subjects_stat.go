@@ -17,7 +17,7 @@ import (
 // studentId may be nil if unauthenticated; use studentFilter to decide behavior upstream.
 // careers is an optional list of career RecordIDs to filter enrolls by the subject's belonging careers.
 // startingTrimester and endingTrimester are optional bounds; if nil, they are ignored.
-func QuerySubjectStats(subjectId surrealModels.RecordID, studentId surrealModels.RecordID, studentFilter string, careers []surrealModels.RecordID, startingTrimester *surrealModels.RecordID, endingTrimester *surrealModels.RecordID) ([]DTO.SubjectStat, error) {
+func QuerySubjectStats(ctx context.Context, subjectId surrealModels.RecordID, studentId surrealModels.RecordID, studentFilter string, careers []surrealModels.RecordID, startingTrimester *surrealModels.RecordID, endingTrimester *surrealModels.RecordID) ([]DTO.SubjectStat, error) {
 	qb := surrealql.Select("enroll").
 		Alias("count", "count()").
 		Alias("difficulty", "math::mean(<float>difficulty)").
@@ -51,7 +51,7 @@ func QuerySubjectStats(subjectId surrealModels.RecordID, studentId surrealModels
 	sql, vars := qb.Build()
 
 	// FIXME - Por alguna razon de porqueria no puedo pasar []DTO.SubjectStat
-	results, err := surrealdb.Query[any](context.Background(), db.SurrealDB, sql, vars)
+	results, err := surrealdb.Query[any](ctx, db.SurrealDB, sql, vars)
 
 	if err != nil {
 		return nil, err

@@ -13,7 +13,7 @@ import (
 	surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
 )
 
-func CreateSubjectElective(subject DTO.SubjectElectiveForm) (models.SubjectEntity, error) {
+func CreateSubjectElective(ctx context.Context, subject DTO.SubjectElectiveForm) (models.SubjectEntity, error) {
 
 	qb := surrealql.Begin().
 		Let("subjectId", surrealql.Expr("type::record('subject', ?)", subject.Code)).
@@ -31,7 +31,7 @@ func CreateSubjectElective(subject DTO.SubjectElectiveForm) (models.SubjectEntit
 
 	sql, params := qb.Build()
 
-	result, err := surrealdb.Query[any](context.Background(), db.SurrealDB, sql, params)
+	result, err := surrealdb.Query[any](ctx, db.SurrealDB, sql, params)
 	if err != nil {
 		return models.SubjectEntity{}, fmt.Errorf("error creating subject: %v", err)
 	}

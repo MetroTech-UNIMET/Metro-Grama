@@ -15,8 +15,8 @@ import (
 )
 
 // FIXME - Hacerlo en una sola trasacción
-func EnrollStudent(studentId surrealModels.RecordID, subjectId surrealModels.RecordID, input DTO.CreateEnrolled) (models.EnrollEntity, error) {
-	passedSubjects, err := GetPassedSubjectsIds(studentId)
+func EnrollStudent(ctx context.Context, studentId surrealModels.RecordID, subjectId surrealModels.RecordID, input DTO.CreateEnrolled) (models.EnrollEntity, error) {
+	passedSubjects, err := GetPassedSubjectsIds(ctx, studentId)
 	if err != nil {
 		return models.EnrollEntity{}, err
 	}
@@ -26,7 +26,7 @@ func EnrollStudent(studentId surrealModels.RecordID, subjectId surrealModels.Rec
 
 	sql, vars := qb_Is_Subject_Enrollable.Build()
 
-	result_Is_Subject_Enrollable, err := surrealdb.Query[[]bool](context.Background(), db.SurrealDB, sql, vars)
+	result_Is_Subject_Enrollable, err := surrealdb.Query[[]bool](ctx, db.SurrealDB, sql, vars)
 	if err != nil {
 		return models.EnrollEntity{}, err
 	}
@@ -49,7 +49,7 @@ func EnrollStudent(studentId surrealModels.RecordID, subjectId surrealModels.Rec
 		OnDuplicateKeyUpdateSet("workload", input.Workload)
 	sql, vars = qb.Build()
 
-	result, err := surrealdb.Query[[]models.EnrollEntity](context.Background(), db.SurrealDB, sql, vars)
+	result, err := surrealdb.Query[[]models.EnrollEntity](ctx, db.SurrealDB, sql, vars)
 	if err != nil {
 		return models.EnrollEntity{}, err
 	}

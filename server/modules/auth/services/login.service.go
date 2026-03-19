@@ -18,7 +18,7 @@ type UserLoginResult struct {
 	Verified bool                   `json:"verified"`
 }
 
-func LoginUser(login DTO.UserLoginForm) (*AuthResult, error) {
+func LoginUser(ctx context.Context, login DTO.UserLoginForm) (*AuthResult, error) {
 	qb := surrealql.SelectOnly("user").
 		FieldName("id").
 		FieldName("role").
@@ -28,7 +28,7 @@ func LoginUser(login DTO.UserLoginForm) (*AuthResult, error) {
 
 	sql, vars := qb.Build()
 
-	result, err := surrealdb.Query[UserLoginResult](context.Background(), db.SurrealDB, sql, vars)
+	result, err := surrealdb.Query[UserLoginResult](ctx, db.SurrealDB, sql, vars)
 
 	if err != nil {
 		return nil, err

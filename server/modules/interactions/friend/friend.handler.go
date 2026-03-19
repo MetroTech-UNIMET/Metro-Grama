@@ -53,7 +53,7 @@ func addFriend(c echo.Context) error {
 	}
 	toAdd := surrealModels.NewRecordID("student", toAddParam)
 
-	data, err := services.RelateFriends(me, toAdd)
+	data, err := services.RelateFriends(c.Request().Context(), me, toAdd)
 	if err != nil {
 		slog.Error("failed to relate friends",
 			"error", err,
@@ -99,7 +99,7 @@ func eliminateFriend(c echo.Context) error {
 	}
 	other := surrealModels.NewRecordID("student", toEliminateParam)
 
-	data, err := services.UnrelateFriends(me, other)
+	data, err := services.UnrelateFriends(c.Request().Context(), me, other)
 	if err != nil {
 		slog.Error("failed to unrelate friends",
 			"error", err,
@@ -147,7 +147,7 @@ func acceptFriend(c echo.Context) error {
 	}
 	studentToAccept := surrealModels.NewRecordID("student", toAcceptParam)
 
-	data, err := services.AcceptFriendshipRequest(me, studentToAccept)
+	data, err := services.AcceptFriendshipRequest(c.Request().Context(), me, studentToAccept)
 	if err != nil {
 		slog.Error("failed to accept friend request",
 			"error", err,

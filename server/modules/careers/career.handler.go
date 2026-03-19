@@ -36,7 +36,7 @@ func Handlers(e *echo.Group) {
 // @Failure      500  {object}  map[string]string
 // @Router       /careers/ [get]
 func getCareers(c echo.Context) error {
-	careers, err := services.GetCareers()
+	careers, err := services.GetCareers(c.Request().Context())
 	return tools.GetResponse(c, careers, err)
 }
 
@@ -68,7 +68,7 @@ func createCareer(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusConflict, fmt.Errorf("career with id '%s' already exists", careerID))
 	}
 
-	if _, err := services.CreateCareer(careerForm); err != nil {
+	if _, err := services.CreateCareer(c.Request().Context(), careerForm); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 
@@ -103,7 +103,7 @@ func deleteCareer(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	if err := services.DeleteCareer(target.ID); err != nil {
+	if err := services.DeleteCareer(c.Request().Context(), target.ID); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 	return c.NoContent(http.StatusNoContent)
@@ -136,7 +136,7 @@ func updateCareerWithSubjects(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	if err := services.UpdateCareer(target.OldCareer, target.NewCareerForm); err != nil {
+	if err := services.UpdateCareer(c.Request().Context(), target.OldCareer, target.NewCareerForm); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 
@@ -163,6 +163,6 @@ func getCareerWithSubjectsById(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "careerId is required")
 	}
 
-	career, err := services.GetCareerWithSubjectsById(careerId)
+	career, err := services.GetCareerWithSubjectsById(c.Request().Context(), careerId)
 	return tools.GetResponse(c, career, err)
 }

@@ -12,11 +12,11 @@ import (
 )
 
 // GetStudentPreferencesByStudent returns all StudentPreferencesEntity rows for a given student
-func GetStudentPreferencesByStudent(studentId surrealModels.RecordID) (models.StudentPreferencesEntity, error) {
+func GetStudentPreferencesByStudent(ctx context.Context, studentId surrealModels.RecordID) (models.StudentPreferencesEntity, error) {
 	qb := surrealql.SelectOnly("student_preferences").Where("student == ?", studentId)
 	sql, vars := qb.Build()
 
-	res, err := surrealdb.Query[models.StudentPreferencesEntity](context.Background(), db.SurrealDB, sql, vars)
+	res, err := surrealdb.Query[models.StudentPreferencesEntity](ctx, db.SurrealDB, sql, vars)
 	if err != nil {
 		return models.StudentPreferencesEntity{}, err
 	}

@@ -14,7 +14,7 @@ import (
 	surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
 )
 
-func ExistUserByEmail(email string) (*DTO.MinimalUser, error) {
+func ExistUserByEmail(ctx context.Context, email string) (*DTO.MinimalUser, error) {
 	qb := surrealql.SelectOnly("user").
 		FieldName("id").
 		FieldName("role").
@@ -22,7 +22,7 @@ func ExistUserByEmail(email string) (*DTO.MinimalUser, error) {
 
 	sql, args := qb.Build()
 
-	result, err := surrealdb.Query[DTO.MinimalUser](context.Background(), db.SurrealDB, sql, args)
+	result, err := surrealdb.Query[DTO.MinimalUser](ctx, db.SurrealDB, sql, args)
 
 	if err != nil {
 		return nil, err
@@ -39,8 +39,8 @@ func ExistUserByEmail(email string) (*DTO.MinimalUser, error) {
 	return &user, nil
 }
 
-func ExistUser(id surrealModels.RecordID) (DTO.MinimalUser, error) {
-	user, err := surrealdb.Select[DTO.MinimalUser](context.Background(), db.SurrealDB, id)
+func ExistUser(ctx context.Context, id surrealModels.RecordID) (DTO.MinimalUser, error) {
+	user, err := surrealdb.Select[DTO.MinimalUser](ctx, db.SurrealDB, id)
 
 	if err != nil {
 		return DTO.MinimalUser{}, err
@@ -53,8 +53,8 @@ func ExistUser(id surrealModels.RecordID) (DTO.MinimalUser, error) {
 	return *user, nil
 }
 
-func GetUser(id surrealModels.RecordID) (models.UserEntity, error) {
-	user, err := surrealdb.Select[models.UserEntity](context.Background(), db.SurrealDB, id)
+func GetUser(ctx context.Context, id surrealModels.RecordID) (models.UserEntity, error) {
+	user, err := surrealdb.Select[models.UserEntity](ctx, db.SurrealDB, id)
 
 	if err != nil {
 		return models.UserEntity{}, err

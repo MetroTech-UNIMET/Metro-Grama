@@ -85,7 +85,7 @@ func OauthGoogleCallback(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Errorf("the email domain is not allowed"))
 	}
 
-	registerResult, err := RegisterUser(DTO.SimpleUserSigninForm{
+	registerResult, err := RegisterUser(c.Request().Context(), DTO.SimpleUserSigninForm{
 		FirstName:  user.FirstName,
 		LastName:   user.LastName,
 		Email:      user.Email,

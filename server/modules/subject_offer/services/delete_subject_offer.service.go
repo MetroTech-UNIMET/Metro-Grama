@@ -11,14 +11,14 @@ import (
 	surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
 )
 
-func UnRelateSubjectFromTrimester(subjectId surrealModels.RecordID, trimesterId surrealModels.RecordID) (models.SubjectOfferEntity, error) {
+func UnRelateSubjectFromTrimester(ctx context.Context, subjectId surrealModels.RecordID, trimesterId surrealModels.RecordID) (models.SubjectOfferEntity, error) {
 	qb := surrealql.
 		DeleteOnly("subject_offer").
 		Where("in = ? AND out = ?", subjectId, trimesterId).
 		Return("BEFORE")
 	sql, vars := qb.Build()
 
-	result, err := surrealdb.Query[models.SubjectOfferEntity](context.Background(), db.SurrealDB, sql, vars)
+	result, err := surrealdb.Query[models.SubjectOfferEntity](ctx, db.SurrealDB, sql, vars)
 	if err != nil {
 		return models.SubjectOfferEntity{}, err
 	}

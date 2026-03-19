@@ -1,6 +1,7 @@
 package websocket
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 	"time"
@@ -20,6 +21,7 @@ type inboundHandler func(*client, inboundMessage)
 
 // client represents a single websocket connection for a user.
 type client struct {
+	ctx     context.Context
 	hub     *Hub
 	conn    *websocket.Conn
 	send    chan []byte
@@ -28,8 +30,9 @@ type client struct {
 	handler inboundHandler
 }
 
-func newClient(hub *Hub, conn *websocket.Conn, userID surrealModels.RecordID, handler inboundHandler) *client {
+func newClient(ctx context.Context, hub *Hub, conn *websocket.Conn, userID surrealModels.RecordID, handler inboundHandler) *client {
 	return &client{
+		ctx:     ctx,
 		hub:     hub,
 		conn:    conn,
 		send:    make(chan []byte, 16),

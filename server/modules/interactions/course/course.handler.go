@@ -49,7 +49,7 @@ func createCourse(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusUnauthorized, "Invalid student ID")
 	}
 
-	data, err := services.CreateCourse(studentId, input)
+	data, err := services.CreateCourse(c.Request().Context(), studentId, input)
 	if err != nil {
 		var httpErr *echo.HTTPError
 		if errors.As(err, &httpErr) {
@@ -100,7 +100,7 @@ func getCourseByTrimester(c echo.Context) error {
 		isPrincipal = parsed
 	}
 
-	sections, err := services.GetSectionsWithSchedules(studentId, trimesterId, isPrincipal)
+	sections, err := services.GetSectionsWithSchedules(c.Request().Context(), studentId, trimesterId, isPrincipal)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}

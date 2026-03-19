@@ -17,7 +17,7 @@ import (
 // solo el trimestre mas viejo puede tener una grade >= 10, de lo contrario tirar error,
 //
 //	porque no se puede tener mas de un trimestre aprobado
-func UpdateEnrollment(studentId surrealModels.RecordID, subjectId surrealModels.RecordID, input DTO.UpdateEnrolled) (models.EnrollEntity, error) {
+func UpdateEnrollment(ctx context.Context, studentId surrealModels.RecordID, subjectId surrealModels.RecordID, input DTO.UpdateEnrolled) (models.EnrollEntity, error) {
 	qb := surrealql.Begin().
 		Let("enrollId", surrealql.SelectOnly("enroll").
 			Value("id").
@@ -52,7 +52,7 @@ func UpdateEnrollment(studentId surrealModels.RecordID, subjectId surrealModels.
 	params["trimesterId"] = input.TrimesterId
 	params["originalTrimesterId"] = input.OriginalTrimesterId
 
-	result, err := surrealdb.Query[models.EnrollEntity](context.Background(), db.SurrealDB, query, params)
+	result, err := surrealdb.Query[models.EnrollEntity](ctx, db.SurrealDB, query, params)
 	if err != nil {
 		return models.EnrollEntity{}, err
 	}

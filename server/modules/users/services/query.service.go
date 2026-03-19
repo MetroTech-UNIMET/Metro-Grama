@@ -11,7 +11,7 @@ import (
 	surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
 )
 
-func GetUser(id surrealModels.RecordID) (DTO.UserProfile, error) {
+func GetUser(ctx context.Context, id surrealModels.RecordID) (DTO.UserProfile, error) {
 	qb := surrealql.SelectOnly(id).
 		Alias("student", surrealql.SelectOnly("student").
 			Field("*").
@@ -20,7 +20,7 @@ func GetUser(id surrealModels.RecordID) (DTO.UserProfile, error) {
 
 	sql, params := qb.Build()
 
-	result, err := surrealdb.Query[DTO.UserProfile](context.Background(), db.SurrealDB, sql, params)
+	result, err := surrealdb.Query[DTO.UserProfile](ctx, db.SurrealDB, sql, params)
 
 	if err != nil {
 		return DTO.UserProfile{}, err

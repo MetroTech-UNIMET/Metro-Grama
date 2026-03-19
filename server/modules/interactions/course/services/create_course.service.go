@@ -14,7 +14,7 @@ import (
 	surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
 )
 
-func CreateCourse(studentId surrealModels.RecordID, input DTO.CreateCourse) (models.CourseEntity, error) {
+func CreateCourse(ctx context.Context, studentId surrealModels.RecordID, input DTO.CreateCourse) (models.CourseEntity, error) {
 
 	delete_Qb := surrealql.Delete("course").
 		Where("in = $studentId").
@@ -40,7 +40,7 @@ func CreateCourse(studentId surrealModels.RecordID, input DTO.CreateCourse) (mod
 	params["studentId"] = studentId
 	params["trimesterId"] = input.TrimesterId
 
-	res, err := surrealdb.Query[models.CourseEntity](context.Background(), db.SurrealDB, sql, params)
+	res, err := surrealdb.Query[models.CourseEntity](ctx, db.SurrealDB, sql, params)
 	if err != nil {
 		errorMessage := tools.ExtractSurrealErrorMessage(err.Error())
 		switch errorMessage {

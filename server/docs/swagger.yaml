@@ -257,6 +257,8 @@ definitions:
     properties:
       count:
         type: integer
+      date:
+        type: string
       difficulty:
         type: number
       grade:
@@ -706,6 +708,76 @@ paths:
               type: string
             type: object
       summary: Admin login
+      tags:
+      - auth
+  /auth/google/callback:
+    get:
+      description: Handles Google OAuth callback, registers or logs in user, and redirects
+        to frontend with token.
+      produces:
+      - application/json
+      responses:
+        "308":
+          description: Permanent Redirect
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: Unauthorized
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "409":
+          description: Conflict
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Google OAuth callback
+      tags:
+      - auth
+  /auth/google/login:
+    get:
+      description: Starts Google OAuth flow and redirects to Google consent page.
+      produces:
+      - application/json
+      responses:
+        "302":
+          description: Found
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Google OAuth login
+      tags:
+      - auth
+  /auth/google/logout:
+    get:
+      description: Logs out Google OAuth session.
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Accepted
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Google OAuth logout
       tags:
       - auth
   /careers/:

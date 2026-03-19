@@ -40,7 +40,7 @@ func getStudentPreferences(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusUnauthorized, "Invalid user ID")
 	}
 
-	prefs, err := services.GetStudentPreferencesByStudent(studentId)
+	prefs, err := services.GetStudentPreferencesByStudent(c.Request().Context(), studentId)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
@@ -76,7 +76,7 @@ func updateStudentPreferences(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid request body")
 	}
 
-	updated, err := services.UpdateStudentPreferences(studentId, input)
+	updated, err := services.UpdateStudentPreferences(c.Request().Context(), studentId, input)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}

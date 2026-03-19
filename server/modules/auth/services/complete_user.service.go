@@ -13,7 +13,7 @@ import (
 	surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
 )
 
-func CompleteStudent(idUser string, data DTO.CompleteStudentDTO) (models.StudentWithUser, error) {
+func CompleteStudent(ctx context.Context, idUser string, data DTO.CompleteStudentDTO) (models.StudentWithUser, error) {
 	idCardString := fmt.Sprintf("%d", data.IDCard)
 
 	qb := surrealql.Begin().
@@ -45,7 +45,7 @@ func CompleteStudent(idUser string, data DTO.CompleteStudentDTO) (models.Student
 	params["userId"] = surrealModels.NewRecordID("user", idUser)
 	// params["update"] = data
 
-	result, err := surrealdb.Query[models.StudentWithUser](context.Background(), db.SurrealDB, sql, params)
+	result, err := surrealdb.Query[models.StudentWithUser](ctx, db.SurrealDB, sql, params)
 	if err != nil {
 		return models.StudentWithUser{}, fmt.Errorf("CompleteStudent query failed: %w", err)
 	}

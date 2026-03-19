@@ -12,8 +12,8 @@ import (
 	surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
 )
 
-func GetCareers() ([]models.CareerEntity, error) {
-	careers, err := surrealdb.Select[[]models.CareerEntity](context.Background(), db.SurrealDB, surrealModels.Table("career"))
+func GetCareers(ctx context.Context) ([]models.CareerEntity, error) {
+	careers, err := surrealdb.Select[[]models.CareerEntity](ctx, db.SurrealDB, surrealModels.Table("career"))
 
 	if err != nil {
 		return []models.CareerEntity{}, fmt.Errorf("error fetching careers: %v", err)
@@ -22,7 +22,7 @@ func GetCareers() ([]models.CareerEntity, error) {
 	return *careers, nil
 }
 
-func GetCareerWithSubjectsById(careerId string) (any, error) {
+func GetCareerWithSubjectsById(ctx context.Context, careerId string) (any, error) {
 
 	careerRecordId, err := surrealModels.ParseRecordID(careerId)
 	if err != nil {
@@ -43,7 +43,7 @@ func GetCareerWithSubjectsById(careerId string) (any, error) {
 	sql, params := qb.Build()
 	params["id"] = *careerRecordId
 
-	rows, err := surrealdb.Query[dto.CareerWithSubjectsResponse](context.Background(), db.SurrealDB, sql, params)
+	rows, err := surrealdb.Query[dto.CareerWithSubjectsResponse](ctx, db.SurrealDB, sql, params)
 
 	if err != nil {
 		return dto.CareerWithSubjects{}, fmt.Errorf("error getting career: %v", err)

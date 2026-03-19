@@ -14,7 +14,7 @@ import (
 )
 
 // GetNotificationsByUser fetches notifications for a specific user.
-func GetNotificationsByUser(userID surrealModels.RecordID) (DTO.NotificationDTO, error) {
+func GetNotificationsByUser(ctx context.Context, userID surrealModels.RecordID) (DTO.NotificationDTO, error) {
 	qb := surrealql.
 		Begin().
 		Return("{all: ?, unread: ?}",
@@ -24,7 +24,7 @@ func GetNotificationsByUser(userID surrealModels.RecordID) (DTO.NotificationDTO,
 	query, params := qb.Build()
 	params["userId"] = userID
 
-	res, err := surrealdb.Query[DTO.NotificationDTO](context.Background(), db.SurrealDB, query, params)
+	res, err := surrealdb.Query[DTO.NotificationDTO](ctx, db.SurrealDB, query, params)
 	if err != nil {
 		return DTO.NotificationDTO{}, err
 	}
@@ -38,14 +38,14 @@ func GetNotificationsByUser(userID surrealModels.RecordID) (DTO.NotificationDTO,
 	return result, nil
 }
 
-func GetNotificationFriendAccepted(friendId surrealModels.RecordID) (models.Notification, error) {
+func GetNotificationFriendAccepted(ctx context.Context, friendId surrealModels.RecordID) (models.Notification, error) {
 	qb := getBaseOnlyNotificationQuery().
 		WhereEq("extraData.friend_id", friendId).
 		Where("type = 'friendAccepted'")
 
 	query, params := qb.Build()
 
-	res, err := surrealdb.Query[models.Notification](context.Background(), db.SurrealDB, query, params)
+	res, err := surrealdb.Query[models.Notification](ctx, db.SurrealDB, query, params)
 	if err != nil {
 		return models.Notification{}, err
 	}
@@ -58,14 +58,14 @@ func GetNotificationFriendAccepted(friendId surrealModels.RecordID) (models.Noti
 	return result, nil
 }
 
-func GetNotificationFriendRequest(friendId surrealModels.RecordID) (models.Notification, error) {
+func GetNotificationFriendRequest(ctx context.Context, friendId surrealModels.RecordID) (models.Notification, error) {
 	qb := getBaseOnlyNotificationQuery().
 		WhereEq("extraData.friend_id", friendId).
 		Where("type = 'friendRequest'")
 
 	query, params := qb.Build()
 
-	res, err := surrealdb.Query[models.Notification](context.Background(), db.SurrealDB, query, params)
+	res, err := surrealdb.Query[models.Notification](ctx, db.SurrealDB, query, params)
 	if err != nil {
 		return models.Notification{}, err
 	}
@@ -78,7 +78,7 @@ func GetNotificationFriendRequest(friendId surrealModels.RecordID) (models.Notif
 	return result, nil
 }
 
-func GetNotificationsSubjectSectionUpdate(subjectSectionIds []surrealModels.RecordID) ([]models.Notification, error) {
+func GetNotificationsSubjectSectionUpdate(ctx context.Context, subjectSectionIds []surrealModels.RecordID) ([]models.Notification, error) {
 	// TODO - Seria fino poder hacerlo sin crear una transaccion sino de un simple query con un subquery en el WHERE
 	subject_section_history_Qb := surrealql.
 		Select("subject_section_history").
@@ -94,7 +94,7 @@ func GetNotificationsSubjectSectionUpdate(subjectSectionIds []surrealModels.Reco
 
 	query, params := qb.Build()
 
-	res, err := surrealdb.Query[[]models.Notification](context.Background(), db.SurrealDB, query, params)
+	res, err := surrealdb.Query[[]models.Notification](ctx, db.SurrealDB, query, params)
 	if err != nil {
 		return nil, err
 	}

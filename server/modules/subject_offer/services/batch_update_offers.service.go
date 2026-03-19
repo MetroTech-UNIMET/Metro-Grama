@@ -9,8 +9,7 @@ import (
 	"github.com/surrealdb/surrealdb.go/contrib/surrealql"
 )
 
-func BatchUpdateSubjectOffers(changes []DTO.BatchSubjectOfferChange) error {
-	ctx := context.Background()
+func BatchUpdateSubjectOffers(ctx context.Context, changes []DTO.BatchSubjectOfferChange) error {
 	qb := surrealql.Begin().
 		Do(surrealql.For("subjectChange", "?", changes).
 			LetTyped("subjectId", "record<subject>", surrealql.Expr("type::record('subject',  $subjectChange.subjectId)")).

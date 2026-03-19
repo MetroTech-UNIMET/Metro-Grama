@@ -9,8 +9,8 @@ import (
 	"github.com/surrealdb/surrealdb.go"
 )
 
-func DeleteUserByEmail(email string) error {
-	result, err := surrealdb.Query[[]DTO.MinimalUser](context.Background(), db.SurrealDB, "DELETE user WHERE email = $email;", map[string]any{
+func DeleteUserByEmail(ctx context.Context, email string) error {
+	result, err := surrealdb.Query[[]DTO.MinimalUser](ctx, db.SurrealDB, "DELETE user WHERE email = $email;", map[string]any{
 		"email": email,
 	})
 	if err != nil {

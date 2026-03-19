@@ -19,11 +19,50 @@ type AuthTokenResponse struct {
 func Handlers(e *echo.Group) {
 	// Auth routes with stricter rate limiting to prevent brute force attacks
 	authGroup := e.Group("/auth", middlewares.AuthRateLimit())
-	authGroup.Any("/google/login", services.OauthGoogleLogin)
-	authGroup.Any("/google/callback", services.OauthGoogleCallback)
-	authGroup.Any("/google/logout", services.OauthGoogleLogout)
+	authGroup.Any("/google/login", googleLogin)
+	authGroup.Any("/google/callback", googleCallback)
+	authGroup.Any("/google/logout", googleLogout)
 	authGroup.POST("/admin/login", adminLogin)
 	authGroup.POST("/:id_user/complete-student/", completeStudent)
+}
+
+// googleLogin godoc
+// @Summary      Google OAuth login
+// @Description  Starts Google OAuth flow and redirects to Google consent page.
+// @Tags         auth
+// @Produce      json
+// @Success      302
+// @Failure      500  {object}  map[string]string
+// @Router       /auth/google/login [get]
+func googleLogin(c echo.Context) error {
+	return services.OauthGoogleLogin(c)
+}
+
+// googleCallback godoc
+// @Summary      Google OAuth callback
+// @Description  Handles Google OAuth callback, registers or logs in user, and redirects to frontend with token.
+// @Tags         auth
+// @Produce      json
+// @Success      308
+// @Failure      400  {object}  map[string]string
+// @Failure      401  {object}  map[string]string
+// @Failure      409  {object}  map[string]string
+// @Failure      500  {object}  map[string]string
+// @Router       /auth/google/callback [get]
+func googleCallback(c echo.Context) error {
+	return services.OauthGoogleCallback(c)
+}
+
+// googleLogout godoc
+// @Summary      Google OAuth logout
+// @Description  Logs out Google OAuth session.
+// @Tags         auth
+// @Produce      json
+// @Success      202
+// @Failure      500  {object}  map[string]string
+// @Router       /auth/google/logout [get]
+func googleLogout(c echo.Context) error {
+	return services.OauthGoogleLogout(c)
 }
 
 // adminLogin godoc
@@ -47,7 +86,7 @@ func adminLogin(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	authResult, err := services.LoginUser(loginForm)
+	authResult, err := services.LoginUser(c.Request().Context(), loginForm)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusUnauthorized, err.Error())
 	}
@@ -98,7 +137,7 @@ func completeStudent(c echo.Context) error {
 
 	idUser := c.Param("id_user")
 
-	user, err := services.CompleteStudent(idUser, payload)
+	user, err := services.CompleteStudent(c.Request().Context(), idUser, payload)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}

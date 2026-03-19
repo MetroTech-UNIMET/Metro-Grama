@@ -13,7 +13,7 @@ import (
 // FIXME - Testear update en equimica y ver por que falla
 // "The query was not executed due to a failed transaction\nDatabase index `unique_relationships` already contains [subject:BPTEN13, career:quimica], with record `belong:11a1cv2uus3n3cr3we1n`\nThe query was not executed due to a failed transaction\nThe query was not executed due to a failed transaction"
 
-func UpdateCareer(newCareer dto.CareerWithSubjects, updateForm dto.CareerUpdateForm) error {
+func UpdateCareer(ctx context.Context, newCareer dto.CareerWithSubjects, updateForm dto.CareerUpdateForm) error {
 	type NewSubjectWrapper struct {
 		*dto.UpdateCareerSubject
 		Trimester int `json:"trimester"`
@@ -103,7 +103,7 @@ func UpdateCareer(newCareer dto.CareerWithSubjects, updateForm dto.CareerUpdateF
 	params["careerID"] = careerID
 	params["subjectsToAdd"] = diff.ToAdd
 
-	_, err := surrealdb.Query[any](context.Background(), db.SurrealDB, sql, params)
+	_, err := surrealdb.Query[any](ctx, db.SurrealDB, sql, params)
 	if err != nil {
 		return err
 	}

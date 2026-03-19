@@ -15,7 +15,7 @@ import (
 )
 
 // CreateSubjectSchedule persists the provided schedules to the database.
-func CreateSubjectSchedule(input DTO.CreateSubjectSchedule, userId surrealmodels.RecordID) ([]models.SubjectScheduleEntity, error) {
+func CreateSubjectSchedule(ctx context.Context, input DTO.CreateSubjectSchedule, userId surrealmodels.RecordID) ([]models.SubjectScheduleEntity, error) {
 	sectionsToCreate, sectionsToUpdate := separateSections(input.Sections)
 
 	createSubjectScheduleQB_Update := getCreateSubjectScheduleQB().
@@ -93,7 +93,7 @@ func CreateSubjectSchedule(input DTO.CreateSubjectSchedule, userId surrealmodels
 	params["subject_offer_id"] = input.SubjectOfferId
 	params["updated_by"] = userId
 
-	result, err := surrealdb.Query[[]models.SubjectScheduleEntity](context.Background(), db.SurrealDB, sql, params)
+	result, err := surrealdb.Query[[]models.SubjectScheduleEntity](ctx, db.SurrealDB, sql, params)
 	if err != nil {
 		return nil, err
 	}
@@ -109,7 +109,7 @@ func CreateSubjectSchedule(input DTO.CreateSubjectSchedule, userId surrealmodels
 		}
 	}
 
-	notifications, err := notificationServices.GetNotificationsSubjectSectionUpdate(subjectSectionIds)
+	notifications, err := notificationServices.GetNotificationsSubjectSectionUpdate(ctx, subjectSectionIds)
 	if err != nil {
 		return nil, err
 	}

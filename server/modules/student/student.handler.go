@@ -39,7 +39,7 @@ func getStudentCareer(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusUnauthorized, "ID de estudiante inválido")
 	}
 
-	careers, err := services.GetStudentCareers(studentId)
+	careers, err := services.GetStudentCareers(c.Request().Context(), studentId)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
@@ -72,7 +72,7 @@ func getStudentDetails(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusUnauthorized, "ID de estudiante inválido")
 	}
 
-	details, err := services.GetStudentDetails(studentId, nil)
+	details, err := services.GetStudentDetails(c.Request().Context(), studentId, nil)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
@@ -113,7 +113,7 @@ func getStudentByID(c echo.Context) error {
 
 	studentId := surrealModels.NewRecordID("student", studentIdString)
 
-	details, err := services.GetStudentDetails(studentId, &loggedStudentId)
+	details, err := services.GetStudentDetails(c.Request().Context(), studentId, &loggedStudentId)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}

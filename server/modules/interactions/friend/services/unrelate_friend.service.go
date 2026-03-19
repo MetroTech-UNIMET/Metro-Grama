@@ -14,7 +14,7 @@ import (
 	surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
 )
 
-func UnrelateFriends(me surrealModels.RecordID, other surrealModels.RecordID) (models.FriendEntity, error) {
+func UnrelateFriends(ctx context.Context, me surrealModels.RecordID, other surrealModels.RecordID) (models.FriendEntity, error) {
 	if me.Table != "student" || other.Table != "student" {
 		return models.FriendEntity{}, echo.NewHTTPError(http.StatusBadRequest, "Both IDs must be student RecordIDs")
 	}
@@ -29,7 +29,7 @@ func UnrelateFriends(me surrealModels.RecordID, other surrealModels.RecordID) (m
 	vars["me"] = me
 	vars["other"] = other
 
-	res, err := surrealdb.Query[[]models.FriendEntity](context.Background(), db.SurrealDB, sql, vars)
+	res, err := surrealdb.Query[[]models.FriendEntity](ctx, db.SurrealDB, sql, vars)
 	if err != nil {
 		return models.FriendEntity{}, err
 	}

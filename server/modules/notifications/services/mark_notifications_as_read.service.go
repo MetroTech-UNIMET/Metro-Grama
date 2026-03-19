@@ -13,7 +13,7 @@ import (
 )
 
 // MarkNotificationsAsRead flags the provided notifications as read for the given user.
-func MarkNotificationsAsRead(userID surrealModels.RecordID, notificationIDs []surrealModels.RecordID) ([]models.Notification, error) {
+func MarkNotificationsAsRead(ctx context.Context, userID surrealModels.RecordID, notificationIDs []surrealModels.RecordID) ([]models.Notification, error) {
 	if len(notificationIDs) == 0 {
 		return []models.Notification{}, nil
 	}
@@ -28,7 +28,7 @@ func MarkNotificationsAsRead(userID surrealModels.RecordID, notificationIDs []su
 	params["userId"] = userID
 	params["notificationIds"] = notificationIDs
 
-	res, err := surrealdb.Query[[]models.Notification](context.Background(), db.SurrealDB, query, params)
+	res, err := surrealdb.Query[[]models.Notification](ctx, db.SurrealDB, query, params)
 	if err != nil {
 		return nil, err
 	}

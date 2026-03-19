@@ -27,13 +27,13 @@ var translateTrimesters = map[string]string{
 	"I":  "INTENSIVO",
 }
 
-func CreateSubjectOffer(info DTO.ReadResult) error {
+func CreateSubjectOffer(ctx context.Context, info DTO.ReadResult) error {
 	subjectOffers, err := transformPDFToSurrealObjects(info)
 	if err != nil {
 		return err
 	}
 
-	err = relateSubjectsToTrimesters(subjectOffers)
+	err = relateSubjectsToTrimesters(ctx, subjectOffers)
 	return err
 }
 
@@ -57,7 +57,7 @@ func transformPDFToSurrealObjects(info DTO.ReadResult) ([]subjectOfferForSurreal
 	return offers, nil
 }
 
-func relateSubjectsToTrimesters(offers []subjectOfferForSurreal) error {
+func relateSubjectsToTrimesters(ctx context.Context, offers []subjectOfferForSurreal) error {
 	qb := surrealql.Begin().
 		Do(surrealql.For("offer", "?", offers).
 			LetTyped("subjectId", "record<subject>", surrealql.Expr("$offer.subject")).
@@ -73,15 +73,15 @@ func relateSubjectsToTrimesters(offers []subjectOfferForSurreal) error {
 
 	sql, params := qb.Build()
 
-	_, err := surrealdb.Query[any](context.Background(), db.SurrealDB, sql, params)
+	_, err := surrealdb.Query[any](ctx, db.SurrealDB, sql, params)
 	return err
 }
 
-func RelateSubjectToTrimester(subjectId surrealModels.RecordID, trimesterId surrealModels.RecordID) (models.SubjectOfferEntity, error) {
+func RelateSubjectToTrimester(ctx context.Context, subjectId surrealModels.RecordID, trimesterId surrealModels.RecordID) (models.SubjectOfferEntity, error) {
 	qb := surrealql.RelateOnly(subjectId, "subject_offer", trimesterId)
 	sql, vars := qb.Build()
 
-	result, err := surrealdb.Query[models.SubjectOfferEntity](context.Background(), db.SurrealDB, sql, vars)
+	result, err := surrealdb.Query[models.SubjectOfferEntity](ctx, db.SurrealDB, sql, vars)
 	if err != nil {
 		return models.SubjectOfferEntity{}, err
 	}

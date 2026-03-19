@@ -8,7 +8,7 @@ import (
 	surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
 )
 
-func DeleteCareer(careerID string) error {
-	_, err := surrealdb.Delete[surrealModels.RecordID](context.Background(), db.SurrealDB, careerID)
+func DeleteCareer(ctx context.Context, careerID string) error {
+	_, err := surrealdb.Delete[surrealModels.RecordID](ctx, db.SurrealDB, careerID)
 	return err
-} 
+}

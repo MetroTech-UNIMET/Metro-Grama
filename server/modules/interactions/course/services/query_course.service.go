@@ -13,7 +13,7 @@ import (
 )
 
 // GetSectionsWithSchedules retrieves principal or secondary sections (depending on isPrincipal) and their schedules for a student and trimester.
-func GetSectionsWithSchedules(studentId surrealModels.RecordID, trimesterId string, isPrincipal bool) ([]DTO.QueryCourse, error) {
+func GetSectionsWithSchedules(ctx context.Context, studentId surrealModels.RecordID, trimesterId string, isPrincipal bool) ([]DTO.QueryCourse, error) {
 
 	qb := surrealql.SelectOnly("course").
 		Value("?", GetSectionSubquery(isPrincipal)).
@@ -23,7 +23,7 @@ func GetSectionsWithSchedules(studentId surrealModels.RecordID, trimesterId stri
 	sql, vars := qb.Build()
 	vars["trimesterId"] = surrealModels.NewRecordID("trimester", trimesterId)
 
-	res, err := surrealdb.Query[[]DTO.QueryCourse](context.Background(), db.SurrealDB, sql, vars)
+	res, err := surrealdb.Query[[]DTO.QueryCourse](ctx, db.SurrealDB, sql, vars)
 	if err != nil {
 		return nil, err
 	}

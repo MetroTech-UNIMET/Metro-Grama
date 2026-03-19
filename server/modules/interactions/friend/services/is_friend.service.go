@@ -11,7 +11,7 @@ import (
 	surrealModels "github.com/surrealdb/surrealdb.go/pkg/models"
 )
 
-func IsFriend(a, b surrealModels.RecordID) (bool, error) {
+func IsFriend(ctx context.Context, a, b surrealModels.RecordID) (bool, error) {
 	qb := surrealql.Select("friend").
 		Field("*").
 		Where("status = 'accepted'").
@@ -22,7 +22,7 @@ func IsFriend(a, b surrealModels.RecordID) (bool, error) {
 	vars["a"] = a
 	vars["b"] = b
 
-	res, err := surrealdb.Query[[]models.FriendEntity](context.Background(), db.SurrealDB, sql, vars)
+	res, err := surrealdb.Query[[]models.FriendEntity](ctx, db.SurrealDB, sql, vars)
 	if err != nil {
 		return false, err
 	}
@@ -39,10 +39,10 @@ func IsFriend(a, b surrealModels.RecordID) (bool, error) {
 	return false, nil
 }
 
-func IsFriendOfAFriend(a, b surrealModels.RecordID) (bool, error) {
+func IsFriendOfAFriend(ctx context.Context, a, b surrealModels.RecordID) (bool, error) {
 	sql, vars := surrealql.Expr("? IN ?.{2}(->friend->student)", b, a).Build()
 
-	res, err := surrealdb.Query[bool](context.Background(), db.SurrealDB, sql, vars)
+	res, err := surrealdb.Query[bool](ctx, db.SurrealDB, sql, vars)
 	if err != nil {
 		return false, err
 	}

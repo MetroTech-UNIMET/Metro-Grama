@@ -1,7 +1,6 @@
 package middlewares
 
 import (
-	"context"
 	"metrograma/db"
 	"metrograma/models"
 	"metrograma/modules/auth/services"
@@ -42,8 +41,9 @@ func GetStudentFromSession(c echo.Context) (*models.StudentWithUser, error) {
 		Fetch("user")
 
 	sql, params := qb.Build()
+	ctx := c.Request().Context()
 
-	res, err := surrealdb.Query[models.StudentWithUser](context.Background(), db.SurrealDB, sql, params)
+	res, err := surrealdb.Query[models.StudentWithUser](ctx, db.SurrealDB, sql, params)
 	if err != nil {
 		return nil, echo.NewHTTPError(http.StatusUnauthorized)
 	}

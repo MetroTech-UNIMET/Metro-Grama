@@ -14,7 +14,7 @@ import (
 
 // UpdateStudentPreferences updates the preferences row(s) for the provided student
 // Returns the updated rows. Assumes one row per student, but returns slice for safety.
-func UpdateStudentPreferences(studentId surrealModels.RecordID, input DTO.UpdateStudentPreferencesDTO) (*models.StudentPreferencesEntity, error) {
+func UpdateStudentPreferences(ctx context.Context, studentId surrealModels.RecordID, input DTO.UpdateStudentPreferencesDTO) (*models.StudentPreferencesEntity, error) {
 	qb := surrealql.UpdateOnly("student_preferences").
 		Where("student == ?", studentId).
 		Set("show_friends", input.ShowFriends).
@@ -23,7 +23,7 @@ func UpdateStudentPreferences(studentId surrealModels.RecordID, input DTO.Update
 
 	sql, vars := qb.Build()
 
-	res, err := surrealdb.Query[models.StudentPreferencesEntity](context.Background(), db.SurrealDB, sql, vars)
+	res, err := surrealdb.Query[models.StudentPreferencesEntity](ctx, db.SurrealDB, sql, vars)
 	if err != nil {
 		return nil, err
 	}

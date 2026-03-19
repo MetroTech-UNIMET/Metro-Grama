@@ -89,7 +89,7 @@ func createEnroll(c echo.Context) error {
 	subjectId := models.NewRecordID("subject", subjectCode)
 
 	// Call service
-	enrollment, err := services.EnrollStudent(studentId, subjectId, input)
+	enrollment, err := services.EnrollStudent(c.Request().Context(), studentId, subjectId, input)
 	if err != nil {
 		if strings.Contains(err.Error(), "unique_relationships_by_trimester") {
 			return echo.NewHTTPError(
@@ -141,7 +141,7 @@ func updatePassed(c echo.Context) error {
 	}
 	subjectId := models.NewRecordID("subject", subjectCode)
 
-	enrollment, err := services.UpdateEnrollment(studentId, subjectId, input)
+	enrollment, err := services.UpdateEnrollment(c.Request().Context(), studentId, subjectId, input)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
@@ -182,7 +182,7 @@ func getPassed(c echo.Context) error {
 	}
 	subjectId := models.NewRecordID("subject", subjectCode)
 
-	enrollment, err := services.GetEnrollment(studentId, subjectId)
+	enrollment, err := services.GetEnrollment(c.Request().Context(), studentId, subjectId)
 	if err != nil {
 		if err.Error() == "enrollment not found" {
 			return echo.NewHTTPError(http.StatusNotFound, "Materia no encontrada como aprobada")
@@ -215,7 +215,7 @@ func deletePassed(c echo.Context) error {
 		return err
 	}
 
-	if err := services.UnenrollStudent(*userId, subjects); err != nil {
+	if err := services.UnenrollStudent(c.Request().Context(), *userId, subjects); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}
 
@@ -256,7 +256,7 @@ func getEnrolledSubjects(c echo.Context) error {
 		opts.OnlyPassed = v
 	}
 
-	subjects, err := services.GetEnrolledSubjects(studentId, opts)
+	subjects, err := services.GetEnrolledSubjects(c.Request().Context(), studentId, opts)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err)
 	}

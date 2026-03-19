@@ -26,7 +26,7 @@ import (
 // {{end}}
 // COMMIT TRANSACTION;`
 
-// func CreateStudent(user models.StudentSigninForm) error {
+// func CreateStudent(ctx context.Context, user models.StudentSigninForm) error {
 // 	t, err := template.New("query").Parse(createUserQuery)
 // 	if err != nil {
 // 		return err
@@ -68,7 +68,7 @@ import (
 // 	verified=$verified,
 // 	password=crypto::bcrypt::generate($password);`
 
-func CreateSimpleUser(user DTO.SimpleUserSigninForm) (models.UserEntity, error) {
+func CreateSimpleUser(ctx context.Context, user DTO.SimpleUserSigninForm) (models.UserEntity, error) {
 	queryParams := map[string]any{
 		"firstName":  user.FirstName,
 		"lastName":   user.LastName,
@@ -79,7 +79,7 @@ func CreateSimpleUser(user DTO.SimpleUserSigninForm) (models.UserEntity, error) 
 		"role":       surrealModels.NewRecordID("role", user.Role),
 	}
 
-	data, err := surrealdb.Create[[]models.UserEntity](context.Background(), db.SurrealDB, surrealModels.Table("user"), queryParams)
+	data, err := surrealdb.Create[[]models.UserEntity](ctx, db.SurrealDB, surrealModels.Table("user"), queryParams)
 
 	// data, err := db.SurrealDB.Query(createSimpleUserQuery, queryParams)
 	if err != nil {

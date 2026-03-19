@@ -11,13 +11,13 @@ import (
 )
 
 // GetStudentCareers returns the career record IDs linked to a student through the study relation
-func GetStudentCareers(studentId surrealModels.RecordID) ([]surrealModels.RecordID, error) {
+func GetStudentCareers(ctx context.Context, studentId surrealModels.RecordID) ([]surrealModels.RecordID, error) {
 	qb := surrealql.SelectOnly(studentId).
 		Value("->study.out")
 
 	sql, params := qb.Build()
 
-	res, err := surrealdb.Query[[]surrealModels.RecordID](context.Background(), db.SurrealDB, sql, params)
+	res, err := surrealdb.Query[[]surrealModels.RecordID](ctx, db.SurrealDB, sql, params)
 	if err != nil {
 		return nil, err
 	}

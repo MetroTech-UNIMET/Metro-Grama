@@ -53,7 +53,7 @@ func createSubjectSchedule(c echo.Context) error {
 	}
 
 	// Call service with userId
-	schedules, err := services.CreateSubjectSchedule(input, userId)
+	schedules, err := services.CreateSubjectSchedule(c.Request().Context(), input, userId)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}

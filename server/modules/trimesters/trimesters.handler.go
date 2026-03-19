@@ -36,7 +36,7 @@ func getAllTrimesters(c echo.Context) error {
 		noFuture = parsed
 	}
 
-	trimesters, err := services.GetAllTrimesters(noFuture)
+	trimesters, err := services.GetAllTrimesters(c.Request().Context(), noFuture)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
 	}

@@ -43,7 +43,7 @@ func getNotificationsByUser(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "userId inválido")
 	}
 
-	notifications, err := services.GetNotificationsByUser(userID)
+	notifications, err := services.GetNotificationsByUser(c.Request().Context(), userID)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
@@ -86,7 +86,7 @@ func markNotificationsAsRead(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	updatedNotifications, err := services.MarkNotificationsAsRead(userID, body.Notifications)
+	updatedNotifications, err := services.MarkNotificationsAsRead(c.Request().Context(), userID, body.Notifications)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}

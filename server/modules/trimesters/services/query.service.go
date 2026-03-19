@@ -12,7 +12,7 @@ import (
 )
 
 // GetAllTrimesters retrieves trimesters, optionally excluding future ones when noFuture is true.
-func GetAllTrimesters(noFuture bool) ([]models.TrimesterEntity, error) {
+func GetAllTrimesters(ctx context.Context, noFuture bool) ([]models.TrimesterEntity, error) {
 	// Build query using surrealql without passing external params
 	qb := surrealql.Select("trimester")
 	if noFuture {
@@ -22,7 +22,7 @@ func GetAllTrimesters(noFuture bool) ([]models.TrimesterEntity, error) {
 
 	sql, vars := qb.Build()
 
-	result, err := surrealdb.Query[[]models.TrimesterEntity](context.Background(), db.SurrealDB, sql, vars)
+	result, err := surrealdb.Query[[]models.TrimesterEntity](ctx, db.SurrealDB, sql, vars)
 	if err != nil {
 		return []models.TrimesterEntity{}, err
 	}

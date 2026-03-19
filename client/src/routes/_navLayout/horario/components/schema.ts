@@ -7,7 +7,7 @@ export const courseSchema = z
     studentId: createIdSchema('student'),
     subjectEvents: z.array(
       z.object({
-        id: createIdSchema('subject_offer'),
+        id: createIdSchema('subject_offer',),
         subjectSectionId: createIdSchema('subject_section'),
       }),
     ),
@@ -15,9 +15,18 @@ export const courseSchema = z
     is_principal: z.boolean().prefault(false),
   })
   .transform(({ subjectEvents, ...data }) => {
+    const uniqueSections = Array.from(
+      new Map(
+        subjectEvents.map(({ subjectSectionId }) => [
+          `${subjectSectionId.Table}:${String(subjectSectionId.ID)}`,
+          subjectSectionId,
+        ]),
+      ).values(),
+    );
+
     return {
       ...data,
-      sections: subjectEvents.map((item) => item.subjectSectionId),
+      sections: uniqueSections,
     };
   });
 

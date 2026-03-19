@@ -271,6 +271,28 @@ function MultipleSelector<TValue extends string | number = string | number, TDat
     void exec();
   }, [debouncedSearchTerm, groupBy, open, triggerSearchOnFocus, onSearch]);
 
+  useEffect(() => {
+    // A capture-phase listener is required to close the dropdown on touch events
+    // when tapping on elements that stop event propagation (like Graphin's canvas).
+    const handleOutside = (e: Event) => {
+      const target = e.target as HTMLElement;
+      if (inputRef.current?.closest('.group')?.contains(target)) return;
+      if (target.closest?.('[data-radix-popper-content-wrapper]')) return;
+      
+      setOpen(false);
+      setIsFocused(false);
+      inputRef.current?.blur();
+    };
+
+    document.addEventListener('touchstart', handleOutside, { capture: true, passive: true });
+    document.addEventListener('mousedown', handleOutside, { capture: true, passive: true });
+    
+    return () => {
+      document.removeEventListener('touchstart', handleOutside, { capture: true });
+      document.removeEventListener('mousedown', handleOutside, { capture: true });
+    };
+  }, []);
+
   const CreatableItem = () => {
     if (!creatable) return undefined;
 
@@ -358,6 +380,11 @@ function MultipleSelector<TValue extends string | number = string | number, TDat
               className,
               disabled && 'cursor-not-allowed opacity-50',
             )}
+            onClick={() => {
+              if (document.activeElement !== inputRef.current) {
+                inputRef.current?.focus();
+              }
+            }}
           >
             <div className="flex w-full flex-wrap gap-1">
               {selected.map((option) => {

@@ -24,10 +24,10 @@ func CreateCourse(ctx context.Context, studentId surrealModels.RecordID, input D
 	relate_Qb := surrealql.RelateOnly("$studentId", "course", "$trimesterId")
 
 	if input.IsPrincipal {
-		relate_Qb = relate_Qb.Set("principal_sections = ? ?? $deleted.principal_sections", input.Sections).
+		relate_Qb = relate_Qb.Set("principal_sections = ?.distinct() ?? $deleted.principal_sections", input.Sections).
 			Set("secondary_sections = $deleted.secondary_sections ?? []")
 	} else {
-		relate_Qb = relate_Qb.Set("secondary_sections = ? ?? $deleted.secondary_sections", input.Sections).
+		relate_Qb = relate_Qb.Set("secondary_sections = ?.distinct() ?? $deleted.secondary_sections", input.Sections).
 			Set("principal_sections = $deleted.principal_sections ?? []")
 	}
 

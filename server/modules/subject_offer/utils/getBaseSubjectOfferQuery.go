@@ -54,9 +54,18 @@ func GetBaseSubjectOfferQuery(careers []surrealModels.RecordID, includeFriends b
 	}
 
 	if includeFriends {
+		friendsFieldQuery := surrealql.
+			Select("$friends_PlanToSee").
+			Where("$parent.id INSIDE plan_to_see")
+
+		friendsOfAFriendFieldQuery := surrealql.
+			Select("$friendOfAfriend_PlanToSee").
+			Field("commonFriend").
+			Field("friendOfAfriend").Where("$parent.id INSIDE plan_to_see")
+
 		sections_Qb.
-			Alias("friends", "$friends_PlanToSee.filter(|$v| $this.id INSIDE $v.plan_to_see)").
-			Alias("friends_of_a_friend", "$friendOfAfriend_PlanToSee.filter(|$v| $this.id INSIDE $v.plan_to_see).{commonFriend, friendOfAfriend}")
+			Alias("friends", friendsFieldQuery).
+			Alias("friends_of_a_friend", friendsOfAFriendFieldQuery)
 
 		friends_PTS_Qb := surrealql.Select("$friends_PlanToSee").
 			Value("id").

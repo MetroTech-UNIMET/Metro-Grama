@@ -7,7 +7,6 @@ import (
 	enrollServices "metrograma/modules/interactions/enroll/services"
 	"metrograma/modules/subject_offer/DTO"
 	"metrograma/modules/subject_offer/utils"
-	subjectservices "metrograma/modules/subjects/services"
 	"metrograma/tools"
 
 	"github.com/surrealdb/surrealdb.go"
@@ -23,42 +22,19 @@ func GetSubjectOfferById(ctx context.Context, trimesterId string, studentId surr
 		includeElectives = *queryParams.IncludeElectives
 	}
 
-	var enrollable []surrealModels.RecordID
-	// Fetch enrollable subjects if requested or if student context is present
-	if queryParams.SubjectsFilter == "enrollable" || (isUserLogged && queryParams.SubjectsFilter == "none") {
-		ids, err := subjectservices.GetEnrollableSubjects(ctx, studentId)
-		if err != nil {
-			return nil, err
-		}
-		if len(ids) == 0 { // explicit enrollable filter but no enrollables
-			return []DTO.QueryAnnualOfferWithPlanning{}, nil
-		}
-		enrollable = ids
-	}
-
-	// Always fetch enrolled subjects (passed=true) via subjectservices when student present
-	var enrolled []surrealModels.RecordID
-	studentPtr := &studentId
-	if isUserLogged {
-		ids, err := enrollServices.GetPassedSubjectsIds(ctx, studentId)
-		if err != nil {
-			return nil, err
-		}
-		enrolled = ids
-	} else {
-		studentPtr = nil
-	}
-
 	careersArray := tools.StringToIdArray(queryParams.Careers)
 
 	extraParams := make(map[string]any)
 	qb := surrealql.Begin()
+
 	if isUserLogged {
+		qb.Let("enrolled", enrollServices.GetEnrolledSubjectsQuery()).
+			Let("enrollable", enrollServices.GetEnrollableSubjectsQuery())
 		qb = utils.ConstructTransactionVariables(qb)
-		extraParams["loggedUser"] = studentId
+		extraParams["studentId"] = studentId
 	}
-	extraParams["enrollable"] = enrollable
-	extraParams["enrolled"] = enrolled
+	// extraParams["enrollable"] = enrollable
+	// extraParams["enrolled"] = enrolled
 
 	subjectOffer_Qb, sections_Qb := utils.GetBaseSubjectOfferQuery(careersArray, isUserLogged, includeElectives)
 
@@ -98,11 +74,11 @@ func GetSubjectOfferById(ctx context.Context, trimesterId string, studentId surr
 		extraParams["trimester"] = surrealModels.NewRecordID("trimester", trimesterId)
 	}
 
-	if queryParams.SubjectsFilter == "enrollable" && len(enrollable) > 0 {
+	if queryParams.SubjectsFilter == "enrollable" {
 		subjectOffer_Qb = subjectOffer_Qb.Where("in.id IN $enrollable")
 	}
 
-	if studentPtr != nil {
+	if isUserLogged {
 		subjectOffer_Qb = subjectOffer_Qb.
 			Alias("is_enrolled", "in IN $enrolled").
 			Alias("is_enrollable", "in IN $enrollable")

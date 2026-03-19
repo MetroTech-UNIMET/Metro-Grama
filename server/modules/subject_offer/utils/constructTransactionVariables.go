@@ -5,10 +5,10 @@ import (
 )
 
 func ConstructTransactionVariables(qb *surrealql.TransactionQuery) *surrealql.TransactionQuery {
-	friendsOfAfriend_Qb := surrealql.Select("$loggedStudent.{2+path}(->friend->student)").
+	friendsOfAfriend_Qb := surrealql.Select("$studentId.{2+path}(->friend->student)").
 		Alias("commonFriend", "$this[0]").
 		Alias("friendOfAfriend", "$this[1]").
-		Where("$this[1] != $loggedStudent").
+		Where("$this[1] != $studentId").
 		Where("$this[1] NOT IN $friends")
 
 	friendsOfAFriendPlanToSee_Qb := surrealql.Select("$friendsOfAfriend").
@@ -16,18 +16,18 @@ func ConstructTransactionVariables(qb *surrealql.TransactionQuery) *surrealql.Tr
 		Alias("friendOfAfriend", "$this.friendOfAfriend").
 		Alias("plan_to_see", "(?)[0] ?? []", surrealql.
 			Select("$this.friendOfAfriend->(course WHERE out = $trimester)").
-			Value("<set>array::union(principal_sections,secondary_sections)"),
+			Value("array::union(principal_sections,secondary_sections).distinct()"),
 		)
 
 	friendsPlanToSee_Qb := surrealql.Select("$friends").
 		Field("*").
 		Alias("plan_to_see", "(?)[0] ?? []", surrealql.
 			Select("$this->(course WHERE out = $trimester)").
-			Value("<set>array::union(principal_sections,secondary_sections)"),
+			Value("array::union(principal_sections,secondary_sections).distinct()"),
 		)
 
 	qb = qb.
-		Let("friends", surrealql.Expr("$loggedStudent->(friend WHERE  status = 'accepted')->student")).
+		Let("friends", surrealql.Expr("$studentId->(friend WHERE  status = 'accepted')->student")).
 		Let("friends_PlanToSee", friendsPlanToSee_Qb).
 		Let("friendsOfAfriend", friendsOfAfriend_Qb).
 		Let("friendOfAfriend_PlanToSee", friendsOfAFriendPlanToSee_Qb)

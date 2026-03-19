@@ -207,35 +207,3 @@ func GetSubjectsElectiveGraph(ctx context.Context) (models.Graph[DTO.SubjectNode
 	return graph, nil
 
 }
-
-// getEnrollableSubjects returns the list of subject RecordIDs that are enrollable for a given student.
-// It runs a transaction in SurrealDB utilizing a helper function fn::is_subject_enrollable.
-func GetEnrollableSubjects(ctx context.Context, studentId surrealModels.RecordID) ([]surrealModels.RecordID, error) {
-	qb := surrealql.Begin().
-		Let("enrolled", surrealql.Select("enroll").
-			Value("out").
-			Where("in = $studentId").
-			Where("grade >= 10")).
-		Return("?", surrealql.
-			Select("subject").
-			Value("id").
-			// TODO - Por la porqueria de 3.x.x por ahora $enrolled tiene que ser un array
-			Where("fn::is_subject_enrollable(id, $studentId, $enrolled.distinct()) = true"))
-
-	sql, params := qb.Build()
-	params["studentId"] = studentId
-
-	res, err := surrealdb.Query[[]surrealModels.RecordID](ctx, db.SurrealDB, sql, params)
-	if err != nil {
-		return nil, err
-	}
-	// Por alguna razon antes era -1 y ahora tiene que ser -2
-	ids, err := tools.SafeResult(res, -2)
-	if err != nil {
-		return []surrealModels.RecordID{}, nil
-	}
-	if ids == nil {
-		return []surrealModels.RecordID{}, nil
-	}
-	return ids, nil
-}

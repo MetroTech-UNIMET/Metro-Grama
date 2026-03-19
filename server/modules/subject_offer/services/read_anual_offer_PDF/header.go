@@ -2,10 +2,26 @@ package readanualofferpdf
 
 import (
 	"math"
+	"regexp"
 	"strings"
 
 	pdf "github.com/ledongthuc/pdf"
 )
+
+var rePeriod = regexp.MustCompile(`^\d{4}$`)
+
+// detectPeriod locates the first 4-digit period string it can find (e.g. 2526).
+func detectPeriod(rows pdf.Rows) string {
+	for _, row := range rows {
+		for _, w := range row.Content {
+			txt := strings.TrimSpace(w.S)
+			if rePeriod.MatchString(txt) {
+				return txt
+			}
+		}
+	}
+	return ""
+}
 
 // detectHeaderCols locates the header row (at least 2 of T1/T2/T3) and returns its X positions.
 func detectHeaderCols(rows pdf.Rows) map[string]float64 {

@@ -19,12 +19,17 @@ func ReadAnualOfferPDF(pdfBuffer *bytes.Buffer) (DTO.ReadResult, error) {
 	pages := reader.NumPage()
 
 	var all []DTO.SubjectOffer
+	var period string
 
 	for p := 1; p <= pages; p++ {
 		pg := reader.Page(p)
 		rows, err := pg.GetTextByRow()
 		if err != nil {
 			return DTO.ReadResult{}, echo.NewHTTPError(http.StatusInternalServerError, fmt.Sprintf("No se pudo leer página %d: %v", p, err))
+		}
+
+		if period == "" {
+			period = detectPeriod(rows)
 		}
 
 		header := detectHeaderCols(rows)
@@ -39,6 +44,10 @@ func ReadAnualOfferPDF(pdfBuffer *bytes.Buffer) (DTO.ReadResult, error) {
 		all = append(all, pageOffers...)
 	}
 
-	result := DTO.ReadResult{Period: "2526", SubjectOffers: all}
+	if period == "" {
+		period = "Desconocido"
+	}
+
+	result := DTO.ReadResult{Period: period, SubjectOffers: all}
 	return result, nil
 }

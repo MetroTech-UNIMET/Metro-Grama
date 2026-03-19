@@ -112,7 +112,7 @@ export default function EnrollDialog({ subject, isEditMode, initialValues, after
       form.reset();
       afterSubmit(data);
     },
-    originalTrimester: initialValues?.trimesterId
+    originalTrimester: initialValues?.trimesterId,
   });
 
   if (!subject) return null;
@@ -216,7 +216,11 @@ export default function EnrollDialog({ subject, isEditMode, initialValues, after
           </ScrollArea>
 
           <DialogFooter className="p-6 pt-0">
-            <SubmitButton form="enroll-form" disabled={trimesterQuery.isLoading} colors={'primary'}>
+            <SubmitButton
+              form="enroll-form"
+              disabled={trimesterQuery.isLoading || (isEditMode && !form.formState.isDirty)}
+              colors={'primary'}
+            >
               {isEditMode ? 'Actualizar' : 'Guardar'}
             </SubmitButton>
           </DialogFooter>

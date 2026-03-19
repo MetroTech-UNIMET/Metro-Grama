@@ -21,39 +21,29 @@ func EnrollStudent(ctx context.Context, studentId surrealModels.RecordID, subjec
 		return models.EnrollEntity{}, err
 	}
 
-	// TODO - Por la porqueria de 3.x.x por ahora $enrolled tiene que ser un array
-	qb_Is_Subject_Enrollable := surrealql.Select(surrealql.Expr("fn::is_subject_enrollable(?, ?, ?.distinct())", subjectId, studentId, passedSubjects))
-
-	sql, vars := qb_Is_Subject_Enrollable.Build()
-
-	result_Is_Subject_Enrollable, err := surrealdb.Query[[]bool](ctx, db.SurrealDB, sql, vars)
-	if err != nil {
-		return models.EnrollEntity{}, err
-	}
-
-	isEnrollableResult, err := tools.SafeResult(result_Is_Subject_Enrollable, 0)
-	if err != nil || len(isEnrollableResult) == 0 {
-		return models.EnrollEntity{}, echo.NewHTTPError(http.StatusForbidden, "El estudiante no cumple con los requisitos para inscribirse en esta materia")
-	}
-	isEnrollable := isEnrollableResult[0]
-	if !isEnrollable {
-		return models.EnrollEntity{}, echo.NewHTTPError(http.StatusForbidden, "El estudiante no cumple con los requisitos para inscribirse en esta materia")
-	}
-
-	// This works an Upsert; if the enrollment already exists, it will update the enrollment with the new trimester, grade, difficulty and workload
-	qb := surrealql.Insert("enroll").Relation().
+	enrollQb := surrealql.Insert("enroll").Relation().
 		Fields("in", "out", "trimester", "grade", "difficulty", "workload").
 		Values(studentId, subjectId, input.TrimesterId, input.Grade, input.Difficulty, input.Workload).
 		OnDuplicateKeyUpdateSet("grade", input.Grade).
 		OnDuplicateKeyUpdateSet("difficulty", input.Difficulty).
 		OnDuplicateKeyUpdateSet("workload", input.Workload)
-	sql, vars = qb.Build()
+
+	// This works as an Upsert; if the enrollment already exists, it will update the enrollment with the new trimester, grade, difficulty and workload
+	qb := surrealql.Begin().
+		Let("isEnrollable", surrealql.Expr("fn::is_subject_enrollable(?, ?, ?.distinct())", subjectId, studentId, passedSubjects)).
+		If("!$isEnrollable").
+		Then(func(tb *surrealql.ThenBuilder) {
+			tb.Throw("El estudiante no cumple con los requisitos para inscribirse en esta materia")
+		}).End().
+		Return("?", enrollQb)
+	sql, vars := qb.Build()
 
 	result, err := surrealdb.Query[[]models.EnrollEntity](ctx, db.SurrealDB, sql, vars)
 	if err != nil {
 		return models.EnrollEntity{}, err
 	}
-	enrollmentData, err := tools.SafeResult(result, 0)
+	// FIXME - Por algunar razon gracias a surrealDb 3.0.0 debo poner -2 en vez de obtener el penultimo
+	enrollmentData, err := tools.SafeResult(result, -2)
 	if err != nil || len(enrollmentData) == 0 {
 		return models.EnrollEntity{}, echo.NewHTTPError(http.StatusInternalServerError, "No se pudo crear la inscripción")
 	}

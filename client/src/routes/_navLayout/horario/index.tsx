@@ -229,6 +229,7 @@ function WeeklySchedulePage() {
             type="custom-interval"
             overlapping
             timeSlots={studentTimeSlots}
+            getEventColorId={(event) => event.data.id.ID}
             shouldRenderTime={(_, index) => index % 3 !== 1}
             extraDecoration={(_, index) => (
               <div

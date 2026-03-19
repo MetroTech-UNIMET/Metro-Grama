@@ -1,4 +1,6 @@
 import { BaseEvent } from './BaseEvent';
+import { useWeeklyPlannerContext } from '../../context';
+
 import type { Event } from '../../types';
 
 interface Props {
@@ -6,6 +8,8 @@ interface Props {
   isOverlapping?: boolean;
 }
 export function MobileEvent({ event, isOverlapping }: Props) {
+  const { getEventColorId } = useWeeklyPlannerContext();
+
   return (
     <li className="relative">
       {isOverlapping && (
@@ -17,7 +21,7 @@ export function MobileEvent({ event, isOverlapping }: Props) {
           ⇄ Solapamiento
         </span>
       )}
-      <BaseEvent event={event} />
+      <BaseEvent event={event} getEventColorId={getEventColorId} />
     </li>
   );
 }

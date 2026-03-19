@@ -11,6 +11,7 @@ type WeeklyPlannerContextProps<T> = (WeeklyPlannerContexUniform | WeeklyPlannerC
   locale: Locale;
   type: WeeklyPlannerProps<T>['type'];
   events: WeeklyPlannerProps<T>['events'];
+  getEventColorId?: WeeklyPlannerProps<T>['getEventColorId'];
   overlapping: boolean;
   overlappingEventIds: Set<string>;
 
@@ -67,6 +68,7 @@ export function WeeklyPlannerProvider<T>({
         timeSlots,
         interval,
         events: props.events,
+        getEventColorId: props.getEventColorId,
         overlapping: props.overlapping || false,
         overlappingEventIds,
       }}

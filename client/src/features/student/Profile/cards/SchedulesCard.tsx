@@ -79,6 +79,8 @@ export function CourseScheduleView({ courses }: { courses: StudentCourse }) {
     [courses],
   );
 
+  console.log(courses);
+
   // FIXME - Mejor mensajes de vacio
   return (
     <>
@@ -108,6 +110,7 @@ function StudentPlanner({ events }: { events: Event<BaseSubjectEvent>[] }) {
       type="custom-interval"
       overlapping
       timeSlots={studentTimeSlots}
+      getEventColorId={(event) => event.data.id.ID}
       shouldRenderTime={(_, index) => index % 3 !== 1}
       extraDecoration={(_, index) => (
         <div

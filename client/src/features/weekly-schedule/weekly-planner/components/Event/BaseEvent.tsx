@@ -1,17 +1,22 @@
 import { cn } from '@utils/className';
 import type { Event } from '../../types';
 
-interface Props {
+interface Props<T> {
   containerClassName?: string;
-  event: Event;
+  event: Event<T>;
+  getEventColorId?: (event: Event<T>) => string;
 }
-export function BaseEvent({ event, containerClassName }: Props) {
+export function BaseEvent<T>({ event, containerClassName, getEventColorId }: Props<T>) {
+  console.log(event);
+  
+  const colorId = getEventColorId ? getEventColorId(event) : event.id;
+
   return (
     <div
       className={cn(
         'block w-full rounded-md border-l-4 p-4 shadow-xs transition-all hover:shadow-md',
         containerClassName,
-        getEventColor(event.id),
+        getEventColor(colorId),
       )}
     >
       <time className="block text-sm opacity-70 md:text-xs">

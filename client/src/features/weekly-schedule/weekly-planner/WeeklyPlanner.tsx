@@ -27,6 +27,7 @@ export type WeeklyPlannerProps<T> = {
   /** Enable side-by-side layout for overlapping events */
   overlapping?: boolean;
   children?: React.ReactNode;
+  getEventColorId?: (event: Event<T>) => string;
 } & (UniformIntervalProps | CustomIntervalProps);
 
 interface UniformIntervalProps {
@@ -48,6 +49,7 @@ export function WeeklyPlanner<T>({
   extraDecoration,
   rowHeight = '3.5rem',
   overlapping = false,
+  getEventColorId,
   children,
   ...props
 }: WeeklyPlannerProps<T>) {
@@ -70,7 +72,7 @@ export function WeeklyPlanner<T>({
   });
 
   return (
-    <WeeklyPlannerProvider events={events} overlapping={overlapping} {...props}>
+    <WeeklyPlannerProvider events={events} overlapping={overlapping} getEventColorId={getEventColorId} {...props}>
       <Tabs defaultValue={format(daysOfWeek[0], 'EEE', { locale })} asChild>
         <div ref={ref} className="relative flex flex-col" style={{ '--height-row': rowHeight } as React.CSSProperties}>
           {!!isMobile && <MobileTabNavigation />}

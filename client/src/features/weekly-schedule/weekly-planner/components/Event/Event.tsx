@@ -10,7 +10,7 @@ interface Props {
 }
 
 export function PlannerEvent({ event, layout }: Props) {
-  const { start_hour: planner_start_hour, ...props } = useWeeklyPlannerContext();
+  const { start_hour: planner_start_hour, getEventColorId, ...props } = useWeeklyPlannerContext();
 
   const height =
     props.type === 'uniform-interval'
@@ -38,6 +38,7 @@ export function PlannerEvent({ event, layout }: Props) {
     >
       <BaseEvent
         event={event}
+        getEventColorId={getEventColorId}
         containerClassName={`absolute top-(--w-schedule-event-top) h-(--w-schedule-event-height) ${widthClass} ${leftClass}`}
       />
     </li>

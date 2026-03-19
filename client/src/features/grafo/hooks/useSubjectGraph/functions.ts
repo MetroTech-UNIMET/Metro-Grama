@@ -60,8 +60,8 @@ export function getNormalIcon<TData extends SubjectType>(
  */
 export function getCustomIconProps(icon: NodeStyleIcon) {
   let iconLen = icon.value!.replace(/\s/g, '').length;
-  iconLen = iconLen == 0 ? 2 : iconLen > 2 ? iconLen * 0.54 : iconLen;
-  const labelOffset = iconLen > 2 ? 10 * 0.52 * iconLen : 10;
+  iconLen = iconLen == 0 ? 2 : iconLen > 2 ? iconLen * 0.6 : iconLen * 1.2;
+  const labelOffset = iconLen > 2 ? 5 * 0.52 * iconLen : 10;
 
   return [labelOffset, iconLen];
 }

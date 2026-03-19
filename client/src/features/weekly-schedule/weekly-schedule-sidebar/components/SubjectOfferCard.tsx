@@ -84,7 +84,7 @@ export default function SubjectOfferCard({ subjectOffer, onSelect, state }: Prop
               </div>
             </TooltipTrigger>
             <TooltipContent>
-              {differentFriends} amig{differentFriends !== 1 ? 'os' : 'o'} planean inscribir esta materia
+              {differentFriends} amig{differentFriends !== 1 ? 'os' : 'o'} planea{differentFriends !== 1 ? 'n' : ''} inscribir esta materia
             </TooltipContent>
           </Tooltip>
         )}

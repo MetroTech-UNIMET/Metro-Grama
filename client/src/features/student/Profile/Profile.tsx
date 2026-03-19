@@ -30,7 +30,7 @@ export default function Profile({ data }: Props) {
           <AcceptFriendButton userToAcceptId={data.id.ID} colors="tertiary" variant="outline" />
         </div>
       )}
-      <div className="mx-auto max-w-6xl space-y-4 p-4 pb-16">
+      <div className="mx-auto max-w-352 space-y-4 p-4 pb-16">
         <StudentCard data={data} />
 
         {data.enrolled_subjects && <SubjectsCard enrolled_subjects={data.enrolled_subjects} />}

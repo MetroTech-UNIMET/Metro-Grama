@@ -41,7 +41,7 @@ DEFINE FIELD classroom_code ON subject_section TYPE option<string> PERMISSIONS F
 DEFINE FIELD section_number ON subject_section TYPE int ASSERT $value >= 1 AND $value <= 10 PERMISSIONS FULL;
 DEFINE FIELD subject_offer ON subject_section TYPE record<subject_offer> REFERENCE PERMISSIONS FULL;
 
-DEFINE FUNCTION fn::is_subject_enrollable($subjectId: record<subject>, $studentId: record<student>, $enrolled: set<record<subject>> ) -> bool | 'already_seen' {
+DEFINE FUNCTION fn::is_subject_enrollable($subjectId: record<subject>, $studentId: record<student>, $enrolled: array<record<subject>> ) -> bool | 'already_seen' {
   LET $subject = (SELECT * FROM ONLY $subjectId);
   LET $studentCredits = fn::get_student_credits($studentId, $enrolled);
 
@@ -58,7 +58,7 @@ DEFINE FUNCTION fn::is_subject_enrollable($subjectId: record<subject>, $studentI
     { 'already_seen' };
 };
 
-DEFINE FUNCTION fn::get_student_credits($studentId: record<student>, $enrolled: set<record<subject>>) -> object {
+DEFINE FUNCTION fn::get_student_credits($studentId: record<student>, $enrolled: array<record<subject>>) -> object {
   LET $results = (
     SELECT 
       math::sum(3) AS total_credits, 

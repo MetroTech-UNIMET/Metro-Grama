@@ -1,14 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearch } from '@tanstack/react-router';
 
-export interface TimeRange {
+export interface TimeRangeString {
   start: string; // HH:MM
   end: string; // HH:MM
 }
 
 const isValid = (v: string) => /^\d{2}:\d{2}$/.test(v);
 
-function clampRange(range: TimeRange | undefined): TimeRange | undefined {
+function clampRange(range: TimeRangeString | undefined): TimeRangeString | undefined {
   if (!range) return undefined;
 
   const { start, end } = range;
@@ -21,7 +21,7 @@ export function useFilterByTimeRange() {
   const search = useSearch({ from: '/_navLayout/horario/' });
 
   const initial = clampRange(search.filterByTimeRange);
-  const [timeRange, setTimeRange] = useState<TimeRange | undefined>(initial);
+  const [timeRange, setTimeRange] = useState<TimeRangeString | undefined>(initial);
   const lastSynced = useRef<string>('');
 
   // External change sync
@@ -46,9 +46,9 @@ export function useFilterByTimeRange() {
     lastSynced.current = key;
   }, [timeRange, navigate, search]);
 
-  const update = useCallback((next: Partial<TimeRange>) => {
+  const update = useCallback((next: Partial<TimeRangeString>) => {
     setTimeRange((prev) => {
-      const merged: TimeRange = prev
+      const merged: TimeRangeString = prev
         ? { start: next.start || prev.start, end: next.end || prev.end }
         : { start: next.start || '08:00', end: next.end || '22:00' };
       return clampRange(merged);

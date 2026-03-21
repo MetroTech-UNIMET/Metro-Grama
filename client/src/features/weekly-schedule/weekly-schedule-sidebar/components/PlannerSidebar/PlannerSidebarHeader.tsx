@@ -1,16 +1,13 @@
 import { useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
-import { ArrowDownAZ, ArrowUpAZ, SlidersHorizontal } from 'lucide-react';
+
+import { FiltersPopover } from './FilterPopover';
 
 import { useFilterByDays } from '../../hooks/search-params/use-filter-by-days';
-import { TimeRange, useFilterByTimeRange } from '../../hooks/search-params/use-filter-by-time-range';
+import { useFilterByTimeRange } from '../../hooks/search-params/use-filter-by-time-range';
 import { useFilterByAverages } from '../../hooks/search-params/use-filter-by-averages';
 import { useSortSubjectOffers } from '../../hooks/search-params/use-sort-subject-offers';
 import { useIncludeElectives } from '../../hooks/search-params/use-include-electives';
-
 import { useSearchTerm } from '../../hooks/search-params/use-search-term';
-import { FilterByDays } from '../FilterByDays/FilterByDays';
-import { FilterByTimeRange } from '../FilterByTimeRange/FilterByTimeRange';
-import { FilterByAverages } from '../FilterByAverages/FilterByAverages';
 
 import { fetchTrimestersSelectOptions } from '@/hooks/queries/trimester/use-FetchTrimesters';
 import { useSuspenseCareersOptions } from '@/hooks/queries/career/use-fetch-careers';
@@ -19,19 +16,15 @@ import { useSelectedCareers } from '@/hooks/search-params/use-selected-careers';
 import { useSelectedTrimester } from '@/hooks/search-params/use-selected-trimester';
 
 import { useAuth } from '@/contexts/AuthenticationContext';
+
 import { CareerMultiDropdown } from '@components/CareerMultiDropdown';
+
 import AutoComplete from '@ui/derived/autocomplete';
 import { TrimesterItem } from '@ui/derived/custom-command-items/trimester-item-option';
 import { Input } from '@ui/input';
 import { SidebarHeader } from '@ui/sidebar';
-import { Button } from '@ui/button';
-import { Popover, PopoverContent, PopoverTrigger } from '@ui/popover';
-import { Checkbox } from '@ui/checkbox';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@ui/select';
-import { Separator } from '@ui/separator';
 
-import type { SortField } from '@/routes/_navLayout/horario/queryParams';
-import type { Option } from '@ui/types/option.types';
+import { Checkbox } from '@ui/checkbox';
 
 interface Props {
   showEnrollable: boolean;
@@ -89,7 +82,6 @@ export function PlannerSidebarHeader({ showEnrollable, setShowEnrollable }: Prop
         isOptionDisabled={(option) => !(option.data?.is_current || option.data?.is_next)}
       />
 
-      {/* Combined filters popover */}
       <FiltersPopover
         selectedDays={selectedDays}
         onToggleDay={toggleDay}
@@ -127,111 +119,5 @@ export function PlannerSidebarHeader({ showEnrollable, setShowEnrollable }: Prop
         Incluir electivas
       </label>
     </SidebarHeader>
-  );
-}
-
-// REVIEW - Acaso no existe mejor manera de manejar esto?
-interface FiltersPopoverProps {
-  selectedDays: number[];
-  onToggleDay: (day: number) => void;
-  onClearDays: () => void;
-  timeRange: TimeRange | undefined;
-  onChangeTimeRange: (next: Partial<{ start: string; end: string }>) => void;
-  onResetTimeRange: () => void;
-  averageFilters: ReturnType<typeof useFilterByAverages>['filters'];
-  setDifficultyRange: (range: [number, number]) => void;
-  setGradeRange: (range: [number, number]) => void;
-  setWorkloadRange: (range: [number, number]) => void;
-  resetAverages: () => void;
-  sorting: ReturnType<typeof useSortSubjectOffers>['sorting'];
-  setOrderBy: (field: SortField) => void;
-  toggleOrderDir: () => void;
-}
-
-const orderSelectOptions: Option<SortField>[] = [
-  { label: 'Alfabético', value: 'alphabetical' },
-  { label: 'Dificultad', value: 'avg_difficulty' },
-  { label: 'Nota', value: 'avg_grade' },
-  { label: 'Carga', value: 'avg_workload' },
-];
-
-function FiltersPopover({
-  selectedDays,
-  onToggleDay,
-  onClearDays,
-  timeRange,
-  onChangeTimeRange,
-  onResetTimeRange,
-  averageFilters,
-  setDifficultyRange,
-  setGradeRange,
-  setWorkloadRange,
-  resetAverages,
-  sorting,
-  setOrderBy,
-  toggleOrderDir,
-}: FiltersPopoverProps) {
-  return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <Button variant="outline" className="flex items-center gap-2">
-          <SlidersHorizontal size={16} />
-          Filtros
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="max-h-[80vh] w-80 space-y-4 overflow-y-auto" align="start">
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h4 className="text-sm font-semibold">Ordenar Por</h4>
-            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={toggleOrderDir}>
-              {sorting.orderDir === 'asc' ? <ArrowDownAZ size={16} /> : <ArrowUpAZ size={16} />}
-            </Button>
-          </div>
-          <Select value={sorting.orderBy} onValueChange={(val) => val && setOrderBy(val)} items={orderSelectOptions}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {orderSelectOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <Separator />
-
-        <div className="space-y-2">
-          <h4 className="text-sm font-semibold">Días</h4>
-          <FilterByDays selectedDays={selectedDays} onToggle={onToggleDay} onClear={onClearDays} />
-        </div>
-
-        <Separator />
-
-        <div className="space-y-2">
-          <h4 className="text-sm font-semibold">Rango de Horas</h4>
-          <FilterByTimeRange value={timeRange} onChange={onChangeTimeRange} onReset={onResetTimeRange} />
-        </div>
-
-        <Separator />
-
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h4 className="text-sm font-semibold">Promedios</h4>
-            <Button variant="link" className="text-muted-foreground h-auto p-0 text-xs" onClick={resetAverages}>
-              Resetear
-            </Button>
-          </div>
-          <FilterByAverages
-            filters={averageFilters}
-            setDifficultyRange={setDifficultyRange}
-            setGradeRange={setGradeRange}
-            setWorkloadRange={setWorkloadRange}
-          />
-        </div>
-      </PopoverContent>
-    </Popover>
   );
 }

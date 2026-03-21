@@ -142,7 +142,7 @@ function FormMessage({ className, children, ...props }: React.HTMLAttributes<HTM
   return (
     <p
       id={formMessageId}
-      className={cn('text-[0.8rem] font-medium text-red-500 dark:text-red-900', className)}
+      className={cn('text-[0.8rem] font-medium text-destructive', className)}
       {...props}
     >
       {body}

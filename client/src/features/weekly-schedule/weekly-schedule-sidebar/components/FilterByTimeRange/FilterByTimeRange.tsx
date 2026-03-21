@@ -2,12 +2,12 @@ import { useMemo } from 'react';
 import { cn } from '@utils/className';
 import { TimePicker } from '@components/ui/derived/time-picker';
 
-import type { TimeRange } from '../../hooks/search-params/use-filter-by-time-range';
+import type { TimeRangeString } from '../../hooks/search-params/use-filter-by-time-range';
 import { Button } from '@ui/button';
 
 interface Props {
-  value: TimeRange | undefined;
-  onChange: (next: Partial<TimeRange>) => void;
+  value: TimeRangeString | undefined;
+  onChange: (next: Partial<TimeRangeString>) => void;
   onReset?: () => void;
   className?: string;
 }

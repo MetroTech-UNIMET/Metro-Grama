@@ -44,7 +44,7 @@ export function SectionField({ sectionIndex, removeSection, last_student_editor 
 
   return (
     <div className="relative rounded-md border p-4">
-      <Popover>
+      <Popover modal>
         <div className="mb-2 flex items-center justify-between gap-2">
           <div className="flex flex-row items-center gap-2">
             {last_student_editor && <EditorStudent student={last_student_editor} />}
@@ -80,7 +80,7 @@ export function SectionField({ sectionIndex, removeSection, last_student_editor 
         <FormInputField name={`${baseSectionName}.classroom_code`} placeholder="Código del aula" />
 
         <PopoverContent className="flex w-92 px-0" ref={setPopoverContainer}>
-          <ScrollArea className="flex-1 px-4 max-sm:max-h-80">
+          <ScrollArea className="flex-1 px-4 max-sm:[&>[data-radix-scroll-area-viewport]]:max-h-80">
             <Button
               type="button"
               colors="success"

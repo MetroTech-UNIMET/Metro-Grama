@@ -2,6 +2,7 @@ import { getInitials } from '@utils/strings';
 
 import { Popover, PopoverContent, PopoverTrigger } from '@ui/popover';
 import { Separator } from '@ui/separator';
+import { ScrollArea } from '@ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@ui/avatar';
 import { Button } from '@ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@ui/tooltip';
@@ -16,7 +17,7 @@ interface Props {
 
 export function FriendsPopover({ subjectOffer, totalFriends }: Props) {
   return (
-    <Popover>
+    <Popover modal>
       <PopoverTrigger asChild>
         <Button variant="ghost" className="mx-auto underline">
           {totalFriends} amig{totalFriends !== 1 ? 'os' : 'o'} planea{totalFriends !== 1 ? 'n' : ''} inscribir esta
@@ -24,33 +25,37 @@ export function FriendsPopover({ subjectOffer, totalFriends }: Props) {
         </Button>
       </PopoverTrigger>
 
-      <PopoverContent className="flex flex-col gap-2">
-        {subjectOffer.sections.map(
-          (section, index) =>
-            (section.friends?.length ?? 0) > 0 && (
-              <div key={section.id.ID}>
-                <div className="mb-1 flex justify-between">
-                  <p className="font-semibold">Sección {section.section_number}</p>
-                  <p className="text-muted-foreground text-sm">
-                    {section.friends?.length} amig{section.friends?.length !== 1 ? 'os' : 'o'}
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  {section.friends?.map((friend) => (
-                    <FriendItem key={friend.id.ID} friend={friend} />
-                  ))}
-                  {section.friends_of_a_friend?.map((friends_of_a_friend) => (
-                    <FriendOfAfriendItem
-                      key={`${friends_of_a_friend.commonFriend.id.ID}-${friends_of_a_friend.friendOfAfriend.id.ID}`}
-                      friendOfAfriend={friends_of_a_friend.friendOfAfriend}
-                      commonFriend={friends_of_a_friend.commonFriend}
-                    />
-                  ))}
-                </div>
-                {index < subjectOffer.sections.length - 1 && <Separator className="mt-2" />}
-              </div>
-            ),
-        )}
+      <PopoverContent className="px-0">
+        <ScrollArea className="max-sm:[&>[data-radix-scroll-area-viewport]]:max-h-[80vh] px-4 py-1">
+          <div className="flex flex-col gap-2">
+            {subjectOffer.sections.map(
+              (section, index) =>
+                (section.friends?.length ?? 0) > 0 && (
+                  <div key={section.id.ID}>
+                    <div className="mb-1 flex justify-between">
+                      <p className="font-semibold">Sección {section.section_number}</p>
+                      <p className="text-muted-foreground text-sm">
+                        {section.friends?.length} amig{section.friends?.length !== 1 ? 'os' : 'o'}
+                      </p>
+                    </div>
+                    <div className="space-y-2">
+                      {section.friends?.map((friend) => (
+                        <FriendItem key={friend.id.ID} friend={friend} />
+                      ))}
+                      {section.friends_of_a_friend?.map((friends_of_a_friend) => (
+                        <FriendOfAfriendItem
+                          key={`${friends_of_a_friend.commonFriend.id.ID}-${friends_of_a_friend.friendOfAfriend.id.ID}`}
+                          friendOfAfriend={friends_of_a_friend.friendOfAfriend}
+                          commonFriend={friends_of_a_friend.commonFriend}
+                        />
+                      ))}
+                    </div>
+                    {index < subjectOffer.sections.length - 1 && <Separator className="mt-2" />}
+                  </div>
+                ),
+            )}
+          </div>
+        </ScrollArea>
       </PopoverContent>
     </Popover>
   );

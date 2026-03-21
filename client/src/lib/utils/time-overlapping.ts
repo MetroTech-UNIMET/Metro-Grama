@@ -1,5 +1,7 @@
+import type { Schedule } from '@/interfaces/common/time';
+
 /** Generic interval overlap detection for items with a day and start/end (in minutes) */
-export function findOverlappingIndicesByDay<T>(
+export function findOverlappingIndexesByDay<T>(
   items: T[],
   getDay: (item: T) => number,
   getStart: (item: T) => number,
@@ -37,14 +39,8 @@ export function findOverlappingIndicesByDay<T>(
 }
 
 /** Specialized for subject schedules after transform in zod schema. */
-export function getOverlappingScheduleIndices(
-  schedules: {
-    day_of_week: number;
-    starting_time: { hours: number; minutes: number };
-    ending_time: { hours: number; minutes: number };
-  }[],
-): Set<number> {
-  return findOverlappingIndicesByDay(
+export function getOverlappingScheduleIndexes(schedules: Schedule[]): Set<number> {
+  return findOverlappingIndexesByDay(
     schedules,
     (s) => s.day_of_week,
     (s) => s.starting_time.hours * 60 + s.starting_time.minutes,

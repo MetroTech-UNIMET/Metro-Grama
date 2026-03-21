@@ -4,7 +4,7 @@ import { differenceInMinutes, getHours, getMinutes } from 'date-fns';
 import { correctIntervalBetweenHours, default10Hour, default8Hour } from './constants';
 
 import { createIdSchema } from '@/lib/schemas/surreal';
-import { getOverlappingScheduleIndices } from '@utils/time-overlapping';
+import { getOverlappingScheduleIndexes } from '@utils/time-overlapping';
 import { createSurrealId } from '@utils/queries';
 
 const scheduleSchema = z
@@ -74,8 +74,8 @@ const sectionsSchema = z
     subject_section_id: createIdSchema('subject_section').optional(),
   })
   .check((ctx) => {
-    const { schedules } = ctx.value as any;
-    const overlapping = getOverlappingScheduleIndices(schedules);
+    const { schedules } = ctx.value;
+    const overlapping = getOverlappingScheduleIndexes(schedules);
     if (!overlapping.size) return;
     for (const idx of overlapping) {
       ctx.issues.push({

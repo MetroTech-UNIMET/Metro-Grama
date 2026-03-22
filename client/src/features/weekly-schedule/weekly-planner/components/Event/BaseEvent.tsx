@@ -7,9 +7,7 @@ interface Props<T> {
   getEventColorId?: (event: Event<T>) => string;
 }
 export function BaseEvent<T>({ event, containerClassName, getEventColorId }: Props<T>) {
-  console.log(event);
-  
-  const colorId = getEventColorId ? getEventColorId(event) : event.id;
+  const colorId = getEventColorId?.(event) ?? event.id;
 
   return (
     <div
@@ -45,10 +43,18 @@ const EVENT_COLORS = [
 ];
 
 const getEventColor = (id: string) => {
+  if (id === 'preferred') {
+    return 'bg-green-800 text-white border-green-900';
+  }
+
+  if (id === 'prohibited') {
+    return 'bg-red-800 text-white border-red-900';
+  }
+
   let hash = 0;
   for (let i = 0; i < id.length; i++) {
     hash = id.charCodeAt(i) + ((hash << 5) - hash);
   }
   const index = Math.abs(hash % EVENT_COLORS.length);
-  return EVENT_COLORS[index ];
+  return EVENT_COLORS[index];
 };

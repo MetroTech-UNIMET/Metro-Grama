@@ -3,6 +3,8 @@ import z from 'zod/v4';
 import { careersQueryParam } from '@/routes/-common_queryParams/careers';
 import { trimesterQueryParam } from '@/routes/-common_queryParams/trimester';
 
+import { OrderBySubjectOffers } from '@/interfaces/preferences/StudentPreferences';
+
 // TODO - Seguramente tenga un filtro para solamente ver electivas o por carrera
 export const queryParams = z.object({
   trimester: trimesterQueryParam,
@@ -26,7 +28,7 @@ export const queryParams = z.object({
     })
     .optional()
     .catch(undefined),
-  orderBy: z.enum(['prelations', 'avg_difficulty', 'avg_grade', 'avg_workload', 'alphabetical']).catch('alphabetical'),
+  orderBy: z.enum(OrderBySubjectOffers).catch(OrderBySubjectOffers.Alphabetical),
   orderDir: z.enum(['asc', 'desc']).catch('asc'),
 
   // Averages filters
@@ -42,5 +44,4 @@ export const queryParams = z.object({
 
 type QueryParams = z.infer<typeof queryParams>;
 
-export type SortField = QueryParams['orderBy'];
 export type SortDirection = QueryParams['orderDir'];

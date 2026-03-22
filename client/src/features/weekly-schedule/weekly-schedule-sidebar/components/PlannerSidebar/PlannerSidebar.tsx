@@ -15,6 +15,7 @@ import { useHotkeyFocus } from '@/hooks/use-hotkey-action';
 
 import { useAuth } from '@/contexts/AuthenticationContext';
 import { normalize } from '@utils/strings';
+import { OrderBySubjectOffers } from '@/interfaces/preferences/StudentPreferences';
 
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarRail, useSidebar } from '@ui/sidebar';
 import { Skeleton } from '@ui/skeleton';
@@ -130,6 +131,7 @@ function HomeSidebar({
 
   const orderBy = params.orderBy;
   const orderDir = params.orderDir;
+  const safeOrderBy = !user && orderBy === OrderBySubjectOffers.Friends ? OrderBySubjectOffers.Alphabetical : orderBy;
 
   const filteredData = useMemo(() => {
     if (!subjectsOfferQuery.data) return [] as SubjectOfferWithSections[];
@@ -185,7 +187,7 @@ function HomeSidebar({
       );
     });
 
-    data = sortSubjectOffers(data, orderBy, orderDir);
+    data = sortSubjectOffers(data, safeOrderBy, orderDir);
 
     return data;
   }, [
@@ -199,7 +201,7 @@ function HomeSidebar({
     maxGrade,
     minWorkload,
     maxWorkload,
-    orderBy,
+    safeOrderBy,
     orderDir,
   ]);
 

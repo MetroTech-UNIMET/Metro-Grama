@@ -2,7 +2,7 @@ import axios from '@/axiosConfig';
 
 import type { SuccessResponse } from '../types';
 import type { StudentPreferencesEntity } from '@/interfaces/preferences/StudentPreferences';
-import type { StudentSettingsFormOutput } from '@/features/student/Settings/schema';
+import type { StudentSettingsFormOutput } from '@/features/student/Settings/SettingsForm/schema';
 
 export async function getMyStudentPreferences() {
   const res = await axios.get<SuccessResponse<StudentPreferencesEntity>>('/student_preferences/');

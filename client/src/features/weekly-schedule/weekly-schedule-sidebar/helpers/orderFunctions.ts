@@ -1,9 +1,10 @@
 import type { SubjectOfferWithSections } from '@/interfaces/SubjectOffer';
-import type { SortField, SortDirection } from '@/routes/_navLayout/horario/queryParams';
+import { type SortDirection } from '@/routes/_navLayout/horario/queryParams';
+import { OrderBySubjectOffers } from '@/interfaces/preferences/StudentPreferences';
 
 export function sortSubjectOffers(
   data: SubjectOfferWithSections[],
-  orderBy: SortField,
+  orderBy: OrderBySubjectOffers,
   orderDir: SortDirection,
 ): SubjectOfferWithSections[] {
   const comparator = getComparator(orderBy);
@@ -13,17 +14,21 @@ export function sortSubjectOffers(
   });
 }
 
-function getComparator(orderBy: SortField): (a: SubjectOfferWithSections, b: SubjectOfferWithSections) => number {
+function getComparator(
+  orderBy: OrderBySubjectOffers,
+): (a: SubjectOfferWithSections, b: SubjectOfferWithSections) => number {
   switch (orderBy) {
-    case 'avg_difficulty':
+    case OrderBySubjectOffers.Difficulty:
       return compareByDifficulty;
-    case 'avg_grade':
+    case OrderBySubjectOffers.Grade:
       return compareByGrade;
-    case 'avg_workload':
+    case OrderBySubjectOffers.Workload:
       return compareByWorkload;
-    case 'prelations':
+    case OrderBySubjectOffers.Prelations:
       return compareByPrelations;
-    case 'alphabetical':
+    case OrderBySubjectOffers.Friends:
+      return compareByFriends;
+    case OrderBySubjectOffers.Alphabetical:
     default:
       return compareByName;
   }
@@ -47,4 +52,8 @@ function compareByPrelations(a: SubjectOfferWithSections, b: SubjectOfferWithSec
 
 function compareByName(a: SubjectOfferWithSections, b: SubjectOfferWithSections) {
   return (a.subject?.name ?? '').localeCompare(b.subject?.name ?? '');
+}
+
+function compareByFriends(a: SubjectOfferWithSections, b: SubjectOfferWithSections) {
+  return (a.differentFriends ?? 0) - (b.differentFriends ?? 0);
 }

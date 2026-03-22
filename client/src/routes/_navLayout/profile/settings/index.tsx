@@ -5,7 +5,7 @@ import { getMetaTags } from '@utils/meta';
 
 import { fetchMyPreferencesOptions } from '@/hooks/queries/preferences/use-fetch-my-preferences';
 
-import SettingsForm from '@/features/student/Settings/SettingsForm';
+import SettingsForm from '@/features/student/Settings/SettingsForm/SettingsForm';
 
 export const Route = createFileRoute('/_navLayout/profile/settings/')({
   loader: ({ context: { queryClient } }) => queryClient.ensureQueryData(fetchMyPreferencesOptions()),
@@ -18,7 +18,7 @@ export const Route = createFileRoute('/_navLayout/profile/settings/')({
   component: function ProfileSettingsRoute() {
     const { data: preferences } = useSuspenseQuery(fetchMyPreferencesOptions());
     return (
-      <div className="space-y-6 p-4">
+      <div className="space-y-6 py-4 px-4 md:px-16">
         <header>
           <h1 className="text-2xl font-bold">Configuración de perfil</h1>
           <p className="text-muted-foreground mt-2">Aquí podrás ajustar la configuración de tu perfil.</p>

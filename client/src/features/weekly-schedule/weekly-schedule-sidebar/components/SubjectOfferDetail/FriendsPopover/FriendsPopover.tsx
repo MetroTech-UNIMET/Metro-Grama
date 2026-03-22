@@ -26,7 +26,7 @@ export function FriendsPopover({ subjectOffer, totalFriends }: Props) {
       </PopoverTrigger>
 
       <PopoverContent className="px-0">
-        <ScrollArea className="max-sm:[&>[data-radix-scroll-area-viewport]]:max-h-[80vh] px-4 py-1">
+        <ScrollArea className="px-4 py-1 max-sm:*:data-radix-scroll-area-viewport:max-h-[80vh]">
           <div className="flex flex-col gap-2">
             {subjectOffer.sections.map(
               (section, index) =>

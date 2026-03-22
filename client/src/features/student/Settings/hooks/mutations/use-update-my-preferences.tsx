@@ -6,6 +6,7 @@ import { updateMyStudentPreferences } from '@/api/preferences/studentPreferences
 import { mutationKeys, queryKeys } from '@/lib/query-keys';
 
 import type { StudentPreferencesEntity } from '@/interfaces/preferences/StudentPreferences';
+import type { StudentSettingsFormOutput } from '../../SettingsForm/schema';
 
 export function useMutationUpdateMyPreferences() {
   const queryClient = useQueryClient();
@@ -13,7 +14,7 @@ export function useMutationUpdateMyPreferences() {
 
   return useMutation({
     mutationKey: mutationKeys.preferences.updateMine,
-    mutationFn: (data: any) => updateMyStudentPreferences(data),
+    mutationFn: (data: StudentSettingsFormOutput) => updateMyStudentPreferences(data),
     onSuccess: (updated) => {
       queryClient.setQueryData<StudentPreferencesEntity | undefined>(
         queryKeys.preferences.mine.queryKey,

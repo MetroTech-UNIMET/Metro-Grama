@@ -1,4 +1,7 @@
+import { useMemo, useState } from 'react';
 import { SlidersHorizontal, ArrowDownAZ, ArrowUpAZ } from 'lucide-react';
+
+import { orderSelectOptions } from './constants';
 
 import { useFilterByAverages } from '../../hooks/search-params/use-filter-by-averages';
 import { useSortSubjectOffers } from '../../hooks/search-params/use-sort-subject-offers';
@@ -7,14 +10,16 @@ import { FilterByAverages } from '../FilterByAverages/FilterByAverages';
 import { FilterByDays } from '../FilterByDays/FilterByDays';
 import { FilterByTimeRange } from '../FilterByTimeRange/FilterByTimeRange';
 
+import { useAuth } from '@/contexts/AuthenticationContext';
+
 import { Button } from '@ui/button';
 import { Separator } from '@ui/separator';
 import { ScrollArea } from '@ui/scroll-area';
 import { Popover, PopoverTrigger, PopoverContent } from '@ui/popover';
 import { SelectTrigger, SelectValue, SelectContent, SelectItem, Select } from '@ui/select';
 
-import type { SortField } from '@/routes/_navLayout/horario/queryParams';
-import type { Option } from '@ui/types/option.types';
+import { OrderBySubjectOffers } from '@/interfaces/preferences/StudentPreferences';
+
 import type { TimeRangeString } from '../../hooks/search-params/use-filter-by-time-range';
 
 // REVIEW - Acaso no existe mejor manera de manejar esto?
@@ -31,17 +36,9 @@ interface Props {
   setWorkloadRange: (range: [number, number]) => void;
   resetAverages: () => void;
   sorting: ReturnType<typeof useSortSubjectOffers>['sorting'];
-  setOrderBy: (field: SortField) => void;
+  setOrderBy: (field: OrderBySubjectOffers) => void;
   toggleOrderDir: () => void;
 }
-
-const orderSelectOptions: Option<SortField>[] = [
-  { label: 'Alfabético', value: 'alphabetical' },
-  { label: 'Dificultad', value: 'avg_difficulty' },
-  { label: 'Nota', value: 'avg_grade' },
-  { label: 'Carga', value: 'avg_workload' },
-  { label: 'Número de Prelaciones', value: 'prelations' },
-];
 
 export function FiltersPopover({
   selectedDays,
@@ -59,6 +56,15 @@ export function FiltersPopover({
   setOrderBy,
   toggleOrderDir,
 }: Props) {
+  const [popoverRef, setPopoverRef] = useState<HTMLDivElement | null>(null);
+  const { user } = useAuth();
+
+  const visibleOrderSelectOptions = useMemo(
+    () =>
+      user ? orderSelectOptions : orderSelectOptions.filter((option) => option.value !== OrderBySubjectOffers.Friends),
+    [user],
+  );
+
   return (
     <Popover modal>
       <PopoverTrigger asChild>
@@ -67,9 +73,9 @@ export function FiltersPopover({
           Filtros
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80 px-0" align="start">
-        <ScrollArea className="px-4 max-sm:[&>[data-radix-scroll-area-viewport]]:max-h-[24rem]">
-          <div className="space-y-4 py-1/2">
+      <PopoverContent className="w-80 px-0" align="start" ref={setPopoverRef}>
+        <ScrollArea className="max-sm:*:data-radix-scroll-area-viewport:max-h-96` px-3">
+          <div className="space-y-4 px-1 py-1">
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <h4 className="text-sm font-semibold">Ordenar Por:</h4>
@@ -84,13 +90,13 @@ export function FiltersPopover({
               <Select
                 value={sorting.orderBy}
                 onValueChange={(val) => val && setOrderBy(val)}
-                items={orderSelectOptions}
+                items={visibleOrderSelectOptions}
               >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
-                  {orderSelectOptions.map((option) => (
+                <SelectContent container={popoverRef}>
+                  {visibleOrderSelectOptions.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
                       {option.label}
                     </SelectItem>

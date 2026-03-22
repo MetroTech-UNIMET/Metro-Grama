@@ -11,6 +11,8 @@ DEFINE FIELD role ON user TYPE record<role> DEFAULT role:user;
 DEFINE FIELD created ON user DEFAULT time::now() READONLY;
 DEFINE INDEX studentEmailIndex ON TABLE user COLUMNS email UNIQUE;
 
+DEFINE INDEX idx_user ON student COLUMNS user;
+
 -- Step 2: Migrate data from `student` to `user`
 INSERT INTO user SELECT * FROM student;
 

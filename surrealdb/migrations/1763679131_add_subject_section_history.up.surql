@@ -7,6 +7,8 @@ DEFINE FIELD OVERWRITE start_date         ON subject_section_history TYPE option
 DEFINE FIELD OVERWRITE end_date           ON subject_section_history TYPE option<datetime>;
 DEFINE FIELD OVERWRITE schedules          ON subject_section_history TYPE array<record<subject_schedule>> DEFAULT [] REFERENCE;
 
+DEFINE INDEX idx_section_end_date ON subject_section_history COLUMNS subject_section, end_date;
+
 -- DEFINE EVENT OVERWRITE subject_section_audit ON TABLE subject_section
 --     WHEN $event = "CREATE" OR $event = "UPDATE"
 --     THEN {

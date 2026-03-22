@@ -34,12 +34,15 @@ DEFINE FIELD starting_hour ON subject_schedule TYPE int ASSERT $value >= 0 AND $
 DEFINE FIELD starting_minute ON subject_schedule TYPE int ASSERT $value >= 0 AND $value <= 59 PERMISSIONS FULL;
 DEFINE FIELD subject_section ON subject_schedule TYPE record<subject_section> REFERENCE DEFAULT NULL PERMISSIONS FULL;
 
+DEFINE INDEX idx_subject_section ON subject_schedule COLUMNS subject_section;
 
 DEFINE TABLE subject_section TYPE NORMAL SCHEMAFULL PERMISSIONS NONE;
 
 DEFINE FIELD classroom_code ON subject_section TYPE option<string> PERMISSIONS FULL;
 DEFINE FIELD section_number ON subject_section TYPE int ASSERT $value >= 1 AND $value <= 10 PERMISSIONS FULL;
 DEFINE FIELD subject_offer ON subject_section TYPE record<subject_offer> REFERENCE PERMISSIONS FULL;
+
+DEFINE INDEX idx_subject_offer ON subject_section COLUMNS subject_offer;
 
 DEFINE FUNCTION fn::is_subject_enrollable($subjectId: record<subject>, $studentId: record<student>, $enrolled: array<record<subject>> ) -> bool | 'already_seen' {
   LET $subject = (SELECT * FROM ONLY $subjectId);

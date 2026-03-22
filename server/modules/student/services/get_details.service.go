@@ -51,7 +51,7 @@ func GetStudentDetails(ctx context.Context, studentId surrealModels.RecordID, lo
 		Field("*").
 		Fetch("user", "careers", "enrolled_subjects", "friends", "friends.user")
 
-	qb = utils.ApplyIfVisible(qb, loggedUserId, studentPreferences.ShowSubjects, isFriend, isFriendOfAFriend,
+	qb = utils.ApplyIfVisible(qb, loggedUserId, studentPreferences.PrivacyPreferences.ShowSubjects, isFriend, isFriendOfAFriend,
 		func(q *surrealql.SelectQuery) *surrealql.SelectQuery {
 			enrolled_subjects_Qb := surrealql.Select("$parent->enroll").
 				FieldName("trimester").
@@ -70,7 +70,7 @@ func GetStudentDetails(ctx context.Context, studentId surrealModels.RecordID, lo
 		},
 	)
 
-	qb = utils.ApplyIfVisible(qb, loggedUserId, studentPreferences.ShowFriends, isFriend, isFriendOfAFriend,
+	qb = utils.ApplyIfVisible(qb, loggedUserId, studentPreferences.PrivacyPreferences.ShowFriends, isFriend, isFriendOfAFriend,
 		func(q *surrealql.SelectQuery) *surrealql.SelectQuery {
 			return qb.Alias("friends", "->(friend WHERE status == 'accepted').out")
 		},
@@ -92,7 +92,7 @@ func GetStudentDetails(ctx context.Context, studentId surrealModels.RecordID, lo
 		extraParams["my_id"] = *loggedUserId
 	}
 
-	qb = utils.ApplyIfVisible(qb, loggedUserId, studentPreferences.ShowSchedule, isFriend, isFriendOfAFriend,
+	qb = utils.ApplyIfVisible(qb, loggedUserId, studentPreferences.PrivacyPreferences.ShowSchedule, isFriend, isFriendOfAFriend,
 		func(q *surrealql.SelectQuery) *surrealql.SelectQuery {
 			return addSheduleSubquery(q)
 		},

@@ -17,9 +17,8 @@ import (
 func UpdateStudentPreferences(ctx context.Context, studentId surrealModels.RecordID, input DTO.UpdateStudentPreferencesDTO) (*models.StudentPreferencesEntity, error) {
 	qb := surrealql.UpdateOnly("student_preferences").
 		Where("student == ?", studentId).
-		Set("show_friends", input.ShowFriends).
-		Set("show_schedule", input.ShowSchedule).
-		Set("show_subjects", input.ShowSubjects)
+		Set("privacyPreferences", input.PrivacyPreferences).
+		Set("schedulePreferences", input.SchedulePreferences)
 
 	sql, vars := qb.Build()
 

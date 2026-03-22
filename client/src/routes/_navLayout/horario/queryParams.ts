@@ -28,7 +28,8 @@ export const queryParams = z.object({
     })
     .optional()
     .catch(undefined),
-  orderBy: z.enum(OrderBySubjectOffers).catch(OrderBySubjectOffers.Alphabetical),
+  // Keep undefined when not provided so client preferences can decide the initial default.
+  orderBy: z.enum(OrderBySubjectOffers).optional().catch(undefined),
   orderDir: z.enum(['asc', 'desc']).catch('asc'),
 
   // Averages filters

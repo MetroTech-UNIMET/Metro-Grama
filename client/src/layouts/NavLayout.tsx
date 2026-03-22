@@ -31,7 +31,6 @@ function buildBaseItems(): DockLinkItem[] {
         trimester: 'none',
         is_principal: true,
         search: '',
-        orderBy: 'alphabetical',
         filterByDays: [],
       }),
       icon: Calendar,
@@ -50,7 +49,7 @@ function buildBaseItems(): DockLinkItem[] {
   ];
 }
 
-export function NavLayout({ children }: { children?: React.ReactNode }) {
+export function NavLayout() {
   const { status } = useAuth();
   const navigate = useNavigate();
 
@@ -91,7 +90,7 @@ export function NavLayout({ children }: { children?: React.ReactNode }) {
 
   return (
     <>
-      {children ? children : <Outlet />}
+      <Outlet />
 
       <MenuDockLink
         className="fixed bottom-4 left-1/2 z-50 -translate-x-1/2"

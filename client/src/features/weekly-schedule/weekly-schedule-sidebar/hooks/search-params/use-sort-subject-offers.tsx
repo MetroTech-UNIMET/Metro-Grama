@@ -1,25 +1,35 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useSearch } from '@tanstack/react-router';
 
+import { useFetchMyPreferences } from '@/hooks/queries/preferences/use-fetch-my-preferences';
 import { useAuth } from '@/contexts/AuthenticationContext';
-import { type SortDirection } from '@/routes/_navLayout/horario/queryParams';
+
 import { OrderBySubjectOffers } from '@/interfaces/preferences/StudentPreferences';
+import type { SortDirection } from '@/routes/_navLayout/horario/queryParams';
 
 export function useSortSubjectOffers() {
   const navigate = useNavigate();
   const search = useSearch({ from: '/_navLayout/horario/' });
   const { user } = useAuth();
+  const myPreferencesQuery = useFetchMyPreferences();
   const canUseFriendsOrder = !!user;
 
+  const preferredDefaultOrderBy = myPreferencesQuery.isSuccess
+    ? myPreferencesQuery.data.schedulePreferences.default_order
+    : undefined;
+
   const [sorting, setSorting] = useState<{ orderBy: OrderBySubjectOffers; orderDir: SortDirection }>({
-    orderBy: sanitizeOrderBy(search.orderBy ?? OrderBySubjectOffers.Alphabetical, canUseFriendsOrder),
+    orderBy: sanitizeOrderBy(
+      search.orderBy ?? preferredDefaultOrderBy ?? OrderBySubjectOffers.Alphabetical,
+      canUseFriendsOrder,
+    ),
     orderDir: search.orderDir ?? 'asc',
   });
 
   const lastSynced = useRef(JSON.stringify(sorting));
 
   useEffect(() => {
-    const rawOrderBy = search.orderBy ?? OrderBySubjectOffers.Alphabetical;
+    const rawOrderBy = search.orderBy ?? preferredDefaultOrderBy ?? OrderBySubjectOffers.Alphabetical;
     const currentFromSearch = {
       orderBy: sanitizeOrderBy(rawOrderBy, canUseFriendsOrder),
       orderDir: search.orderDir ?? 'asc',
@@ -35,7 +45,7 @@ export function useSortSubjectOffers() {
         lastSynced.current = currentStr;
       }
     }
-  }, [search.orderBy, search.orderDir, canUseFriendsOrder]);
+  }, [search.orderBy, search.orderDir, canUseFriendsOrder, preferredDefaultOrderBy]);
 
   useEffect(() => {
     const currentStr = JSON.stringify(sorting);

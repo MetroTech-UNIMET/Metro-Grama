@@ -102,12 +102,12 @@ export function TimePicker({
     return use12HourFormat ? (hour % 12) + ampm * 12 : hour;
   }, [hour, use12HourFormat, ampm]);
 
-  const hours: SimpleTimeOption[] = useMemo(
-    () =>
-      Array.from({ length: use12HourFormat ? 12 : 24 }, (_, i) => {
+  const hours: SimpleTimeOption[] = useMemo(() => {
+    if (!use12HourFormat) {
+      return Array.from({ length: 24 }, (_, i) => {
         let disabled = false;
-        const hourValue = use12HourFormat ? i + 1 : i;
-        const hour24 = use12HourFormat ? (hourValue % 12) + ampm * 12 : hourValue;
+        const hourValue = i;
+        const hour24 = hourValue;
         const hDate = setHours(baseDate, hour24);
         const hStart = startOfHour(hDate);
         const hEnd = endOfHour(hDate);
@@ -120,9 +120,29 @@ export function TimePicker({
           label: hourValue.toString().padStart(2, '0'),
           disabled,
         };
-      }),
-    [baseDate, min, max, use12HourFormat, ampm],
-  );
+      });
+    }
+
+    const order = [12, ...Array.from({ length: 11 }, (_, i) => i + 1)];
+    return order.map((hourValue) => {
+      let disabled = false;
+      const hour24 = (hourValue % 12) + ampm * 12;
+      const hDate = setHours(baseDate, hour24);
+      const hStart = startOfHour(hDate);
+      const hEnd = endOfHour(hDate);
+
+      if (min && hEnd < min) disabled = true;
+      if (max && hStart > max) disabled = true;
+
+      const label = hourValue === 12 ? '00' : hourValue.toString().padStart(2, '0');
+
+      return {
+        value: hourValue,
+        label,
+        disabled,
+      };
+    });
+  }, [baseDate, min, max, use12HourFormat, ampm]);
 
   const minutes: SimpleTimeOption[] = useMemo(() => {
     const anchorDate = setHours(baseDate, _hourIn24h);

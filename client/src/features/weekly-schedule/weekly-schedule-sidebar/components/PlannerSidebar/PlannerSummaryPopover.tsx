@@ -32,31 +32,47 @@ const difficultyLabelsByGender: Record<'feminine' | 'masculine', Record<Difficul
 
 function getDifficulty(value: number, ranges: readonly [number, number]): DifficultyLevel {
   if (value === 0) return 'low';
-  if (value >= ranges[0]) return 'low';
-  if (value >= ranges[1]) return 'medium';
-  return 'high';
+  const [highThreshold, mediumThreshold] = ranges;
+  if (value >= highThreshold) return 'high';
+  if (value >= mediumThreshold) return 'medium';
+  return 'low';
+}
+
+function invertLevel(level: DifficultyLevel): DifficultyLevel {
+  if (level === 'medium') return 'medium';
+  return level === 'high' ? 'low' : 'high';
+}
+
+function classForLevel(level: DifficultyLevel, label: string) {
+  // For `Nota` (grade) higher values mean easier — invert color severity
+  const effective = label === 'Nota' ? invertLevel(level) : level;
+  return difficultyClassNames[effective];
 }
 
 function formatValue(value: number) {
   return Number.isFinite(value) ? value.toLocaleString('es-VE', { maximumFractionDigits: 2 }) : '0';
 }
 
+const Normal_Num_Subjects = 4;
+
 const STAT_RANGES = {
-  Dificultad: [4, 3],
-  Carga: [4, 3],
-  Nota: [14, 9],
+  Dificultad: [4 * Normal_Num_Subjects, 3 * Normal_Num_Subjects],
+  Carga: [4 * Normal_Num_Subjects, 3 * Normal_Num_Subjects],
+  Nota: [15, 9],
 } as const;
 
 export function PlannerSummaryPopover() {
   const { summary, subjectEvents } = usePlannerSidebarContext();
-  const hasAnyHighStat = useMemo(() => {
-    return (
-      subjectEvents.length > 0 &&
-      (getDifficulty(summary.difficultySummary?.avg ?? 0, STAT_RANGES.Dificultad) === 'high' ||
-        getDifficulty(summary.workloadSummary?.avg ?? 0, STAT_RANGES.Carga) === 'high' ||
-        getDifficulty(summary.gradeSummary?.avg ?? 0, STAT_RANGES.Nota) === 'high')
-    );
-  }, [summary]);
+
+  const hasRiskAlert = useMemo(() => {
+    if (subjectEvents.length === 0) return false;
+
+    const isHighDifficulty = getDifficulty(summary.difficultySummary?.total ?? 0, STAT_RANGES.Dificultad) === 'high';
+    const isHighWorkload = getDifficulty(summary.workloadSummary?.total ?? 0, STAT_RANGES.Carga) === 'high';
+    const isLowGrade = getDifficulty(summary.gradeSummary?.avg ?? 0, STAT_RANGES.Nota) === 'low';
+
+    return isHighDifficulty || isHighWorkload || isLowGrade;
+  }, [summary, subjectEvents]);
 
   return (
     <>
@@ -68,7 +84,7 @@ export function PlannerSummaryPopover() {
             disabled={subjectEvents.length === 0}
             aria-label="Ver resumen del horario"
           >
-            {hasAnyHighStat && (
+            {hasRiskAlert && (
               <span className="absolute -top-0.5 -left-0.5 z-10 flex size-3" aria-hidden="true">
                 <span className="bg-destructive absolute inline-flex h-full w-full animate-ping rounded-full opacity-30"></span>
                 <span className="relative inline-flex size-3 rounded-full bg-red-500"></span>
@@ -123,9 +139,11 @@ export function PlannerSummaryPopover() {
 
 function SubjectStat({ label, summary }: { label: string; summary: Summary }) {
   const ranges = STAT_RANGES[label as keyof typeof STAT_RANGES];
-  const [lowMin, mediumMin] = ranges;
+  const [highThreshold, mediumThreshold] = ranges;
 
-  const difficulty = getDifficulty(summary?.avg ?? 0, ranges);
+  const baseDifficulty = getDifficulty(summary?.avg ?? 0, ranges);
+  const displayClass = classForLevel(baseDifficulty, label);
+
 
   return (
     <TooltipProvider>
@@ -136,8 +154,10 @@ function SubjectStat({ label, summary }: { label: string; summary: Summary }) {
 
             {summary !== null ? (
               <>
-                <p className={cn('text-xl font-bold', difficultyClassNames[difficulty])}>{formatValue(summary.avg)}</p>
-                <p className="text-muted-foreground text-xs">Total: {formatValue(summary?.total ?? 0)}</p>
+                <p className={cn('text-xl font-bold', displayClass)}>{formatValue(summary.avg)}</p>
+                {label !== 'Nota' && (
+                  <p className="text-muted-foreground text-xs">Total: {formatValue(summary?.total ?? 0)}</p>
+                )}{' '}
               </>
             ) : (
               <span className="text-muted-foreground text-lg font-bold">-</span>
@@ -149,24 +169,24 @@ function SubjectStat({ label, summary }: { label: string; summary: Summary }) {
             <>
               <p>
                 Este horario tiene una <span className="font-medium lowercase">{label}</span>{' '}
-                <strong className={difficultyClassNames[difficulty]}>
-                  {difficultyLabelsByGender.feminine[difficulty]}
+                <strong className={displayClass}>
+                  {difficultyLabelsByGender.feminine[baseDifficulty]}
                 </strong>{' '}
                 comparada con otros horarios posibles
               </p>
               <div className="text-muted-foreground mt-2 space-y-1 text-xs">
                 <p>
-                  Nivel <strong className={difficultyClassNames.low}>{difficultyLabelsByGender.masculine.low}</strong>:
-                  promedio ≥ {formatValue(lowMin)}
+                  Nivel <strong className={classForLevel('low', label)}>{difficultyLabelsByGender.masculine.low}</strong>:
+                  promedio &lt; {formatValue(mediumThreshold)}
                 </p>
                 <p>
                   Nivel{' '}
-                  <strong className={difficultyClassNames.medium}>{difficultyLabelsByGender.masculine.medium}</strong>:{' '}
-                  {formatValue(mediumMin)} ≤ promedio &lt; {formatValue(lowMin)}
+                  <strong className={classForLevel('medium', label)}>{difficultyLabelsByGender.masculine.medium}</strong>:{' '}
+                  {formatValue(mediumThreshold)} ≤ promedio &lt; {formatValue(highThreshold)}
                 </p>
                 <p>
-                  Nivel <strong className={difficultyClassNames.high}>{difficultyLabelsByGender.masculine.high}</strong>
-                  : promedio &lt; {formatValue(mediumMin)}
+                  Nivel <strong className={classForLevel('high', label)}>{difficultyLabelsByGender.masculine.high}</strong>
+                  : promedio ≥ {formatValue(highThreshold)}
                 </p>
               </div>
             </>

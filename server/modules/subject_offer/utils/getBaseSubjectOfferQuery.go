@@ -11,20 +11,20 @@ import (
 func GetBaseSubjectOfferQuery(careers []surrealModels.RecordID, isUserLogged bool, includeElectives bool) (*surrealql.SelectQuery, *surrealql.SelectQuery) {
 	whereCondition := buildSubjectOfferWhereCondition(len(careers) > 0, includeElectives)
 
-	sectionsQuery := buildSectionsQuery()
-	subjectOfferQuery := buildSubjectOfferProjectionQuery(sectionsQuery, careers)
-	subjectOfferQuery = applySubjectOfferWhereCondition(subjectOfferQuery, whereCondition, careers)
+	sections_Qb := buildSectionsQuery()
+	subjectOffer_Qb := buildSubjectOfferProjectionQuery(sections_Qb, careers)
+	subjectOffer_Qb = applySubjectOfferWhereCondition(subjectOffer_Qb, whereCondition, careers)
 
 	if isUserLogged {
-		subjectOfferQuery = applyFriendsEnrichment(subjectOfferQuery, sectionsQuery)
-		subjectOfferQuery = applySchedulePreferencesEnrichment(subjectOfferQuery)
+		subjectOffer_Qb = applyFriendsEnrichment(subjectOffer_Qb, sections_Qb)
+		subjectOffer_Qb = applySchedulePreferencesEnrichment(subjectOffer_Qb)
 	}
 
-	return subjectOfferQuery, sectionsQuery
+	return subjectOffer_Qb, sections_Qb
 }
 
 func buildSectionsQuery() *surrealql.SelectQuery {
-	schedulesQuery := surrealql.
+	schedules_Qb := surrealql.
 		Select("subject_schedule").
 		Field("*").
 		Where("subject_section = $parent.id")
@@ -32,25 +32,34 @@ func buildSectionsQuery() *surrealql.SelectQuery {
 	return surrealql.
 		Select("subject_section").
 		Field("*").
-		Alias("schedules", schedulesQuery).
+		Alias("schedules", schedules_Qb).
 		Where("subject_offer = $parent.id").
 		OrderBy("section_number")
 }
 
 func buildComputedSubjectOfferQuery(sectionsQuery *surrealql.SelectQuery) *surrealql.SelectQuery {
-	friendsPlanToSeeQuery := surrealql.Select("$friends_PlanToSee").
+	friendsPlanToSee_Qb := surrealql.Select("$friends_PlanToSee").
 		Value("id").
 		Where("$parent.in IN plan_to_see.subject_offer.in")
 
-	friendOfAFriendPlanToSeeQuery := surrealql.Select("$friendOfAfriend_PlanToSee").
+	friendOfAFriendPlanToSee_Qb := surrealql.Select("$friendOfAfriend_PlanToSee").
 		Value("commonFriend").
 		Where("$parent.in IN plan_to_see.subject_offer.in")
+
+	enroll_Qb := surrealql.SelectOnly("enroll").
+		Alias("avg_difficulty", "math::mean(difficulty ?: [0])").
+		Alias("avg_grade", "math::mean(grade ?: [0])").
+		Alias("avg_workload", "math::mean(workload ?: [0])").
+		Field("out").
+		Where("out=$parent.in AND trimester IN fn::previous_trimesters($parent.out, 3).id").
+		GroupBy("out")
 
 	return surrealql.
 		Select("subject_offer").
 		Field("*").
 		Alias("sections", sectionsQuery).
-		Alias("differentFriends", "array::union(?,  ?).len()", friendsPlanToSeeQuery, friendOfAFriendPlanToSeeQuery)
+		Alias("enroll", enroll_Qb).
+		Alias("differentFriends", "array::union(?,  ?).len()", friendsPlanToSee_Qb, friendOfAFriendPlanToSee_Qb)
 }
 
 func buildSubjectOfferProjectionQuery(sectionsQuery *surrealql.SelectQuery, careers []surrealModels.RecordID) *surrealql.SelectQuery {
@@ -63,6 +72,9 @@ func buildSubjectOfferProjectionQuery(sectionsQuery *surrealql.SelectQuery, care
 		Alias("prelations", `in->(precede
 					WHERE out->belong->career ANYINSIDE  ?
 				).out`, careers).
+		Alias("avg_difficulty", "enroll.avg_difficulty").
+		Alias("avg_grade", "enroll.avg_grade").
+		Alias("avg_workload", "enroll.avg_workload").
 		Fetch("subject", "trimester", "prelations")
 }
 

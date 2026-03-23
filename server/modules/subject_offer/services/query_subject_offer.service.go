@@ -38,18 +38,6 @@ func GetSubjectOfferById(ctx context.Context, trimesterId string, studentId surr
 
 	subjectOffer_Qb, sections_Qb := utils.GetBaseSubjectOfferQuery(careersArray, isUserLogged, includeElectives)
 
-	subjectOffer_Qb = subjectOffer_Qb.
-		// FIXME Buscar alguna forma de cachear el resultado de fn::previous_trimesters en una variable
-		Alias("avg_difficulty", "math::mean(? ?: [0])", surrealql.Select("enroll").
-			Value("difficulty").
-			Where("out=$parent.in AND trimester IN fn::previous_trimesters($parent.out, 3).id")).
-		Alias("avg_grade", "math::mean(? ?: [0])", surrealql.Select("enroll").
-			Value("grade").
-			Where("out=$parent.in AND trimester IN fn::previous_trimesters($parent.out, 3).id")).
-		Alias("avg_workload", "math::mean(? ?: [0])", surrealql.Select("enroll").
-			Value("workload").
-			Where("out=$parent.in AND trimester IN fn::previous_trimesters($parent.out, 3).id"))
-
 	sections_Qb.
 		Alias("students_planning_to_enroll", "COUNT(?)",
 			surrealql.

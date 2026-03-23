@@ -45,14 +45,28 @@ func getScheduleSubquery() *surrealql.SelectQuery {
 		OrderBy("starting_hour").
 		OrderBy("starting_minute")
 }
+
 func GetSectionSubquery(isPrincipal bool) *surrealql.SelectQuery {
 	sectionField := "principal_sections"
 	if !isPrincipal {
 		sectionField = "secondary_sections"
 	}
 
-	return surrealql.Select(fmt.Sprintf("$parent.%s", sectionField)).
+	sectionProjection_Qb := surrealql.Select(fmt.Sprintf("$parent.%s", sectionField)).
 		Field("*").
+		Alias("enroll", surrealql.SelectOnly("enroll").
+			Alias("avg_difficulty", "math::mean(difficulty ?: [0])").
+			Alias("avg_grade", "math::mean(grade ?: [0])").
+			Alias("avg_workload", "math::mean(workload ?: [0])").
+			Field("out").
+			Where("out=$parent.subject_offer.in AND trimester IN fn::previous_trimesters($parent.subject_offer.out, 3).id").
+			GroupBy("out"))
+
+	return surrealql.Select(sectionProjection_Qb).
+		Field("*").
+		Alias("avg_difficulty", "enroll.avg_difficulty").
+		Alias("avg_grade", "enroll.avg_grade").
+		Alias("avg_workload", "enroll.avg_workload").
 		Alias("subject", "subject_offer.in").
 		Alias("subject_schedule", getScheduleSubquery()).
 		Fetch("subject")

@@ -29,7 +29,9 @@ type QueryAnnualOfferWithPlanning struct {
 	AvgGrade      float64 `json:"avg_grade"`
 	AvgWorkload   float64 `json:"avg_workload"`
 
-	Sections []SectionsWithSchedulesAndPlanning `json:"sections"`
+	Sections             []SectionsWithSchedulesAndPlanning `json:"sections"`
+	AllProhibited        bool                               `json:"allProhibited"`
+	HasPreferredSchedule bool                               `json:"hasPreferredSchedule"`
 }
 
 type SectionsWithSchedules struct {

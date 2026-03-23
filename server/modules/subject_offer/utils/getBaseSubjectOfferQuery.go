@@ -8,15 +8,16 @@ import (
 )
 
 // getBaseSubjectOfferQuery constructs the query and params for annual offers combining optional filters.
-func GetBaseSubjectOfferQuery(careers []surrealModels.RecordID, includeFriends bool, includeElectives bool) (*surrealql.SelectQuery, *surrealql.SelectQuery) {
+func GetBaseSubjectOfferQuery(careers []surrealModels.RecordID, isUserLogged bool, includeElectives bool) (*surrealql.SelectQuery, *surrealql.SelectQuery) {
 	whereCondition := buildSubjectOfferWhereCondition(len(careers) > 0, includeElectives)
 
 	sectionsQuery := buildSectionsQuery()
 	subjectOfferQuery := buildSubjectOfferProjectionQuery(sectionsQuery, careers)
 	subjectOfferQuery = applySubjectOfferWhereCondition(subjectOfferQuery, whereCondition, careers)
 
-	if includeFriends {
+	if isUserLogged {
 		subjectOfferQuery = applyFriendsEnrichment(subjectOfferQuery, sectionsQuery)
+		subjectOfferQuery = applySchedulePreferencesEnrichment(subjectOfferQuery)
 	}
 
 	return subjectOfferQuery, sectionsQuery
@@ -36,7 +37,7 @@ func buildSectionsQuery() *surrealql.SelectQuery {
 		OrderBy("section_number")
 }
 
-func buildComputedSubjectOfferQuery() *surrealql.SelectQuery {
+func buildComputedSubjectOfferQuery(sectionsQuery *surrealql.SelectQuery) *surrealql.SelectQuery {
 	friendsPlanToSeeQuery := surrealql.Select("$friends_PlanToSee").
 		Value("id").
 		Where("$parent.in IN plan_to_see.subject_offer.in")
@@ -48,15 +49,16 @@ func buildComputedSubjectOfferQuery() *surrealql.SelectQuery {
 	return surrealql.
 		Select("subject_offer").
 		Field("*").
+		Alias("sections", sectionsQuery).
 		Alias("differentFriends", "array::union(?,  ?).len()", friendsPlanToSeeQuery, friendOfAFriendPlanToSeeQuery)
 }
 
 func buildSubjectOfferProjectionQuery(sectionsQuery *surrealql.SelectQuery, careers []surrealModels.RecordID) *surrealql.SelectQuery {
-	return surrealql.Select(buildComputedSubjectOfferQuery()).
+	return surrealql.Select(buildComputedSubjectOfferQuery(sectionsQuery)).
 		Field("id").
 		FieldNameAs("in", "subject").
 		FieldNameAs("out", "trimester").
-		Alias("sections", sectionsQuery).
+		Field("sections").
 		Alias("careers", "in->belong->career").
 		Alias("prelations", `in->(precede
 					WHERE out->belong->career ANYINSIDE  ?
@@ -74,6 +76,34 @@ func applySubjectOfferWhereCondition(subjectOfferQuery *surrealql.SelectQuery, w
 	}
 
 	return subjectOfferQuery.Where(whereCondition)
+}
+
+func applySchedulePreferencesEnrichment(subjectOfferQuery *surrealql.SelectQuery) *surrealql.SelectQuery {
+	allProhibitedQuery := surrealql.Expr(`
+		array::len(sections) > 0 AND array::all(sections, |$section| 
+			array::len($section.schedules) > 0 AND array::all($section.schedules, |$schedule| 
+				array::any($studentPreferences.schedulePreferences.prohibited_schedules, |$prohibited| 
+					$schedule.day_of_week = $prohibited.day_of_week AND
+					($schedule.starting_hour * 60 + $schedule.starting_minute) < ($prohibited.ending_hour * 60 + $prohibited.ending_minute) AND
+					($schedule.ending_hour * 60 + $schedule.ending_minute) > ($prohibited.starting_hour * 60 + $prohibited.starting_minute)
+				)
+			)
+		)`)
+
+	hasPreferredScheduleQuery := surrealql.Expr(`
+		array::any(sections, |$section| 
+			array::any($section.schedules, |$schedule| 
+				array::any($studentPreferences.schedulePreferences.preferred_schedules, |$preferred| 
+					$schedule.day_of_week = $preferred.day_of_week AND
+					($schedule.starting_hour * 60 + $schedule.starting_minute) >= ($preferred.starting_hour * 60 + $preferred.starting_minute) AND
+					($schedule.ending_hour * 60 + $schedule.ending_minute) <= ($preferred.ending_hour * 60 + $preferred.ending_minute)
+				)
+			)
+		)`)
+
+	return subjectOfferQuery.
+		Alias("allProhibited", allProhibitedQuery).
+		Alias("hasPreferredSchedule", hasPreferredScheduleQuery)
 }
 
 func applyFriendsEnrichment(subjectOfferQuery *surrealql.SelectQuery, sectionsQuery *surrealql.SelectQuery) *surrealql.SelectQuery {

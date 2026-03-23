@@ -26,7 +26,11 @@ func ConstructTransactionVariables(qb *surrealql.TransactionQuery) *surrealql.Tr
 			Value("array::union(principal_sections,secondary_sections).distinct()"),
 		)
 
+	studentPreferences_Qb := surrealql.SelectOnly("student_preferences").
+		Where("student = $studentId")
+
 	qb = qb.
+		Let("studentPreferences", studentPreferences_Qb).
 		Let("friends", surrealql.Expr("$studentId->(friend WHERE  status = 'accepted')->student")).
 		Let("friends_PlanToSee", friendsPlanToSee_Qb).
 		Let("friendsOfAfriend", friendsOfAfriend_Qb).

@@ -70,7 +70,7 @@ export function FiltersPopover({
       <PopoverTrigger asChild>
         <Button variant="outline" className="flex items-center gap-2">
           <SlidersHorizontal size={16} />
-          Filtros
+          Preferencias
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-80 px-0" align="start" ref={setPopoverRef}>

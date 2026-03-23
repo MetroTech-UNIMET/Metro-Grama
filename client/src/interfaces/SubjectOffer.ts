@@ -25,6 +25,8 @@ export interface SubjectOfferWithSections extends SubjectOffer, AverageMetrics {
   prelations: SubjectEntity[];
 
   differentFriends: number;
+  allProhibited: boolean;
+  hasPreferredSchedule: boolean;
 }
 
 interface SubjectOfferSections extends SubjectSectionWithSchedules {

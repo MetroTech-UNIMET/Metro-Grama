@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, CalendarCheck, CalendarX } from 'lucide-react';
 
 import SubjectOfferForm from './SubjectOfferForm/SubjectOfferForm';
 import { SubjectOfferSchedulesList } from './SubjectOfferSchedulesList/SubjectOfferSchedulesList';
@@ -94,7 +94,7 @@ const SubjectStat = ({ label, value }: { label: string; value: number }) => (
 );
 
 function SubjectSidebarHeader({ subjectOffer, onBack }: Pick<Props, 'subjectOffer' | 'onBack'>) {
-  const differentFriends = subjectOffer.differentFriends;
+  const { allProhibited, hasPreferredSchedule, differentFriends } = subjectOffer;
 
   return (
     <SidebarHeader>
@@ -130,6 +130,30 @@ function SubjectSidebarHeader({ subjectOffer, onBack }: Pick<Props, 'subjectOffe
         <SubjectStat label="Dificultad" value={subjectOffer.avg_difficulty} />
         <SubjectStat label="Nota" value={subjectOffer.avg_grade} />
         <SubjectStat label="Carga" value={subjectOffer.avg_workload} />
+      </div>
+
+      <div className="flex flex-row justify-center gap-4">
+        {hasPreferredSchedule && (
+          <Tooltip>
+            <TooltipTrigger>
+              <CalendarCheck className="text-success" />
+            </TooltipTrigger>
+            <TooltipContent className="max-w-50 text-center">
+              Esta materia tiene almenos una sección que coincide con tus horarios preferidos
+            </TooltipContent>
+          </Tooltip>
+        )}
+
+        {allProhibited && (
+          <Tooltip>
+            <TooltipTrigger>
+              <CalendarX className="text-destructive" />
+            </TooltipTrigger>
+            <TooltipContent className="max-w-50 text-center">
+              Todas las secciones de esta amteria coinciden con tus horarios prohibidos
+            </TooltipContent>
+          </Tooltip>
+        )}
       </div>
 
       {differentFriends > 0 && <FriendsPopover subjectOffer={subjectOffer} totalFriends={differentFriends} />}

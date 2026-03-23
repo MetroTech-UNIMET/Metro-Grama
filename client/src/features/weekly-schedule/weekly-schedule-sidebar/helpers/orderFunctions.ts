@@ -4,9 +4,10 @@ import { OrderBySubjectOffers } from '@/interfaces/preferences/StudentPreference
 
 export function sortSubjectOffers(
   data: SubjectOfferWithSections[],
-  orderBy: OrderBySubjectOffers,
+  orderBy: OrderBySubjectOffers | undefined,
   orderDir: SortDirection,
 ): SubjectOfferWithSections[] {
+  if (!orderBy) return data;
   const comparator = getComparator(orderBy);
   return data.sort((a, b) => {
     const cmp = comparator(a, b);

@@ -25,9 +25,9 @@ func Handlers(e *echo.Group) {
 	// TODO - Si se encuetnra con una materia que no existe, igual la añade a la oferta.
 	// Pero no pararece /annual/:year dado que no está en belong
 	// Write operations have rate limiting (50 req/min per IP)
-	subject_offerGroup.POST("/upload", uploadPDF, rateLimitMiddlewares.WriteRateLimit())
-	subject_offerGroup.POST("/batch", batchUpdateSubjectOffers, rateLimitMiddlewares.WriteRateLimit())
-	subject_offerGroup.POST("/:subjectId", createSubjectOffer, rateLimitMiddlewares.WriteRateLimit())
+	subject_offerGroup.POST("/upload", uploadPDF, authMiddlewares.UserAuth, rateLimitMiddlewares.WriteRateLimit())
+	subject_offerGroup.POST("/batch", batchUpdateSubjectOffers, authMiddlewares.UserAuth, rateLimitMiddlewares.WriteRateLimit())
+	subject_offerGroup.POST("/:subjectId", createSubjectOffer, authMiddlewares.StudentAuth, rateLimitMiddlewares.WriteRateLimit())
 
 	subject_offerGroup.DELETE("/:subjectId", deleteSubjectOffer, rateLimitMiddlewares.WriteRateLimit())
 

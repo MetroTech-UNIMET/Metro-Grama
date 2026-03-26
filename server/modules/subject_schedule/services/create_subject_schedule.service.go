@@ -150,7 +150,8 @@ func getUpdateHistory_SectionsQB(subject_section_condition string) *surrealql.Up
 		Set("schedules = ?",
 			surrealql.Select("subject_schedule").
 				Value("id").
-				Where(subject_section_condition)).
+				Where(subject_section_condition).
+				Where("id != NONE")).
 		Where(subject_section_condition).
 		Where("end_date = NONE")
 }

@@ -22,6 +22,7 @@ type inboundHandler func(*client, inboundMessage)
 // client represents a single websocket connection for a user.
 type client struct {
 	ctx     context.Context
+	cancel  context.CancelFunc
 	hub     *Hub
 	conn    *websocket.Conn
 	send    chan []byte
@@ -30,9 +31,11 @@ type client struct {
 	handler inboundHandler
 }
 
-func newClient(ctx context.Context, hub *Hub, conn *websocket.Conn, userID surrealModels.RecordID, handler inboundHandler) *client {
+func newClient(hub *Hub, conn *websocket.Conn, userID surrealModels.RecordID, handler inboundHandler) *client {
+	cCtx, cancel := context.WithCancel(context.Background())
 	return &client{
-		ctx:     ctx,
+		ctx:     cCtx,
+		cancel:  cancel,
 		hub:     hub,
 		conn:    conn,
 		send:    make(chan []byte, 16),
@@ -47,6 +50,7 @@ func (c *client) readPump() {
 		if r := recover(); r != nil {
 			log.Printf("[WARN] readPump panic for user %s: %v", c.userKey, r)
 		}
+		c.cancel()
 		c.hub.unregister <- c
 		_ = c.conn.Close()
 	}()
@@ -84,7 +88,7 @@ func (c *client) writePump() {
 		if r := recover(); r != nil {
 			log.Printf("[WARN] readPump panic for user %s: %v", c.userKey, r)
 		}
-
+		c.cancel()
 		ticker.Stop()
 		_ = c.conn.Close()
 	}()

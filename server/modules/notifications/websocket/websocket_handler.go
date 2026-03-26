@@ -60,7 +60,7 @@ func SubscribeNotifications(c echo.Context) error {
 
 	hub := getHub()
 	ctx := c.Request().Context()
-	client := newClient(ctx, hub, conn, userID, handleInboundEvent)
+	client := newClient(hub, conn, userID, handleInboundEvent)
 	hub.register <- client
 
 	go client.writePump()
@@ -80,7 +80,6 @@ func handleInboundEvent(c *client, msg inboundMessage) {
 	fmt.Println(msg.Event)
 	switch msg.Event {
 	case ListenEvents.NotificationsMarkRead:
-		fmt.Println("Handling mark read event")
 		handleMarkAsReadEvent(c, msg.Payload)
 
 	default:

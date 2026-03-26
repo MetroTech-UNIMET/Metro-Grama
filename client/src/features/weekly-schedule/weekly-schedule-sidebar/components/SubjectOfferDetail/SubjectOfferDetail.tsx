@@ -1,5 +1,7 @@
 import { useMemo } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, CalendarCheck, CalendarX } from 'lucide-react';
+import { toast } from 'sonner';
 
 import SubjectOfferForm from './SubjectOfferForm/SubjectOfferForm';
 import { SubjectOfferSchedulesList } from './SubjectOfferSchedulesList/SubjectOfferSchedulesList';
@@ -8,6 +10,8 @@ import { FriendsPopover } from './FriendsPopover/FriendsPopover';
 import { useSubjectOfferDetailRouter } from '../../hooks/useSubjectOfferDetailRouter';
 import { usePlannerSidebarContext } from '../../context/PlannerSidebarContext';
 
+import { queryKeys } from '@/lib/query-keys';
+
 import { CardTitle, CardDescription } from '@ui/card';
 import { SidebarContent, SidebarHeader } from '@ui/sidebar';
 import { Button } from '@ui/button';
@@ -15,7 +19,7 @@ import { Badge } from '@ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@ui/tooltip';
 
 import type { SubjectOfferWithSections } from '@/interfaces/SubjectOffer';
-import { toast } from 'sonner';
+import type { GetCourseByTrimesterResponse } from '@/api/interactions/course.types';
 
 interface Props {
   subjectOffer: SubjectOfferWithSections;
@@ -23,6 +27,7 @@ interface Props {
 }
 
 export default function SubjectOfferDetail({ subjectOffer, onBack }: Props) {
+  const queryClient = useQueryClient();
   const { getIsSubjectSelected, onRemoveSubject } = usePlannerSidebarContext();
   const { view, go, back } = useSubjectOfferDetailRouter(subjectOffer);
   const handleHeaderBack = () => back(onBack);
@@ -40,10 +45,22 @@ export default function SubjectOfferDetail({ subjectOffer, onBack }: Props) {
             onBack={(filteredSections) => {
               go('list');
               let hasChanges = false;
+
+              const studentCourse = queryClient.getQueryData<GetCourseByTrimesterResponse>(
+                queryKeys.course.student(subjectOffer.trimester.id.ID).queryKey,
+              );
+
               subjectOffer.sections.forEach((section, index) => {
                 if (filteredSections.some((s) => s.subject_section_id?.ID === section.id.ID)) {
-                  hasChanges = true;
-                  onRemoveSubject(subjectOffer, index);
+                  // Check if the modified section is in the student's enrolled sections
+                  const isEnrolled = studentCourse?.sections.some(
+                    (courseSection) => courseSection.id.ID === section.id.ID,
+                  );
+
+                  if (isEnrolled) {
+                    hasChanges = true;
+                    onRemoveSubject(subjectOffer, index);
+                  }
                 }
               });
               if (hasChanges)

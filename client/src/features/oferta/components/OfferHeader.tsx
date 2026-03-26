@@ -9,6 +9,7 @@ import { useIncludeElectives } from '../hooks/search-params/use-include-elective
 import { useMutationUploadAnnualOfferPDF } from '../hooks/mutations/use-mutation-uploadAnnualOfferPDF';
 
 import { useFetchCareersOptions } from '@/hooks/queries/career/use-fetch-careers';
+import { useHotkeyClick } from '@/hooks/use-hotkey-action';
 
 import AutoComplete from '@ui/derived/autocomplete';
 import { Button } from '@ui/button';
@@ -25,15 +26,7 @@ interface Props {
   changesCount?: number;
 }
 
-export function OfferHeader({
-  year,
-  setYear,
-  from,
-  showUpload,
-  onSave,
-  isSaving = false,
-  changesCount = 0,
-}: Props) {
+export function OfferHeader({ year, setYear, from, showUpload, onSave, isSaving = false, changesCount = 0 }: Props) {
   const careerOptionsQuery = useFetchCareersOptions();
 
   const { selectedCareer, setSelectedCareer } = useSelectedCareer({
@@ -71,6 +64,17 @@ export function OfferHeader({
     );
   };
 
+  const saveButtonRef = useRef<HTMLButtonElement | null>(null);
+
+  useHotkeyClick({
+    hotkey: 'Mod+S',
+    targetRef: saveButtonRef,
+    beforeAction: () => {
+      if (['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName || '')) return false;
+      if (!(changesCount > 0 && onSave)) return false;
+    },
+  });
+
   return (
     <header className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
       <div className="flex flex-wrap items-center gap-4">
@@ -103,9 +107,10 @@ export function OfferHeader({
 
             {changesCount > 0 && onSave && (
               <Button
+                ref={saveButtonRef}
                 onClick={onSave}
                 disabled={isSaving}
-                variant='outline'
+                variant="outline"
                 className="animate-in fade-in zoom-in slide-in-from-left-4 duration-300"
               >
                 {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}

@@ -1,7 +1,7 @@
 import { getTimeDate } from '@utils/time';
 
 export const default8Hour = getTimeDate({ hours: 8, minutes: 45 });
-export const default10Hour = getTimeDate({ hours: 10, minutes: 30 });
+export const default10Hour = getTimeDate({ hours: 10, minutes: 15 });
 
 /** 2 academics hours (45min) */
 export const correctIntervalBetweenHours = 90 

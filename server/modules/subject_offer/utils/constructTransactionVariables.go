@@ -9,7 +9,10 @@ func ConstructTransactionVariables(qb *surrealql.TransactionQuery) *surrealql.Tr
 		Alias("commonFriend", "$this[0]").
 		Alias("friendOfAfriend", "$this[1]").
 		Where("$this[1] != $studentId").
-		Where("$this[1] NOT IN $friends")
+		Where("$this[1] NOT IN $friends").
+		Where("?.privacyPreferences.show_schedule != 'private'",
+			surrealql.SelectOnly("student_preferences").
+				Where("student = $parent[1]"))
 
 	friendsOfAFriendPlanToSee_Qb := surrealql.Select("$friendsOfAfriend").
 		Alias("commonFriend", "$this.commonFriend").

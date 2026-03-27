@@ -10,6 +10,7 @@ import { Badge } from '@ui/badge';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@ui/tooltip';
 
 import type { SubjectOfferWithSections } from '@/interfaces/SubjectOffer';
+import { Popover, PopoverContent, PopoverTrigger } from '@ui/popover';
 
 interface Props {
   subjectOffer: SubjectOfferWithSections;
@@ -24,9 +25,9 @@ export default function SubjectOfferCard({ subjectOffer, onSelect, state }: Prop
 
   const isSelected = useMemo(() => getIsSubjectSelected(subjectOffer), [getIsSubjectSelected, subjectOffer]);
 
-  const differentFriends = subjectOffer.differentFriends;
   const numSections = subjectOffer.sections.length;
   const numPrelations = subjectOffer.prelations.length;
+  const { allProhibited, hasPreferredSchedule, differentFriends } = subjectOffer;
 
   const handleSelect = () => onSelect(subjectOffer);
 
@@ -39,7 +40,7 @@ export default function SubjectOfferCard({ subjectOffer, onSelect, state }: Prop
 
   return (
     <Card
-      className={cn('cursor-pointer transition-shadow hover:shadow-lg', {
+      className={cn('relative cursor-pointer transition-shadow hover:shadow-lg', {
         'border-green-400 bg-green-50': state === 'isEnrolled',
         'border-blue-400 bg-blue-50': state === 'isEnrollable',
         'border-gray-200': state === 'default',
@@ -50,8 +51,8 @@ export default function SubjectOfferCard({ subjectOffer, onSelect, state }: Prop
       onKeyDown={handleKeyDown}
     >
       <CardHeader>
-        <CardTitle className="text-lg">{subject.name}</CardTitle>
-        <CardDescription>{subject.id.ID}</CardDescription>
+        <CardTitle className="pr-5 text-lg">{subject.name}</CardTitle>
+        <CardDescription className="pr-5">{subject.id.ID}</CardDescription>
         {isSelected && (
           <Tooltip>
             <TooltipTrigger className="absolute right-8">
@@ -84,7 +85,8 @@ export default function SubjectOfferCard({ subjectOffer, onSelect, state }: Prop
               </div>
             </TooltipTrigger>
             <TooltipContent>
-              {differentFriends} amig{differentFriends !== 1 ? 'os' : 'o'} planea{differentFriends !== 1 ? 'n' : ''} inscribir esta materia
+              {differentFriends} amig{differentFriends !== 1 ? 'os' : 'o'} planea{differentFriends !== 1 ? 'n' : ''}{' '}
+              inscribir esta materia
             </TooltipContent>
           </Tooltip>
         )}

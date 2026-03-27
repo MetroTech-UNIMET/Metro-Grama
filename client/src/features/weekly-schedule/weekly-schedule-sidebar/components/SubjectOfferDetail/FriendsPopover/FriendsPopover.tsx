@@ -30,7 +30,7 @@ export function FriendsPopover({ subjectOffer, totalFriends }: Props) {
           <div className="flex flex-col gap-2">
             {subjectOffer.sections.map(
               (section, index) =>
-                (section.friends?.length ?? 0) > 0 && (
+                (section.friends?.length ?? 0) + (section.friends_of_a_friend?.length ?? 0) > 0 && (
                   <div key={section.id.ID}>
                     <div className="mb-1 flex justify-between">
                       <p className="font-semibold">Sección {section.section_number}</p>

@@ -44,6 +44,7 @@ export default function RegisterStudentForm() {
   const form = useForm({
     resolver: zodResolver(registerStudentSchema),
     defaultValues: defaultRegisterStudentValues,
+    mode: 'onBlur',
   });
 
   const navigate = useNavigate();
@@ -131,16 +132,16 @@ export default function RegisterStudentForm() {
           </Tabs>
 
           <div className="flex flex-row gap-3 border-t border-white/10 px-5 py-5 sm:justify-between sm:px-8 lg:px-12">
-            <Button type="button" onClick={() => previous()} size="icon" className="self-start w-1/2">
+            <Button type="button" onClick={() => previous()} size="icon" className="w-1/2 self-start">
               <ArrowLeft />
             </Button>
 
             {currentStep !== formSteps.length - 1 ? (
-              <Button type="button" onClick={() => next('callOnError')} size="icon" className="self-end w-1/2">
+              <Button type="button" onClick={() => next('callOnError')} size="icon" className="w-1/2 self-end">
                 <ArrowRight />
               </Button>
             ) : (
-              <SubmitButton form="studentForm" colors="primary" className="self-end w-1/2">
+              <SubmitButton form="studentForm" colors="primary" className="w-1/2 self-end">
                 Guardar Perfil
               </SubmitButton>
             )}
